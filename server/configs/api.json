@@ -1,0 +1,8 @@
+{
+    "game":{
+        "maxPlayers":5,
+    },
+    "host":{
+        "port":8080
+    }
+}

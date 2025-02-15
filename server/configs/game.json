@@ -1,0 +1,11 @@
+{
+    "game":{
+        "maxPlayers":5,
+        "player":{
+            "speed":0.01
+        }
+    },
+    "host":{
+        "port":8080
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "dev": "deno task dev:client & deno task dev:server",
+    "dev:client": "cd client && deno task dev",
+    "dev:server": "cd server && deno task dev",
+    "clear":"rm -rf dist"
+  },
+  "lock": false,
+  "importMap": "./common/config/deps.json",
+  "compilerOptions": {
+      "lib": ["dom", "deno.ns"]
+  }
+}
