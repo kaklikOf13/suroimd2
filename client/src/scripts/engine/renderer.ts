@@ -81,6 +81,7 @@ export type RGBAT={r: number, g: number, b: number, a?: number}
 export abstract class Renderer {
     canvas: HTMLCanvasElement
     readonly meter_size: number
+    background: Color = RGBA.new(255, 255, 255);
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100) {
         this.canvas = canvas
         this.meter_size = meter_size
@@ -91,6 +92,13 @@ export abstract class Renderer {
     abstract draw_image2D(image: Sprite, position: Vec2, size: Vec2,offset?:Vec2): void
     
     abstract clear(): void
+
+    abstract resize(depth:number):void
+
+    fullCanvas(depth:number=500){
+        fullCanvas(this.canvas)
+        this.resize(depth)
+    }
 }
 
 const rectVertexShaderSource = `
@@ -111,63 +119,8 @@ void main() {
     gl_FragColor = a_Color;
 }`;
 
-export class GLMaterialFactory{
-    program:WebGLProgram
-    attributes:Record<string,number>
-    uniforms:Partial<Record<string,WebGLUniformLocation>>
-    renderer:WebglRenderer
-    vertexAttributeArray:boolean=true
-    constructor(vertexShader:string,fragShader:string,renderer:WebglRenderer){
-        this.renderer = renderer;
-        
-        // Create shaders
-        const vertex = renderer.createShader(vertexShader, renderer.gl.VERTEX_SHADER);
-        const frag = renderer.createShader(fragShader, renderer.gl.FRAGMENT_SHADER);
-        
-        // Create and link program
-        const program = renderer.gl.createProgram();
-        if (!program) {
-            throw new Error("Failed to create WebGL program");
-        }
-        renderer.gl.attachShader(program, vertex);
-        renderer.gl.attachShader(program, frag);
-        renderer.gl.linkProgram(program);
-        
-        // Check program link status
-        if (!renderer.gl.getProgramParameter(program, renderer.gl.LINK_STATUS)) {
-            const info = renderer.gl.getProgramInfoLog(program);
-            throw new Error(`Failed to link program: ${info}`);
-        }
-        
-        this.program = program;
-        this.attributes = {};
-        this.uniforms = {};
-    }
-    add_attrL(name:string){
-        this.attributes[name]=this.renderer.gl.getAttribLocation(this.program,name)
-    }
-    add_uniformL(name:string){
-        this.uniforms[name]=this.renderer.gl.getUniformLocation(this.program,name)||undefined
-    }
-    generateMaterial(color?:Color,texture?:Sprite,lightAffect:boolean=true):GLMaterial{
-        return {
-            factory:this,
-            color,
-            texture,
-            lightAffect
-        }
-    }
-}
-export interface GLMaterial{
-    factory:GLMaterialFactory
-    color?:Color
-    texture?:Sprite
-    lightAffect?:boolean
-}
-
 export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext;
-    background: Color = RGBA.new(255, 255, 255);
     readonly projectionMatrix: Float32Array;
     readonly simple_program:WebGLProgram
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = RGBA.new(255, 255, 255),depth:number=500) {
@@ -182,14 +135,24 @@ export class WebglRenderer extends Renderer {
         this.simple_program = simple_program!
         gl!.linkProgram(this.simple_program)
 
+        document.body.addEventListener("pointerdown", e => {
+            canvas.dispatchEvent(new PointerEvent("pointerdown", {
+                pointerId: e.pointerId,
+                button: e.button,
+                clientX: e.clientX,
+                clientY: e.clientY,
+                screenY: e.screenY,
+                screenX: e.screenX
+            }));
+        });
 
-        // Configurando a matriz de projeção para coordenadas de pixel
+        this.resize(depth)
+    }
+    resize(depth:number=500){
         const scaleX = this.canvas.width / this.meter_size
         const scaleY = this.canvas.height / this.meter_size
         this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX,scaleY),depth/this.meter_size))
-
     }
-
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
         if (shader) {
@@ -367,4 +330,9 @@ export function applyBorder(elem: HTMLElement) {
 export function applyShadow(elem: HTMLElement) {
     elem.style.boxShadow = "0px 4px 17px 0px rgba(0,0,0,0.19)";
     elem.style.webkitBoxShadow = "0px 4px 17px 0px rgba(0,0,0,0.19)";
+}
+
+export function fullCanvas(elem: HTMLCanvasElement) {
+    elem.width=self.innerWidth;
+    elem.height=self.innerHeight;
 }
