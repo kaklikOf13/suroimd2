@@ -12,6 +12,14 @@ export interface LootData extends EncodedData{
     }
     position:Vec2
 }
+
+export interface BulletData extends EncodedData{
+    // deno-lint-ignore ban-types
+    full?:{}
+    speed:Vec2
+    radius:number
+    position:Vec2
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -55,6 +63,26 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             if(full){
                 //
             }
+        }
+    },
+    bullet:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:BulletData={
+                position:stream.readPosition(),
+                radius:stream.readFloat(0,2,2),
+                speed:stream.readPosition()
+            }
+            if(full){
+                //
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(_full:boolean,data:BulletData,stream:NetStream){
+            stream.writePosition(data.position)
+            stream.writeFloat(data.radius,0,2,2)
+            stream.writePosition(data.speed)
         }
     }
 }

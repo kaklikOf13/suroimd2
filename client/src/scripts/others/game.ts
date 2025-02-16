@@ -5,11 +5,14 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
 import { Loot } from "../gameObjects/loot.ts";
+import { Bullet } from "../gameObjects/bullet.ts";
 export class Game extends ClientGame2D{
   client:Client
   activePlayer=0
+
+  action:ActionPacket=new ActionPacket()
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-      super(keyl,mp,resources,renderer,[...objects,Player,Loot])
+      super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet])
       for(const i of CATEGORYSL){
         this.scene.objects.add_category(i)
       }
@@ -24,23 +27,27 @@ export class Game extends ClientGame2D{
   on_update(): void {
     super.on_update()
     if(this.client.opened){
-      const a=new ActionPacket()
       if(this.key.keyPress(Key.A)){
-          a.Movement.x=-1
+        this.action.Movement.x=-1
       }else if(this.key.keyPress(Key.D)){
-          a.Movement.x=1
+        this.action.Movement.x=1
       }else{
-          a.Movement.x=0
+        this.action.Movement.x=0
       }
 
       if(this.key.keyPress(Key.W)){
-          a.Movement.y=-1
+        this.action.Movement.y=-1
       }else if(this.key.keyPress(Key.S)){
-          a.Movement.y=1
+        this.action.Movement.y=1
       }else{
-          a.Movement.y=0
+        this.action.Movement.y=0
       }
-      this.client.emit(a)
+      this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)
+      this.client.emit(this.action)
+      const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
+      if(activePlayer){
+        this.action.angle=v2.lookTo(activePlayer.position,v2.add(this.mouse.position,this.camera.position))
+      }
     }
     this.renderer.fullCanvas()
   }

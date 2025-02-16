@@ -6,6 +6,7 @@ import { Loot } from "../gameObjects/loot.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ActionPacket } from "common/scripts/packets/action_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
+import { Bullet } from "../gameObjects/bullet.ts";
 export interface GameConfig{
     maxPlayers:number,
 }
@@ -15,7 +16,8 @@ export class Game extends GameBase{
     constructor(id:ID,config:GameConfig){
         super(GameConstants.tps,id,PacketManager,[
             Player,
-            Loot
+            Loot,
+            Bullet
         ])
         for(const i of CATEGORYSL){
             this.scene.objects.add_category(i)

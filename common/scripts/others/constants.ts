@@ -23,11 +23,13 @@ export const GameConstants={
 }
 export enum CATEGORYS{
     PLAYERS="players",
-    LOOTS="loots"
+    LOOTS="loots",
+    BULLETS="bullets"
 }
 export const CATEGORYSL=[
     CATEGORYS.PLAYERS,
-    CATEGORYS.LOOTS
+    CATEGORYS.LOOTS,
+    CATEGORYS.BULLETS
 ]
 
 export const PacketManager:PacketsManager=new PacketsManager()

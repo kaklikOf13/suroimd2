@@ -184,6 +184,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.id=id
         obj.category=category
         obj.dirty=true
+        obj.dirtyPart=true
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         obj.manager=this
@@ -217,27 +218,27 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             if(!this.objects[category]){
                 this.add_category(category)
             }
-            const osize=packet.stream.readUint16()
+            const osize=packet.stream.readUint24()
             for(let j=0;j<osize;j++){
-                const oid=packet.stream.readID()
-                const tp=packet.stream.readUint24()
-                let obj=this.objects[category].objects[oid]
                 const b=packet.stream.readBooleanGroup()
-                if(!obj&&!b[2]){
-                    const obb=this.oncreate({category:category,id:oid},tp)
-                    if(!obb)break
-                    obj=obb
-                    this.add_object(obj,category,oid)
-                }
-                if(b[0]||b[1]){
-                    const enc=this.encoders[obj.objectType]
-                    obj.dirtyPart=false
-                    obj.dirty=false
-                    const data=enc.decode(b[1],packet.stream)
-                    obj.updateData(data)
-                }
-                if(b[2]){
-                    obj.destroyed=true
+                if(b[0]||b[1]||b[2]){
+                    const oid=packet.stream.readID()
+                    const tp=packet.stream.readUint16()
+                    let obj=this.objects[category].objects[oid]
+                    if(!obj&&!b[2]){
+                        const obb=this.oncreate({category:category,id:oid},tp)
+                        if(!obb)break
+                        obj=obb
+                        this.add_object(obj,category,oid)
+                    }
+                    if((b[0]||b[1])&&obj){
+                        const enc=this.encoders[obj.objectType]
+                        const data=enc.decode(b[1],packet.stream)
+                        obj.updateData(data)
+                    }
+                    if(b[2]){
+                        obj.destroyed=true
+                    }
                 }
             }
         }
@@ -247,17 +248,26 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         stream.writeUint16(Object.keys(this.objects).length)
         for(const c in this.objects){
             stream.writeString(c)
-            stream.writeUint16(this.objects[c].orden.length)
+            stream.writeUint24(this.objects[c].orden.length)
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]
                 const obj=this.objects[c].objects[o]
                 const enc=this.encoders[obj.objectType]
                 if(!enc)continue
-                stream.writeID(o)
-                stream.writeUint24(obj.numberType)
-                stream.writeBooleanGroup(full||obj.dirtyPart,full||obj.dirty,obj.destroyed)
-                const data=obj.getData()
-                enc.encode(true,data,stream)
+                const bools=[full||obj.dirtyPart,full||obj.dirty,obj.destroyed]
+                stream.writeBooleanGroup(bools[0],bools[1],bools[2])
+                if(bools[0]||bools[1]||bools[2]){
+                    stream.writeID(o)
+                    stream.writeUint16(obj.numberType)
+                    if(bools[0]||bools[1]){
+                        const data=obj.getData()
+                        enc.encode(bools[1],data,stream)
+                        if(!full){
+                            obj.dirty=false
+                            obj.dirtyPart=false
+                        }
+                    }
+                }
             }
         }
         const op=new ObjectsPacket()

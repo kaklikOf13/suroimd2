@@ -647,4 +647,12 @@ export class NetStream {
     readID(): ID {
         return this.readUint32()
     }
+
+    writeRad(val: number):this{
+        this.writeFloat(val,(-Math.PI)*2,Math.PI*2,3);
+        return this;
+    }
+    readRad(): ID {
+        return this.readFloat((-Math.PI)*2,Math.PI*2,3);
+    }
 }
