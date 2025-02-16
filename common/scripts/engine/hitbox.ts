@@ -33,12 +33,6 @@ export enum HitboxType2D{
     null=2,
     //group,
 }
-export enum HitboxType3D{
-    sphere=0,
-    box=1,
-    null=2,
-    //group,
-}
 
 export interface Hitbox2DMapping {
     [HitboxType2D.circle]:CircleHitbox2D
@@ -56,6 +50,8 @@ export abstract class BaseHitbox2D{
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
     abstract toRect():RectHitbox2D
+    abstract transform(position?:Vec2,scale?:number):Hitbox2D
+    abstract clone():Hitbox2D
     position:Vec2
     constructor(position:Vec2){
         this.position=position
@@ -90,6 +86,13 @@ export class NullHitbox2D extends BaseHitbox2D{
     override scale(_scale: number): void {}
     override is_null():boolean{
         return true
+    }
+
+    override transform(_position?:Vec2,_scale?:number):Hitbox2D{
+        return new NullHitbox2D()
+    }
+    override clone():Hitbox2D{
+        return new NullHitbox2D()
     }
 }
 export interface OverlapCollision2D{
@@ -158,6 +161,20 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override toRect():RectHitbox2D{
         return new RectHitbox2D(this.position,v2.new(this.radius,this.radius))
     }
+    override transform(position?:Vec2,scale?:number):Hitbox2D{
+        const ret=this.clone()
+        if(position){
+            ret.position.x+=position.x
+            ret.position.y+=position.y
+        }
+        if(scale){
+            ret.scale(scale)
+        }
+        return ret
+    }
+    override clone():Hitbox2D{
+        return new CircleHitbox2D(v2.duplicate(this.position),this.radius)
+    }
 }
 
 export class RectHitbox2D extends BaseHitbox2D{
@@ -225,5 +242,19 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override toRect():RectHitbox2D{
         return this
+    }
+    override transform(position?:Vec2,scale?:number):Hitbox2D{
+        const ret=this.clone()
+        if(position){
+            ret.position.x+=position.x
+            ret.position.y+=position.y
+        }
+        if(scale){
+            ret.scale(scale)
+        }
+        return ret
+    }
+    override clone():Hitbox2D{
+        return new RectHitbox2D(v2.duplicate(this.position),v2.duplicate(this.size))
     }
 }

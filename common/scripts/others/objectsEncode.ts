@@ -20,6 +20,13 @@ export interface BulletData extends EncodedData{
     radius:number
     position:Vec2
 }
+export interface ObstacleData extends EncodedData{
+    full?:{
+        position:Vec2
+        definition:number
+    }
+    scale:number
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -84,5 +91,29 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writeFloat(data.radius,0,2,2)
             stream.writePosition(data.speed)
         }
-    }
+    },
+    obstacle:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:ObstacleData={
+                scale:stream.readFloat(0,3,3),
+                full:undefined
+            }
+            if(full){
+                ret.full={
+                    definition:stream.readUint24(),
+                    position:stream.readPosition()
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:ObstacleData,stream:NetStream){
+            stream.writeFloat(data.scale,0,3,3)
+            if(full){
+                stream.writeUint24(data.full!.definition)
+                stream.writePosition(data.full!.position)
+            }
+        }
+    },
 }

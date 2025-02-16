@@ -1,7 +1,7 @@
 import { Clock, cloneDeep } from "./utils.ts"
 import { BaseObject2D, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
 import { type Vec2 } from "./geometry.ts";
-import { Definitions } from "./definitions.ts";
+import { Definitions, DefinitionsSimple } from "./definitions.ts";
 export enum DefaultEvents{
     GameTick="game-tick",
     GameRun="game-run"
@@ -105,7 +105,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         for(const c in this.scene.objects){
             this.objects.add_category(c)
             for(const o of this.scene.objects[c]){
-                const obj=this.objects.add_object(new (this.game.objects.get(o.type))(),c,o.id,o.vals,{"game":this.game})
+                const obj=this.objects.add_object(new (this.game.objects.getFromString(o.type))(),c,o.id,o.vals,{"game":this.game})
                 if(o.position)obj.position=cloneDeep(o.position as Vec2)
             }
         }
@@ -119,7 +119,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     readonly events:EventsManager<Events,Map>
     scene:Scene2DInstance<DefaultGameObject,Events,Map>
     clock_e:boolean=true
-    objects:Definitions<new()=>DefaultGameObject>=new Definitions()
+    objects:DefinitionsSimple<new()=>DefaultGameObject>=new DefinitionsSimple()
     constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.events=new EventsManager()
@@ -144,6 +144,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(this.clock_e){
             this.clock.tick()
         }else{
+            this.scene.objects.apply_destroy_queue()
             self.requestAnimationFrame(this.update.bind(this))
         }
     }

@@ -1,11 +1,81 @@
-import { Definitions } from "../engine/definitions.ts";
+import { CircleHitbox2D,Hitbox2D,Definitions,Definition } from "../engine/mod.ts";
 import { BulletDef } from "./utils.ts";
-
-export interface GunDef{
+export enum FireMode{
+    Auto,
+    Single
+}
+export interface GunDef extends Definition{
     bullet:BulletDef
     fireDelay:number
     bulletsCount?:number
     spread?:number
+    lenght:number
+    jitterRadius?:number
+    fireMode?:FireMode
+    speedMult?:number
+    recoil?:{
+        duration:number
+        speed:number
+    }
 }
 
-export const Guns=new Definitions()
+export const Guns=new Definitions<GunDef>()
+Guns.insert(
+    {
+        idString:"ak47",
+        fireDelay:0.1,
+        spread:5,
+        lenght:0.8,
+        bullet:{
+            damage:9,
+            radius:0.04,
+            range:150,
+            speed:0.4,
+        },
+        recoil:{
+            duration:0.1,
+            speed:0.7
+        },
+        speedMult:0.96,
+    },
+    {
+        idString:"m870",
+        fireDelay:1.2,
+        spread:3,
+        lenght:0.8,
+        bulletsCount:10,
+        jitterRadius:0.4,
+        fireMode:FireMode.Single,
+        bullet:{
+            damage:7,
+            radius:0.04,
+            speed:0.4,
+            range:26
+        },
+        recoil:{
+            duration:1.5,
+            speed:0.4
+        },
+        speedMult:0.94,
+    },
+    {
+        idString:"spas12",
+        fireDelay:0.9,
+        spread:4,
+        lenght:0.8,
+        bulletsCount:10,
+        jitterRadius:0.1,
+        fireMode:FireMode.Single,
+        bullet:{
+            damage:6,
+            radius:0.04,
+            speed:0.4,
+            range:75
+        },
+        recoil:{
+            duration:1.2,
+            speed:0.5
+        },
+        speedMult:0.95,
+    },
+)

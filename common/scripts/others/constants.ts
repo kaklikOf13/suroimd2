@@ -24,14 +24,15 @@ export const GameConstants={
 export enum CATEGORYS{
     PLAYERS="players",
     LOOTS="loots",
-    BULLETS="bullets"
+    BULLETS="bullets",
+    OBSTACLES="obstacles"
 }
 export const CATEGORYSL=[
     CATEGORYS.PLAYERS,
     CATEGORYS.LOOTS,
-    CATEGORYS.BULLETS
+    CATEGORYS.BULLETS,
+    CATEGORYS.OBSTACLES
 ]
-
 export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)

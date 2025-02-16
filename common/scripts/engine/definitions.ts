@@ -1,9 +1,12 @@
 import { mergeDeep, splitPath } from "./utils.ts";
-
-export class Definitions<Type>{
+export interface Definition{
+    idString:string,
+    idNumber?:number
+}
+export class DefinitionsSimple<Type>{
     public value:Record<string,Type>
     public valueNumber:Record<number,Type>
-    private did=0
+    protected did=0
     constructor(){
         this.value={}
         this.valueNumber={}
@@ -11,9 +14,10 @@ export class Definitions<Type>{
     set(val:Type,id:string,n:number|undefined=undefined):number{
         this.value[id]=val
         this.valueNumber[n??this.did]=val
+        this.did++;
         return this.did
     }
-    get(id:string):Type{
+    getFromString(id:string):Type{
         return this.value[id]
     }
     getFromNumber(id:number):Type{
@@ -26,10 +30,24 @@ export class Definitions<Type>{
         return Object.hasOwn(this.value,id)
     }
     extends(extend:string,val:Type,id:string){
-        this.set(mergeDeep<Type>(val,this.get(extend)!),id)
+        this.set(mergeDeep<Type>(val,this.getFromString(extend)!),id)
     }
 }
-export class Tree<Type> extends Definitions<Type>{
+export class Definitions<Type extends Definition> extends DefinitionsSimple<Type>{
+    insert(...val:Type[]):void{
+        for(const vv of val){
+            this.value[vv.idString]=vv
+            if(vv.idNumber===undefined){
+                vv.idNumber=this.did
+                this.valueNumber[this.did]=vv
+                this.did++
+            }else{
+                this.valueNumber[vv.idNumber]=vv
+            }
+        }
+    }
+}
+export class Tree<Type> extends DefinitionsSimple<Type>{
     childs:Record<string,Tree<Type>>
     constructor(){
         super()

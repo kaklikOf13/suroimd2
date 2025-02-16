@@ -33,6 +33,11 @@ export abstract class BaseObject2D{
     // deno-lint-ignore no-explicit-any
     abstract create(args:Record<string,any>):void
     onDestroy():void{}
+    destroy():void{
+        if(this.destroyed)return
+        this.destroyed=true
+        this.manager.destroy_queue.push(this)
+    }
     get_key():ObjectKey{
         return {category:this.category,id:this.id}
     }
@@ -93,7 +98,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
             }
         }
     }
-    get_objects(hitbox:Hitbox2D,categorys:Tags):Record<string,GameObject[]>{
+    get_objects(hitbox:Hitbox2D,categorys:Tags):GameObject[]{
         const rect=hitbox.toRect()
         let min = this.cellPos(rect.position)
         let max = this.cellPos(v2.add(rect.position,rect.size))
@@ -102,16 +107,16 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
             min=max
             max=m
         }
-        const objects:Record<string,GameObject[]> = {};
+        const objects:GameObject[] = [];
         for(let y=min.y;y<=max.y;y++){
             if(!this.cells[y])continue
             for(let x=min.x;x<=max.x;x++){
                 if(!this.cells[y][x])continue
                 for (const c of categorys) {
-                    if(!objects[c]){
-                        objects[c]=[]
+                    if(!this.cells[y][x][c]){
+                        continue
                     }
-                    objects[c].push(...this.cells[y][x][c])
+                    objects.push(...this.cells[y][x][c])
                 }
             }
         }
@@ -130,7 +135,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         for(let y=min.y;y<=max.y;y++){
             if(!this.cells[y])continue
             for(let x=min.x;x<=max.x;x++){
-                if(!this.cells[y][x])continue
+                if(!(this.cells[y][x]&&this.cells[y][x][categorys]))continue
                 objects.push(...this.cells[y][x][categorys])
             }
         }
@@ -154,6 +159,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     encoders:Record<string,ObjectEncoder>={}
     ondestroy:(obj:GameObject)=>void=(_)=>{}
     oncreate:(_key:ObjectKey,_type:number)=>GameObject|undefined
+    destroy_queue:GameObject[]=[]
     constructor(cellsSize?:number,oncreate?:((_key:ObjectKey,_type:number)=>GameObject|undefined)){
         this.cells=new CellsManager2D(cellsSize)
         this.oncreate=oncreate??((_k,_t)=>{return undefined})
@@ -231,13 +237,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                         obj=obb
                         this.add_object(obj,category,oid)
                     }
-                    if((b[0]||b[1])&&obj){
-                        const enc=this.encoders[obj.objectType]
-                        const data=enc.decode(b[1],packet.stream)
-                        obj.updateData(data)
-                    }
-                    if(b[2]){
-                        obj.destroyed=true
+                    if(obj){
+                        if(b[0]||b[1]){
+                            const enc=this.encoders[obj.objectType]
+                            const data=enc.decode(b[1],packet.stream)
+                            obj.updateData(data)
+                        }
+                        if(b[2]){
+                            obj.destroy()
+                        }
                     }
                 }
             }
@@ -281,16 +289,18 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]
                 const obj=this.objects[c].objects[o]
-                if(obj.destroyed){
-                    this.unregister({id:obj.id,category:obj.category})
-                    delete this.objects[c].objects[o]
-                    this.objects[c].orden.splice(j,1)
-                    j--
-                    continue
-                }
+                if(obj.destroyed)continue
                 obj.update()
             }
         }
+    }
+    apply_destroy_queue(){
+        for(const obj of this.destroy_queue){
+            this.unregister(obj.get_key())
+            delete this.objects[obj.category].objects[obj.id]
+            this.objects[obj.category].orden.splice(this.objects[obj.category].orden.indexOf(obj.id),1)
+        }
+        this.destroy_queue.length=0
     }
     unregister(k:ObjectKey){
         if(this.objects[k.category].objects[k.id].calldestroy){

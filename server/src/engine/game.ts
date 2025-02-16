@@ -18,5 +18,6 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     abstract handleConnections(client:Client):void
     on_update(): void {
         this.clients.emit(this.scene.objects.encode())
+        this.scene.objects.apply_destroy_queue()
     }
 }

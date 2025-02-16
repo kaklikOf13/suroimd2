@@ -1,6 +1,6 @@
 import { Language } from "./definitions.ts";
 import { type Scene2D } from "./game.ts";
-import { Vec2 } from "./geometry.ts";
+import { Vec2, v2 } from "./geometry.ts";
 
 export const halfpi=Math.PI/2
 export type ID=number
@@ -361,4 +361,51 @@ export const matrix4={
           -1, 1, 0, 1,
         ];
     },
+}
+export function getPatterningShape(
+    spawnCount: number,
+    radius: number
+): Vec2[] {
+    const makeSimpleShape = (points: number) => {
+        const tauFrac = Math.PI / points;
+        return (radius: number, offset = 0): Vec2[] => Array.from(
+            { length: points },
+            (_, i) => v2.scale(v2.from_RadAngle(i * tauFrac + offset), radius)
+        );
+    };
+
+    const [
+        makeTriangle,
+        makeSquare,
+        makePentagon,
+        makeHexagon
+    ] = [3, 4, 5, 6].map(makeSimpleShape);
+
+    switch (spawnCount) {
+        case 1: return [v2.new(0, 0)];
+        case 2: return [
+            v2.new(0, radius),
+            v2.new(0, -radius)
+        ];
+        case 3: return makeTriangle(radius);
+        case 4: return [v2.new(0, 0), ...makeTriangle(radius)];
+        case 5: return [v2.new(0, 0), ...makeSquare(radius)];
+        case 6: return [v2.new(0, 0), ...makePentagon(radius)];
+        case 7: return [v2.new(0, 0), ...makeHexagon(radius, halfpi)];
+        case 8: return [
+            v2.new(0, 0),
+            ...makeTriangle(radius / 2),
+            ...makeSquare(radius, halfpi)
+        ];
+        case 9: return [
+            v2.new(0, 0),
+            ...makeTriangle(radius / 2),
+            ...makePentagon(radius)
+        ];
+    }
+
+    return [
+        ...getPatterningShape(spawnCount - 6, radius * 3 / 4),
+        ...makeHexagon(radius, halfpi)
+    ];
 }
