@@ -4,11 +4,12 @@ import { ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
+import { Loot } from "../gameObjects/loot.ts";
 export class Game extends ClientGame2D{
   client:Client
   activePlayer=0
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-      super(keyl,mp,resources,renderer,[...objects,Player])
+      super(keyl,mp,resources,renderer,[...objects,Player,Loot])
       for(const i of CATEGORYSL){
         this.scene.objects.add_category(i)
       }

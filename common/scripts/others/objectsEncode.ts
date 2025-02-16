@@ -5,6 +5,13 @@ export interface PlayerData extends EncodedData{
     }
     position:Vec2
 }
+
+export interface LootData extends EncodedData{
+    // deno-lint-ignore ban-types
+    full?:{
+    }
+    position:Vec2
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -25,6 +32,28 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writePosition(data.position)
             if(full){
                 stream.writeString(data.full!.name)
+            }
+        }
+    },
+    loot:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:LootData={
+                position:stream.readPosition(),
+                full:undefined
+            }
+            if(full){
+                ret.full={
+
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:LootData,stream:NetStream){
+            stream.writePosition(data.position)
+            if(full){
+                //
             }
         }
     }
