@@ -2,7 +2,6 @@ import { createCanvas,WebglRenderer,applyShadow, MousePosListener, KeyListener, 
 import { v2 } from "common/scripts/engine/mod.ts"
 import { Game, getGame } from "./game.ts"
 import { server } from "./config.ts";
-import { Player } from "../gameObjects/player.ts";
 (async() => {
     const canvas=createCanvas(v2.new(1000,600))
     
@@ -16,9 +15,7 @@ import { Player } from "../gameObjects/player.ts";
     mouseML.bind(canvas,canvas)
     KeyL.bind(document.body)
 
-    const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources,60,{
-        "player":Player
-    })
+    const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources)
     g.connect("kaklik")
     g.mainloop()
 })()

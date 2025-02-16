@@ -4,24 +4,23 @@ import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scrip
 import { Player } from "../gameObjects/player.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ActionPacket } from "common/scripts/packets/action_packet.ts";
+import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 export interface GameConfig{
     maxPlayers:number,
-    player:{
-        speed:number,
-    }
 }
 
 export class Game extends GameBase{
     config:GameConfig
     constructor(id:ID,config:GameConfig){
-        super(GameConstants.tps,id,PacketManager,{
-            "player":Player
-        })
+        super(GameConstants.tps,id,PacketManager,[
+            Player
+        ])
         for(const i of CATEGORYSL){
             this.scene.objects.add_category(i)
         }
         this.config=config
         this.clients
+        this.scene.objects.encoders=ObjectsE
     }
 
     handleConnections(client:Client){
@@ -31,7 +30,7 @@ export class Game extends GameBase{
                 this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,client.ID)
                 console.log(`Player ${_packet.PlayerName} Connected`)
             }
-            client.emit(this.scene.objects.encode())
+            client.emit(this.scene.objects.encode(undefined,true))
         })
         client.on("action",(p:ActionPacket)=>{
             if(this.scene.objects.exist(objId)){
@@ -42,7 +41,7 @@ export class Game extends GameBase{
             if(this.scene.objects.exist(objId)){
                 const p=this.scene.objects.get_object(objId) as Player
                 p.destroyed=true
-                console.log(`Player ${p.Name} Desconnected`)
+                console.log(`Player ${p.name} Desconnected`)
             }
         })
     }

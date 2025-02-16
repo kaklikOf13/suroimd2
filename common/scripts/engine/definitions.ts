@@ -2,14 +2,22 @@ import { mergeDeep, splitPath } from "./utils.ts";
 
 export class Definitions<Type>{
     public value:Record<string,Type>
+    public valueNumber:Record<number,Type>
+    private did=0
     constructor(){
         this.value={}
+        this.valueNumber={}
     }
-    set(val:Type,id:string){
+    set(val:Type,id:string,n:number|undefined=undefined):number{
         this.value[id]=val
+        this.valueNumber[n??this.did]=val
+        return this.did
     }
     get(id:string):Type{
         return this.value[id]
+    }
+    getFromNumber(id:number):Type{
+        return this.valueNumber[id]
     }
     getSafe(id:string):Type|null{
         return this.value[id] ?? null

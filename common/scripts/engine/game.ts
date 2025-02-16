@@ -1,6 +1,7 @@
 import { Clock, cloneDeep } from "./utils.ts"
 import { BaseObject2D, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
 import { type Vec2 } from "./geometry.ts";
+import { Definitions } from "./definitions.ts";
 export enum DefaultEvents{
     GameTick="game-tick",
     GameRun="game-run"
@@ -99,12 +100,12 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
             return GameObjectManager2D.prototype.add_object.call(this.objects,obj,category,id,args,sv)
         }
         this.objects.oncreate=(_k,t)=>{
-            return new (this.game.objects[t])()
+            return new (this.game.objects.getFromNumber(t))()
         }
         for(const c in this.scene.objects){
             this.objects.add_category(c)
             for(const o of this.scene.objects[c]){
-                const obj=this.objects.add_object(new this.game.objects[o.type](),c,o.id,o.vals,{"game":this.game})
+                const obj=this.objects.add_object(new (this.game.objects.get(o.type))(),c,o.id,o.vals,{"game":this.game})
                 if(o.position)obj.position=cloneDeep(o.position as Vec2)
             }
         }
@@ -117,12 +118,16 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     running:boolean=true
     readonly events:EventsManager<Events,Map>
     scene:Scene2DInstance<DefaultGameObject,Events,Map>
-    objects:Record<string,new()=>DefaultGameObject>
-    constructor(tps: number,objects:Record<string,new()=>DefaultGameObject>){
+    clock_e:boolean=true
+    objects:Definitions<new()=>DefaultGameObject>=new Definitions()
+    constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.events=new EventsManager()
-        this.clock=new Clock(tps,1)
-        this.objects=objects
+        this.clock=new Clock(tps,1,this.update.bind(this))
+        for(const o of objects){
+            const oi= new o()
+            this.objects.set(o,oi.objectType,oi.numberType)
+        }
         this.scene=new Scene2DInstance<DefaultGameObject,Events,Map>({objects:{}},this)
     }
     add_plugin(plugin:Game2DPlugin<Events,Map>){
@@ -133,10 +138,14 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.events.clearAll()
     }
     update() {
-        this.scene.objects.update()
         this.on_update()
+        this.scene.objects.update()
         this.events.emit(DefaultEvents.GameTick,this)
-        this.clock.tick(this.update.bind(this))
+        if(this.clock_e){
+            this.clock.tick()
+        }else{
+            self.requestAnimationFrame(this.update.bind(this))
+        }
     }
     on_update():void{}
     on_run():void{}

@@ -8,9 +8,9 @@ export class ActionPacket extends Packet{
         this.Movement=movement
     }
     encode(stream: NetStream): void {
-      stream.writeVec2(this.Movement)
+      stream.writePosition(this.Movement)
     }
     decode(stream: NetStream): void {
-      this.Movement=stream.readVec2()
+      this.Movement=stream.readPosition()
     }
 }

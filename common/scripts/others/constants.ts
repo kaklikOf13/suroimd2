@@ -7,6 +7,7 @@ import { ActionPacket } from "../packets/action_packet.ts";
 export const GameConstants={
     player:{
         defaultName:"player",
+        playerRadius:0.3,
     },
     tps:30,
     collision:{

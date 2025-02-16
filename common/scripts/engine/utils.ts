@@ -92,21 +92,24 @@ export class Clock {
     private frameDuration: number
     private lastFrameTime: number
     public timeScale: number
+    // deno-lint-ignore ban-types
+    public callback:Function
 
-    constructor(targetFPS: number, timeScale: number) {
+    // deno-lint-ignore ban-types
+    constructor(targetFPS: number, timeScale: number,callback:Function) {
         this.frameDuration = 1000 / targetFPS
         this.lastFrameTime = Date.now()
         this.timeScale = timeScale
+        this.callback=callback
     }
 
-    // deno-lint-ignore ban-types
-    public tick(callback:Function){
+    public tick(){
         const currentTime = Date.now()
         const elapsedTime=(currentTime-this.lastFrameTime)
         const next_frame=(this.frameDuration-elapsedTime)
         setTimeout(()=>{
             this.lastFrameTime=currentTime
-            callback()
+            this.callback()
             return 0
         },next_frame)
     }
@@ -290,21 +293,40 @@ export const ease=Object.freeze({
 })
 
 // deno-lint-ignore no-explicit-any
-export function Classes(bases:any[]):(new()=>any){
+export function Classes<T extends new (...args: any[]) => any>(
+    bases: T[]
+  ): new (...args: []) => InstanceType<T> {
     class Bases {
-      constructor() {
-        bases.forEach(base => Object.assign(this, new base()));
+      constructor(...args: []) {
+        bases.forEach((Base) => {
+          const instance = new Base(...args);
+          Object.getOwnPropertyNames(instance).forEach((key) => {
+            // deno-lint-ignore no-explicit-any
+            (this as any)[key] = instance[key];
+          });
+        });
       }
     }
-    bases.forEach(base => {
-      Object.getOwnPropertyNames(base.prototype)
-      .filter(prop => prop != 'constructor')
-      // deno-lint-ignore ban-ts-comment
-      //@ts-expect-error
-      .forEach(prop => Bases.prototype[prop] = base.prototype[prop])
-    })
-    return Bases;
-  }
+  
+    const p={};
+
+    [...bases].reverse().forEach((Base) => {
+      Object.getOwnPropertyNames(Base.prototype)
+        .filter((prop) => prop !== "constructor")
+        .forEach((prop) => {
+          Object.defineProperty(
+            p,
+            prop,
+            Object.getOwnPropertyDescriptor(Base.prototype, prop) || {}
+          );
+        });
+    });
+
+    Object.setPrototypeOf(Bases,p)
+  
+    // deno-lint-ignore no-explicit-any
+    return Bases as any;
+}
 export class WebPath{
     IP:string
     Port:number

@@ -13,6 +13,7 @@ export abstract class BaseObject2D{
     public calldestroy:boolean=true
     public dirty:boolean=false
     public dirtyPart:boolean=false
+    abstract numberType:number
     abstract objectType:string
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
@@ -26,13 +27,11 @@ export abstract class BaseObject2D{
         this.hb=new NullHitbox2D()
         this.destroyed=false
     }
+    updateData(_data:EncodedData):void{}
+    getData():EncodedData{return {full:{}}}
     abstract update():void
     // deno-lint-ignore no-explicit-any
     abstract create(args:Record<string,any>):void
-    abstract encodePart(stream:NetStream):void
-    abstract decodePart(stream:NetStream):void
-    abstract encodeComplete(stream:NetStream):void
-    abstract decodeComplete(stream:NetStream):void
     onDestroy():void{}
     get_key():ObjectKey{
         return {category:this.category,id:this.id}
@@ -141,14 +140,23 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         return v2.floor(v2.dscale(pos,this.cellSize))
     }
 }
+export type EncodedData={
+    // deno-lint-ignore ban-types
+    full?:Object
+}
+export interface ObjectEncoder{
+    encode:(full:boolean,data:EncodedData,stream:NetStream)=>void
+    decode:(full:boolean,stream:NetStream)=>EncodedData
+}
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
     objects:Record<string,Category2D<GameObject>>={}
-    stream:NetStream
+    encoders:Record<string,ObjectEncoder>={}
     ondestroy:(obj:GameObject)=>void=(_)=>{}
-    constructor(cellsSize?:number){
+    oncreate:(_key:ObjectKey,_type:number)=>GameObject|undefined
+    constructor(cellsSize?:number,oncreate?:((_key:ObjectKey,_type:number)=>GameObject|undefined)){
         this.cells=new CellsManager2D(cellsSize)
-        this.stream=new NetStream(new Uint8Array())
+        this.oncreate=oncreate??((_k,_t)=>{return undefined})
     }
     clear(){
         for(const c in this.objects){
@@ -159,6 +167,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         this.objects={}
     }
+
     // deno-lint-ignore no-explicit-any
     add_object(obj:GameObject,category:string,id?:number,args?:Record<string,any>,sv:Record<string,any>={}):GameObject{
         if(!this.objects[category]){
@@ -201,95 +210,75 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     add_category(category:keyof typeof this.objects){
         this.objects[category]={orden:[],objects:{}}
     }
-    oncreate(_key:ObjectKey,_type:string):GameObject|undefined{
-        return
-    }
     proccess(packet:ObjectsPacket){
-        const csize=packet.stream.readUInt16()
+        const csize=packet.stream.readUint16()
         for(let i=0;i<csize;i++){
             const category=packet.stream.readString()
             if(!this.objects[category]){
                 this.add_category(category)
             }
-            const osize=packet.stream.readUInt16()
+            const osize=packet.stream.readUint16()
             for(let j=0;j<osize;j++){
                 const oid=packet.stream.readID()
-                const tp=packet.stream.readString()
-                if(tp===""){
-                    continue
-                }
-                if(!this.objects[category].objects[oid]){
-                    const obj=this.oncreate({category:category,id:oid},tp)
-                    if(!obj)break
+                const tp=packet.stream.readUint24()
+                let obj=this.objects[category].objects[oid]
+                const b=packet.stream.readBooleanGroup()
+                if(!obj&&!b[2]){
+                    const obb=this.oncreate({category:category,id:oid},tp)
+                    if(!obb)break
+                    obj=obb
                     this.add_object(obj,category,oid)
                 }
-                const dir=packet.stream.readUInt8()
-                if(dir>0){
-                    this.objects[category].objects[oid].dirtyPart=false
-                    this.objects[category].objects[oid].decodePart(packet.stream)
-                    if(dir>1){
-                        this.objects[category].objects[oid].dirty=false
-                        this.objects[category].objects[oid].decodeComplete(packet.stream)
-                    }
-                    if(dir>=100){
-                        this.objects[category].objects[oid].destroyed=true
-                    }
+                if(b[0]||b[1]){
+                    const enc=this.encoders[obj.objectType]
+                    obj.dirtyPart=false
+                    obj.dirty=false
+                    const data=enc.decode(b[1],packet.stream)
+                    obj.updateData(data)
+                }
+                if(b[2]){
+                    obj.destroyed=true
                 }
             }
         }
     }
-    encode():ObjectsPacket{
-        const stream=new NetStream()
-        stream.writeUInt16(Object.keys(this.objects).length)
+    encode(size:number=1024*1024,full:boolean=false):ObjectsPacket{
+        const stream=new NetStream(new ArrayBuffer(size))
+        stream.writeUint16(Object.keys(this.objects).length)
         for(const c in this.objects){
             stream.writeString(c)
-            stream.writeUInt16(this.objects[c].orden.length)
+            stream.writeUint16(this.objects[c].orden.length)
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]
+                const obj=this.objects[c].objects[o]
+                const enc=this.encoders[obj.objectType]
+                if(!enc)continue
                 stream.writeID(o)
-                stream.writeString(this.objects[c].objects[o].objectType)
-                stream.writeUInt8(
-                    2
-                    +(this.objects[c].objects[o].calldestroy&&this.objects[c].objects[o].destroyed?100:0)
-                )
-                this.objects[c].objects[o].encodePart(stream)
-                this.objects[c].objects[o].encodeComplete(stream)
+                stream.writeUint24(obj.numberType)
+                stream.writeBooleanGroup(full||obj.dirtyPart,full||obj.dirty,obj.destroyed)
+                const data=obj.getData()
+                enc.encode(true,data,stream)
             }
         }
-        return new ObjectsPacket(stream)
+        const op=new ObjectsPacket()
+        op.stream=stream
+        op.size=stream.index
+        return op
     }
     update(){
         this.cells.update()
-        this.stream.clear()
-        this.stream.writeUInt16(Object.keys(this.objects).length)
         for(const c in this.objects){
-            this.stream.writeString(c)
-            this.stream.writeUInt16(this.objects[c].orden.length)
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]
-                this.objects[c].objects[o].update()
-                this.stream.writeID(o)
-                this.stream.writeString(this.objects[c].objects[o].objectType)
-                this.stream.writeUInt8(
-                    ((this.objects[c].objects[o].dirtyPart?1:0))
-                    +((this.objects[c].objects[o].dirty?2:0))
-                    +(this.objects[c].objects[o].calldestroy&&this.objects[c].objects[o].destroyed?100:0)
-                )
-                if(this.objects[c].objects[o].dirtyPart||this.objects[c].objects[o].dirty){
-                    this.objects[c].objects[o].encodePart(this.stream)
-                    if(this.objects[c].objects[o].dirty){
-                        this.objects[c].objects[o].dirty=false
-                        this.objects[c].objects[o].encodeComplete(this.stream)
-                    }
-                    this.objects[c].objects[o].dirtyPart=false
-                }
-                if(this.objects[c].objects[o].destroyed){
-                    this.unregister(this.objects[c].objects[o].get_key())
+                const obj=this.objects[c].objects[o]
+                if(obj.destroyed){
+                    this.unregister({id:obj.id,category:obj.category})
                     delete this.objects[c].objects[o]
                     this.objects[c].orden.splice(j,1)
                     j--
                     continue
                 }
+                obj.update()
             }
         }
     }

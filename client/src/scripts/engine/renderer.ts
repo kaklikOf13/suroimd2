@@ -164,53 +164,6 @@ export interface GLMaterial{
     texture?:Sprite
     lightAffect?:boolean
 }
-const normal3DVertexShader=`
-attribute vec4 a_Position;
-attribute vec3 a_Normals;
-
-uniform vec3 u_Translation;
-uniform vec3 u_Scale;
-uniform vec3 u_Rotation;
-
-uniform mat4 u_ProjectionMatrix;
-
-varying vec4 translatedPosition;
-varying vec3 v_normal;
-
-mat4 rotationMatrix(vec3 r) {
-    vec3 radians = r * 3.14159265 / 180.0;
-    mat4 rotX = mat4(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, cos(radians.x), -sin(radians.x), 0.0,
-        0.0, sin(radians.x), cos(radians.x), 0.0,
-        0.0, 0.0, 0.0, 1.0
-    );
-
-    mat4 rotY = mat4(
-        cos(radians.y), 0.0, sin(radians.y), 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        -sin(radians.y), 0.0, cos(radians.y), 0.0,
-        0.0, 0.0, 0.0, 1.0
-    );
-
-    mat4 rotZ = mat4(
-        cos(radians.z), -sin(radians.z), 0.0, 0.0,
-        sin(radians.z), cos(radians.z), 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0
-    );
-
-    return rotZ * rotY * rotX;
-}
-
-void main() {
-    // Apply rotation
-    translatedPosition = ((rotationMatrix(u_Rotation) * a_Position) * vec4(u_Scale,1.0)) + vec4(u_Translation,1.0);
-    v_normal = vec3(a_Normals);
-    gl_Position = u_ProjectionMatrix*translatedPosition;
-}
-`
-
 
 export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext;

@@ -17,7 +17,7 @@ export class Client{
         this.signals=new SignalManager
         this.manager=packet_manager
         this.ws.onopen=()=>{
-            this.opened=true
+            
         }
         this.ws.onclose=()=>{
             this.opened=false
@@ -25,16 +25,17 @@ export class Client{
         }
         this.ws.onmessage=async(msg)=>{
             if (msg.data instanceof ArrayBuffer){
-                const packet=this.manager.decode(new NetStream(new Uint8Array(msg.data)))
+                const packet=this.manager.decode(new NetStream(msg.data))
                 this.signals.emit(packet.Name,packet)
             }else if(msg.data instanceof Blob){
-                const packet=this.manager.decode(new NetStream(new Uint8Array(await msg.data.arrayBuffer())))
+                const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
                 this.signals.emit(packet.Name,packet)
             }
         }
         this.IP=ip
         if(ip==""){
             this.on(DefaultSignals.CONNECT,(packet:ConnectPacket)=>{
+                this.opened=true
                 this.ID=packet.client_id
             })
         }
@@ -44,7 +45,8 @@ export class Client{
      * @param packet To Send
      */
     emit(packet:Packet):void{
-        this.ws.send(this.manager.encode(packet).buffer)
+        if(!this.ws.CLOSED)return
+        this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*10))).buffer)
     }
     /**
      * On Recev A `Packet` From `Server/Client`

@@ -1,34 +1,26 @@
-import { PlayerBase } from "common/scripts/gameObjects/player.ts"
-import { Color, FormGameObject2D, Key, RGBA } from "../engine/mod.ts";
-import { Classes } from "common/scripts/engine/mod.ts";
-import { ActionPacket } from "common/scripts/packets/action_packet.ts";
-
-export class Player extends Classes([FormGameObject2D,PlayerBase]){
+import { PlayerData } from "common/scripts/others/objectsEncode.ts";
+import { Color, FormGameObject2D, RGBA } from "../engine/mod.ts";
+import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
+import { GameConstants } from "common/scripts/others/constants.ts";
+export class Player extends FormGameObject2D{
     color:Color
     objectType:string="player"
+    numberType: number=1
+    name:string=""
+    create(_args: Record<string, void>): void {
+      this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
+    }
+    update(): void {
+        
+    }
     constructor(){
         super()
         this.color=RGBA.new(0,0,0)
     }
-    update(){
-        if(this.game.client.ID==this.id){
-            const a=new ActionPacket()
-            if(this.game.key.keyPress(Key.A)){
-                a.Movement.x=-1
-            }else if(this.game.key.keyPress(Key.D)){
-                a.Movement.x=1
-            }else{
-                a.Movement.x=0
-            }
-
-            if(this.game.key.keyPress(Key.W)){
-                a.Movement.y=-1
-            }else if(this.game.key.keyPress(Key.S)){
-                a.Movement.y=1
-            }else{
-                a.Movement.y=0
-            }
-            this.game.client.emit(a)
+    updateData(data:PlayerData){
+        if(data.full){
+            this.name=data.full.name
         }
+        this.position=data.position
     }
 }

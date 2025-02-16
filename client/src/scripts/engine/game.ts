@@ -13,18 +13,6 @@ export abstract class ClientGameObject2D extends BaseGameObject2D{
         super()
     }
     abstract render(camera:Camera2D,renderer:Renderer):void
-    override encodePart(_stream:NetStream){
-
-    }
-    override decodePart(_stream:NetStream){
-
-    }
-    override encodeComplete(_stream:NetStream){
-
-    }
-    override decodeComplete(_stream:NetStream){
-
-    }
 }
 export abstract class FormGameObject2D extends ClientGameObject2D{
     // deno-lint-ignore no-explicit-any
@@ -43,10 +31,8 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     key:KeyListener
     mouse:MousePosListener
     resources:ResourcesManager
-    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,renderer:Renderer,...args:any[]){
-        // deno-lint-ignore ban-ts-comment
-        //@ts-expect-error
-        super(...args)
+    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+        super(0,objects)
         this.mouse=mouse
         this.key=keyl
         this.renderer=renderer
