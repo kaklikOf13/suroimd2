@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
+import { Angle, CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
 import { type Sprite } from "./resources.ts";
 export interface Color {
     r: number; // Red
@@ -77,7 +77,6 @@ export const HEXCOLOR=Object.freeze({
       }
 })
 export type RGBAT={r: number, g: number, b: number, a?: number}
-
 export abstract class Renderer {
     canvas: HTMLCanvasElement
     readonly meter_size: number
@@ -89,7 +88,7 @@ export abstract class Renderer {
     abstract draw_rect2D(rect: RectHitbox2D, normal: Color,offset?:Vec2): void
     abstract draw_circle2D(circle: CircleHitbox2D, normal: Color,offset?:Vec2): void
     abstract draw_hitbox2D(hitbox: Hitbox2D, normal: Color,offset?:Vec2): void
-    abstract draw_image2D(image: Sprite, position: Vec2, size: Vec2,offset?:Vec2): void
+    abstract draw_image2D(image: Sprite, position: Vec2, size: Vec2, angle: number, hotspot?: Vec2): void
     
     abstract clear(): void
 
@@ -119,21 +118,87 @@ void main() {
     gl_FragColor = a_Color;
 }`;
 
+const texVertexShaderSource = `
+attribute vec2 a_Position;
+attribute vec2 a_TexCoord;
+    
+uniform mat4 u_ProjectionMatrix;
+uniform vec2 u_Translation;
+
+varying highp vec2 vTextureCoord;
+
+void main(void) {
+    gl_Position = u_ProjectionMatrix*vec4(a_Position+u_Translation,0.0,1.0);
+    vTextureCoord = a_TexCoord;
+}`;
+
+const texFragmentShaderSource = `
+precision mediump float;
+
+varying highp vec2 vTextureCoord;
+uniform sampler2D u_Texture;
+
+void main(void) {
+    vec2 flippedCoord = vec2(vTextureCoord.x, 1.0 - vTextureCoord.y);
+    gl_FragColor = texture2D(u_Texture, flippedCoord);
+}`;
+function rotateRectangle(x1:number, y1:number, x2:number, y2:number, angleInRadians:number) {
+    // Função de rotação 2D
+    function rotatePoint(x:number, y:number, angle:number) {
+        const cosTheta = Math.cos(angle);
+        const sinTheta = Math.sin(angle);
+        return {
+            x: cosTheta * x - sinTheta * y,
+            y: sinTheta * x + cosTheta * y
+        };
+    }
+
+    // Definir os 4 vértices do retângulo sem rotação
+    const vertices = [
+        { x: x1, y: y1 }, // Ponto 1 (minimo)
+        { x: x2, y: y1 }, // Ponto 2 (máximo, lado superior)
+        { x: x1, y: y2 }, // Ponto 3 (mínimo, lado inferior)
+        { x: x2, y: y2 }  // Ponto 4 (máximo, lado inferior)
+    ];
+
+    // Rotacionar cada ponto
+    const rotatedVertices = vertices.map(vertex => rotatePoint(vertex.x, vertex.y, angleInRadians));
+
+    // Retornar os vértices rotacionados em formato de lista para WebGL
+    return [
+        rotatedVertices[0].x, rotatedVertices[0].y,
+        rotatedVertices[1].x, rotatedVertices[1].y,
+        rotatedVertices[2].x, rotatedVertices[2].y,
+        
+        rotatedVertices[2].x, rotatedVertices[2].y,
+        rotatedVertices[1].x, rotatedVertices[1].y,
+        rotatedVertices[3].x, rotatedVertices[3].y
+    ];
+}
 export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext;
     projectionMatrix!: Float32Array;
     readonly simple_program:WebGLProgram
+    readonly tex_program:WebGLProgram
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = RGBA.new(255, 255, 255),depth:number=500) {
         super(canvas, meter_size);
         const gl = this.canvas.getContext("webgl");
         this.background = background;
         this.gl = gl!;
 
+        //Simple Program
         const simple_program = gl!.createProgram();
         gl!.attachShader(simple_program!, this.createShader(rectVertexShaderSource, gl!.VERTEX_SHADER))
         gl!.attachShader(simple_program!, this.createShader(rectFragmentShaderSource, gl!.FRAGMENT_SHADER))
         this.simple_program = simple_program!
         gl!.linkProgram(this.simple_program)
+
+        //Tex Program
+        const tex_program = gl!.createProgram();
+        gl!.attachShader(tex_program!, this.createShader(texVertexShaderSource, gl!.VERTEX_SHADER))
+        gl!.attachShader(tex_program!, this.createShader(texFragmentShaderSource, gl!.FRAGMENT_SHADER))
+        this.tex_program = tex_program!
+        gl!.linkProgram(this.tex_program)
 
         document.body.addEventListener("pointerdown", e => {
             canvas.dispatchEvent(new PointerEvent("pointerdown", {
@@ -156,8 +221,11 @@ export class WebglRenderer extends Renderer {
         });
 
         this.resize(depth)
+
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
     }
-    resize(depth:number=500){
+    resize(depth:number=1000){
         const scaleX = this.canvas.width / this.meter_size
         const scaleY = this.canvas.height / this.meter_size
         this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX,scaleY),depth/this.meter_size))
@@ -241,63 +309,65 @@ export class WebglRenderer extends Renderer {
         }
     }
 
-    draw_image2D(image: Sprite, position: Vec2, size: Vec2,offset:Vec2=NullVec2): void {
-        const x1 = position.x-offset.x
-        const y1 = position.y-offset.y
-        const x2 = (position.x-offset.x) + size.x
-        const y2 = (position.y-offset.y) + size.y
-    
-        const vertices: number[] = [
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2
-        ];
-    
+    draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0)): void {
+        const size=v2.new((image.source.width/this.meter_size)*scale.x,(image.source.height/this.meter_size)*scale.y)
+        const x1 = -size.x*hotspot.x
+        const y1 = -size.y*hotspot.y
+        const x2 = size.x+x1
+        const y2 = size.y+y1
+
+        /*const vertices: number[] = [
+            x1,y1,
+            x2,y1,
+            x1,y2,
+            x1,y2,
+            x2,y1,
+            x2,y2
+        ]*/
+       const vertices:number[]=rotateRectangle(x1,y1,x2,y2,Angle.deg2rad(angle))
+
+        const program=this.tex_program
+
         const textureCoordinates: number[] = [
+            0.0, 1.0,
+            1.0, 1.0,
             0.0, 0.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            0.0, 1.0,
-            1.0, 0.0,
-            1.0, 1.0
-        ];
+            0.0, 0.0,
+            1.0, 1.0,
+            1.0, 0.0
+        ]
     
         const vertexBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
-    
+
         const textureCoordBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), this.gl.STATIC_DRAW);
-    
-        this.gl.useProgram(this.simple_program);
-    
-        const positionAttributeLocation = this.gl.getAttribLocation(this.simple_program, "a_Position");
+
+        this.gl.useProgram(program);
+
+        let locationA:number|null = this.gl.getAttribLocation(program, "a_Position");
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-        this.gl.enableVertexAttribArray(positionAttributeLocation);
-        this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
-    
-        const texCoordAttributeLocation = this.gl.getAttribLocation(this.simple_program, "a_TexCoord");
+        this.gl.enableVertexAttribArray(locationA);
+        this.gl.vertexAttribPointer(locationA, 2, this.gl.FLOAT, false, 0, 0);
+
+        locationA = this.gl.getAttribLocation(program, "a_TexCoord");
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer);
-        this.gl.enableVertexAttribArray(texCoordAttributeLocation);
-        this.gl.vertexAttribPointer(texCoordAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
-    
-        const texture = this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image.source);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR)
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE)
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE)
-    
-        const colorUniformLocation = this.gl.getUniformLocation(this.simple_program, "u_Color");
-        this.gl.uniform4f(colorUniformLocation, 1.0, 1.0, 1.0, 1.0);
-    
-        const projectionMatrixLocation = this.gl.getUniformLocation(this.simple_program, "u_ProjectionMatrix");
-        this.gl.uniformMatrix4fv(projectionMatrixLocation, false, this.projectionMatrix);
-    
+        this.gl.enableVertexAttribArray(locationA);
+        this.gl.vertexAttribPointer(locationA, 2, this.gl.FLOAT, false, 0, 0);
+
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, image.texture);
+        this.gl.uniform1i(this.gl.getUniformLocation(program, "u_Texture"), 0);
+
+        let location = this.gl.getUniformLocation(program, "u_ProjectionMatrix");
+        this.gl.uniformMatrix4fv(location, false, this.projectionMatrix);
+
+
+        location = this.gl.getUniformLocation(program, "u_Translation");
+        this.gl.uniform2f(location,position.x,position.y);
+
         this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length / 2);
     }
 

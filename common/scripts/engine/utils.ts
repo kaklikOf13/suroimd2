@@ -1,6 +1,6 @@
 import { Language } from "./definitions.ts";
 import { type Scene2D } from "./game.ts";
-import { Vec2, v2 } from "./geometry.ts";
+import { RadAngle, Vec2, v2 } from "./geometry.ts";
 
 export const halfpi=Math.PI/2
 export type ID=number
@@ -350,17 +350,6 @@ export async function loadJson<val extends {}>(path:string):Promise<val>{
 }
 export const loadScene2D=loadJson<Scene2D>
 export const loadLanguage=loadJson<Language>
-export type Matrix=number[]|Float32Array
-export const matrix4={
-    projection(size:Vec2,depth:number):Matrix{
-        return [
-           2 / size.x, 0, 0, 0,
-           0, -2 / size.y, 0, 0,
-           0, 0, 2 / depth, 0,
-          -1, 1, 0, 1,
-        ];
-    },
-}
 export function getPatterningShape(
     spawnCount: number,
     radius: number

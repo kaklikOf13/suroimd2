@@ -15,6 +15,7 @@ export class Bullet extends BaseGameObject2D{
     maxDistance:number=0
 
     owner?:Player
+    angle:number=0
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -54,6 +55,7 @@ export class Bullet extends BaseGameObject2D{
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed),4)
         this.dirty=true
+        this.angle=angle
     }
     getData(): BulletData {
         return {
@@ -61,7 +63,9 @@ export class Bullet extends BaseGameObject2D{
             initialPos:this.initialPosition,
             maxDistance:this.maxDistance,
             radius:(this.hb as CircleHitbox2D).radius,
-            speed:this.velocity
+            speed:this.defs.speed,
+            angle:this.angle,
+            tracer:this.defs.tracer
         }
     }
 }

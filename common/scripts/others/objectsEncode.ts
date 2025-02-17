@@ -16,7 +16,12 @@ export interface LootData extends EncodedData{
 export interface BulletData extends EncodedData{
     // deno-lint-ignore ban-types
     full?:{}
-    speed:Vec2
+    speed:number
+    angle:number
+    tracer:{
+        width:number
+        height:number
+    }
     radius:number
     position:Vec2
     initialPos:Vec2
@@ -81,7 +86,12 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 initialPos:stream.readPosition(),
                 maxDistance:stream.readFloat32(),
                 radius:stream.readFloat(0,2,2),
-                speed:stream.readPosition()
+                speed:stream.readFloat(0,2,2),
+                angle:stream.readRad(),
+                tracer:{
+                    width:stream.readFloat(0,2,2),
+                    height:stream.readFloat(0,2,2)
+                }
             }
             if(full){
                 //
@@ -95,7 +105,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writePosition(data.initialPos)
             .writeFloat32(data.maxDistance)
             .writeFloat(data.radius,0,2,2)
-            .writePosition(data.speed)
+            .writeFloat(data.speed,0,2,2)
+            .writeRad(data.angle)
+            .writeFloat(data.tracer.width,0,2,2)
+            .writeFloat(data.tracer.height,0,2,2)
         }
     },
     obstacle:{

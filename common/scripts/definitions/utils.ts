@@ -3,4 +3,8 @@ export interface BulletDef{
     range:number
     speed:number
     radius:number
+    tracer:{
+        width:number
+        height:number
+    }
 }

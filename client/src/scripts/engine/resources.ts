@@ -6,9 +6,11 @@ export interface SoundDef{
 }
 export class Sprite{
     source:HTMLImageElement
+    texture:WebGLTexture
     readonly resourceType:SourceType.Sprite=SourceType.Sprite
-    constructor(source:HTMLImageElement){
+    constructor(source:HTMLImageElement,texture:WebGLTexture){
         this.source=source
+        this.texture=texture
     }
 }
 export interface KeyFrame{
@@ -36,6 +38,24 @@ export type Source=Sprite|Animation|Sound
 function getSvgUrl(svg:string) {
     return  URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
 }
+
+function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source
+    );
+    //gl.generateMipmap(gl.TEXTURE_2D);
+  
+    return texture;
+}
+
 export class ResourcesManager{
     sources:Record<string,Source>
     canvas:HTMLCanvasElement
@@ -43,23 +63,36 @@ export class ResourcesManager{
     audioCtx:AudioContext
     domp=new DOMParser()
     dome=new XMLSerializer()
-    constructor(){ 
+    gl:WebGLRenderingContext
+    constructor(gl:WebGLRenderingContext){ 
         this.sources={}
         this.canvas=document.createElement("canvas")
         this.ctx=this.canvas.getContext("2d")!
         this.audioCtx=new AudioContext()
+        this.gl=gl
     }
     get_sprite(id:string):Sprite{
         return this.sources[id] as Sprite
     }
-    load_sprite(id:string,src:string):Promise<Sprite>{
+    load_sprite(id:string,src:string,scale=1):Promise<Sprite>{
         return new Promise<Sprite>((resolve, _reject) => {
-            if(this.sources[id]){
-                resolve(this.sources[id] as Sprite)
+            if(this.sources[id])resolve(this.sources[id] as Sprite)
+            if(src.endsWith(".svg")){
+                fetch(src).then((r)=>r.text()).then(txt=>{
+                    const svg=this.domp.parseFromString(txt, "image/svg+xml");
+                    // deno-lint-ignore ban-ts-comment
+                    //@ts-expect-error
+                    resolve(this.load_svg(id,svg.querySelector("svg"),scale))
+                })
+            }else{
+                this.sources[id]=new Sprite(new Image(),this.gl.createTexture()!);
+                (this.sources[id] as Sprite).source.onload=()=>{
+                    const sp=this.sources[id] as Sprite
+                    sp.texture=loadTexture(this.gl,sp.source)!
+                    resolve(sp)
+                }
+                (this.sources[id] as Sprite).source.src=src;
             }
-            this.sources[id]=new Sprite(new Image());
-            (this.sources[id] as Sprite).source.onload=()=>{resolve(this.sources[id] as Sprite)}
-            (this.sources[id] as Sprite).source.src=src;
         })
     }
     load_svg(id:string,svg:SVGAElement,scale:number=1):Promise<Sprite>{
@@ -74,8 +107,12 @@ export class ResourcesManager{
                 this.canvas.height=img.naturalHeight
                 this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
                 this.ctx.drawImage(img, 0, 0)
-                this.sources[id]=new Sprite(new Image());
-                (this.sources[id] as Sprite).source.onload=()=>{resolve(this.sources[id] as Sprite)}
+                this.sources[id]=new Sprite(new Image(),this.gl.createTexture()!);
+                (this.sources[id] as Sprite).source.onload=()=>{
+                    const sp=this.sources[id] as Sprite
+                    sp.texture=loadTexture(this.gl,sp.source)!
+                    resolve(sp)
+                }
                 (this.sources[id] as Sprite).source.src=this.canvas.toDataURL()
             }
             img.src=getSvgUrl(this.dome.serializeToString(svg))

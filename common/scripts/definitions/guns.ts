@@ -19,6 +19,13 @@ export interface GunDef extends Definition{
     }
 }
 
+const tracers={
+    redTiny:{
+        width:1,
+        height:0.4, // 1H = 0.05 radius
+    }
+}
+
 export const Guns=new Definitions<GunDef>()
 Guns.insert(
     {
@@ -28,9 +35,13 @@ Guns.insert(
         lenght:0.8,
         bullet:{
             damage:9,
-            radius:0.04,
+            radius:0.02,
             range:150,
             speed:0.4,
+            tracer:{
+                width:1,
+                height:0.4,
+            }
         },
         recoil:{
             duration:0.1,
@@ -39,18 +50,40 @@ Guns.insert(
         speedMult:0.96,
     },
     {
+        idString:"kar98k",
+        fireDelay:1.2,
+        spread:1,
+        lenght:0.8,
+        bullet:{
+            damage:55,
+            radius:0.02,
+            range:220,
+            speed:0.5,
+            tracer:{
+                width:1,
+                height:0.4,
+            }
+        },
+        recoil:{
+            duration:1.2,
+            speed:0.2
+        },
+        speedMult:0.9,
+    },
+    {
         idString:"m870",
         fireDelay:1.2,
         spread:3,
         lenght:0.8,
         bulletsCount:10,
-        jitterRadius:0.4,
+        jitterRadius:0.3,
         fireMode:FireMode.Single,
         bullet:{
             damage:7,
-            radius:0.04,
-            speed:0.4,
-            range:26
+            radius:0.2,
+            speed:0.3,
+            range:20,
+            tracer:tracers.redTiny
         },
         recoil:{
             duration:1.5,
@@ -64,13 +97,14 @@ Guns.insert(
         spread:4,
         lenght:0.8,
         bulletsCount:10,
-        jitterRadius:0.1,
+        jitterRadius:0.05,
         fireMode:FireMode.Single,
         bullet:{
             damage:6,
-            radius:0.04,
+            radius:0.0125,
             speed:0.4,
-            range:75
+            range:75,
+            tracer:tracers.redTiny
         },
         recoil:{
             duration:1.2,
