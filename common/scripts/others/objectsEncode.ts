@@ -19,6 +19,8 @@ export interface BulletData extends EncodedData{
     speed:Vec2
     radius:number
     position:Vec2
+    initialPos:Vec2
+    maxDistance:number
 }
 export interface ObstacleData extends EncodedData{
     full?:{
@@ -76,6 +78,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         decode:(full:boolean,stream:NetStream)=>{
             const ret:BulletData={
                 position:stream.readPosition(),
+                initialPos:stream.readPosition(),
+                maxDistance:stream.readFloat32(),
                 radius:stream.readFloat(0,2,2),
                 speed:stream.readPosition()
             }
@@ -88,8 +92,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         //@ts-ignore
         encode(_full:boolean,data:BulletData,stream:NetStream){
             stream.writePosition(data.position)
-            stream.writeFloat(data.radius,0,2,2)
-            stream.writePosition(data.speed)
+            .writePosition(data.initialPos)
+            .writeFloat32(data.maxDistance)
+            .writeFloat(data.radius,0,2,2)
+            .writePosition(data.speed)
         }
     },
     obstacle:{

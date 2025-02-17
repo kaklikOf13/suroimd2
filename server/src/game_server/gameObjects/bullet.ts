@@ -10,16 +10,19 @@ export class Bullet extends BaseGameObject2D{
     objectType:string="bullet"
     numberType: number=3
     defs!:BulletDef
+
     initialPosition!:Vec2
     maxDistance:number=0
+
     owner?:Player
     constructor(){
         super()
         this.velocity=v2.new(0,0)
+        this.sendDelete=false
     }
     update(): void {
         if(v2.distance(this.initialPosition,this.position)>this.maxDistance){
-            this.destroyed=true
+            this.destroy()
         }
         this.position=v2.add(this.position,this.velocity)
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
@@ -33,13 +36,13 @@ export class Bullet extends BaseGameObject2D{
                     }
                     break
                 case "obstacle":
+                    if((obj as Obstacle).def.noCollision||(obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
                         (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner})
                         this.destroy()
                     }
                     break
             }
-            
         }
     }
     create(args: {defs:BulletDef,position:Vec2}): void {
@@ -55,6 +58,8 @@ export class Bullet extends BaseGameObject2D{
     getData(): BulletData {
         return {
             position:this.position,
+            initialPos:this.initialPosition,
+            maxDistance:this.maxDistance,
             radius:(this.hb as CircleHitbox2D).radius,
             speed:this.velocity
         }

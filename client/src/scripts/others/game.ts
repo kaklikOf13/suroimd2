@@ -29,6 +29,7 @@ export class Game extends ClientGame2D{
         this.scene.objects.clear()
       })
   }
+  actionDelay:number=3
   on_update(): void {
     super.on_update()
     if(this.client.opened){
@@ -48,7 +49,12 @@ export class Game extends ClientGame2D{
         this.action.Movement.y=0
       }
       this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)
-      this.client.emit(this.action)
+      if(this.actionDelay<=0){
+        this.client.emit(this.action)
+        this.actionDelay=3
+      }else{
+        this.actionDelay--
+      }
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
       if(activePlayer){
         this.action.angle=v2.lookTo(activePlayer.position,v2.add(this.mouse.position,this.camera.position))

@@ -89,29 +89,28 @@ export class SignalManager {
 }
 
 export class Clock {
-    private frameDuration: number
-    private lastFrameTime: number
-    public timeScale: number
+    private frameDuration: number;
+    private lastFrameTime: number;
+    public timeScale: number;
     // deno-lint-ignore ban-types
-    public callback:Function
+    public callback: Function;
 
     // deno-lint-ignore ban-types
-    constructor(targetFPS: number, timeScale: number,callback:Function) {
-        this.frameDuration = 1000 / targetFPS
-        this.lastFrameTime = Date.now()
-        this.timeScale = timeScale
-        this.callback=callback
+    constructor(targetFPS: number, timeScale: number, callback: Function) {
+        this.frameDuration = 1000 / targetFPS;
+        this.lastFrameTime = Date.now();
+        this.timeScale = timeScale;
+        this.callback = callback;
     }
 
-    public tick(){
-        const currentTime = Date.now()
-        const elapsedTime=(currentTime-this.lastFrameTime)
-        const next_frame=(this.frameDuration-elapsedTime)
-        setTimeout(()=>{
-            this.lastFrameTime=currentTime
-            this.callback()
-            return 0
-        },next_frame)
+    public tick() {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - this.lastFrameTime;
+        const nextFrame = Math.max(0, this.frameDuration - elapsedTime);
+        setTimeout(() => {
+            this.lastFrameTime = Date.now();
+            this.callback();
+        }, nextFrame);
     }
 }
 

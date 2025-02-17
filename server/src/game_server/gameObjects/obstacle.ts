@@ -15,6 +15,8 @@ export class Obstacle extends BaseGameObject2D{
     constructor(){
         super()
     }
+    scale:number=1
+    maxScale:number=1
     update(): void {
 
     }
@@ -27,6 +29,7 @@ export class Obstacle extends BaseGameObject2D{
             this._position=args.position
         }
         this.health=this.def.health
+        this.reset_scale()
     }
     getData(): ObstacleData {
         return {
@@ -34,13 +37,24 @@ export class Obstacle extends BaseGameObject2D{
                 definition:this.def.idNumber!,
                 position:this._position
             },
-            scale:1
+            scale:this.scale
+        }
+    }
+    reset_scale(){
+        if(this.def.hitbox&&this.def.scale){
+            const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
+            this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0);
+            this.hb=this.def.hitbox.transform(this._position,this.scale)
+            this._position=this.hb.position
         }
     }
     damage(params:DamageParams){
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
             this.destroy()
+        }else{
+            this.reset_scale()
         }
+        this.dirtyPart=true
     }
 }

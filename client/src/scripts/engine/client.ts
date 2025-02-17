@@ -45,7 +45,7 @@ export class Client{
      * @param packet To Send
      */
     emit(packet:Packet):void{
-        if(!this.ws.CLOSED)return
+        if (this.ws.readyState !== WebSocket.OPEN) return;
         this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*10))).buffer)
     }
     /**

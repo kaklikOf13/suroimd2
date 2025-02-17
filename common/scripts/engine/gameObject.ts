@@ -41,6 +41,7 @@ export abstract class BaseObject2D{
     get_key():ObjectKey{
         return {category:this.category,id:this.id}
     }
+    sendDelete=true
 }
 
 export interface ObjectKey {category:string,id:GameObjectID}
@@ -49,7 +50,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     objects:Record<string,Record<GameObjectID,GameObject>>={}
     cellSize:number
     cells:Record<number,Record<number,Record<string,GameObject[]>>>
-    constructor(cellSize:number=32){
+    constructor(cellSize:number=8){
         this.cellSize=cellSize
         this.cells={}
     }
@@ -262,7 +263,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const obj=this.objects[c].objects[o]
                 const enc=this.encoders[obj.objectType]
                 if(!enc)continue
-                const bools=[full||obj.dirtyPart,full||obj.dirty,obj.destroyed]
+                const bools=[full||obj.dirtyPart,full||obj.dirty,obj.destroyed&&obj.sendDelete]
                 stream.writeBooleanGroup(bools[0],bools[1],bools[2])
                 if(bools[0]||bools[1]||bools[2]){
                     stream.writeID(o)

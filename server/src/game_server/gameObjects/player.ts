@@ -1,12 +1,13 @@
 import { BaseGameObject2D, CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { GameConstants } from "common/scripts/others/constants.ts";
+import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 import { GunItem, LItem } from "../inventory/inventory.ts";
 import { Guns } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
+import { Obstacle } from "./obstacle.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -28,7 +29,7 @@ export class Player extends BaseGameObject2D{
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
-        this.handItem=new GunItem(Guns.getFromString("ak47"))
+        this.handItem=new GunItem(Guns.getFromString("m870"))
     }
 
     dirtyPrivate=3
@@ -61,10 +62,24 @@ export class Player extends BaseGameObject2D{
         }else{
             this.dirtyPrivate--
         }
+
+        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+        for(const obj of objs){
+            if((obj as BaseGameObject2D).id===this.id)continue
+            switch((obj as BaseGameObject2D).objectType){
+                case "obstacle":
+                    if((obj as Obstacle).def.noCollision)break
+                    if((obj as Obstacle).hb){
+                        const ov=this.hb.overlapCollision((obj as Obstacle).hb)
+                        if(ov.collided)this.position=v2.sub(this.position,v2.scale(ov.overlap,0.9))
+                    }
+                    break
+            }
+        }
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,0.05)
+        this.movement=v2.scale(action.Movement,0.1)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }

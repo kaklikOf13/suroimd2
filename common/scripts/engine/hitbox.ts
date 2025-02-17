@@ -124,9 +124,10 @@ export class CircleHitbox2D extends BaseHitbox2D{
                     if(dists<0.0001){
                         return {overlap:v2.new(1,1),collided:true}
                     }
-                    if (dists < (this.radius + other.radius)*2){
-                        const dist=v2.distance(this.position,other.position)
-                        return {overlap:v2.absolute(v2.dscale(dis,dist||1)),collided:true}
+                    const sr=(this.radius + other.radius)
+                    if (dists < sr){
+                        const dist=Math.sqrt(dists)
+                        return {overlap:v2.scale(v2.dscale(dis,dist),-((sr/2)*(1-dist))),collided:true}
                     }
                     break
                 }case HitboxType2D.rect: {
