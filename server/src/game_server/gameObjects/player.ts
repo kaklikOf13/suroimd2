@@ -3,7 +3,10 @@ import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { GunItem, LItem } from "../inventory/inventory.ts";
-import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
+import { Guns } from "common/scripts/definitions/guns.ts";
+import { Client } from "../../engine/mod.ts";
+import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
+import { DamageParams } from "../others/utils.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -16,12 +19,21 @@ export class Player extends BaseGameObject2D{
     using_item_down:boolean=false
     rotation:number=0
     recoil?:{speed:number,delay:number}
+
+    health:number=100
+    maxHealth:number=100
+
+    client?:Client
     constructor(){
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
-        this.handItem=new GunItem(Guns.getFromString("m870"))
+        this.handItem=new GunItem(Guns.getFromString("ak47"))
     }
+
+    dirtyPrivate=3
+    dead=false
+
     update(): void {
         let speed=1
         if(this.recoil){
@@ -42,6 +54,13 @@ export class Player extends BaseGameObject2D{
         }
         this.handItem?.update(this)
         this.using_item_down=false
+
+        if(this.dirtyPrivate<=0){
+            this.dirtyPrivate=4
+            this.update2()
+        }else{
+            this.dirtyPrivate--
+        }
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
@@ -61,6 +80,26 @@ export class Player extends BaseGameObject2D{
             full:{
                 name:this.name
             }
+        }
+    }
+    update2(){
+        if(this.client){
+            const guiPacket=new GuiPacket(this.health,this.maxHealth)
+            this.client.emit(guiPacket)
+        }
+    }
+    damage(params:DamageParams){
+        if(this.dead)return
+        this.health=Math.max(this.health-params.amount,0)
+        if(this.health===0){
+            this.kill(params)
+        }
+    }
+    kill(_params:DamageParams){
+        this.dead=true
+        this.update2()
+        if(this.client){
+            setTimeout(this.client.disconnect.bind(this.client),500)
         }
     }
 }

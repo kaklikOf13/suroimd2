@@ -1,11 +1,10 @@
-import { createCanvas,WebglRenderer,applyShadow, MousePosListener, KeyListener, ResourcesManager } from "../engine/mod.ts"
-import { v2 } from "common/scripts/engine/mod.ts"
+import { WebglRenderer, MousePosListener, KeyListener, ResourcesManager } from "../engine/mod.ts"
 import { Game, getGame } from "./game.ts"
 import { server } from "./config.ts";
+import "../../scss/main.scss"
+import { GuiManager } from "./guiManager.ts";
 (async() => {
-    const canvas=createCanvas(v2.new(1000,600))
-    
-    applyShadow(canvas)
+    const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
     document.body.appendChild(canvas)
     const renderer=new WebglRenderer(canvas,100)
@@ -16,6 +15,7 @@ import { server } from "./config.ts";
     KeyL.bind(document.body)
 
     const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources)
+    const guiManager=new GuiManager(g)
     g.connect("kaklik")
     g.mainloop()
 })()

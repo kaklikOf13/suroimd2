@@ -22,13 +22,24 @@ export class Bullet extends BaseGameObject2D{
             this.destroyed=true
         }
         this.position=v2.add(this.position,this.velocity)
-        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES])
-        for(const obs of objs){
-            if((obs as Obstacle).hb&&this.hb.collidingWith((obs as Obstacle).hb)){
-                (obs as Obstacle).damage({amount:this.defs.damage,owner:this.owner})
-                this.destroy()
-                break
+        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+        for(const obj of objs){
+            switch((obj as BaseGameObject2D).objectType){
+                case "player":
+                    if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
+                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner})
+                        this.destroy()
+                        break
+                    }
+                    break
+                case "obstacle":
+                    if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
+                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner})
+                        this.destroy()
+                    }
+                    break
             }
+            
         }
     }
     create(args: {defs:BulletDef,position:Vec2}): void {

@@ -121,7 +121,7 @@ void main() {
 
 export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext;
-    readonly projectionMatrix: Float32Array;
+    projectionMatrix!: Float32Array;
     readonly simple_program:WebGLProgram
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = RGBA.new(255, 255, 255),depth:number=500) {
         super(canvas, meter_size);
@@ -138,6 +138,15 @@ export class WebglRenderer extends Renderer {
         document.body.addEventListener("pointerdown", e => {
             canvas.dispatchEvent(new PointerEvent("pointerdown", {
                 pointerId: e.pointerId,
+                button: e.button,
+                clientX: e.clientX,
+                clientY: e.clientY,
+                screenY: e.screenY,
+                screenX: e.screenX
+            }));
+        });
+        document.body.addEventListener("mousemove", e => {
+            canvas.dispatchEvent(new PointerEvent("mousemove", {
                 button: e.button,
                 clientX: e.clientX,
                 clientY: e.clientY,

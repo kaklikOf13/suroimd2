@@ -24,6 +24,10 @@ export class Game extends ClientGame2D{
       this.clock_e=false
       this.scene.objects.encoders=ObjectsE
       this.renderer.background=RGBA.new(5,120,30)
+
+      this.client.on(DefaultSignals.DISCONNECT,()=>{
+        this.scene.objects.clear()
+      })
   }
   on_update(): void {
     super.on_update()

@@ -2,7 +2,7 @@
   "tasks": {
     "dev": "deno run -A npm:vite",
     "build": "deno run -A npm:vite build",
-    "install":"npm i vite && npm i @sveltejs/vite-plugin-svelte",
+    "install":"npm i vite && npm i @sveltejs/vite-plugin-svelte && npm i sass",
     "clear":"rm -rf deno.lock && rm -rf package-lock.json && rm -rf package.json && rm -rf node_modules"
   },
   "nodeModulesDir": true,

@@ -19,7 +19,18 @@
     <script src="src/scripts/engine/extra_elements.js"></script>-->
   </head>
   <body>
-    <div id="app"></div>
+    <div id="game">
+      <div id="game-gui">
+        <div id="bars-container">
+          <div id="health-bar-container">
+            <div id="health-bar-animation"></div>
+            <div id="health-bar"></div>
+            <span id="health-bar-amount">100/100</span>
+          </div>
+        </div>
+      </div>
+      <canvas id="game-canvas"></canvas>
+    </div>
     <script type="module" src="./src/scripts/others/index.ts" async></script>
   </body>
 </html>
