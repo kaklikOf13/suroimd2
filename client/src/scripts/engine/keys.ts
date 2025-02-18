@@ -1,4 +1,5 @@
 import { SignalManager, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { type Camera2D } from "./renderer.ts";
 
 export enum Key{
     A=0,
@@ -259,6 +260,9 @@ export class MousePosListener{
     constructor(meter_size:number){
         this._position=v2.new(0,0)
         this.meter_size=meter_size
+    }
+    camera_pos(camera:Camera2D):Vec2{
+        return v2.add(v2.scale(this.position,camera.zoom),camera.position)
     }
     bind(elem:HTMLElement,canvas:HTMLCanvasElement){
         elem.addEventListener("mousemove",(e:MouseEvent)=>{

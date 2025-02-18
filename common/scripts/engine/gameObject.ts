@@ -50,7 +50,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     objects:Record<string,Record<GameObjectID,GameObject>>={}
     cellSize:number
     cells:Record<number,Record<number,Record<string,GameObject[]>>>
-    constructor(cellSize:number=8){
+    constructor(cellSize:number=5){
         this.cellSize=cellSize
         this.cells={}
     }

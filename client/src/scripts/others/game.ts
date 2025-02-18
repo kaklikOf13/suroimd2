@@ -23,7 +23,7 @@ export class Game extends ClientGame2D{
       this.scene.objects.proccess(obj)
     })
     this.scene.objects.encoders=ObjectsE
-    this.renderer.background=RGBA.new(5,120,30)
+    this.renderer.background=RGBA.new(20,150,30)
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.scene.objects.clear()
@@ -73,14 +73,16 @@ export class Game extends ClientGame2D{
       }
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
       if(activePlayer){
-        this.action.angle=v2.lookTo(activePlayer.position,v2.add(this.mouse.position,this.camera.position))
+        this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
       }
     }
-    this.renderer.fullCanvas()
+    this.camera.zoom=0.7
+    this.renderer.fullCanvas(this.camera)
   }
   update_camera(){
     const p=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
-    this.camera.position=v2.sub(p.position,v2.new((this.renderer.canvas.width/this.renderer.meter_size)/2,(this.renderer.canvas.height/this.renderer.meter_size)/2))
+    const cc=(this.renderer as WebglRenderer).cam2Dsize
+    this.camera.position=v2.sub(p.position,v2.new(cc.x/2,cc.y/2))
   }
   connect(playerName:string){
     this.client.on("connect",()=>{

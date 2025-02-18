@@ -180,6 +180,7 @@ export class WebglRenderer extends Renderer {
         simple:Material2DFactory<Color>,
         grid:Material2DFactory<GridMaterialArgs>
     }
+    cam2Dsize!:Vec2
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = RGBA.new(255, 255, 255),depth:number=500) {
         super(canvas, meter_size);
         const gl = this.canvas.getContext("webgl");
@@ -311,6 +312,7 @@ void main() {
         if(camera){
             zoom=camera.zoom
         }
+        this.cam2Dsize=v2.new(scaleX*zoom,scaleY*zoom)
         this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX*zoom,scaleY*zoom),depth/this.meter_size))
     }
     createShader(src: string, type: number): WebGLShader {
