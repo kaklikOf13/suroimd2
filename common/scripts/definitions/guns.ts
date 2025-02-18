@@ -1,4 +1,4 @@
-import { CircleHitbox2D,Hitbox2D,Definitions,Definition } from "../engine/mod.ts";
+import { Definitions,Definition } from "../engine/mod.ts";
 import { BulletDef } from "./utils.ts";
 export enum FireMode{
     Auto,
@@ -13,6 +13,7 @@ export interface GunDef extends Definition{
     jitterRadius?:number
     fireMode?:FireMode
     speedMult?:number
+    cap:number
     recoil?:{
         duration:number
         speed:number
@@ -33,6 +34,7 @@ Guns.insert(
         fireDelay:0.1,
         spread:5,
         lenght:0.8,
+        cap:4,
         bullet:{
             damage:9,
             radius:0.02,
@@ -54,6 +56,7 @@ Guns.insert(
         fireDelay:1.2,
         spread:1,
         lenght:0.8,
+        cap:4.5,
         bullet:{
             damage:55,
             radius:0.02,
@@ -77,6 +80,7 @@ Guns.insert(
         lenght:0.8,
         bulletsCount:10,
         jitterRadius:0.3,
+        cap:4.3,
         fireMode:FireMode.Single,
         bullet:{
             damage:7,
@@ -98,6 +102,7 @@ Guns.insert(
         lenght:0.8,
         bulletsCount:10,
         jitterRadius:0.05,
+        cap:4.5,
         fireMode:FireMode.Single,
         bullet:{
             damage:6,

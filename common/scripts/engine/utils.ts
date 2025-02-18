@@ -397,3 +397,9 @@ export function getPatterningShape(
         ...makeHexagon(radius, halfpi)
     ];
 }
+
+export const Numeric={
+    clamp(value:number,min:number,max:number):number{
+        return value<max?value>min?value:min:max
+    }
+}

@@ -1,15 +1,14 @@
 import { Client,DefaultSignals,ServerGame2D as GameBase } from "../../engine/mod.ts"
-import { ID, v2 } from "common/scripts/engine/mod.ts";;
-import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts";
-import { Player } from "../gameObjects/player.ts";
-import { Loot } from "../gameObjects/loot.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { ActionPacket } from "common/scripts/packets/action_packet.ts";
-import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
-import { Bullet } from "../gameObjects/bullet.ts";
-import { Obstacle } from "../gameObjects/obstacle.ts";
-import { Obstacles } from "common/scripts/definitions/obstacles.ts";
-import { GameMap } from "./map.ts";
+import { ID, v2 } from "common/scripts/engine/mod.ts"
+import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
+import { Player } from "../gameObjects/player.ts"
+import { Loot } from "../gameObjects/loot.ts"
+import { JoinPacket } from "common/scripts/packets/join_packet.ts"
+import { ActionPacket } from "common/scripts/packets/action_packet.ts"
+import { ObjectsE } from "common/scripts/others/objectsEncode.ts"
+import { Bullet } from "../gameObjects/bullet.ts"
+import { Obstacle } from "../gameObjects/obstacle.ts"
+import { GameMap } from "./map.ts"
 export interface GameConfig{
     maxPlayers:number,
 }

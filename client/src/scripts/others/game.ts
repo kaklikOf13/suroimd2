@@ -71,6 +71,13 @@ export class Game extends ClientGame2D{
       }else{
         this.actionDelay--
       }
+
+      if(this.key.keyPress(Key.Number_1)){
+        this.action.hand=0
+      }else if(this.key.keyPress(Key.Number_2)){
+        this.action.hand=1
+      }
+
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
       if(activePlayer){
         this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))

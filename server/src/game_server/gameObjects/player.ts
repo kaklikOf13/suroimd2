@@ -8,6 +8,7 @@ import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
+import { InventoryCap } from "common/scripts/engine/inventory.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -15,7 +16,7 @@ export class Player extends BaseGameObject2D{
     objectType:string="player"
     numberType: number=1;
     name:string="a"
-    handItem?:LItem
+    handItem:LItem|null=null
     using_item:boolean=false
     using_item_down:boolean=false
     rotation:number=0
@@ -25,15 +26,32 @@ export class Player extends BaseGameObject2D{
     maxHealth:number=100
 
     client?:Client
+
+    inventory:InventoryCap<LItem>
     constructor(){
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
-        this.handItem=new GunItem(Guns.getFromString("m870"))
+        this.inventory=new InventoryCap<LItem>(undefined,10)
+        this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
+        this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
+        this.load_hand(0)
+    }
+
+    load_hand(h:number){
+        if(this.hand==h)return
+        this.hand=h
+        this.handItem=this.inventory.slots[h].item
+        this.recoil=undefined
     }
 
     dirtyPrivate=3
     dead=false
+    hand:number=-1
+
+    privateDirtys={
+        inventory:true
+    }
 
     update(): void {
         let speed=1
@@ -53,7 +71,11 @@ export class Player extends BaseGameObject2D{
         if(this.using_item){
             this.handItem?.on_use(this)
         }
-        this.handItem?.update(this)
+        //Update Inventory
+        for(const s of this.inventory.slots){
+            if(!s.item)continue
+            s.item.update(this)
+        }
         this.using_item_down=false
 
         if(this.dirtyPrivate<=0){
@@ -85,6 +107,7 @@ export class Player extends BaseGameObject2D{
         }
         this.using_item=action.UsingItem
         this.rotation=action.angle
+        this.load_hand(action.hand)
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
@@ -100,6 +123,15 @@ export class Player extends BaseGameObject2D{
     update2(){
         if(this.client){
             const guiPacket=new GuiPacket(this.health,this.maxHealth)
+            guiPacket.inventory=[]
+            for(const s of this.inventory.slots){
+                if(!s.item)continue
+                guiPacket.inventory.push({count:s.quantity,idNumber:s.item!.def.idNumber!,type:s.item.itemType})
+            }
+            guiPacket.dirty=this.privateDirtys
+            this.privateDirtys={
+                inventory:false
+            }
             this.client.emit(guiPacket)
         }
     }

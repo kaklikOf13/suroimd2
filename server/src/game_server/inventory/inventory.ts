@@ -1,23 +1,30 @@
 import { Player } from "../gameObjects/player.ts";
 import { Bullet } from "../gameObjects/bullet.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
-import { Angle, Item, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
-export abstract class LItem extends Item{
+import { ItemCap } from "common/scripts/engine/inventory.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+export abstract class LItem extends ItemCap{
   abstract on_use(user:Player):void
   abstract update(user:Player):void
+  abstract itemType:InventoryItemType
+  abstract def:Definition
 }
-export class GunItem extends Item{
+export class GunItem extends ItemCap{
     limit_per_slot: number=1;
     def:GunDef
     use_delay:number=0;
+    cap:number;
     constructor(def?:GunDef){
       super()
       this.def=def!
       this.tags.push("gun")
+      this.cap=this.def.cap
     }
-    is(other: Item): boolean {
-      return (other instanceof GunItem)
+    itemType=InventoryItemType.gun
+    is(other: ItemCap): boolean {
+      return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
     on_use(user:Player){
       if(this.def.fireMode===FireMode.Single&&!user.using_item_down)return
