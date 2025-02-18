@@ -8,7 +8,7 @@ import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
-import { InventoryCap } from "common/scripts/engine/inventory.ts";
+import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -25,6 +25,8 @@ export class Player extends BaseGameObject2D{
     health:number=100
     maxHealth:number=100
 
+    actions:ActionsManager<this>
+
     client?:Client
 
     inventory:InventoryCap<LItem>
@@ -35,6 +37,7 @@ export class Player extends BaseGameObject2D{
         this.inventory=new InventoryCap<LItem>(undefined,10)
         this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
         this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
+        this.actions=new ActionsManager(this)
         this.load_hand(0)
     }
 
@@ -43,6 +46,7 @@ export class Player extends BaseGameObject2D{
         this.hand=h
         this.handItem=this.inventory.slots[h].item
         this.recoil=undefined
+        this.actions.cancel()
     }
 
     dirtyPrivate=3
@@ -98,6 +102,8 @@ export class Player extends BaseGameObject2D{
                     break
             }
         }
+
+        this.actions.update(1/this.game.tps)
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)

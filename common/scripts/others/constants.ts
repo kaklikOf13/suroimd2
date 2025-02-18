@@ -47,3 +47,6 @@ export enum zIndexes{
     Grid,
     Terrain,
 }
+export enum ActionsType{
+    Reload
+}

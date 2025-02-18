@@ -372,3 +372,40 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
     }
     //#endregion
 }
+
+export abstract class Action<User>{
+    abstract delay:number
+    abstract type:number
+    abstract on_execute(user:User):void
+    constructor(){}
+}
+
+export class ActionsManager<User>{
+    current_action?:Action<User>
+    current_delay:number=0
+    user:User
+    constructor(user:User){
+        this.user=user
+    }
+    cancel(){
+        if(this.current_action){
+            this.current_action=undefined
+            this.current_delay=0
+        }
+    }
+    play(action:Action<User>):void{
+        if(this.current_action)return
+        this.current_action=action
+        this.current_delay=action.delay
+    }
+    update(deltaTime:number){
+        if(this.current_action){
+            this.current_delay=Math.max(this.current_delay-deltaTime,0)
+            if(this.current_delay===0){
+                this.current_action.on_execute(this.user)
+                this.current_action=undefined
+                this.current_delay=0
+            }
+        }
+    }
+}

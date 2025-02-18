@@ -13,7 +13,12 @@ export interface GunDef extends Definition{
     jitterRadius?:number
     fireMode?:FireMode
     speedMult?:number
-    cap:number
+    size:number
+    reload:{
+        capacity:number
+        delay:number
+        shotsPerReload?:number
+    }
     recoil?:{
         duration:number
         speed:number
@@ -34,7 +39,7 @@ Guns.insert(
         fireDelay:0.1,
         spread:5,
         lenght:0.8,
-        cap:4,
+        size:4,
         bullet:{
             damage:9,
             radius:0.02,
@@ -44,6 +49,10 @@ Guns.insert(
                 width:1,
                 height:0.4,
             }
+        },
+        reload:{
+            delay:2,
+            capacity:30
         },
         recoil:{
             duration:0.1,
@@ -56,7 +65,7 @@ Guns.insert(
         fireDelay:1.2,
         spread:1,
         lenght:0.8,
-        cap:4.5,
+        size:4.5,
         bullet:{
             damage:55,
             radius:0.02,
@@ -66,6 +75,11 @@ Guns.insert(
                 width:1,
                 height:0.4,
             }
+        },
+        reload:{
+            delay:1.3,
+            capacity:5,
+            shotsPerReload:1,
         },
         recoil:{
             duration:1.2,
@@ -80,7 +94,7 @@ Guns.insert(
         lenght:0.8,
         bulletsCount:10,
         jitterRadius:0.3,
-        cap:4.3,
+        size:4.3,
         fireMode:FireMode.Single,
         bullet:{
             damage:7,
@@ -88,6 +102,11 @@ Guns.insert(
             speed:0.3,
             range:20,
             tracer:tracers.redTiny
+        },
+        reload:{
+            delay:1.3,
+            capacity:5,
+            shotsPerReload:1,
         },
         recoil:{
             duration:1.5,
@@ -102,7 +121,7 @@ Guns.insert(
         lenght:0.8,
         bulletsCount:10,
         jitterRadius:0.05,
-        cap:4.5,
+        size:4.5,
         fireMode:FireMode.Single,
         bullet:{
             damage:6,
@@ -110,6 +129,11 @@ Guns.insert(
             speed:0.4,
             range:75,
             tracer:tracers.redTiny
+        },
+        reload:{
+            delay:1.4,
+            capacity:9,
+            shotsPerReload:1,
         },
         recoil:{
             duration:1.2,
