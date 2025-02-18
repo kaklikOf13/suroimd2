@@ -1,4 +1,9 @@
 {
     "base_trail":"projectile/base_trail.svg",
-    "stone":"obstacles/stones/stone.svg"
+
+    "stone":"obstacles/stones/stone.svg",
+
+    "oak_tree":"obstacles/trees/oak_tree.svg",
+
+    "bush":"obstacles/bushes/bush.svg"
 }

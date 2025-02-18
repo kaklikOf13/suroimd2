@@ -1,7 +1,8 @@
-import { BaseGameObject2D, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, BaseGameObject2D, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
+import { random } from "common/scripts/engine/random.ts";
 
 export class Obstacle extends BaseGameObject2D{
     objectType:string="obstacle"
@@ -17,16 +18,30 @@ export class Obstacle extends BaseGameObject2D{
     }
     scale:number=1
     maxScale:number=1
+
+    variation:number=1
+    rotation:number=0
+
     update(): void {
 
     }
-    create(args: {def:ObstacleDef,position:Vec2}): void {
+    create(args: {def:ObstacleDef,position:Vec2,rotation:number,variation?:number}): void {
         this.def=args.def
         if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(args.position)
             this._position=this.hb.position
         }else{
             this._position=args.position
+        }
+        if(args.variation){
+            this.variation=args.variation
+        }else if(this.def.variations){
+            this.variation=random.int(1,this.def.variations)
+        }
+        if(args.rotation){
+            this.rotation=args.rotation
+        }else if(this.def.rotationMode){
+            this.rotation=Angle.random_rotation_modded(this.def.rotationMode)
         }
         this.health=this.def.health
         this.reset_scale()
@@ -35,7 +50,9 @@ export class Obstacle extends BaseGameObject2D{
         return {
             full:{
                 definition:this.def.idNumber!,
-                position:this._position
+                position:this._position,
+                variation:this.variation,
+                rotation:this.rotation
             },
             scale:this.scale
         }

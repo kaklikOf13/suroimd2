@@ -2,7 +2,7 @@ import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { ClientGameObject2D, Sprite } from "../engine/mod.ts";
 import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
 import { Camera2D, Renderer } from "../engine/renderer.ts";
-import { v2 } from "common/scripts/engine/geometry.ts";
+import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 export class Obstacle extends ClientGameObject2D{
     objectType:string="obstacle"
     numberType: number=4
@@ -10,18 +10,23 @@ export class Obstacle extends ClientGameObject2D{
     def!:ObstacleDef
 
     sprite!:Sprite
+
+    rotation:number=0
+    variation:number=1
+
+    zIndex=0
     create(_args: Record<string, void>): void {
         
     }
     render(camera: Camera2D, renderer: Renderer): void {
         if(this.sprite){
-            renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.scale,this.scale),0,v2.new(0.5,0.5))
+            renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.scale,this.scale),Angle.rad2deg(this.rotation),v2.new(0.5,0.5),this.zIndex)
         }else{
-            if(this.def.frame&&this.def.frame.base){
-                this.sprite=this.game.resources.get_sprite(this.def.frame.base)
+            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+            if(this.def.variations){
+                this.sprite=this.game.resources.get_sprite(spr_id+`_${spr_id}`)
             }else{
-                this.sprite=this.game.resources.get_sprite(this.def.idString)
-                //document.body.appendChild(this.sprite.source)
+                this.sprite=this.game.resources.get_sprite(spr_id)
             }
         }
     }
@@ -38,6 +43,10 @@ export class Obstacle extends ClientGameObject2D{
         if(data.full){
             this.def=Obstacles.getFromNumber(data.full.definition)
             position=data.full.position
+            this.rotation=data.full.rotation
+            this.variation=data.full.variation
+
+            this.zIndex=this.def.zIndex??0
         }
         if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(position,data.scale)

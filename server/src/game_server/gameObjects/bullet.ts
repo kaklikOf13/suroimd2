@@ -37,7 +37,7 @@ export class Bullet extends BaseGameObject2D{
                     }
                     break
                 case "obstacle":
-                    if((obj as Obstacle).def.noCollision||(obj as Obstacle).def.noBulletCollision)break
+                    if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
                         (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner})
                         this.destroy()

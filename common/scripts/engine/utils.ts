@@ -1,6 +1,6 @@
 import { Language } from "./definitions.ts";
 import { type Scene2D } from "./game.ts";
-import { RadAngle, Vec2, v2 } from "./geometry.ts";
+import { Vec2, v2 } from "./geometry.ts";
 
 export const halfpi=Math.PI/2
 export type ID=number

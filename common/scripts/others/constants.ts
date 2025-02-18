@@ -38,3 +38,12 @@ export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)
 PacketManager.add_packet(GuiPacket)
+
+export enum zIndexes{
+    Obstacles3=1,
+    Obstacles2,
+    Players,
+    Obstacles1,
+    Grid,
+    Terrain,
+}

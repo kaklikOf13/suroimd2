@@ -9,12 +9,14 @@ import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { Obstacles } from "common/scripts/definitions/obstacles.ts";
+import { GameMap } from "./map.ts";
 export interface GameConfig{
     maxPlayers:number,
 }
 
 export class Game extends GameBase{
     config:GameConfig
+    map:GameMap
     constructor(id:ID,config:GameConfig){
         super(GameConstants.tps,id,PacketManager,[
             Player,
@@ -28,14 +30,10 @@ export class Game extends GameBase{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
+        this.map=new GameMap(this,v2.new(13,13))
     }
     on_run(): void {
-        for(let i=0;i<10;i++){
-            this.scene.objects.add_object(new Obstacle(),CATEGORYS.OBSTACLES,undefined,{
-                position:v2.random(-5,5),
-                def:Obstacles.getFromString("stone")
-            })
-        }
+        this.map.generate()
     }
 
     handleConnections(client:Client){

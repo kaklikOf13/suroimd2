@@ -16,6 +16,12 @@ function float32ToUint32(value: number): number {
 const prime1 = BigInt("2654435761")
 const prime2 = BigInt("2246822519")
 
+export enum RotationMode{
+    null,
+    limited,
+    full
+}
+
 export type HashVec2=bigint
 
 export const v2 = Object.freeze({
@@ -342,5 +348,22 @@ export const Angle=Object.freeze({
     },
     rad2deg(angle:RadAngle):DegAngle {
         return angle * 180 / Math.PI
+    },
+    random_rotation_modded(mode:RotationMode):RadAngle{
+        switch(mode){
+            case RotationMode.null:
+                return 0
+            case RotationMode.limited:
+                return random.choose([rotationFull.left,rotationFull.right,rotationFull.bottom,rotationFull.top])
+            case RotationMode.full:
+                return random.float(-3.141592,3.141592)
+        }
     }
 })
+
+export const rotationFull={
+    right:0,
+    left:Angle.deg2rad(-180),
+    bottom:Angle.deg2rad(90),
+    top:Angle.deg2rad(-90),
+}

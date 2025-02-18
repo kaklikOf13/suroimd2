@@ -7,7 +7,7 @@ export const random=Object.freeze({
     float(min:number,max:number):number{
         return Math.random()*(max-min)+min
     },
-    choose(val:[]):unknown{
+    choose<Val>(val:Val[]):Val{
         return val[Math.floor(Math.random()*val.length)]
     },
     id():ID{

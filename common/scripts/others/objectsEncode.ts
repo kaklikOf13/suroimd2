@@ -31,6 +31,8 @@ export interface ObstacleData extends EncodedData{
     full?:{
         position:Vec2
         definition:number
+        rotation:number
+        variation:number
     }
     scale:number
 }
@@ -120,7 +122,9 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             if(full){
                 ret.full={
                     definition:stream.readUint24(),
-                    position:stream.readPosition()
+                    position:stream.readPosition(),
+                    rotation:stream.readRad(),
+                    variation:stream.readUint8()+1,
                 }
             }
             return ret
@@ -132,6 +136,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             if(full){
                 stream.writeUint24(data.full!.definition)
                 stream.writePosition(data.full!.position)
+                stream.writeRad(data.full!.rotation)
+                stream.writeUint8(data.full!.variation-1)
             }
         }
     },

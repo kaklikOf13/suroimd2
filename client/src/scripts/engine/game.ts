@@ -15,11 +15,12 @@ export abstract class FormGameObject2D extends ClientGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>
     abstract material:Material2D
+    zIndex:number=0
     constructor(){
         super()
     }
     render(camera:Camera2D,renderer:Renderer){
-        renderer.draw_hitbox2D(this.hb,this.material,camera.position)
+        renderer.draw_hitbox2D(this.hb,this.material,camera.position,this.zIndex)
     }
 }
 export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{

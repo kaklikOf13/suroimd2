@@ -1,4 +1,4 @@
-import { EaseFunction, ease } from "common/scripts/engine/mod.ts";
+import { EaseFunction, Vec2, ease, v2 } from "common/scripts/engine/mod.ts";
 
 export interface SoundDef{
     volume:number
@@ -55,7 +55,11 @@ function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
   
     return texture;
 }
-export interface SpriteDef{id:string,scale?:number}
+export interface SpriteDef{
+    path:string,
+    scale?:number,
+    variations?:number,
+}
 export class ResourcesManager{
     sources:Record<string,Source>
     canvas:HTMLCanvasElement
@@ -109,10 +113,14 @@ export class ResourcesManager{
             svg.setAttribute("currentScale", scale.toString())
             const img=new Image()
             img.onload=()=>{
-                this.canvas.width=img.naturalWidth
-                this.canvas.height=img.naturalHeight
+                const size=v2.new(img.naturalWidth*2,img.naturalHeight*2)
+                this.canvas.width=size.x
+                this.canvas.height=size.y
                 this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
-                this.ctx.drawImage(img, 0, 0)
+                this.ctx.save()
+                this.ctx.scale(scale, scale)
+                this.ctx.drawImage(img, 0, 0,size.x,size.y)
+                this.ctx.restore()
                 this.sources[id]=new Sprite(new Image(),this.gl.createTexture()!);
                 (this.sources[id] as Sprite).source.onload=()=>{
                     const sp=this.sources[id] as Sprite
@@ -181,7 +189,7 @@ export class ResourcesManager{
         delete this.sources[id]
     }
     async load_folders(folders:string[],scale:number=1){
-        const foundeds:Record<string,string|SpriteDef> = {};
+        const foundeds:Record<string,{file:string|SpriteDef,folder:string}> = {};
         for (const folder of folders) {
             try {
                 const response = await fetch(`/${folder}/sources.json`);
@@ -190,17 +198,28 @@ export class ResourcesManager{
                 const files = await response.json();
 
                 for (const file of Object.keys(files)) {
-                    foundeds[file]=`/${folder}/${files[file]}`;
+                    foundeds[file]={file:files[file],folder};
                 }
             } catch (error) {
                 console.error(`Erro ao carregar a pasta ${folder}: ${error.message}`);
             }
         }
         for(const f of Object.keys(foundeds)){
-            if(typeof (foundeds[f]) === "string"){
-                await this.load_source(f,foundeds[f] as string,scale)
+            if(typeof foundeds[f].file==="string"){
+                await this.load_source(f,`${foundeds[f].folder}/${foundeds[f].file}`,scale)
             }else{
-                await this.load_source(f,(foundeds[f] as SpriteDef).id,((foundeds[f] as SpriteDef).scale??1)*scale)
+                if((foundeds[f].file as SpriteDef).variations){
+                    const sca=((foundeds[f].file as SpriteDef).scale??1)*scale
+                    for(let i=0;i<(foundeds[f].file as SpriteDef).variations!;i++){
+                        const extF=(foundeds[f].file as SpriteDef).path.split(".")
+                        const ext=extF[extF.length-1]
+                        extF.length--
+                        const name=extF.join(".")
+                        await this.load_source(f+`_${i+1}`,`${foundeds[f].folder}/${name}_${i+1}.${ext}`,sca)
+                    }
+                }else{
+                    await this.load_source(f,`${foundeds[f].folder}/${(foundeds[f].file as SpriteDef).path}`,((foundeds[f].file as SpriteDef).scale??1)*scale)
+                }
             }
         }
     }
