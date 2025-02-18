@@ -1,6 +1,6 @@
-import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, RGBA} from "../engine/mod.ts"
+import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, RGBA, Material2D, GridMaterialArgs, WebglRenderer} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager } from "common/scripts/others/constants.ts";
-import { ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
+import { NullVec2, ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -12,24 +12,40 @@ export class Game extends ClientGame2D{
   activePlayer=0
 
   action:ActionPacket=new ActionPacket()
+  grid:Material2D<GridMaterialArgs>
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-      super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle])
-      for(const i of CATEGORYSL){
-        this.scene.objects.add_category(i)
-      }
-      this.client=new Client(new WebSocket(ip),PacketManager)
-      this.client.on(DefaultSignals.OBJECTS,(obj:ObjectsPacket)=>{
-        this.scene.objects.proccess(obj)
-      })
-      this.clock_e=false
-      this.scene.objects.encoders=ObjectsE
-      this.renderer.background=RGBA.new(5,120,30)
+    super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle])
+    for(const i of CATEGORYSL){
+      this.scene.objects.add_category(i)
+    }
+    this.client=new Client(new WebSocket(ip),PacketManager)
+    this.client.on(DefaultSignals.OBJECTS,(obj:ObjectsPacket)=>{
+      this.scene.objects.proccess(obj)
+    })
+    this.scene.objects.encoders=ObjectsE
+    this.renderer.background=RGBA.new(5,120,30)
 
-      this.client.on(DefaultSignals.DISCONNECT,()=>{
-        this.scene.objects.clear()
-      })
+    this.client.on(DefaultSignals.DISCONNECT,()=>{
+      this.scene.objects.clear()
+    })
+
+    this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
+      color:RGBA.new(0,0,0,150),
+      gridSize:this.scene.objects.cells.cellSize,
+      width:0.03
+    })
   }
   actionDelay:number=3
+  on_render():void{
+    (this.renderer as WebglRenderer)._draw_vertices([
+      -1000, -1000, 
+      1000, -1000,
+      -1000,  1000,
+      -1000,  1000,
+      1000, -1000,
+      1000,  1000
+    ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:0})
+  }
   on_update(): void {
     super.on_update()
     if(this.client.opened){

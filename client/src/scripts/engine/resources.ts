@@ -55,7 +55,7 @@ function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
   
     return texture;
 }
-
+export interface SpriteDef{id:string,scale?:number}
 export class ResourcesManager{
     sources:Record<string,Source>
     canvas:HTMLCanvasElement
@@ -70,6 +70,12 @@ export class ResourcesManager{
         this.ctx=this.canvas.getContext("2d")!
         this.audioCtx=new AudioContext()
         this.gl=gl
+    }
+    async load_source(id:string,src:string,scale:number=1):Promise<Source|undefined>{
+        if(src.endsWith(".svg")||src.endsWith(".png")){
+            return await this.load_sprite(id,src,scale)
+        }
+        return undefined
     }
     get_sprite(id:string):Sprite{
         return this.sources[id] as Sprite
@@ -173,6 +179,30 @@ export class ResourcesManager{
     }
     unload(id:string){
         delete this.sources[id]
+    }
+    async load_folders(folders:string[],scale:number=1){
+        const foundeds:Record<string,string|SpriteDef> = {};
+        for (const folder of folders) {
+            try {
+                const response = await fetch(`/${folder}/sources.json`);
+                if (!response.ok) throw new Error(`Erro ao buscar a pasta: ${folder}`);
+
+                const files = await response.json();
+
+                for (const file of Object.keys(files)) {
+                    foundeds[file]=`/${folder}/${files[file]}`;
+                }
+            } catch (error) {
+                console.error(`Erro ao carregar a pasta ${folder}: ${error.message}`);
+            }
+        }
+        for(const f of Object.keys(foundeds)){
+            if(typeof (foundeds[f]) === "string"){
+                await this.load_source(f,foundeds[f] as string,scale)
+            }else{
+                await this.load_source(f,(foundeds[f] as SpriteDef).id,((foundeds[f] as SpriteDef).scale??1)*scale)
+            }
+        }
     }
 }
 export enum AudioState{

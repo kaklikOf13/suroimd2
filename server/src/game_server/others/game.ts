@@ -32,7 +32,7 @@ export class Game extends GameBase{
     on_run(): void {
         for(let i=0;i<10;i++){
             this.scene.objects.add_object(new Obstacle(),CATEGORYS.OBSTACLES,undefined,{
-                position:v2.random(-10,10),
+                position:v2.random(-5,5),
                 def:Obstacles.getFromString("stone")
             })
         }

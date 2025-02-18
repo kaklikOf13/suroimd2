@@ -1,11 +1,11 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { Color, RGBA, Sprite } from "../engine/mod.ts";
+import { Sprite } from "../engine/mod.ts";
 import { Angle, BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
-import { Camera2D, ClientGameObject2D } from "../engine/game.ts";
-import { Renderer } from "../engine/renderer.ts";
+import { ClientGameObject2D } from "../engine/game.ts";
+import { Camera2D, Renderer } from "../engine/renderer.ts";
 export class Bullet extends ClientGameObject2D{
     objectType:string="bullet"
     numberType: number=3
@@ -19,8 +19,8 @@ export class Bullet extends ClientGameObject2D{
 
     sendDelete: boolean=true;
     spr!:Sprite
-    async create(_args: Record<string, void>) {
-        this.spr=await this.game.resources.load_sprite("base_trail","img/game/common/projectile/base_trail.svg",1)
+    create(_args: Record<string, void>) {
+        this.spr=this.game.resources.get_sprite("base_trail")
     }
 
     length:number=0

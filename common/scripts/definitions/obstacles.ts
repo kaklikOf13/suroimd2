@@ -11,6 +11,9 @@ export interface ObstacleDef extends Definition{
         man?:number,
         destroy?:number,
     }
+    frame?:{
+        base:string,
+    }
 }
 
 export const Obstacles=new Definitions<ObstacleDef>()

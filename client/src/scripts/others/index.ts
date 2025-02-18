@@ -9,6 +9,7 @@ import { GuiManager } from "./guiManager.ts";
     document.body.appendChild(canvas)
     const renderer=new WebglRenderer(canvas,100)
     const resources=new ResourcesManager(renderer.gl)
+    resources.load_folders(["img/game/common"])
     const mouseML=new MousePosListener(renderer.meter_size)
     const KeyL=new KeyListener()
     mouseML.bind(canvas,canvas)
