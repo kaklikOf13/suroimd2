@@ -41,7 +41,7 @@ Guns.insert(
         lenght:0.8,
         size:4,
         bullet:{
-            damage:9,
+            damage:10,
             radius:0.02,
             range:150,
             speed:0.4,
@@ -67,7 +67,7 @@ Guns.insert(
         lenght:0.8,
         size:4.5,
         bullet:{
-            damage:55,
+            damage:54,
             radius:0.02,
             range:220,
             speed:0.5,
@@ -77,7 +77,7 @@ Guns.insert(
             }
         },
         reload:{
-            delay:1.3,
+            delay:0.9,
             capacity:5,
             shotsPerReload:1,
         },
@@ -104,7 +104,7 @@ Guns.insert(
             tracer:tracers.redTiny
         },
         reload:{
-            delay:1.3,
+            delay:0.8,
             capacity:5,
             shotsPerReload:1,
         },
@@ -131,7 +131,7 @@ Guns.insert(
             tracer:tracers.redTiny
         },
         reload:{
-            delay:1.4,
+            delay:0.8,
             capacity:9,
             shotsPerReload:1,
         },

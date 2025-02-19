@@ -45,11 +45,6 @@ export class Game extends GameBase{
                 console.log(`Player ${_packet.PlayerName} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))
-            //Add Loot
-            /*for(let i=0;i<10;i++){
-                const obj=this.scene.objects.add_object(new Loot(),CATEGORYS.LOOTS)
-                obj.position=v2.random(-0.1,0.1)
-            }*/
         })
         client.on("action",(p:ActionPacket)=>{
             if(this.scene.objects.exist(objId)){

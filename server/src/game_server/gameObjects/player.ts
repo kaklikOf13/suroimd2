@@ -31,23 +31,40 @@ export class Player extends BaseGameObject2D{
     client?:Client
 
     inventory:InventoryCap<LItem>
+
+    melee:LItem|null=null
     constructor(){
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
         this.inventory=new InventoryCap<LItem>(undefined,20)
         this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
+        this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
+        this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
         this.actions=new ActionsManager(this)
         this.load_hand(0)
     }
 
     load_hand(h:number){
         if(this.hand==h)return
-        this.hand=h
-        this.handItem=this.inventory.slots[h].item
+        if(this.handItem&&this.handItem.itemType===InventoryItemType.gun){
+            (this.handItem as GunItem).reloading=false
+        }
+        if(h<1||h>this.inventory.slots.length){
+            h=0
+            this.hand=0
+        }else{
+            this.hand=h
+        }
+        if(this.hand>0&&this.hand<=this.inventory.slots.length){ 
+            this.handItem=this.inventory.slots[this.hand-1].item
+        }else{
+            this.handItem=this.melee
+        }
         this.recoil=undefined
         this.privateDirtys.hand=true
+        this.privateDirtys.action=true
         this.actions.cancel()
     }
 
@@ -142,7 +159,7 @@ export class Player extends BaseGameObject2D{
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
                 if(!s.item)continue
-                if(i===this.hand)this.handL=ii
+                if(i===this.hand-1)this.handL=ii+1
                 guiPacket.inventory.push({count:s.quantity,idNumber:s.item!.def.idNumber!,type:s.item.itemType})
                 ii++
             }

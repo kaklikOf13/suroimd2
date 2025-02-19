@@ -190,7 +190,7 @@ export const KeyNames: Record<number, Key> = {
     305: Key.Mouse_Option2
 }
 
-export enum Events{
+export enum KeyEvents{
     KeyDown="keydown",
     KeyUp="keyup"
 }
@@ -211,21 +211,21 @@ export class KeyListener{
         elem.addEventListener("keydown",(e:KeyboardEvent)=>{
             this.keysdown.push(e.keyCode)
             this.keys.push(e.keyCode)
-            this.listener.emit(Events.KeyDown,KeyNames[e.keyCode])
+            this.listener.emit(KeyEvents.KeyDown,KeyNames[e.keyCode])
         })
         elem.addEventListener("keyup",(e:KeyboardEvent)=>{
             this.keysup.push(e.keyCode)
-            this.listener.emit(Events.KeyUp,KeyNames[e.keyCode])
+            this.listener.emit(KeyEvents.KeyUp,KeyNames[e.keyCode])
         })
         elem.addEventListener("mousedown",(e:MouseEvent)=>{
             this.keysdown.push(e.button+300)
             this.keys.push(e.button+300)
-            this.listener.emit(Events.KeyDown,KeyNames[e.button+300])
+            this.listener.emit(KeyEvents.KeyDown,KeyNames[e.button+300])
         })
         elem.addEventListener("mouseup",(e:MouseEvent)=>{
             this.keys.splice(this.keys.indexOf(e.button+300))
             this.keysup.push(e.button+300)
-            this.listener.emit(Events.KeyUp,KeyNames[e.button+300])
+            this.listener.emit(KeyEvents.KeyUp,KeyNames[e.button+300])
         })
     }
     //to work

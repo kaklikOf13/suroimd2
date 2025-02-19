@@ -1,4 +1,4 @@
-import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, RGBA, Material2D, GridMaterialArgs, WebglRenderer} from "../engine/mod.ts"
+import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, RGBA, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
 import { NullVec2, ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -46,6 +46,42 @@ export class Game extends ClientGame2D{
       1000,  1000
     ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:zIndexes.Grid})
   }
+  on_run(): void {
+    this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
+      switch(k){
+        case Key.Number_1:
+          this.action.hand=0
+          break
+        case Key.Number_2:
+          this.action.hand=1
+          break
+        case Key.Number_3:
+          this.action.hand=2
+          break
+        case Key.Number_4:
+          this.action.hand=3
+          break
+        case Key.Number_5:
+          this.action.hand=4
+          break
+        case Key.Number_6:
+          this.action.hand=5
+          break
+        case Key.Number_7:
+          this.action.hand=6
+          break
+        case Key.Number_8:
+          this.action.hand=7
+          break
+        case Key.Number_9:
+          this.action.hand=8
+          break
+        case Key.Number_0:
+          this.action.hand=9
+          break
+      }
+    })
+  }
   on_update(): void {
     super.on_update()
     if(this.client.opened){
@@ -70,12 +106,6 @@ export class Game extends ClientGame2D{
         this.actionDelay=3
       }else{
         this.actionDelay--
-      }
-
-      if(this.key.keyPress(Key.Number_1)){
-        this.action.hand=0
-      }else if(this.key.keyPress(Key.Number_2)){
-        this.action.hand=1
       }
 
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
