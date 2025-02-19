@@ -18,6 +18,7 @@ export class ReloadAction extends Action<Player>{
     on_execute(user:Player){
         if(!user.handItem||user.handItem.itemType!=InventoryItemType.gun)return;
         (user.handItem as GunItem).ammo+=this.reload_count
+        user.privateDirtys.hand=true
     }
     type: number=ActionsType.Reload
 }

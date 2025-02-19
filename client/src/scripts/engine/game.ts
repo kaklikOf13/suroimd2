@@ -30,7 +30,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     mouse:MousePosListener
     resources:ResourcesManager
     constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
-        super(0,objects)
+        super(60,objects)
         this.mouse=mouse
         this.key=keyl
         this.renderer=renderer

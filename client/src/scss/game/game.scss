@@ -44,7 +44,7 @@
     border-radius: 2px;
     position: absolute;
     bottom: 5px;
-    left: 20px;
+    left: 5px;
     width: 330px;
     height: 30px;
     display: block;
@@ -86,6 +86,7 @@
         position: absolute;
         color: #fff;
         font-size: 20px;
+        font-style: italic;
         z-index: 1;
         top:50%;
         left: 103%;
@@ -96,5 +97,28 @@
         @media screen and (max-width: palette.$screen_large) {
             font-size: 10px;
         };
+    }
+}
+
+#bottom-center-container{
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #0002;
+    bottom: 5px;
+    width: 200px;
+    height: 80px;
+    span{
+        transform: translate(-50%,-50%);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        font-family: "Russo-One";
+        font-size: 50px;
+    }
+    #action-info{
+        position: absolute;
+        top: -30px;
+        left: 50%;
     }
 }

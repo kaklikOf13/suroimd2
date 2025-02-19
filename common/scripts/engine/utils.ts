@@ -401,5 +401,9 @@ export function getPatterningShape(
 export const Numeric={
     clamp(value:number,min:number,max:number):number{
         return value<max?value>min?value:min:max
+    },
+    maxDecimals(value:number,decimalPlaces=3):number{
+        const factor = Math.pow(10, decimalPlaces)
+        return Math.round(value * factor) / factor
     }
 }

@@ -44,10 +44,13 @@ export class GunItem extends ItemCap{
         this.ammo=this.def.reload.capacity
         return
       }
+      user.privateDirtys.action=true
       user.actions.play(new ReloadAction(this.def.reload.shotsPerReload??this.def.reload.capacity,this.def))
     }
     shot(user:Player){
       user.actions.cancel()
+      user.privateDirtys.hand=true
+      user.privateDirtys.action=true
       const bc=this.def.bulletsCount??1
       this.reloading=false
       this.ammo--

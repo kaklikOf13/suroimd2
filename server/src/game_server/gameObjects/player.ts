@@ -9,6 +9,7 @@ import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -34,9 +35,9 @@ export class Player extends BaseGameObject2D{
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
-        this.inventory=new InventoryCap<LItem>(undefined,10)
+        this.inventory=new InventoryCap<LItem>(undefined,20)
         this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
-        this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
+        this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
         this.actions=new ActionsManager(this)
         this.load_hand(0)
     }
@@ -46,6 +47,7 @@ export class Player extends BaseGameObject2D{
         this.hand=h
         this.handItem=this.inventory.slots[h].item
         this.recoil=undefined
+        this.privateDirtys.hand=true
         this.actions.cancel()
     }
 
@@ -54,7 +56,9 @@ export class Player extends BaseGameObject2D{
     hand:number=-1
 
     privateDirtys={
-        inventory:true
+        inventory:true,
+        hand:true,
+        action:true
     }
 
     update(): void {
@@ -114,6 +118,9 @@ export class Player extends BaseGameObject2D{
         this.using_item=action.UsingItem
         this.rotation=action.angle
         this.load_hand(action.hand)
+        if(action.Reloading&&this.handItem&&this.handItem.itemType===InventoryItemType.gun){
+            (this.handItem as GunItem).reloading=true
+        }
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
@@ -126,17 +133,30 @@ export class Player extends BaseGameObject2D{
             }
         }
     }
+    handL=0
     update2(){
         if(this.client){
             const guiPacket=new GuiPacket(this.health,this.maxHealth)
             guiPacket.inventory=[]
-            for(const s of this.inventory.slots){
+            let ii=0
+            for(let i=0;i<this.inventory.slots.length;i++){
+                const s=this.inventory.slots[i]
                 if(!s.item)continue
+                if(i===this.hand)this.handL=ii
                 guiPacket.inventory.push({count:s.quantity,idNumber:s.item!.def.idNumber!,type:s.item.itemType})
+                ii++
             }
+            
+            guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL}:undefined
             guiPacket.dirty=this.privateDirtys
             this.privateDirtys={
-                inventory:false
+                inventory:false,
+                hand:false,
+                action:false
+            }
+
+            if(this.actions.current_action){
+                guiPacket.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
             this.client.emit(guiPacket)
         }

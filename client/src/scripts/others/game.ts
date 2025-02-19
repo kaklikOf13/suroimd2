@@ -82,6 +82,8 @@ export class Game extends ClientGame2D{
       if(activePlayer){
         this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
       }
+
+      this.action.Reloading=this.key.keyPress(Key.R)
     }
     this.camera.zoom=0.7
     this.renderer.fullCanvas(this.camera)
