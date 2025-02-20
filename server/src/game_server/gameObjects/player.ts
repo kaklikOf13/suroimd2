@@ -2,7 +2,7 @@ import { BaseGameObject2D, CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scr
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
-import { GunItem, LItem } from "../inventory/inventory.ts";
+import { AmmoItem, GunItem, LItem } from "../inventory/inventory.ts";
 import { Guns } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
@@ -10,6 +10,7 @@ import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -37,11 +38,13 @@ export class Player extends BaseGameObject2D{
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
-        this.inventory=new InventoryCap<LItem>(undefined,20)
+        this.inventory=new InventoryCap<LItem>(undefined,100)
         this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
         this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
         this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
+        this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
+        this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
         this.actions=new ActionsManager(this)
         this.load_hand(0)
     }
@@ -151,6 +154,7 @@ export class Player extends BaseGameObject2D{
         }
     }
     handL=0
+    ammoCount:Partial<Record<AmmoType,number>>={}
     update2(){
         if(this.client){
             const guiPacket=new GuiPacket(this.health,this.maxHealth)
@@ -163,9 +167,24 @@ export class Player extends BaseGameObject2D{
                 guiPacket.inventory.push({count:s.quantity,idNumber:s.item!.def.idNumber!,type:s.item.itemType})
                 ii++
             }
-            
-            guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL}:undefined
+            if(this.handItem){
+                switch(this.handItem!.itemType){
+                    case InventoryItemType.gun:
+                        if(!this.ammoCount[(this.handItem as GunItem).def.ammoType]){
+                            this.ammoCount[(this.handItem as GunItem).def.ammoType]=this.inventory.getCountTag(`ammo_${(this.handItem as GunItem).def.ammoType}`)
+                            this.privateDirtys.hand=true
+                        }
+                        guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
+                        break
+                    case InventoryItemType.ammo:
+                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
+                        break
+                }
+            }
             guiPacket.dirty=this.privateDirtys
+            if(this.privateDirtys.inventory){
+                this.ammoCount={}
+            }
             this.privateDirtys={
                 inventory:false,
                 hand:false,

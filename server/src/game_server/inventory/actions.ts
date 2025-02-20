@@ -16,9 +16,11 @@ export class ReloadAction extends Action<Player>{
         this.def=def
     }
     on_execute(user:Player){
-        if(!user.handItem||user.handItem.itemType!=InventoryItemType.gun)return;
-        (user.handItem as GunItem).ammo+=this.reload_count
+        if(!user.handItem||user.handItem.itemType!=InventoryItemType.gun)return
+        const consumed=user.inventory.consumeTagRemains(`ammo_${this.def.ammoType}`,this.reload_count);
+        (user.handItem as GunItem).ammo+=consumed
         user.privateDirtys.hand=true
+        user.privateDirtys.inventory=true
     }
     type: number=ActionsType.Reload
 }

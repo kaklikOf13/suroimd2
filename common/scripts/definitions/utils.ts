@@ -1,4 +1,4 @@
-import { NetStream } from "../engine/stream.ts";
+import { type NetStream } from "../engine/stream.ts";
 
 export interface BulletDef{
     damage:number
@@ -29,6 +29,6 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
     return {
         count:stream.readUint16(),
         idNumber:stream.readUint16(),
-        type:stream.readUint8()
+        type:stream.readUint8(),
     }
 }

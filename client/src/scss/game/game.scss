@@ -172,5 +172,13 @@
     padding-top: 10px;
     .inventory-slot{
         margin: 0%;
+        span{
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            font-family: "Russo-One";
+            z-index: 1;
+            font-size: 15px;
+        }
     }
 }

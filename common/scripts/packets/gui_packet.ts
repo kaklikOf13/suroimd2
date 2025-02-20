@@ -1,10 +1,15 @@
 import { InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode, InventoryItemType } from "../definitions/utils.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
-export type HandData=({
+export type HandData=
+(({
     type:InventoryItemType.gun
     ammo:number
-}&{location:number})|undefined
+    disponibility:number
+}|{
+    type:InventoryItemType.ammo
+})&{location:number})
+|undefined
 export class GuiPacket extends Packet{
     ID=2
     Name="gui"
@@ -38,6 +43,7 @@ export class GuiPacket extends Packet{
             switch(this.hand.type){
                 case InventoryItemType.gun:    
                 stream.writeUint8(this.hand.ammo)
+                stream.writeUint16(this.hand.disponibility)
                 break
             }
         }
@@ -63,10 +69,12 @@ export class GuiPacket extends Packet{
                     type:stream.readUint8(),
                     location:stream.readUint8(),
                     ammo:0,
+                    disponibility:0
                 }
                 switch(this.hand.type){
                     case InventoryItemType.gun:
                         this.hand.ammo=stream.readUint8()
+                        this.hand.disponibility=stream.readUint16()
                         break
                 }
             }else{

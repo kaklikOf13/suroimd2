@@ -1,4 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts";
+import { AmmoType } from "common/scripts/definitions/ammo.ts";
 import { BulletDef } from "./utils.ts";
 export enum FireMode{
     Auto,
@@ -14,6 +15,7 @@ export interface GunDef extends Definition{
     fireMode?:FireMode
     speedMult?:number
     size:number
+    ammoType:AmmoType
     reload:{
         capacity:number
         delay:number
@@ -40,6 +42,7 @@ Guns.insert(
         spread:5,
         lenght:0.8,
         size:4,
+        ammoType:AmmoType["762mm"],
         bullet:{
             damage:10,
             radius:0.02,
@@ -66,6 +69,7 @@ Guns.insert(
         spread:1,
         lenght:0.8,
         size:4.5,
+        ammoType:AmmoType["762mm"],
         bullet:{
             damage:54,
             radius:0.02,
@@ -92,6 +96,7 @@ Guns.insert(
         fireDelay:1.2,
         spread:3,
         lenght:0.8,
+        ammoType:AmmoType["12g"],
         bulletsCount:10,
         jitterRadius:0.3,
         size:4.3,
@@ -119,6 +124,7 @@ Guns.insert(
         fireDelay:0.9,
         spread:4,
         lenght:0.8,
+        ammoType:AmmoType["12g"],
         bulletsCount:10,
         jitterRadius:0.05,
         size:4.5,

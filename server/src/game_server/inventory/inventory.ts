@@ -6,13 +6,14 @@ import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
 import { ItemCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ReloadAction } from "./actions.ts";
+import { AmmoDef } from "common/scripts/definitions/ammo.ts";
 export abstract class LItem extends ItemCap{
   abstract on_use(user:Player):void
   abstract update(user:Player):void
   abstract itemType:InventoryItemType
   abstract def:Definition
 }
-export class GunItem extends ItemCap{
+export class GunItem extends LItem{
     limit_per_slot: number=1
     def:GunDef
     use_delay:number=0
@@ -44,8 +45,16 @@ export class GunItem extends ItemCap{
         this.ammo=this.def.reload.capacity
         return
       }
+      if(!user.ammoCount[this.def.ammoType]){
+        user.ammoCount[this.def.ammoType]=user.inventory.getCountTag(`ammo_${this.def.ammoType}`)
+      }
+      if(user.ammoCount[this.def.ammoType]!<=0){
+        this.reloading=false
+        return
+      }
       user.privateDirtys.action=true
-      user.actions.play(new ReloadAction(this.def.reload.shotsPerReload??this.def.reload.capacity,this.def))
+      const reload_need=(this.def.reload.shotsPerReload??(this.def.reload.capacity-this.ammo))
+      user.actions.play(new ReloadAction(reload_need,this.def))
     }
     shot(user:Player){
       user.actions.cancel()
@@ -79,4 +88,26 @@ export class GunItem extends ItemCap{
       }
       this.use_delay-=1/user.game.tps
     }
+}
+export class AmmoItem extends LItem{
+  limit_per_slot: number=Infinity
+  def:AmmoDef
+  cap: number
+  itemType: InventoryItemType.ammo=InventoryItemType.ammo
+
+  constructor(def:AmmoDef){
+    super()
+    this.def=def
+    this.cap=def.size
+    this.tags.push("ammo",`ammo_${this.def.ammoType}`)
+  }
+  is(other: LItem): boolean {
+    return (other instanceof AmmoItem)&&other.def.idNumber==this.def.idNumber
+  }
+  on_use(_user: Player): void {
+    
+  }
+  update(_user: Player): void {
+    
+  }
 }

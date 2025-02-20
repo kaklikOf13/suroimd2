@@ -5,6 +5,7 @@ import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
+import { AmmoDef, Ammos } from "common/scripts/definitions/ammo.ts";
 
 export class GuiManager{
     game:Game
@@ -38,6 +39,8 @@ export class GuiManager{
                             def=Guns.getFromNumber(s.idNumber)
                             break
                         case InventoryItemType.ammo:
+                            def=Ammos.getFromNumber(s.idNumber)
+                            break
                         case InventoryItemType.healing:
                     }
                     this.inventory.push({count:s.count,def:def!,type:s.type})
@@ -64,16 +67,30 @@ export class GuiManager{
             return
         }
         if(this.hand.location>0){
-            const def=(this.inventory[this.hand.location-1].def as GunDef)
-            this.content.current_item_image.src=`img/game/common/guns/normal/${def.idString}.svg`
-            this.content.current_item_image.width=70
-            this.content.current_item_image.height=70
-            this.content.current_item_image.style.opacity="100%"
+            if(this.hand.type===InventoryItemType.ammo){
+                const def=(this.inventory[this.hand.location-1].def as AmmoDef)
+                this.content.current_item_image.src=`img/game/common/ammos/${def.idString}.svg`
+                this.content.current_item_image.style.width="40px"
+                this.content.current_item_image.style.height="40px"
+                this.content.current_item_image.style.opacity="100%"
+                this.content.current_item_image.style.transform="unset"
+                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
 
-            this.handSelection=this.inventory_cache[this.hand.location-1]
-            this.handSelection.classList.add("inventory-slot-selected")
+                this.handSelection=this.inventory_cache[this.hand.location-1]
+                this.handSelection.classList.add("inventory-slot-selected")
+            }else{
+                const def=(this.inventory[this.hand.location-1].def as GunDef)
+                this.content.current_item_image.src=`img/game/common/guns/normal/${def.idString}.svg`
+                this.content.current_item_image.style.width="70px"
+                this.content.current_item_image.style.height="70px"
+                this.content.current_item_image.style.opacity="100%"
+                this.content.current_item_image.style.transform="rotate(-30deg)"
 
-            this.content.hand_info_count.innerText=`${this.hand.ammo}/${def.reload.capacity}`
+                this.handSelection=this.inventory_cache[this.hand.location-1]
+                this.handSelection.classList.add("inventory-slot-selected")
+
+                this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
+            }
         }else{
             this.handSelection=undefined
             this.content.current_item_image.style.opacity="0%"
@@ -103,12 +120,26 @@ export class GuiManager{
             switch(s.type){
                 case InventoryItemType.gun:
                     img.src=`img/game/common/guns/normal/${s.def.idString}.svg`
+                    img.width=40
+                    img.height=40
+                    img.style.width = "40px"
+                    img.style.height = "40px"
                     break
                 case InventoryItemType.ammo:
+                    img.src=`img/game/common/ammos/${s.def.idString}.svg`
+                    img.style.width="25px"
+                    img.style.height="25px"
+                    img.width=25
+                    img.height=25
+                    img.style.transform="unset"
+                    if(s.count>0){
+                        const another=document.createElement("span")
+                        another.innerText=`${s.count}`
+                        slot.appendChild(another)
+                    }
+                    break
                 case InventoryItemType.healing:
             }
-            img.style.width = "40px"
-            img.style.height = "40px"
             slot.appendChild(img)
             this.content.inventory.appendChild(slot)
             cache.push(slot)

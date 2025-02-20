@@ -139,7 +139,7 @@ export class Inventory<ItemBase extends Item = Item>{
         for(const i in this.slots){
             // deno-lint-ignore ban-ts-comment
             //@ts-expect-error
-            if(this.slots[i].item!=null&&hasTag(this.slots[i].item,tag)){
+            if(this.slots[i].item!=null&&hasTag(this.slots[i].item.tags,tag)){
                 has=Math.min(has+this.slots[i].quantity,quantity)
                 has_slots.push(parseInt(i))
                 if(has==quantity){
@@ -336,7 +336,7 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         for(const i in this.slots){
             // deno-lint-ignore ban-ts-comment
             //@ts-expect-error
-            if(this.slots[i].item!=null&&hasTag(this.slots[i].item,tag)){
+            if(this.slots[i].item!=null&&hasTag(this.slots[i].item.tags,tag)){
                 has=Math.min(has+this.slots[i].quantity,quantity)
                 has_slots.push(parseInt(i))
                 if(has==quantity){
@@ -349,6 +349,46 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
             }
         }
         return false
+    }
+
+    /**
+     * Consume Inventory Item
+     * @param tag `Tag` Needed To Consume
+     * @param quantity Needed Quantity
+     * @returns Success
+     */
+    consumeTagRemains(tag:string,max:number=1):number{
+        const has_slots:SlotCap<ItemBase>[]=[]
+        let has=0
+        for(const i in this.slots){
+            // deno-lint-ignore ban-ts-comment
+            //@ts-expect-error
+            if(this.slots[i].item!=null&&hasTag(this.slots[i].item.tags,tag)){
+                has=Math.min(has+this.slots[i].quantity,max)
+                has_slots.push(this.slots[i])
+                if(has==max){
+                    break
+                }
+            }
+        }
+        let has_ret=has
+
+        for(const j of has_slots){
+            has_ret-=j.remove(has_ret)
+            if(j.quantity<=0){
+                this.slots.splice(this.slots.indexOf(j),1)
+            }
+        }
+        return has
+    }
+    getCountTag(tag:string){
+        let has=0
+        for(const i in this.slots){
+            if(this.slots[i].item&&this.slots[i].item!.tags.includes(tag)){
+                has+=this.slots[i].quantity
+            }
+        }
+        return has
     }
     /**
      * Remove Item From `Inventory`
