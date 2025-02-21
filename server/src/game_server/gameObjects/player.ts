@@ -1,7 +1,7 @@
 import { BaseGameObject2D, CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
+import { ActionsType, CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 import { AmmoItem, GunItem, HealingItem, LItem } from "../inventory/inventory.ts";
 import { Guns } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
@@ -35,6 +35,8 @@ export class Player extends BaseGameObject2D{
     inventory:InventoryCap<LItem>
 
     melee:LItem|null=null
+
+    using_healing_speed:number=0.4
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -44,7 +46,9 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
         this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
-        this.inventory.add(new HealingItem(Healings.getFromString("gauze")),5)
+        this.inventory.add(new HealingItem(Healings.getFromString("life_candy")),20)
+        this.inventory.add(new HealingItem(Healings.getFromString("gauze")),10)
+        this.inventory.add(new HealingItem(Healings.getFromString("medikit")),3)
         this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
         this.actions=new ActionsManager(this)
@@ -89,6 +93,9 @@ export class Player extends BaseGameObject2D{
             speed*=this.recoil.speed
             this.recoil.delay-=1/this.game.tps
             if(this.recoil.delay<=0)this.recoil=undefined
+        }
+        if(this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing){
+            speed*=this.using_healing_speed
         }
         if(this.handItem?.tags.includes("gun")){
             speed*=(this.handItem as GunItem).def.speedMult??1

@@ -381,6 +381,15 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         }
         return has
     }
+    update_infinity(){
+        for(let i=0;i<this.slots.length;i++){
+            if(this.slots[i].quantity<=0){
+                this.slots.splice(i,1)
+                i--
+                continue
+            }
+        }
+    }
     getCountTag(tag:string){
         let has=0
         for(const i in this.slots){

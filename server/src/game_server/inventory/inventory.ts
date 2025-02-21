@@ -7,7 +7,7 @@ import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/ammo.ts";
-import { HealingDef } from "common/scripts/definitions/healings.ts";
+import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
 export abstract class LItem extends ItemCap{
   // deno-lint-ignore no-explicit-any
   abstract on_use(user:Player,slot:SlotCap<any>):void
@@ -128,6 +128,14 @@ export class HealingItem extends LItem{
   }
   on_use(user: Player,slot:SlotCap): void {
     if(!user.using_item_down)return
+    if(this.def.condition){
+      for(const c of this.def.condition){
+        switch(c){
+          case HealingCondition.UnfullHealth:
+            if(user.health>=user.maxHealth)return
+        }
+      }
+    }
     user.privateDirtys.action=true
     user.actions.play(new HealingAction(this.def,slot))
   }
