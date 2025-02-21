@@ -48,5 +48,6 @@ export enum zIndexes{
     Terrain,
 }
 export enum ActionsType{
-    Reload
+    Reload,
+    Healing
 }

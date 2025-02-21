@@ -3,12 +3,14 @@ import { Bullet } from "../gameObjects/bullet.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Angle, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
-import { ItemCap } from "common/scripts/engine/inventory.ts";
+import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { ReloadAction } from "./actions.ts";
+import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/ammo.ts";
+import { HealingDef } from "common/scripts/definitions/healings.ts";
 export abstract class LItem extends ItemCap{
-  abstract on_use(user:Player):void
+  // deno-lint-ignore no-explicit-any
+  abstract on_use(user:Player,slot:SlotCap<any>):void
   abstract update(user:Player):void
   abstract itemType:InventoryItemType
   abstract def:Definition
@@ -32,7 +34,7 @@ export class GunItem extends LItem{
     is(other: ItemCap): boolean {
       return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
-    on_use(user:Player){
+    on_use(user:Player,_slot:SlotCap){
       if(this.def.fireMode===FireMode.Single&&!user.using_item_down)return
       if(this.use_delay<=0&&this.ammo>0){
         this.shot(user)
@@ -104,8 +106,30 @@ export class AmmoItem extends LItem{
   is(other: LItem): boolean {
     return (other instanceof AmmoItem)&&other.def.idNumber==this.def.idNumber
   }
-  on_use(_user: Player): void {
+  on_use(_user: Player,_slot:SlotCap): void {
+  }
+  update(_user: Player): void {
     
+  }
+}
+export class HealingItem extends LItem{
+  limit_per_slot: number=Infinity
+  def:HealingDef
+  cap: number
+  itemType: InventoryItemType.healing=InventoryItemType.healing
+
+  constructor(def:HealingDef){
+    super()
+    this.def=def
+    this.cap=def.size
+  }
+  is(other: LItem): boolean {
+    return (other instanceof HealingItem)&&other.def.idNumber==this.def.idNumber
+  }
+  on_use(user: Player,slot:SlotCap): void {
+    if(!user.using_item_down)return
+    user.privateDirtys.action=true
+    user.actions.play(new HealingAction(this.def,slot))
   }
   update(_user: Player): void {
     

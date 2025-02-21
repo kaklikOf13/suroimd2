@@ -8,6 +8,8 @@ export type HandData=
     disponibility:number
 }|{
     type:InventoryItemType.ammo
+}|{
+    type:InventoryItemType.healing
 })&{location:number})
 |undefined
 export class GuiPacket extends Packet{

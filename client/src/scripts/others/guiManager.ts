@@ -6,6 +6,7 @@ import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
 import { AmmoDef, Ammos } from "common/scripts/definitions/ammo.ts";
+import { HealingDef, Healings } from "common/scripts/definitions/healings.ts";
 
 export class GuiManager{
     game:Game
@@ -42,6 +43,8 @@ export class GuiManager{
                             def=Ammos.getFromNumber(s.idNumber)
                             break
                         case InventoryItemType.healing:
+                            def=Healings.getFromNumber(s.idNumber)
+                            break
                     }
                     this.inventory.push({count:s.count,def:def!,type:s.type})
                 }
@@ -67,30 +70,44 @@ export class GuiManager{
             return
         }
         if(this.hand.location>0){
-            if(this.hand.type===InventoryItemType.ammo){
-                const def=(this.inventory[this.hand.location-1].def as AmmoDef)
-                this.content.current_item_image.src=`img/game/common/ammos/${def.idString}.svg`
-                this.content.current_item_image.style.width="40px"
-                this.content.current_item_image.style.height="40px"
-                this.content.current_item_image.style.opacity="100%"
-                this.content.current_item_image.style.transform="unset"
-                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
-
-                this.handSelection=this.inventory_cache[this.hand.location-1]
-                this.handSelection.classList.add("inventory-slot-selected")
-            }else{
-                const def=(this.inventory[this.hand.location-1].def as GunDef)
-                this.content.current_item_image.src=`img/game/common/guns/normal/${def.idString}.svg`
-                this.content.current_item_image.style.width="70px"
-                this.content.current_item_image.style.height="70px"
-                this.content.current_item_image.style.opacity="100%"
-                this.content.current_item_image.style.transform="rotate(-30deg)"
-
-                this.handSelection=this.inventory_cache[this.hand.location-1]
-                this.handSelection.classList.add("inventory-slot-selected")
-
-                this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
+            if(!this.hand){
+                return
             }
+            switch(this.hand.type){
+                case InventoryItemType.gun:{
+                    const def=(this.inventory[this.hand.location-1].def as GunDef)
+                    this.content.current_item_image.src=`img/game/common/guns/normal/${def.idString}.svg`
+                    this.content.current_item_image.style.width="70px"
+                    this.content.current_item_image.style.height="70px"
+                    this.content.current_item_image.style.opacity="100%"
+                    this.content.current_item_image.style.transform="rotate(-30deg)"
+                    this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
+                    break
+                }
+                case InventoryItemType.ammo:{
+                    const def=(this.inventory[this.hand.location-1].def as AmmoDef)
+                    this.content.current_item_image.src=`img/game/common/ammos/${def.idString}.svg`
+                    this.content.current_item_image.style.width="40px"
+                    this.content.current_item_image.style.height="40px"
+                    this.content.current_item_image.style.opacity="100%"
+                    this.content.current_item_image.style.transform="unset"
+                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+                    break
+                }
+                case InventoryItemType.healing:{
+                    const def=(this.inventory[this.hand.location-1].def as HealingDef)
+                    this.content.current_item_image.src=`img/game/common/healings/${def.idString}.svg`
+                    this.content.current_item_image.style.width="40px"
+                    this.content.current_item_image.style.height="40px"
+                    this.content.current_item_image.style.opacity="100%"
+                    this.content.current_item_image.style.transform="unset"
+                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+                    break
+                }
+            }
+            this.handSelection=this.inventory_cache[this.hand.location-1]
+            this.handSelection.classList.add("inventory-slot-selected")
+
         }else{
             this.handSelection=undefined
             this.content.current_item_image.style.opacity="0%"
@@ -139,6 +156,18 @@ export class GuiManager{
                     }
                     break
                 case InventoryItemType.healing:
+                    img.src=`img/game/common/healings/${s.def.idString}.svg`
+                    img.style.width="25px"
+                    img.style.height="25px"
+                    img.width=25
+                    img.height=25
+                    img.style.transform="unset"
+                    if(s.count>0){
+                        const another=document.createElement("span")
+                        another.innerText=`${s.count}`
+                        slot.appendChild(another)
+                    }
+                    break
             }
             slot.appendChild(img)
             this.content.inventory.appendChild(slot)

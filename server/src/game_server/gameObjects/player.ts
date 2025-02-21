@@ -2,7 +2,7 @@ import { BaseGameObject2D, CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scr
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
-import { AmmoItem, GunItem, LItem } from "../inventory/inventory.ts";
+import { AmmoItem, GunItem, HealingItem, LItem } from "../inventory/inventory.ts";
 import { Guns } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
@@ -11,6 +11,7 @@ import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
+import { Healings } from "common/scripts/definitions/healings.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -43,6 +44,7 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
         this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
+        this.inventory.add(new HealingItem(Healings.getFromString("gauze")),5)
         this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
         this.actions=new ActionsManager(this)
@@ -96,8 +98,8 @@ export class Player extends BaseGameObject2D{
             this.dirtyPart=true
             this.oldPosition=this.position
         }
-        if(this.using_item){
-            this.handItem?.on_use(this)
+        if(this.using_item&&this.handItem){
+            this.handItem.on_use(this,this.inventory.slots[this.hand-1])
         }
         //Update Inventory
         for(const s of this.inventory.slots){
@@ -177,6 +179,9 @@ export class Player extends BaseGameObject2D{
                         guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
                         break
                     case InventoryItemType.ammo:
+                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
+                        break
+                    case InventoryItemType.healing:
                         guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
                         break
                 }
