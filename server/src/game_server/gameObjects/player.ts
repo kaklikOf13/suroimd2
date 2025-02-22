@@ -12,6 +12,7 @@ import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Healings } from "common/scripts/definitions/healings.ts";
+import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -37,6 +38,9 @@ export class Player extends BaseGameObject2D{
     melee:LItem|null=null
 
     using_healing_speed:number=0.4
+
+    vest?:EquipamentDef
+    helmet?:EquipamentDef
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -53,6 +57,9 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
         this.actions=new ActionsManager(this)
         this.load_hand(0)
+
+        this.vest=Armors.getFromString("warrior_vest")
+        this.helmet=Armors.getFromString("warrior_helmet")
     }
 
     load_hand(h:number){
@@ -211,7 +218,18 @@ export class Player extends BaseGameObject2D{
     }
     damage(params:DamageParams){
         if(this.dead)return
-        this.health=Math.max(this.health-params.amount,0)
+        let damage=params.amount
+        let mod=1
+        if(this.vest){
+            mod-=this.vest.reduction
+            damage-=this.vest.defence
+        }
+        if(this.helmet){
+            mod-=this.helmet.reduction
+            damage-=this.helmet.defence
+        }
+
+        this.health=Math.max(this.health-Math.max(damage*mod,0),0)
         if(this.health===0){
             this.kill(params)
         }
