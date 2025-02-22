@@ -50,7 +50,7 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
         this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
-        this.inventory.add(new HealingItem(Healings.getFromString("life_candy")),20)
+        this.inventory.add(new HealingItem(Healings.getFromString("lifecandy")),20)
         this.inventory.add(new HealingItem(Healings.getFromString("gauze")),10)
         this.inventory.add(new HealingItem(Healings.getFromString("medikit")),3)
         this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
@@ -58,8 +58,8 @@ export class Player extends BaseGameObject2D{
         this.actions=new ActionsManager(this)
         this.load_hand(0)
 
-        this.vest=Armors.getFromString("warrior_vest")
-        this.helmet=Armors.getFromString("warrior_helmet")
+        this.vest=Armors.getFromString("soldier_vest")
+        this.helmet=Armors.getFromString("soldier_helmet")
     }
 
     load_hand(h:number){
@@ -165,7 +165,9 @@ export class Player extends BaseGameObject2D{
         return {
             position:this.position,
             full:{
-                name:this.name
+                name:this.name,
+                vest:this.vest?this.vest.idNumber!+1:0,
+                helmet:this.helmet?this.helmet.idNumber!+1:0
             }
         }
     }

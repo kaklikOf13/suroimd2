@@ -182,3 +182,28 @@
         }
     }
 }
+#equipaments{
+    position: absolute;
+    background-color: #0002;
+    top: 5px;
+    right: 5px;
+    height: max-content;
+    width: max-content;
+    overflow-y: hidden;
+    overflow-x: hidden;
+
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    grid-template-rows: repeat(2, 60px);
+    grid-gap: 5px;
+    padding: 10px;
+    padding-top: 10px;
+
+    .inventory-slot{
+        margin: 0%;
+        img{
+            transform: unset;
+            rotate: unset;
+        }
+    }
+}

@@ -7,12 +7,14 @@ import { Player } from "../gameObjects/player.ts";
 import { Loot } from "../gameObjects/loot.ts";
 import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
+import { GuiManager } from "./guiManager.ts";
 export class Game extends ClientGame2D{
   client:Client
   activePlayer=0
 
   action:ActionPacket=new ActionPacket()
   grid:Material2D<GridMaterialArgs>
+  guiManager!:GuiManager
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
     super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle])
     for(const i of CATEGORYSL){

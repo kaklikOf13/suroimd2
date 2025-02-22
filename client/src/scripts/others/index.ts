@@ -16,7 +16,7 @@ import { GuiManager } from "./guiManager.ts";
     KeyL.bind(document.body)
 
     const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources)
-    const guiManager=new GuiManager(g)
+    g.guiManager=new GuiManager(g)
     g.connect("kaklik")
     g.mainloop()
 })()

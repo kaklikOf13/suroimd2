@@ -2,6 +2,8 @@ import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts
 export interface PlayerData extends EncodedData{
     full?:{
         name:string
+        vest:number
+        helmet:number
     }
     position:Vec2
 }
@@ -45,7 +47,9 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             }
             if(full){
                 ret.full={
-                    name:stream.readString()
+                    name:stream.readString(),
+                    vest:stream.readUint8(),
+                    helmet:stream.readUint8()
                 }
             }
             return ret
@@ -56,6 +60,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writePosition(data.position)
             if(full){
                 stream.writeString(data.full!.name)
+                .writeUint8(data.full!.vest)
+                .writeUint8(data.full!.helmet)
             }
         }
     },

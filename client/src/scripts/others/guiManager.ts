@@ -3,10 +3,11 @@ import { Game } from "./game.ts";
 import { Definition } from "common/scripts/engine/definitions.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
-import { ActionsType } from "common/scripts/others/constants.ts";
+import { ActionsType, CATEGORYS } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
 import { AmmoDef, Ammos } from "common/scripts/definitions/ammo.ts";
 import { HealingDef, Healings } from "common/scripts/definitions/healings.ts";
+import { Player } from "../gameObjects/player.ts";
 
 export class GuiManager{
     game:Game
@@ -21,7 +22,10 @@ export class GuiManager{
         action_info_delay:document.querySelector("#action-info-delay") as HTMLSpanElement,
         action_info:document.querySelector("#action-info") as HTMLDivElement,
 
-        inventory:document.querySelector("#inventory") as HTMLDivElement
+        inventory:document.querySelector("#inventory") as HTMLDivElement,
+
+        helmet_slot:document.querySelector("#helmet-slot") as HTMLImageElement,
+        vest_slot:document.querySelector("#vest-slot") as HTMLImageElement,
     }
     inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     hand:HandData
@@ -111,6 +115,20 @@ export class GuiManager{
         }else{
             this.handSelection=undefined
             this.content.current_item_image.style.opacity="0%"
+        }
+    }
+    update_equipaments(){
+        const player=this.game.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.game.activePlayer}) as Player
+        if(!player)return
+        if(player.helmet){
+            this.content.helmet_slot.src=`img/game/common/equipaments/${player.helmet.idString}.svg`
+        }else{
+            this.content.helmet_slot.src="img/game/common/icons/helmet.svg"
+        }
+        if(player.vest){
+            this.content.vest_slot.src=`img/game/common/equipaments/${player.vest.idString}.svg`
+        }else{
+            this.content.vest_slot.src="img/game/common/icons/vest.svg"
         }
     }
     inventory_cache:HTMLDivElement[]=[]

@@ -12,7 +12,7 @@ export interface HealingDef extends Definition{
 export const Healings=new Definitions<HealingDef>()
 Healings.insert(
     {
-        idString:"life_candy",
+        idString:"lifecandy",
         size:0.02,
         health:3,
         use_delay:0.65,
