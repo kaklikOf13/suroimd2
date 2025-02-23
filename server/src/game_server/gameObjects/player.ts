@@ -9,7 +9,7 @@ import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { ExtraType, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Healings } from "common/scripts/definitions/healings.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
@@ -28,6 +28,10 @@ export class Player extends BaseGameObject2D{
 
     health:number=100
     maxHealth:number=100
+
+    extra:number=100
+    maxExtra:number=100
+    extraType:ExtraType=ExtraType.Shield
 
     actions:ActionsManager<this>
 
@@ -103,6 +107,11 @@ export class Player extends BaseGameObject2D{
         }
         if(this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing){
             speed*=this.using_healing_speed
+        }
+        if(this.extraType===ExtraType.Adrenaline){
+            speed+=this.extra/400
+            this.extra=Math.max(this.extra-0.002,0)
+            this.health=Math.min(this.health+this.extra/1600,this.maxHealth)
         }
         if(this.handItem?.tags.includes("gun")){
             speed*=(this.handItem as GunItem).def.speedMult??1
@@ -230,10 +239,14 @@ export class Player extends BaseGameObject2D{
             mod-=this.helmet.reduction
             damage-=this.helmet.defence
         }
-
-        this.health=Math.max(this.health-Math.max(damage*mod,0),0)
-        if(this.health===0){
-            this.kill(params)
+        damage=Math.max(damage*mod,0)
+        if(this.extraType===ExtraType.Shield&&this.extra>0){
+            this.extra=Math.max(this.extra-damage,0)
+        }else{
+            this.health=Math.max(this.health-damage,0)
+            if(this.health===0){
+                this.kill(params)
+            }
         }
     }
     kill(_params:DamageParams){

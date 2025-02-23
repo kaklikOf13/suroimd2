@@ -32,3 +32,8 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
         type:stream.readUint8(),
     }
 }
+
+export enum ExtraType{
+    Shield,
+    Adrenaline
+}
