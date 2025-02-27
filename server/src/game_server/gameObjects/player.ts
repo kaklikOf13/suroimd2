@@ -29,7 +29,7 @@ export class Player extends BaseGameObject2D{
     health:number=100
     maxHealth:number=100
 
-    extra:number=100
+    extra:number=0
     maxExtra:number=100
     extraType:ExtraType=ExtraType.Shield
 
@@ -57,6 +57,12 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new HealingItem(Healings.getFromString("lifecandy")),20)
         this.inventory.add(new HealingItem(Healings.getFromString("gauze")),10)
         this.inventory.add(new HealingItem(Healings.getFromString("medikit")),3)
+        this.inventory.add(new HealingItem(Healings.getFromString("soda")),8)
+        this.inventory.add(new HealingItem(Healings.getFromString("inhaler")),4)
+        this.inventory.add(new HealingItem(Healings.getFromString("yellow_pills")),2)
+        this.inventory.add(new HealingItem(Healings.getFromString("tiny_blue_potion")),8)
+        this.inventory.add(new HealingItem(Healings.getFromString("blue_potion")),4)
+        this.inventory.add(new HealingItem(Healings.getFromString("blue_pills")),2)
         this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
         this.actions=new ActionsManager(this)
@@ -110,7 +116,7 @@ export class Player extends BaseGameObject2D{
         }
         if(this.extraType===ExtraType.Adrenaline){
             speed+=this.extra/400
-            this.extra=Math.max(this.extra-0.002,0)
+            this.extra=Math.max(this.extra-0.01,0)
             this.health=Math.min(this.health+this.extra/1600,this.maxHealth)
         }
         if(this.handItem?.tags.includes("gun")){
@@ -184,7 +190,7 @@ export class Player extends BaseGameObject2D{
     ammoCount:Partial<Record<AmmoType,number>>={}
     update2(){
         if(this.client){
-            const guiPacket=new GuiPacket(this.health,this.maxHealth)
+            const guiPacket=new GuiPacket(this.health,this.maxHealth,this.extra,this.maxExtra,this.extraType)
             guiPacket.inventory=[]
             let ii=0
             for(let i=0;i<this.inventory.slots.length;i++){

@@ -1,7 +1,7 @@
 import { GuiPacket, HandData } from "common/scripts/packets/gui_packet.ts";
 import { Game } from "./game.ts";
 import { Definition } from "common/scripts/engine/definitions.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { ExtraType, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
 import { ActionsType, CATEGORYS } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
@@ -15,6 +15,9 @@ export class GuiManager{
         health_bar_interior:document.querySelector("#health-bar") as HTMLDivElement,
         health_bar_animation:document.querySelector("#health-bar-animation") as HTMLDivElement,
         health_bar_amount:document.querySelector("#health-bar-amount") as HTMLSpanElement,
+
+        extra_bar_interior:document.querySelector("#extra-bar") as HTMLDivElement,
+        extra_bar_amount:document.querySelector("#extra-bar-amount") as HTMLSpanElement,
 
         hand_info_count:document.querySelector("#hand-info-count") as HTMLSpanElement,
         current_item_image:document.querySelector("#current-item-image") as HTMLImageElement,
@@ -35,6 +38,7 @@ export class GuiManager{
         this.game=game
         this.game.client.on("gui",(p:GuiPacket)=>{
             this.set_health(p.Health,p.MaxHealth)
+            this.set_extra(p.Extra,p.MaxExtra,p.ExtraType)
             if(p.inventory){
                 this.inventory.length=0
                 for(const s of p.inventory){
@@ -214,4 +218,14 @@ export class GuiManager{
         this.content.health_bar_animation.style.width=`${p*100}%`
         this.content.health_bar_amount.innerText=`${health}/${max_health}`
     }
+    set_extra(extra:number,max_extra:number,extra_type:ExtraType){
+        const p=extra/max_extra
+        this.content.extra_bar_interior.style.width =`${p*100}%`
+        this.content.extra_bar_amount.innerText=`${extra}/${max_extra}`
+        this.content.extra_bar_interior.style.backgroundColor=ExtrasColors[extra_type]
+    }
+}
+const ExtrasColors:Record<ExtraType,string>={
+    [ExtraType.Adrenaline]:"#ff0",
+    [ExtraType.Shield]:"#08f"
 }

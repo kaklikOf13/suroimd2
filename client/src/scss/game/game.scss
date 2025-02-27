@@ -99,6 +99,56 @@
         };
     }
 }
+#extra-bar-container {
+    background: palette.$transparent_bg;
+    border-radius: 2px;
+    position: absolute;
+    bottom: 40px;
+    left: 5px;
+    width: 330px;
+    height: 10px;
+    display: block;
+    justify-content: space-between;
+    align-items: center;
+    overflow: visible;
+    transform: translateY(-100%),translateX(-100%);
+
+    @media screen and (max-width: palette.$screen_large) {
+        width: 230px;
+        height: 10px;
+        bottom: 30px;
+
+        border-width: 5px;
+    }
+
+    #extra-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 2px;
+        height: 100%;
+        width: 0%;
+        transition: width ease-in-out 3s;
+        transition: width ease-in-out 0.2s;
+    }
+
+    #extra-bar-amount {
+        position: absolute;
+        color: #fff;
+        font-size: 20px;
+        font-style: italic;
+        z-index: 1;
+        top:50%;
+        left: 103%;
+        transform: translateY(-50%);
+
+        font-family: "Russo-One", serif;
+
+        @media screen and (max-width: palette.$screen_large) {
+            font-size: 10px;
+        };
+    }
+}
 
 #bottom-center-container{
     position: absolute;

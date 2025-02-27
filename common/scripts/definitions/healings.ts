@@ -1,11 +1,15 @@
 import { Definitions,Definition } from "../engine/mod.ts"
+import { ExtraType } from "./utils.ts";
 
 export enum HealingCondition{
     UnfullHealth,
+    UnfullExtra
 }
 export interface HealingDef extends Definition{
     size:number
     health?:number
+    extra?:number
+    extra_type?:ExtraType
     use_delay:number
     condition?:HealingCondition[]
 }
@@ -31,5 +35,57 @@ Healings.insert(
         health:100,
         use_delay:5.5,
         condition:[HealingCondition.UnfullHealth]
-    }
+    },
+
+    //Adrenaline
+    {
+        idString:"soda",
+        size:0.3,
+        extra:25,
+        use_delay:2.5,
+        extra_type:ExtraType.Adrenaline,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"inhaler",
+        size:0.4,
+        extra:50,
+        use_delay:4.5,
+        extra_type:ExtraType.Adrenaline,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"yellow_pills",
+        size:0.7,
+        extra:100,
+        use_delay:4.5,
+        extra_type:ExtraType.Adrenaline,
+        condition:[HealingCondition.UnfullExtra]
+    },
+
+    //Shield
+    {
+        idString:"tiny_blue_potion",
+        size:0.3,
+        extra:25,
+        use_delay:2.5,
+        extra_type:ExtraType.Shield,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"blue_potion",
+        size:0.4,
+        extra:50,
+        use_delay:4.5,
+        extra_type:ExtraType.Shield,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"blue_pills",
+        size:0.7,
+        extra:100,
+        use_delay:4.5,
+        extra_type:ExtraType.Shield,
+        condition:[HealingCondition.UnfullExtra]
+    },
 )

@@ -1,4 +1,4 @@
-import { InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode, InventoryItemType } from "../definitions/utils.ts";
+import { ExtraType, InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode, InventoryItemType } from "../definitions/utils.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
 export type HandData=
@@ -17,6 +17,9 @@ export class GuiPacket extends Packet{
     Name="gui"
     Health:number
     MaxHealth:number
+    Extra:number
+    MaxExtra:number
+    ExtraType:ExtraType
     dirty={
         inventory:false,
         hand:false,
@@ -25,14 +28,20 @@ export class GuiPacket extends Packet{
     inventory?:InventoryItemData[]
     hand?:HandData
     action?:{delay:number,type:ActionsType}
-    constructor(health=0,max_health=0){
+    constructor(health=0,max_health=0,extra:number=0,max_extra:number=0,extra_type:ExtraType=0){
         super()
         this.Health=health
         this.MaxHealth=max_health
+        this.Extra=extra
+        this.MaxExtra=max_extra
+        this.ExtraType=extra_type
     }
     encode(stream: NetStream): void {
         stream.writeUint8(this.Health)
         stream.writeUint8(this.MaxHealth)
+        stream.writeUint8(this.Extra)
+        stream.writeUint8(this.MaxExtra)
+        stream.writeUint8(this.ExtraType)
         stream.writeBooleanGroup(this.dirty.inventory,this.dirty.hand,this.hand!==undefined,this.dirty.action,this.action!==undefined)
         if(this.dirty.inventory){
             stream.writeArray<InventoryItemData>(this.inventory!,(i)=>{
@@ -57,6 +66,9 @@ export class GuiPacket extends Packet{
     decode(stream: NetStream): void {
         this.Health=stream.readUint8()
         this.MaxHealth=stream.readUint8()
+        this.Extra=stream.readUint8()
+        this.MaxExtra=stream.readUint8()
+        this.ExtraType=stream.readUint8()
         const [dirtyInventory,dirtyHand,hasHand,dirtyAction,hasAction]=stream.readBooleanGroup()
         if(dirtyInventory){
             this.dirty.inventory=true

@@ -42,6 +42,14 @@ export class HealingAction extends Action<Player>{
         if(this.def.health){
             user.health=Math.min(user.health+this.def.health,user.maxHealth)
         }
+        if(this.def.extra){
+            if(this.def.extra_type!==undefined&&this.def.extra_type!==user.extraType){
+                user.extraType=this.def.extra_type
+                user.extra=this.def.extra
+            }else{
+                user.extra=Math.min(user.extra+this.def.extra,user.maxExtra)
+            }
+        }
         this.slot.quantity--
         user.inventory.update_infinity()
         user.privateDirtys.hand=true
