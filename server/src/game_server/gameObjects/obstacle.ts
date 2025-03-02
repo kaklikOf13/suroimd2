@@ -3,6 +3,9 @@ import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
+import { Explosion } from "./explosion.ts";
+import { CATEGORYS } from "common/scripts/others/constants.ts";
+import { Explosions } from "common/scripts/definitions/explosions.ts";
 
 export class Obstacle extends BaseGameObject2D{
     objectType:string="obstacle"
@@ -68,6 +71,9 @@ export class Obstacle extends BaseGameObject2D{
     damage(params:DamageParams){
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
+            if(this.def.onDestroyExplosion){
+                this.manager.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:Explosions.getFromString(this.def.onDestroyExplosion),position:this.position})
+            }
             this.destroy()
         }else{
             this.reset_scale()

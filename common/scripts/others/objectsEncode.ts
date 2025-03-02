@@ -29,6 +29,13 @@ export interface BulletData extends EncodedData{
     initialPos:Vec2
     maxDistance:number
 }
+export interface ExplosionData extends EncodedData{
+    // deno-lint-ignore ban-types
+    full?:{}
+    position:Vec2
+    def:number
+    radius:number
+}
 export interface ObstacleData extends EncodedData{
     full?:{
         position:Vec2
@@ -147,4 +154,24 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             }
         }
     },
+    explosion:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:ExplosionData={
+                position:stream.readPosition(),
+                def:stream.readID(),
+                radius:stream.readFloat(0,20,3)
+            }
+            if(full){
+                //
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(_full:boolean,data:ExplosionData,stream:NetStream){
+            stream.writePosition(data.position)
+            .writeID(data.def)
+            .writeFloat(data.radius,0,20,3)
+        }
+    }
 }

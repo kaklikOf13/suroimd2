@@ -10,6 +10,12 @@ export interface BulletDef{
         height:number
     }
 }
+export const tracers={
+    redTiny:{
+        width:1,
+        height:0.4, // 1H = 0.05 radius
+    }
+}
 export enum InventoryItemType{
     gun,
     ammo,

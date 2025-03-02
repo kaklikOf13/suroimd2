@@ -18,6 +18,8 @@ export interface ObstacleDef extends Definition{
     variations?:number,
     zIndex?:number
     rotationMode?:number
+
+    onDestroyExplosion?:string,
 }
 
 export const Obstacles=new Definitions<ObstacleDef>()
@@ -31,6 +33,7 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
+        onDestroyExplosion:"barrel_explosion"
     },
     {
         idString:"oak_tree",

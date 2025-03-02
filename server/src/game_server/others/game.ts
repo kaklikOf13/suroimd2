@@ -9,6 +9,7 @@ import { ObjectsE } from "common/scripts/others/objectsEncode.ts"
 import { Bullet } from "../gameObjects/bullet.ts"
 import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
+import { Explosion } from "../gameObjects/explosion.ts";
 export interface GameConfig{
     maxPlayers:number,
 }
@@ -21,7 +22,8 @@ export class Game extends GameBase{
             Player,
             Loot,
             Bullet,
-            Obstacle
+            Obstacle,
+            Explosion
         ])
         for(const i of CATEGORYSL){
             this.scene.objects.add_category(i)

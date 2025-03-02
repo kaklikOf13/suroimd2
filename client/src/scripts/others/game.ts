@@ -8,6 +8,7 @@ import { Loot } from "../gameObjects/loot.ts";
 import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "./guiManager.ts";
+import { Explosion } from "../gameObjects/explosion.ts";
 export class Game extends ClientGame2D{
   client:Client
   activePlayer=0
@@ -16,7 +17,7 @@ export class Game extends ClientGame2D{
   grid:Material2D<GridMaterialArgs>
   guiManager!:GuiManager
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-    super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle])
+    super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }

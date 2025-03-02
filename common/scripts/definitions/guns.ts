@@ -1,6 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts";
 import { AmmoType } from "common/scripts/definitions/ammo.ts";
-import { BulletDef } from "./utils.ts";
+import { BulletDef, tracers } from "./utils.ts";
 export enum FireMode{
     Auto,
     Single
@@ -24,13 +24,6 @@ export interface GunDef extends Definition{
     recoil?:{
         duration:number
         speed:number
-    }
-}
-
-const tracers={
-    redTiny:{
-        width:1,
-        height:0.4, // 1H = 0.05 radius
     }
 }
 

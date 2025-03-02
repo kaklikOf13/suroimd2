@@ -1,3 +1,4 @@
+import { type DegAngle, type RadAngle } from "./geometry.ts";
 import { type ID } from "./utils.ts";
 
 export const random=Object.freeze({
@@ -12,5 +13,11 @@ export const random=Object.freeze({
     },
     id():ID{
         return Math.floor(Math.random() * 4294967296)
+    },
+    rad():RadAngle{
+        return Math.random()*(Math.PI-(-Math.PI))+(-Math.PI)
+    },
+    deg():DegAngle{
+        return this.int(-180,180)
     }
 })
