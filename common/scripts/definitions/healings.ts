@@ -1,5 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { ExtraType } from "./utils.ts";
+import { ExtraType, GameItem, InventoryItemType } from "./utils.ts";
 
 export enum HealingCondition{
     UnfullHealth,
@@ -13,7 +13,10 @@ export interface HealingDef extends Definition{
     use_delay:number
     condition?:HealingCondition[]
 }
-export const Healings=new Definitions<HealingDef>()
+export const Healings=new Definitions<HealingDef,GameItem>((i)=>{
+    i.item_type=InventoryItemType.healing
+    i.count=1
+})
 Healings.insert(
     {
         idString:"lifecandy",

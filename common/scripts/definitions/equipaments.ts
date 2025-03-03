@@ -1,4 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts"
+import { GameItem } from "common/scripts/definitions/utils.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 
 export enum EquipamentType{
     Helmet,
@@ -11,7 +13,10 @@ export interface EquipamentDef extends Definition{
     level:number
     type:EquipamentType
 }
-export const Armors=new Definitions<EquipamentDef>()
+export const Armors=new Definitions<EquipamentDef,GameItem>((obj)=>{
+    obj.item_type=InventoryItemType.equipament
+    obj.count=1
+})
 Armors.insert(
     //Normals Vest
     {

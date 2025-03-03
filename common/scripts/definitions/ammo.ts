@@ -1,8 +1,13 @@
 import { Definitions,Definition } from "../engine/mod.ts"
+import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 
 export enum AmmoType{
     "12g"=0,
     "762mm"
+}
+export const defaultAmmos:Record<AmmoType,string>={
+    [AmmoType["12g"]]:"12g",
+    [AmmoType["762mm"]]:"762mm",
 }
 export interface AmmoDef extends Definition{
     size:number
@@ -11,7 +16,10 @@ export interface AmmoDef extends Definition{
     strongTrail:string
     ammoType:AmmoType
 }
-export const Ammos=new Definitions<AmmoDef>()
+export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
+    i.item_type=InventoryItemType.ammo
+    i.count=1
+})
 Ammos.insert(
     {
         idString:"12g",

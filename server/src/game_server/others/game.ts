@@ -14,6 +14,8 @@ export interface GameConfig{
     maxPlayers:number,
 }
 
+
+
 export class Game extends GameBase{
     config:GameConfig
     map:GameMap

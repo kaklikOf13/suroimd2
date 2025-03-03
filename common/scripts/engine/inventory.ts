@@ -1,3 +1,4 @@
+import { random, type WeightDefinition } from "./random.ts";
 import { Numeric, Tags, hasTag, hasTags } from "./utils.ts"
 
 export abstract class Item{
@@ -456,5 +457,70 @@ export class ActionsManager<User>{
                 this.current_delay=0
             }
         }
+    }
+}
+
+export type LootTableItem={
+    table?:string
+    item?:string
+    count?:number
+    separate?:boolean
+}&WeightDefinition
+export type LootTable={
+    min:number
+    max:number
+    content:LootTableItem[]
+}|LootTableItem[]
+export class LootTablesDefs<TP,Aditional>{
+    tables:Record<string,LootTable>={}
+    get_item:(id:string,count:number,aditional:Aditional)=>TP[]
+    constructor(get_item:(id:string,count:number,aditional:Aditional)=>TP[]){
+        this.get_item=get_item
+    }
+    add_loot_table(name:string,table:LootTable){
+        this.tables[name]=table
+    }
+    add_tables(tables:Record<string,LootTable>){
+        for(const t of Object.keys(tables)){
+            this.tables[t]=tables[t]
+        }
+    }
+    get_loot(table:string,aditional:Aditional):TP[]{
+        const ret:TP[]=[]
+        const lt=this.tables[table]
+        if(!lt){
+            return []
+        }
+        if(Array.isArray(lt)){
+            const obj=random.weight2(lt)
+            if(obj){
+                if(obj.item){
+                    ret.push(...this.get_item(obj.item,obj.count??1,aditional))
+                }
+                if(obj.table&&obj.table!==table){
+                    const c=obj.count??1
+                    for(let i=0;i<c;i++){
+                        ret.push(...this.get_loot(obj.table,aditional))
+                    }
+                }
+            }
+        }else{
+            const count=random.int(lt.min,lt.max)
+            for(let i=0;i<count;i++){
+                const obj=random.weight2(lt.content)
+                if(obj){
+                    if(obj.item){
+                        ret.push(...this.get_item(obj.item,obj.count??1,aditional))
+                    }
+                    if(obj.table&&obj.table!==table){
+                        const c=obj.count??1
+                        for(let i=0;i<c;i++){
+                            ret.push(...this.get_loot(obj.table,aditional))
+                        }
+                    }
+                }
+            }
+        }
+        return ret
     }
 }

@@ -22,12 +22,12 @@ export interface ObstacleDef extends Definition{
     onDestroyExplosion?:string,
 }
 
-export const Obstacles=new Definitions<ObstacleDef>()
+export const Obstacles=new Definitions<ObstacleDef,null>((_v)=>{})
 Obstacles.insert(
     {
         idString:"stone",
         health:150,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.3),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
         scale:{
             destroy:0.7
         },
@@ -38,7 +38,7 @@ Obstacles.insert(
     {
         idString:"oak_tree",
         health:80,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.3),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
         scale:{
             destroy:0.8
         },
@@ -48,7 +48,7 @@ Obstacles.insert(
     {
         idString:"bush",
         health:100,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.3),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.42),
         noCollision:true,
         scale:{
             destroy:1

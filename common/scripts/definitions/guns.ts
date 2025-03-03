@@ -1,12 +1,14 @@
 import { Definitions,Definition } from "../engine/mod.ts";
 import { AmmoType } from "common/scripts/definitions/ammo.ts";
-import { BulletDef, tracers } from "./utils.ts";
+import { BulletDef, GameItem, InventoryItemType, tracers } from "./utils.ts";
 export enum FireMode{
     Auto,
     Single
 }
 export interface GunDef extends Definition{
     bullet:BulletDef
+    ammoSpawnAmount?:number
+    ammoSpawn?:string
     fireDelay:number
     bulletsCount?:number
     spread?:number
@@ -27,7 +29,10 @@ export interface GunDef extends Definition{
     }
 }
 
-export const Guns=new Definitions<GunDef>()
+export const Guns=new Definitions<GunDef,GameItem>((g)=>{
+    g.item_type=InventoryItemType.gun
+    g.count=1
+})
 Guns.insert(
     {
         idString:"ak47",
@@ -36,6 +41,7 @@ Guns.insert(
         lenght:0.8,
         size:4,
         ammoType:AmmoType["762mm"],
+        ammoSpawnAmount:90,
         bullet:{
             damage:10,
             radius:0.02,
@@ -96,8 +102,8 @@ Guns.insert(
         fireMode:FireMode.Single,
         bullet:{
             damage:7,
-            radius:0.2,
-            speed:0.3,
+            radius:0.0125,
+            speed:0.2,
             range:20,
             tracer:tracers.redTiny
         },

@@ -13,7 +13,7 @@ export type ExplosionDef={
         count:number
     }
 }&Definition
-export const Explosions=new Definitions<ExplosionDef>()
+export const Explosions=new Definitions<ExplosionDef,null>((_v)=>{})
 Explosions.insert(
     {
         idString:"barrel_explosion",
@@ -25,9 +25,9 @@ Explosions.insert(
         bullet:{
             def:{
                 damage:7,
-                radius:0.2,
-                speed:0.3,
-                range:26,
+                radius:0.0125,
+                speed:0.1,
+                range:10,
                 tracer:tracers.redTiny
             },
             count:5

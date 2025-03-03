@@ -1,4 +1,5 @@
-import { EaseFunction, Vec2, ease, v2 } from "common/scripts/engine/mod.ts";
+import { EaseFunction, ease, v2 } from "common/scripts/engine/mod.ts";
+import { Material2D } from "./renderer.ts";
 
 export interface SoundDef{
     volume:number
@@ -34,7 +35,7 @@ export enum SourceType{
     Animation,
     Sound,
 }
-export type Source=Sprite|Animation|Sound
+export type Source=Sprite|Animation|Sound|Material2D
 function getSvgUrl(svg:string) {
     return  URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
 }
@@ -131,6 +132,12 @@ export class ResourcesManager{
             }
             img.src=getSvgUrl(this.dome.serializeToString(svg))
         })
+    }
+    load_material2D(id:string,mat:Material2D){
+        this.sources[id]=mat
+    }
+    get_material2D(id:string):Material2D{
+        return this.sources[id] as Material2D
     }
     get_audio(id:string):Sound{
         return this.sources[id] as Sound

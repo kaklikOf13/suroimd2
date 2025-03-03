@@ -3,17 +3,20 @@ export interface Definition{
     idString:string,
     idNumber?:number
 }
-export class DefinitionsSimple<Type>{
-    public value:Record<string,Type>
-    public valueNumber:Record<number,Type>
+export class DefinitionsSimple<Type,Base=null>{
+    public value:Record<string,Type&Base>
+    public valueNumber:Record<number,Type&Base>
     protected did=0
-    constructor(){
+    forall?:(obj:Type&Partial<Base>)=>void
+    constructor(forall?:(obj:Type&Partial<Base>)=>void){
         this.value={}
         this.valueNumber={}
+        this.forall=forall
     }
     set(val:Type,id:string,n:number|undefined=undefined):number{
-        this.value[id]=val
-        this.valueNumber[n??this.did]=val
+        if(this.forall)this.forall(val as (Type&Partial<Base>))
+        this.value[id]=val as (Type&Base)
+        this.valueNumber[n??this.did]=val as (Type&Base)
         this.did++;
         return this.did
     }
@@ -23,9 +26,6 @@ export class DefinitionsSimple<Type>{
     getFromNumber(id:number):Type{
         return this.valueNumber[id]
     }
-    getSafe(id:string):Type|null{
-        return this.value[id] ?? null
-    }
     exist(id:string):boolean{
         return Object.hasOwn(this.value,id)
     }
@@ -33,33 +33,34 @@ export class DefinitionsSimple<Type>{
         this.set(mergeDeep<Type>(val,this.getFromString(extend)!),id)
     }
 }
-export class Definitions<Type extends Definition> extends DefinitionsSimple<Type>{
+export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
     insert(...val:Type[]):void{
         for(const vv of val){
-            this.value[vv.idString]=vv
+            if(this.forall)this.forall(vv as (Type&Partial<Base>))
+            this.value[vv.idString]=vv as (Type&Base)
             if(vv.idNumber===undefined){
                 vv.idNumber=this.did
-                this.valueNumber[this.did]=vv
+                this.valueNumber[this.did]=vv as (Type&Base)
                 this.did++
             }else{
-                this.valueNumber[vv.idNumber]=vv
+                this.valueNumber[vv.idNumber]=vv as (Type&Base)
             }
         }
     }
 }
-export class Tree<Type> extends DefinitionsSimple<Type>{
-    childs:Record<string,Tree<Type>>
-    constructor(){
-        super()
+export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{
+    childs:Record<string,Tree<Type,Base>>
+    constructor(forall?:(tp:Type&Partial<Base>)=>void){
+        super(forall)
         this.childs={}
     }
-    define_tree(name:string):Tree<Type>{
+    define_tree(name:string):Tree<Type,Base>{
         Object.defineProperty(this.childs,name,{
-            value:new Tree<Type>
+            value:new Tree<Type,Base>(this.forall)
         })
         return this.childs[name]
     }
-    get_tree(name:string):Tree<Type>{
+    get_tree(name:string):Tree<Type,Base>{
         return this.childs[name]
     }
     delete_tree(name:string){
@@ -75,7 +76,7 @@ export class Tree<Type> extends DefinitionsSimple<Type>{
     get_item(name:string):Type|undefined{
         const divisions:string[]=splitPath(name)
         // deno-lint-ignore no-this-alias
-        let act:Tree<Type>=this
+        let act:Tree<Type,Base>=this
         for(let i=0;i<divisions.length;i++){
             const d=divisions[i]
             if(act.exist_tree(d)){

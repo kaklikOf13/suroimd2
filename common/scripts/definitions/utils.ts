@@ -1,5 +1,5 @@
 import { type NetStream } from "../engine/stream.ts";
-
+import { Definition } from "../engine/definitions.ts";
 export interface BulletDef{
     damage:number
     range:number
@@ -19,7 +19,12 @@ export const tracers={
 export enum InventoryItemType{
     gun,
     ammo,
-    healing
+    healing,
+    equipament
+}
+export interface GameItem extends Definition{
+    item_type:InventoryItemType
+    count:number
 }
 export interface InventoryItemData{
     count:number

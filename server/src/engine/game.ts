@@ -13,7 +13,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
         this.allowJoin=true
         this.clients=new ClientsManager(this._handle.bind(this))
         this.clients.packets_manager=packetManager
-        //setTimeout(this.fpsShow.bind(this),1000)
+        setTimeout(this.fpsShow.bind(this),1000)
     }
     fpsShow(){
         if(!this.running)return
