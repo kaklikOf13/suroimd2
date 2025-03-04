@@ -4,6 +4,9 @@ import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts"
 import { Camera2D, Renderer } from "../engine/renderer.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Debug } from "../others/config.ts";
+import { Particles2DBase } from "common/scripts/engine/particles.ts";
+import { random } from "common/scripts/engine/random.ts";
+import { Vec2 } from "common/scripts/engine/mod.ts";
 export class Obstacle extends ClientGameObject2D{
     objectType:string="obstacle"
     numberType: number=4
@@ -34,8 +37,19 @@ export class Obstacle extends ClientGameObject2D{
             }
         }
     }
+    onDestroy(): void {
+        for(let i=0;i<5;i++){
+            this._add_own_particle(this.hb.randomPoint())
+        }
+    }
+    _add_own_particle(position:Vec2){
+        this.game.particles.add_particle(position,random.rad(),{lifetime:random.float(0.6,0.7),speed:0.05,angular_speed:Angle.deg2rad(random.int(-1,1))},Particles2DBase.life_timed1)
+    }
     update(): void {
         
+    }
+    on_hitted(position:Vec2){
+        this._add_own_particle(position)
     }
     constructor(){
         super()

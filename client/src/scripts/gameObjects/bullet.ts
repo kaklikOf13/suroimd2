@@ -73,6 +73,7 @@ export class Bullet extends ClientGameObject2D{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
+                        (obj as Obstacle).on_hitted(this.position)
                         this.dying=true
                     }
                     break
