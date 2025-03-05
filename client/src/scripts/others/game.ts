@@ -10,6 +10,11 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "./guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
 import { Debug } from "./config.ts";
+
+function gameLoadMaterials(game:Game){
+  game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0,0.4)))
+}
+
 export class Game extends ClientGame2D{
   client:Client
   activePlayer=0
@@ -43,6 +48,8 @@ export class Game extends ClientGame2D{
       this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0)))
       this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0)))
     }
+
+    gameLoadMaterials(this)
   }
   actionDelay:number=3
   on_render():void{

@@ -13,6 +13,7 @@ import { ExtraType, InventoryItemType } from "common/scripts/definitions/utils.t
 import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Healings } from "common/scripts/definitions/healings.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
+import { GameItems } from "common/scripts/definitions/alldefs.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -92,6 +93,8 @@ export class Player extends BaseGameObject2D{
         this.privateDirtys.hand=true
         this.privateDirtys.action=true
         this.actions.cancel()
+
+        this.dirty=true
     }
 
     dirtyPrivate=3
@@ -105,6 +108,7 @@ export class Player extends BaseGameObject2D{
     }
 
     update(): void {
+        //Movement
         let speed=1
         if(this.recoil){
             speed*=this.recoil.speed
@@ -127,6 +131,7 @@ export class Player extends BaseGameObject2D{
             this.dirtyPart=true
             this.oldPosition=this.position
         }
+        //Hand Use
         if(this.using_item&&this.handItem){
             this.handItem.on_use(this,this.inventory.slots[this.hand-1])
         }
@@ -144,6 +149,7 @@ export class Player extends BaseGameObject2D{
             this.dirtyPrivate--
         }
 
+        //Collision
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
@@ -179,10 +185,14 @@ export class Player extends BaseGameObject2D{
     getData(): PlayerData {
         return {
             position:this.position,
+            rotation:this.rotation,
+            using_item:this.using_item,
+            using_item_down:this.using_item_down,
             full:{
                 name:this.name,
                 vest:this.vest?this.vest.idNumber!+1:0,
-                helmet:this.helmet?this.helmet.idNumber!+1:0
+                helmet:this.helmet?this.helmet.idNumber!+1:0,
+                handItem:this.handItem?GameItems.keysString[this.handItem.def.idString]:undefined
             }
         }
     }

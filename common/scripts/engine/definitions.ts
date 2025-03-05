@@ -47,6 +47,29 @@ export class Definitions<Type extends Definition,Base> extends DefinitionsSimple
             }
         }
     }
+    insert_defs(...defs:Definitions<Type,Base>[]){
+        for(const d of defs){
+            this.insert(...Object.values(d.valueNumber))
+        }
+    }
+}
+export class DefinitionsMerge<TP extends Definition>{
+    valueString:Record<string,TP>={}
+    valueNumber:Record<number,TP>={}
+    keysString:Record<string,number>={}
+    keysNumber:Record<number,string>={}
+    constructor(){
+
+    }
+    insert_def(def:Record<string,TP>){
+        for(const dv of Object.values(def)){
+            const idn=Object.keys(this.keysNumber).length
+            this.valueNumber[idn]=dv
+            this.valueString[dv.idString]=dv
+            this.keysNumber[idn]=dv.idString
+            this.keysString[dv.idString]=idn
+        }
+    }
 }
 export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{
     childs:Record<string,Tree<Type,Base>>

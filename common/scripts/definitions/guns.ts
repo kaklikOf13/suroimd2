@@ -5,6 +5,9 @@ export enum FireMode{
     Auto,
     Single
 }
+export interface GasParticle{
+    count:number
+}
 export interface GunDef extends Definition{
     bullet:BulletDef
     ammoSpawnAmount?:number
@@ -27,12 +30,23 @@ export interface GunDef extends Definition{
         duration:number
         speed:number
     }
+    gasParticles?:GasParticle
 }
 
 export const Guns=new Definitions<GunDef,GameItem>((g)=>{
     g.item_type=InventoryItemType.gun
     g.count=1
 })
+
+export const GasParticles={
+    shotgun:{
+        count:5
+    } satisfies GasParticle,
+    automatic:{
+        count:1
+    } satisfies GasParticle
+}
+
 Guns.insert(
     {
         idString:"ak47",
@@ -61,6 +75,7 @@ Guns.insert(
             speed:0.7
         },
         speedMult:0.96,
+        gasParticles:GasParticles.automatic
     },
     {
         idString:"kar98k",
@@ -117,6 +132,7 @@ Guns.insert(
             speed:0.4
         },
         speedMult:0.94,
+        gasParticles:GasParticles.shotgun
     },
     {
         idString:"spas12",
@@ -145,5 +161,6 @@ Guns.insert(
             speed:0.5
         },
         speedMult:0.95,
+        gasParticles:GasParticles.shotgun
     },
 )

@@ -4,6 +4,8 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacles } from "common/scripts/definitions/obstacles.ts";
 
+import {} from "common/scripts/definitions/maps/base.ts"
+
 export class GameMap{
     readonly size:Vec2
     game:Game
