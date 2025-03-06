@@ -15,8 +15,39 @@ import { GuiManager } from "./guiManager.ts";
     mouseML.bind(canvas,canvas)
     KeyL.bind(document.body)
 
-    const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources)
-    g.guiManager=new GuiManager(g)
-    g.connect("kaklik")
-    g.mainloop()
+    class App{
+        game?:Game
+        menuD:HTMLDivElement=document.querySelector("#menu") as HTMLDivElement
+        gameD:HTMLDivElement=document.querySelector("#game") as HTMLDivElement
+
+        elements={
+            play_button:document.querySelector("#btn-play") as HTMLButtonElement
+        }
+
+        constructor(){
+            this.gameD.style.display="none"
+            this.menuD.style.display="unset"
+
+            this.elements.play_button.onclick=(_e)=>{this.playGame()}
+        }
+        async playGame(){
+            if(this.game)return
+            this.gameD.style.display="unset"
+            this.menuD.style.display="none"
+
+            const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources)
+            g.guiManager=new GuiManager(g)
+            g.connect("kaklik")
+            this.game=g
+            g.mainloop()
+            g.onstop=this.closeGame.bind(this)
+        }
+        closeGame(_g:Game){
+            this.game=undefined
+            this.gameD.style.display="none"
+            this.menuD.style.display="unset"
+        }
+
+    }
+    new App()
 })()

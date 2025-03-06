@@ -1,12 +1,11 @@
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { FormGameObject2D, Material2D, RGBA, WebglRenderer } from "../engine/mod.ts";
-import { CircleHitbox2D, Particle2DLifetime1, Particles2DBase, random, v2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Game } from "../others/game.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItem } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { GunDef } from "common/scripts/definitions/guns.ts";
 export class Player extends FormGameObject2D{
     material!:Material2D
     objectType:string="player"

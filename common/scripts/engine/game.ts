@@ -142,7 +142,9 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.on_update()
         this.scene.objects.update()
         this.events.emit(DefaultEvents.GameTick,this)
-        this.clock.tick()
+        if(this.running){
+            this.clock.tick()
+        }
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()
         }

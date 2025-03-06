@@ -1,0 +1,64 @@
+@use "../palette.scss";
+@use "./buttons.scss";
+.background-menu{
+    background-color: #0003;
+    width: 30%;
+    height: 30%;
+
+    border-radius: 10px;
+    border: 3px solid #07a;
+}
+.background-menu-green{
+    @extend .background-menu;
+    border: 3px solid #0a7;
+}
+
+.text-input{
+    color: #ccd;
+    background-color: #0003;
+    border: 3px solid #07a;
+    border-radius: 10px;
+    font-family: "Russo one";
+    font-size: 20px;
+
+    padding: 10px;
+
+    outline: #0000;
+
+    @media screen and (max-width: palette.$screen_large) {
+        font-size: 10px;
+    };
+}
+.text-input::placeholder{
+    text-align: center;
+}
+.character{
+    width: 300px;
+    height: 300px;
+    
+    transform: rotate(90deg);
+    padding: 0px;
+    margin: 0px;
+    .body{
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+        background-size: cover;
+    }
+    .fist-left,
+    .fist-right {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 190px;
+        top: 185px;
+        background-size: cover;
+    }
+
+    .fist-right {
+        top: 35px;
+    }
+}

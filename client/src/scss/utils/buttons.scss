@@ -1,0 +1,25 @@
+@use "../palette.scss";
+.btn-blue{
+    color: #ccd;
+    background-color: #0003;
+    border: 3px solid #07a;
+    border-radius: 10px;
+    font-family: "Russo one";
+    font-size: 30px;
+
+    padding: 10px;
+
+    @media screen and (max-width: palette.$screen_large) {
+        font-size: 15px;
+    };
+}
+.btn-blue:active:hover{
+    background-color: #0009;
+}
+.btn-blue:hover{
+    background-color: #0006;
+}
+.btn-green {
+    @extend .btn-blue;
+    border: 3px solid #0a7;
+}

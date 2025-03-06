@@ -36,6 +36,8 @@ export class Game extends ClientGame2D{
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.scene.objects.clear()
+      this.running=false
+      if(this.onstop)this.onstop(this)
     })
 
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
@@ -51,6 +53,7 @@ export class Game extends ClientGame2D{
 
     gameLoadMaterials(this)
   }
+  onstop?:(g:Game)=>void
   actionDelay:number=3
   on_render():void{
     (this.renderer as WebglRenderer)._draw_vertices([
