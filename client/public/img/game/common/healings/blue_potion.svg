@@ -3,8 +3,8 @@
 
 <svg
    width="27.165331mm"
-   height="57.043831mm"
-   viewBox="0 0 27.165331 57.043831"
+   height="36.40633mm"
+   viewBox="0 0 27.165331 36.40633"
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="8.8961884"
-     inkscape:cx="50.583461"
-     inkscape:cy="14.275777"
+     inkscape:zoom="2.2240471"
+     inkscape:cx="65.196461"
+     inkscape:cy="8.0933538"
      inkscape:window-width="1920"
      inkscape:window-height="996"
      inkscape:window-x="0"
@@ -43,21 +43,17 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-130.02246,-134.57239)">
-    <rect
-       style="fill:#1e00ff;fill-opacity:1;stroke-width:0;stroke-linecap:square"
+    <path
        id="rect880"
-       width="26.165325"
-       height="44.051849"
-       x="130.73392"
-       y="147.16434"
-       rx="5.7303462"
-       ry="6.0457244" />
+       style="fill:#1e00ff;stroke-width:0;stroke-linecap:square"
+       d="m 136.22911,146.39897 h 14.70463 c 3.17461,0 5.73035,2.69639 5.73035,6.04573 v 11.85207 c 0,3.34933 -2.55574,6.04572 -5.73035,6.04572 h -14.70463 c -3.17461,0 -5.73035,-2.69639 -5.73035,-6.04572 V 152.4447 c 0,-3.34934 2.55574,-6.04573 5.73035,-6.04573 z"
+       sodipodi:nodetypes="sssssssss" />
     <g
        id="g1718">
       <path
          id="rect880-3"
          style="fill:#1e00ff;fill-opacity:0;stroke:#000000;stroke-linecap:square"
-         d="m 149.53027,146.77284 h 1.42717 c 3.17461,0 5.73035,2.71424 5.73035,6.08574 v 32.1719 c 0,3.3715 -2.55574,6.08574 -5.73035,6.08574 h -14.70463 c -3.17461,0 -5.73035,-2.71424 -5.73035,-6.08574 v -32.1719 c 0,-3.3715 2.55574,-6.08574 5.73035,-6.08574 h 1.37661"
+         d="m 149.53027,146.77284 h 1.42717 c 3.17461,0 5.73035,2.71424 5.73035,6.08574 v 11.5344 c 0,3.3715 -2.55574,6.08574 -5.73035,6.08574 h -14.70463 c -3.17461,0 -5.73035,-2.71424 -5.73035,-6.08574 v -11.5344 c 0,-3.3715 2.55574,-6.08574 5.73035,-6.08574 h 1.37661"
          sodipodi:nodetypes="cssssssssc" />
     </g>
     <path
