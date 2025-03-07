@@ -1,5 +1,6 @@
 import { EaseFunction, ease, v2 } from "common/scripts/engine/mod.ts";
 import { Material2D } from "./renderer.ts";
+import { type SoundManager } from "./sounds.ts";
 
 export interface SoundDef{
     volume:number
@@ -65,16 +66,18 @@ export class ResourcesManager{
     sources:Record<string,Source>
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
-    audioCtx:AudioContext
     domp=new DOMParser()
     dome=new XMLSerializer()
     gl:WebGLRenderingContext
-    constructor(gl:WebGLRenderingContext){ 
+    audioCtx:AudioContext
+    soundsManager:SoundManager
+    constructor(gl:WebGLRenderingContext,soundsManager:SoundManager){ 
         this.sources={}
         this.canvas=document.createElement("canvas")
         this.ctx=this.canvas.getContext("2d")!
-        this.audioCtx=new AudioContext()
         this.gl=gl
+        this.audioCtx=soundsManager.ctx
+        this.soundsManager=soundsManager
     }
     async load_source(id:string,src:string,scale:number=1):Promise<Source|undefined>{
         if(src.endsWith(".svg")||src.endsWith(".png")){
@@ -142,8 +145,8 @@ export class ResourcesManager{
     get_audio(id:string):Sound{
         return this.sources[id] as Sound
     }
-    load_audio(id:string,def:SoundDef):Promise<SoundDef>{
-        return new Promise<SoundDef>((resolve, reject) => {
+    load_audio(id:string,def:SoundDef):Promise<Sound>{
+        return new Promise<Sound>((resolve, reject) => {
             if (this.sources[id] != undefined) {
                 resolve(this.sources[id] as Sound)
             }
@@ -161,7 +164,7 @@ export class ResourcesManager{
                     return;
                 }
                 this.audioCtx.decodeAudioData(arrayBuffer, (audioBuffer) => {
-                    (this.sources[id] as Sound)={buffer:audioBuffer,...def,resourceType:SourceType.Sound};
+                    (this.sources[id] as Sound)={buffer:audioBuffer,...def,resourceType:SourceType.Sound}
                     resolve(this.sources[id] as Sound)
                 }, () => {
                     reject(`Failed decoding sound: ${id}`);
@@ -171,6 +174,7 @@ export class ResourcesManager{
             xhr.addEventListener("error", onfailure);
             xhr.addEventListener("timeout", onfailure);
             xhr.send();
+            resolve(this.sources[id] as Sound)
         })
     }
     get_animation(id:string):Animation{

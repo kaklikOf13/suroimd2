@@ -4,17 +4,21 @@ import { server } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
+import { SoundManager } from "../engine/sounds.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
     document.body.appendChild(canvas)
     const renderer=new WebglRenderer(canvas,100)
-    const resources=new ResourcesManager(renderer.gl)
+    const sounds=new SoundManager()
+    const resources=new ResourcesManager(renderer.gl,sounds)
     resources.load_folders(["img/game/common"])
     const mouseML=new MousePosListener(renderer.meter_size)
     const KeyL=new KeyListener()
     mouseML.bind(canvas,canvas)
     KeyL.bind(document.body)
+
+    await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
     class App{
         game?:Game
@@ -30,13 +34,17 @@ import "../news/new.ts"
             this.menuD.style.display="unset"
 
             this.elements.play_button.onclick=(_e)=>{this.playGame()}
+            setTimeout(()=>{
+                sounds.set_music(resources.get_audio("menu_music"))
+            },1000)
         }
         async playGame(){
             if(this.game)return
             this.gameD.style.display="unset"
             this.menuD.style.display="none"
 
-            const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,resources)
+            const g=new Game(`ws${server.toString()}/${await getGame("http://localhost:8080")}`,KeyL,mouseML,renderer,sounds,resources)
+            sounds.set_music(null)
             g.guiManager=new GuiManager(g)
             g.connect("kaklik")
             this.game=g

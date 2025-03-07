@@ -2,6 +2,7 @@ import { BaseGameObject2D, CircleHitbox2D, DefaultEvents, DefaultEventsMap2D, Ga
 import { Camera2D,  Material2D, RGBA, Renderer, WebglRenderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
+import { SoundManager } from "./sounds.ts";
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>
@@ -31,8 +32,11 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     resources:ResourcesManager
 
     particles:ParticlesManager2D<ClientGameObject2D>
-    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+
+    sounds:SoundManager
+    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
         super(60,objects)
+        this.sounds=sounds
         this.mouse=mouse
         this.key=keyl
         this.renderer=renderer
@@ -58,6 +62,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     on_update(){
         this.draw(this.renderer)
         this.particles.update(1/this.tps)
+        this.sounds.update(1/this.tps)
         this.key.tick()
     }
 }

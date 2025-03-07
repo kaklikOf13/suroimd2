@@ -10,6 +10,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "./guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
 import { Debug } from "./config.ts";
+import { SoundManager } from "../engine/sounds.ts";
 
 function gameLoadMaterials(game:Game){
   game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0,0.4)))
@@ -22,8 +23,8 @@ export class Game extends ClientGame2D{
   action:ActionPacket=new ActionPacket()
   grid:Material2D<GridMaterialArgs>
   guiManager!:GuiManager
-  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-    super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion])
+  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
+    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
