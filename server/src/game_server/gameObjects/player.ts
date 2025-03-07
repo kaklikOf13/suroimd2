@@ -14,6 +14,7 @@ import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Healings } from "common/scripts/definitions/healings.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { Game } from "../others/game.ts"
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -126,11 +127,12 @@ export class Player extends BaseGameObject2D{
         if(this.handItem?.tags.includes("gun")){
             speed*=(this.handItem as GunItem).def.speedMult??1
         }
-        this.position=v2.maxDecimal(v2.add(this.position,v2.scale(this.movement,speed)),3)
+        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed)),NullVec2,(this.game as Game).map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.dirtyPart=true
             this.oldPosition=this.position
         }
+
         //Hand Use
         if(this.using_item&&this.handItem){
             this.handItem.on_use(this,this.inventory.slots[this.hand-1])
