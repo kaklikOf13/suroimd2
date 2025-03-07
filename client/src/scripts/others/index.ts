@@ -3,6 +3,7 @@ import { Game, getGame } from "./game.ts"
 import { server } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
+import "../news/new.ts"
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 

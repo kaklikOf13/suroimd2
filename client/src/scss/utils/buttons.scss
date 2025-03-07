@@ -1,25 +1,42 @@
 @use "../palette.scss";
-.btn-blue{
-    color: #ccd;
-    background-color: #0003;
-    border: 3px solid #07a;
-    border-radius: 10px;
+
+.btn-blue {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(7, 170, 238, 0.1) 0%, rgba(7, 170, 238, 0.2) 100%);
+    border: 2px solid rgba(7, 170, 238, 0.5);
+    border-radius: 12px;
     font-family: "Russo one";
     font-size: 30px;
+    padding: 15px 90px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+        background: linear-gradient(135deg, rgba(7, 170, 238, 0.2) 0%, rgba(7, 170, 238, 0.3) 100%);
+        border-color: rgba(7, 170, 238, 0.8);
+        box-shadow: 0 0 20px rgba(7, 170, 238, 0.2);
+        transform: translateY(-2px);
+    }
 
-    padding: 10px;
+    &:active {
+        transform: translateY(1px);
+    }
 
     @media screen and (max-width: palette.$screen_large) {
-        font-size: 15px;
-    };
+        font-size: 20px;
+        padding: 12px 30px;
+    }
 }
-.btn-blue:active:hover{
-    background-color: #0009;
-}
-.btn-blue:hover{
-    background-color: #0006;
-}
+
 .btn-green {
     @extend .btn-blue;
-    border: 3px solid #0a7;
+    background: linear-gradient(135deg, rgba(0, 170, 119, 0.1) 0%, rgba(0, 170, 119, 0.2) 100%);
+    border: 2px solid rgba(0, 170, 119, 0.5);
+    
+    &:hover {
+        background: linear-gradient(135deg, rgba(0, 170, 119, 0.2) 0%, rgba(0, 170, 119, 0.3) 100%);
+        border-color: rgba(0, 170, 119, 0.8);
+        box-shadow: 0 0 20px rgba(0, 170, 119, 0.2);
+    }
 }
