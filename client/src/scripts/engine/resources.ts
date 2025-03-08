@@ -79,9 +79,12 @@ export class ResourcesManager{
         this.audioCtx=soundsManager.ctx
         this.soundsManager=soundsManager
     }
-    async load_source(id:string,src:string,scale:number=1):Promise<Source|undefined>{
+    async load_source(id:string,src:string,scale:number=1,volume:number=1):Promise<Source|undefined>{
         if(src.endsWith(".svg")||src.endsWith(".png")){
             return await this.load_sprite(id,src,scale)
+        }
+        if(src.endsWith(".mp3")){
+            return await this.load_audio(id,{src:src,volume:volume})
         }
         return undefined
     }
@@ -145,8 +148,8 @@ export class ResourcesManager{
     get_audio(id:string):Sound{
         return this.sources[id] as Sound
     }
-    load_audio(id:string,def:SoundDef):Promise<Sound>{
-        return new Promise<Sound>((resolve, reject) => {
+    load_audio(id:string,def:SoundDef):Promise<Sound|undefined>{
+        return new Promise<Sound|undefined>((resolve, reject) => {
             if (this.sources[id] != undefined) {
                 resolve(this.sources[id] as Sound)
             }
@@ -164,10 +167,11 @@ export class ResourcesManager{
                     return;
                 }
                 this.audioCtx.decodeAudioData(arrayBuffer, (audioBuffer) => {
-                    (this.sources[id] as Sound)={buffer:audioBuffer,...def,resourceType:SourceType.Sound}
+                    (this.sources[id] as Sound)={buffer:audioBuffer,src:def.src,volume:def.volume??1,resourceType:SourceType.Sound}
                     resolve(this.sources[id] as Sound)
                 }, () => {
                     reject(`Failed decoding sound: ${id}`);
+                    resolve(undefined)
                 });
             });
             xhr.addEventListener("abort", onfailure);

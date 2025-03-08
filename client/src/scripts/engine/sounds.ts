@@ -146,9 +146,12 @@ export class SoundManager{
         const offset = params.offset ? params.offset : 0
         for (let _i = 0; _i < SoundsMaxInstances; _i++) {
             ++this.instanceId;
-            if (!this.soundInstances[this.instanceId % SoundsMaxInstances].buffer) {
+            if (!this.soundInstances[this.instanceId % SoundsMaxInstances]||!this.soundInstances[this.instanceId % SoundsMaxInstances].buffer) {
                 break;
             }
+        }
+        if(!this.soundInstances[this.instanceId % SoundsMaxInstances]){
+            this.soundInstances[this.instanceId%SoundsMaxInstances]=new SoundInstance(this,this.ctx)
         }
         const instance=this.soundInstances[this.instanceId % SoundsMaxInstances]
         instance.start(this.masterGainNode,sound.buffer,volume,loop,delay,offset)

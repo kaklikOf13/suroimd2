@@ -13,6 +13,7 @@ import { SoundManager } from "../engine/sounds.ts";
     const sounds=new SoundManager()
     const resources=new ResourcesManager(renderer.gl,sounds)
     resources.load_folders(["img/game/common"])
+    resources.load_folders(["sounds/game/common"])
     const mouseML=new MousePosListener(renderer.meter_size)
     const KeyL=new KeyListener()
     mouseML.bind(canvas,canvas)

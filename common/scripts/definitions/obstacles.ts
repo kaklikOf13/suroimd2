@@ -20,6 +20,31 @@ export interface ObstacleDef extends Definition{
     rotationMode?:number
 
     onDestroyExplosion?:string,
+    material?:string
+
+    sounds?:{
+        hit:string,
+        break:string,
+        hit_variations?:number
+    }
+}
+export interface MaterialDef{
+    sounds:string,
+    hit_variations?:number
+}
+export const Materials:Record<string,MaterialDef>={
+    tree:{
+        sounds:"tree",
+        hit_variations:2
+    },
+    stone:{
+        sounds:"stone",
+        hit_variations:2
+    },
+    bush:{
+        sounds:"bush",
+        hit_variations:2
+    }
 }
 
 export const Obstacles=new Definitions<ObstacleDef,null>((_v)=>{})
@@ -33,7 +58,8 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
-        onDestroyExplosion:"barrel_explosion"
+        onDestroyExplosion:"barrel_explosion",
+        material:"stone",
     },
     {
         idString:"oak_tree",
@@ -44,6 +70,7 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles3,
+        material:"tree",
     },
     {
         idString:"bush",
@@ -55,5 +82,6 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles2,
+        material:"bush",
     }
 )
