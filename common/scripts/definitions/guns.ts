@@ -90,7 +90,7 @@ Guns.insert(
             range:220,
             speed:0.5,
             tracer:{
-                width:1,
+                width:2,
                 height:0.4,
             }
         },

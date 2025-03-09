@@ -5,7 +5,7 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { ClientGameObject2D } from "../engine/game.ts";
-import { Camera2D, Renderer } from "../engine/renderer.ts";
+import { Camera2D, Color, ColorM, Renderer } from "../engine/renderer.ts";
 import { Debug } from "../others/config.ts";
 export class Bullet extends ClientGameObject2D{
     objectType:string="bullet"
@@ -31,6 +31,7 @@ export class Bullet extends ClientGameObject2D{
     tracerH:number=0
 
     dying:boolean=false
+    tint!:Color
 
     render(camera: Camera2D, renderer: Renderer): void {
         if(this.dying){
@@ -46,7 +47,7 @@ export class Bullet extends ClientGameObject2D{
             }
         }
         if(this.spr){
-            renderer.draw_image2D(this.spr,v2.sub(this.visualPos,camera.position),v2.new(this.length,this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5))
+            renderer.draw_image2D(this.spr,v2.sub(this.visualPos,camera.position),v2.new(this.length,this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint)
             if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
             }
@@ -94,5 +95,6 @@ export class Bullet extends ClientGameObject2D{
         this.tracerH=data.tracer.height
         this.maxLength=data.tracer.width
         this.visualPos=v2.duplicate(this.position)
+        this.tint=ColorM.number(data.tracerColor)
     }
 }

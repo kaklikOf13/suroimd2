@@ -1,4 +1,3 @@
-import { InventoryItemType } from "../definitions/utils.ts";
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
 export interface PlayerData extends EncodedData{
     full?:{
@@ -29,6 +28,7 @@ export interface BulletData extends EncodedData{
         width:number
         height:number
     }
+    tracerColor:number,
     radius:number
     position:Vec2
     initialPos:Vec2
@@ -123,8 +123,9 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 angle:stream.readRad(),
                 tracer:{
                     width:stream.readFloat(0,2,2),
-                    height:stream.readFloat(0,2,2)
-                }
+                    height:stream.readFloat(0,2,2),
+                },
+                tracerColor:stream.readUint32()
             }
             if(full){
                 //
@@ -142,6 +143,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeRad(data.angle)
             .writeFloat(data.tracer.width,0,2,2)
             .writeFloat(data.tracer.height,0,2,2)
+            .writeUint32(data.tracerColor)
         }
     },
     obstacle:{

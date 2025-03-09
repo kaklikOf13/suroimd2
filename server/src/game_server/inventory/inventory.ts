@@ -6,7 +6,7 @@ import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
 import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
-import { AmmoDef } from "common/scripts/definitions/ammo.ts";
+import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
 export abstract class LItem extends ItemCap{
   // deno-lint-ignore no-explicit-any
@@ -22,12 +22,14 @@ export class GunItem extends LItem{
     cap:number
 
     ammo:number=0
+    currentAmmo:string=""
     constructor(def?:GunDef){
       super()
       this.def=def!
       this.tags.push("gun")
       this.cap=this.def.size
       this.ammo=this.def.reload.capacity
+      this.currentAmmo=defaultAmmos[def!.ammoType]
     }
     reloading=false
     itemType=InventoryItemType.gun
@@ -71,7 +73,7 @@ export class GunItem extends LItem{
       )
       const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
       for(let i=0;i<bc;i++){
-        const b:Bullet=user.game.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{defs:this.def.bullet,position:this.def.jitterRadius?v2.add(position,patternPoint[i]):position})
+        const b:Bullet=user.game.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{defs:this.def.bullet,ammo:this.currentAmmo,position:this.def.jitterRadius?v2.add(position,patternPoint[i]):position})
         let ang=user.rotation
         if(this.def.spread){
           ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))

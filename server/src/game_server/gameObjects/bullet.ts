@@ -4,6 +4,7 @@ import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
+import { Ammos } from "common/scripts/definitions/ammo.ts";
 
 export class Bullet extends BaseGameObject2D{
     velocity:Vec2
@@ -46,17 +47,20 @@ export class Bullet extends BaseGameObject2D{
             }
         }
     }
-    create(args: {defs:BulletDef,position:Vec2}): void {
+    create(args: {defs:BulletDef,position:Vec2,ammo:string}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius)
         this.initialPosition=v2.duplicate(this.hb.position)
         this.maxDistance=this.defs.range/2.5
+        const ad=Ammos.getFromString(args.ammo)
+        this.tracerColor=this.defs.tracer.color??(ad?ad.defaultTrail:0xffffff)
     }
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed),4)
         this.dirty=true
         this.angle=angle
     }
+    tracerColor:number=0
     getData(): BulletData {
         return {
             position:this.position,
@@ -65,7 +69,8 @@ export class Bullet extends BaseGameObject2D{
             radius:(this.hb as CircleHitbox2D).radius,
             speed:this.defs.speed,
             angle:this.angle,
-            tracer:this.defs.tracer
+            tracer:this.defs.tracer,
+            tracerColor:this.tracerColor
         }
     }
 }

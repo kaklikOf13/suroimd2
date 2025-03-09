@@ -1,4 +1,4 @@
-import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, RGBA, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
+import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
 import { NullVec2, ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -11,9 +11,10 @@ import { GuiManager } from "./guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
 import { Debug } from "./config.ts";
 import { SoundManager } from "../engine/sounds.ts";
+import { ColorM } from "../engine/renderer.ts";
 
 function gameLoadMaterials(game:Game){
-  game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0,0.4)))
+  game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
 }
 
 export class Game extends ClientGame2D{
@@ -33,7 +34,7 @@ export class Game extends ClientGame2D{
       this.scene.objects.proccess(obj)
     })
     this.scene.objects.encoders=ObjectsE
-    this.renderer.background=RGBA.new(50,160,30)
+    this.renderer.background=ColorM.rgba(50,160,30)
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.scene.objects.clear()
@@ -42,14 +43,14 @@ export class Game extends ClientGame2D{
     })
 
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
-      color:RGBA.new(0,0,0,90),
+      color:ColorM.rgba(0,0,0,90),
       gridSize:this.scene.objects.cells.cellSize,
       width:0.03
     })
 
     if(Debug.hitbox){
-      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0)))
-      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0)))
+      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
     }
 
     gameLoadMaterials(this)

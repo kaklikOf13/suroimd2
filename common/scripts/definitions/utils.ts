@@ -8,6 +8,7 @@ export interface BulletDef{
     tracer:{
         width:number
         height:number
+        color?:number
     }
 }
 export const tracers={

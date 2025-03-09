@@ -1,5 +1,5 @@
 import { BaseGameObject2D, CircleHitbox2D, DefaultEvents, DefaultEventsMap2D, Game2D, ParticlesManager2D, v2 } from "common/scripts/engine/mod.ts";
-import { Camera2D,  Material2D, RGBA, Renderer, WebglRenderer } from "./renderer.ts";
+import { Camera2D,  ColorM,  Material2D, Renderer, WebglRenderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
@@ -51,7 +51,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
                 this.scene.objects.objects[c].objects[o].render(this.camera,renderer)
             }
         }
-        const pm=(this.renderer as WebglRenderer).factorys2D.simple.create_material(RGBA.new(0,0,0))
+        const pm=(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black)
         for(const p of this.particles.particles){
             this.renderer.draw_circle2D(new CircleHitbox2D(p.position,0.04),pm,this.camera.position)
         }
