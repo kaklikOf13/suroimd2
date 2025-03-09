@@ -26,9 +26,9 @@ Explosions.insert(
             def:{
                 damage:7,
                 radius:0.0125,
-                speed:0.1,
+                speed:20,
                 range:10,
-                tracer:tracers.redTiny
+                tracer:tracers.tiny
             },
             count:5
         }

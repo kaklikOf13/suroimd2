@@ -57,7 +57,7 @@ export class Game extends ClientGame2D{
   }
   onstop?:(g:Game)=>void
   actionDelay:number=3
-  on_render():void{
+  on_render(_dt:number):void{
     (this.renderer as WebglRenderer)._draw_vertices([
       -1000, -1000, 
       1000, -1000,
@@ -103,8 +103,8 @@ export class Game extends ClientGame2D{
       }
     })
   }
-  on_update(): void {
-    super.on_update()
+  on_update(dt:number): void {
+    super.on_update(dt)
     if(this.client.opened){
       if(this.key.keyPress(Key.A)){
         this.action.Movement.x=-1

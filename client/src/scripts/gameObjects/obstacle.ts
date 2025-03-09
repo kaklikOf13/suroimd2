@@ -9,7 +9,7 @@ import { random } from "common/scripts/engine/random.ts";
 import { Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 export class Obstacle extends ClientGameObject2D{
-    objectType:string="obstacle"
+    stringType:string="obstacle"
     numberType: number=4
     name:string=""
     def!:ObstacleDef
@@ -54,7 +54,7 @@ export class Obstacle extends ClientGameObject2D{
     _add_own_particle(position:Vec2){
         this.game.particles.add_particle(position,random.rad(),{lifetime:random.float(0.6,0.7),speed:0.05,angular_speed:Angle.deg2rad(random.int(-1,1))},Particles2DBase.life_timed1)
     }
-    update(): void {
+    update(_dt:number): void {
         
     }
     on_hitted(position:Vec2){

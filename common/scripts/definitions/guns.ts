@@ -60,7 +60,7 @@ Guns.insert(
             damage:10,
             radius:0.02,
             range:150,
-            speed:0.4,
+            speed:39,
             tracer:{
                 width:1,
                 height:0.4,
@@ -88,7 +88,7 @@ Guns.insert(
             damage:54,
             radius:0.02,
             range:220,
-            speed:0.5,
+            speed:44,
             tracer:{
                 width:2,
                 height:0.4,
@@ -118,9 +118,9 @@ Guns.insert(
         bullet:{
             damage:7,
             radius:0.0125,
-            speed:0.3,
+            speed:18,
             range:20,
-            tracer:tracers.redTiny
+            tracer:tracers.tiny
         },
         reload:{
             delay:0.8,
@@ -147,9 +147,9 @@ Guns.insert(
         bullet:{
             damage:6,
             radius:0.0125,
-            speed:0.4,
+            speed:20,
             range:75,
-            tracer:tracers.redTiny
+            tracer:tracers.tiny
         },
         reload:{
             delay:0.8,

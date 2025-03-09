@@ -2,7 +2,7 @@
     "game":{
         "maxPlayers":5,
         "player":{
-            "speed":0.01
+            "speed":5
         }
     },
     "host":{

@@ -69,7 +69,7 @@ export abstract class BaseGameObject2D extends BaseObject2D{
 }
 export interface Scene2D{
     cellsSize?:number
-    objects:Record<string,Array<{
+    objects:Record<number,Array<{
         type:string,
         position?:Vec2
         scale?:Vec2
@@ -95,7 +95,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     reset(){
         this.objects.clear()
         // deno-lint-ignore no-explicit-any
-        this.objects.add_object=(obj: DefaultGameObject, category: string, id?: number | undefined, args?: Record<string, any> | undefined, sv?: Record<string, any>)=>{
+        this.objects.add_object=(obj: DefaultGameObject, category: number, id?: number | undefined, args?: Record<string, any> | undefined, sv?: Record<string, any>)=>{
             obj.game=this.game
             return GameObjectManager2D.prototype.add_object.call(this.objects,obj,category,id,args,sv)
         }
@@ -104,9 +104,10 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
             return new (this.game.objects.getFromNumber(t))()
         }
         for(const c in this.scene.objects){
-            this.objects.add_category(c)
+            const cc=typeof c==="string"?parseInt(c):c
+            this.objects.add_category(cc)
             for(const o of this.scene.objects[c]){
-                const obj=this.objects.add_object(new (this.game.objects.getFromString(o.type))(),c,o.id,o.vals,{"game":this.game})
+                const obj=this.objects.add_object(new (this.game.objects.getFromString(o.type))(),cc,o.id,o.vals,{"game":this.game})
                 if(o.position)obj.position=cloneDeep(o.position as Vec2)
             }
         }
@@ -127,7 +128,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.clock=new Clock(tps,1,this.update.bind(this))
         for(const o of objects){
             const oi= new o()
-            this.objects.set(o,oi.objectType,oi.numberType)
+            this.objects.set(o,oi.stringType,oi.numberType)
         }
         this.scene=new Scene2DInstance<DefaultGameObject,Events,Map>({objects:{}},this)
     }
@@ -138,25 +139,26 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     clear_plugins(){
         this.events.clearAll()
     }
-    update() {
-        this.on_update()
-        this.scene.objects.update()
+    dt:number=0
+    update(dt:number) {
+        this.dt=dt
+        this.on_update(dt)
+        this.scene.objects.update(dt)
         this.events.emit(DefaultEvents.GameTick,this)
-        if(this.running){
-            this.clock.tick()
+        if(!this.running){
+            this.clock.stop()
         }
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()
         }
     }
-    on_update():void{}
+    on_update(_dt:number):void{}
     on_run():void{}
     mainloop(){
         // Start
         this.on_run()
         this.events.emit(DefaultEvents.GameRun,this)
-        // Mainloop
-        this.update()
+        this.clock.start()
     }
     instantiate(scene:Scene2D):Scene2DInstance<DefaultGameObject,Events,Map>{
         return new Scene2DInstance<DefaultGameObject,Events,Map>(scene,this)

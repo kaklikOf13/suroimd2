@@ -1,6 +1,6 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { Sprite } from "../engine/mod.ts";
-import { Angle, BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, BaseGameObject2D, CircleHitbox2D, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
@@ -8,7 +8,7 @@ import { ClientGameObject2D } from "../engine/game.ts";
 import { Camera2D, Color, ColorM, Renderer } from "../engine/renderer.ts";
 import { Debug } from "../others/config.ts";
 export class Bullet extends ClientGameObject2D{
-    objectType:string="bullet"
+    stringType:string="bullet"
     numberType: number=3
     name:string=""
     velocity:Vec2=v2.new(0,0)
@@ -33,17 +33,19 @@ export class Bullet extends ClientGameObject2D{
     dying:boolean=false
     tint!:Color
 
-    render(camera: Camera2D, renderer: Renderer): void {
+    dts:Vec2=v2.new(0,0)
+
+    render(camera: Camera2D, renderer: Renderer,dt:number): void {
         if(this.dying){
-            this.length=Math.max(this.length-(this.speed/6),0)
+            this.length=Math.max(this.length-((this.speed*dt)/9),0)
         }else{
             if(this.length<this.maxLength){
-                this.length+=this.speed/5
-                this.visualPos=v2.add(this.visualPos,this.velocity)
+                this.length+=(this.speed*dt)/5
+                this.visualPos=v2.add(this.visualPos,this.dts)
                 this.savedPos=v2.sub(this.position,this.visualPos)
             }else{
                 this.length=this.maxLength
-                this.visualPos=v2.sub(this.position,this.savedPos)
+                this.visualPos=v2.add(this.position,v2.scale(this.savedPos,dt))
             }
         }
         if(this.spr){
@@ -53,19 +55,20 @@ export class Bullet extends ClientGameObject2D{
             }
         }
     }
-    update(): void {
+    update(dt:number): void {
+        this.dts=v2.scale(this.velocity,dt)
         if(this.dying||v2.distance(this.initialPosition,this.position)>this.maxDistance){
             this.dying=true
             if(this.length<=0){
                 this.destroy()
             }
         }else{
-            this.position=v2.add(this.position,this.velocity)
+            this.position=v2.add(this.position,this.dts)
         }
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
             if(this.dying||this.destroyed)break
-            switch((obj as BaseGameObject2D).objectType){
+            switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
                         this.dying=true
@@ -91,7 +94,7 @@ export class Bullet extends ClientGameObject2D{
         this.hb=new CircleHitbox2D(data.position,data.radius)
         this.speed=data.speed
         this.angle=data.angle
-        this.velocity=v2.scale(v2.from_RadAngle(this.angle),this.speed)
+        this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(this.angle),this.speed),4)
         this.tracerH=data.tracer.height
         this.maxLength=data.tracer.width
         this.visualPos=v2.duplicate(this.position)

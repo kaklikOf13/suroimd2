@@ -8,7 +8,7 @@ import { Ammos } from "common/scripts/definitions/ammo.ts";
 
 export class Bullet extends BaseGameObject2D{
     velocity:Vec2
-    objectType:string="bullet"
+    stringType:string="bullet"
     numberType: number=3
     defs!:BulletDef
 
@@ -20,16 +20,16 @@ export class Bullet extends BaseGameObject2D{
     constructor(){
         super()
         this.velocity=v2.new(0,0)
-        this.sendDelete=false
+        this.netSync.deletion=false
     }
-    update(): void {
+    update(dt:number): void {
         if(v2.distance(this.initialPosition,this.position)>this.maxDistance){
             this.destroy()
         }
-        this.position=v2.add(this.position,this.velocity)
+        this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
-            switch((obj as BaseGameObject2D).objectType){
+            switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
                         (obj as Player).damage({amount:this.defs.damage,owner:this.owner})

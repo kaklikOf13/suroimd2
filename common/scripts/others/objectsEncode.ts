@@ -119,7 +119,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 initialPos:stream.readPosition(),
                 maxDistance:stream.readFloat32(),
                 radius:stream.readFloat(0,2,2),
-                speed:stream.readFloat(0,2,2),
+                speed:stream.readFloat32(),
                 angle:stream.readRad(),
                 tracer:{
                     width:stream.readFloat(0,2,2),
@@ -139,7 +139,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writePosition(data.initialPos)
             .writeFloat32(data.maxDistance)
             .writeFloat(data.radius,0,2,2)
-            .writeFloat(data.speed,0,2,2)
+            .writeFloat32(data.speed)
             .writeRad(data.angle)
             .writeFloat(data.tracer.width,0,2,2)
             .writeFloat(data.tracer.height,0,2,2)

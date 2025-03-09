@@ -33,7 +33,7 @@ export class GuiManager{
     inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     hand:HandData
     handSelection?:HTMLDivElement
-    action?:{delay:number,type:ActionsType}
+    action?:{delay:number,start:number,type:ActionsType}
     constructor(game:Game){
         this.game=game
         this.game.client.on("gui",(p:GuiPacket)=>{
@@ -66,7 +66,15 @@ export class GuiManager{
                 this.set_hand_item()
             }
             if(p.dirty.action){
-                this.action=p.action
+                if(p.action){
+                    this.action={
+                        delay:p.action.delay,
+                        start:Date.now(),
+                        type:p.action.type
+                    }
+                }else{
+                    this.action=undefined
+                }
             }
         })
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
@@ -202,10 +210,10 @@ export class GuiManager{
     }
     update(){
         if(this.action){
+            const w=(Date.now()-this.action.start)/1000
             this.content.action_info.style.opacity="100%"
-            this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay,1)}s`
-            this.action.delay-=1/this.game.tps
-            if(this.action.delay<=0){
+            this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay-w,1)}s`
+            if(w>this.action.delay){
                 this.action=undefined
             }
         }else{

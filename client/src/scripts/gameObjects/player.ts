@@ -9,7 +9,7 @@ import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { ColorM } from "../engine/renderer.ts";
 export class Player extends FormGameObject2D{
     material!:Material2D
-    objectType:string="player"
+    stringType:string="player"
     numberType: number=1
     name:string=""
     zIndex=zIndexes.Players
@@ -24,7 +24,7 @@ export class Player extends FormGameObject2D{
       this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
       this.material=(this.game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.red)
     }
-    update(): void {
+    update(_dt:number): void {
         
     }
     constructor(){

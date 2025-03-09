@@ -23,11 +23,11 @@ export const GameConstants={
     }
 }
 export enum CATEGORYS{
-    PLAYERS="players",
-    LOOTS="loots",
-    BULLETS="bullets",
-    OBSTACLES="obstacles",
-    EXPLOSIONS="explosions"
+    PLAYERS=0,
+    LOOTS,
+    BULLETS,
+    OBSTACLES,
+    EXPLOSIONS
 }
 export const CATEGORYSL=[
     CATEGORYS.PLAYERS,

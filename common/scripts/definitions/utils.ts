@@ -12,7 +12,7 @@ export interface BulletDef{
     }
 }
 export const tracers={
-    redTiny:{
+    tiny:{
         width:1,
         height:0.4, // 1H = 0.05 radius
     }

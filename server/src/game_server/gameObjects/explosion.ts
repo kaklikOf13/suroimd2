@@ -6,7 +6,7 @@ import { Bullet } from "./bullet.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 
 export class Explosion extends BaseGameObject2D{
-    objectType:string="explosion"
+    stringType:string="explosion"
     numberType: number=5
     defs!:ExplosionDef
 
@@ -15,10 +15,10 @@ export class Explosion extends BaseGameObject2D{
     radius:number=2
     constructor(){
         super()
-        this.sendDelete=false
+        this.netSync.deletion=false
     }
     delay:number=3
-    update(): void {
+    update(_dt:number): void {
         if(this.delay==0){
             if(this.defs.bullet){
                 for(let i=0;i<this.defs.bullet.count;i++){

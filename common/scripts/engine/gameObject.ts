@@ -9,12 +9,12 @@ export abstract class BaseObject2D{
     public hb:Hitbox2D
     public destroyed:boolean
     public id!:GameObjectID
-    public category!:string
+    public category!:number
     public calldestroy:boolean=true
     public dirty:boolean=false
     public dirtyPart:boolean=false
     abstract numberType:number
-    abstract objectType:string
+    abstract stringType:string
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
     public get position():Vec2{
@@ -29,7 +29,7 @@ export abstract class BaseObject2D{
     }
     updateData(_data:EncodedData):void{}
     getData():EncodedData{return {full:{}}}
-    abstract update():void
+    abstract update(dt:number):void
     // deno-lint-ignore no-explicit-any
     abstract create(args:Record<string,any>):void
     onDestroy():void{}
@@ -41,15 +41,43 @@ export abstract class BaseObject2D{
     get_key():ObjectKey{
         return {category:this.category,id:this.id}
     }
-    sendDelete=true
+    netSync={
+        deletion:true,
+        dirty:true,
+        creation:true,
+    }
+    encodeObject(full:boolean,stream:NetStream){
+        const bools=[
+            (full||this.dirtyPart)&&this.netSync.dirty,//Dirty Part
+            (full||this.dirty)&&this.netSync.dirty,//Dirty Full
+            this.destroyed&&this.netSync.deletion,//Dirty Deletion
+            this.netSync.creation//Dirty Creation
+        ]
+        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3])
+        if(bools[0]||bools[1]||bools[2]){
+            stream.writeID(this.id)
+            stream.writeUint16(this.numberType)
+            if(bools[0]||bools[1]){
+                const data=this.getData()
+                const e=this.manager.encoders[this.stringType]
+                if(!e)return
+                e.encode(bools[1],data,stream)
+                if(!full){
+                    this.dirty=false
+                    this.dirtyPart=false
+                }
+            }
+        }
+    }
 }
 
-export interface ObjectKey {category:string,id:GameObjectID}
+export interface ObjectKey {category:number,id:GameObjectID}
 export interface Category2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[]}
 export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
-    objects:Record<string,Record<GameObjectID,GameObject>>={}
+    objects:Record<number,Record<GameObjectID,GameObject>>={}
+    categorys:number[]=[]
     cellSize:number
-    cells:Record<number,Record<number,Record<string,GameObject[]>>>
+    cells:Record<number,Record<number,Record<number,GameObject[]>>>
     constructor(cellSize:number=5){
         this.cellSize=cellSize
         this.cells={}
@@ -72,7 +100,8 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     }
     update(){
         this.cells={}
-        for(const c of Object.keys(this.objects)){
+        for(const c of this.categorys){
+            if(!this.objects[c])continue
             for(const obj of Object.values(this.objects[c])){
                 const rect=obj.hb.toRect()
                 let min = this.cellPos(rect.position)
@@ -99,7 +128,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
             }
         }
     }
-    get_objects(hitbox:Hitbox2D,categorys:Tags):GameObject[]{
+    get_objects(hitbox:Hitbox2D,categorys:number[]):GameObject[]{
         const rect=hitbox.toRect()
         let min = this.cellPos(rect.position)
         let max = this.cellPos(v2.add(rect.position,rect.size))
@@ -123,7 +152,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         }
         return objects
     }
-    get_objects2(hitbox:Hitbox2D,categorys:string):GameObject[]{
+    get_objects2(hitbox:Hitbox2D,categorys:number):GameObject[]{
         const rect=hitbox.toRect()
         let min = this.cellPos(rect.position)
         let max = this.cellPos(v2.add(rect.position,rect.size))
@@ -156,7 +185,8 @@ export interface ObjectEncoder{
 }
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
-    objects:Record<string,Category2D<GameObject>>={}
+    objects:Record<number,Category2D<GameObject>>={}
+    categorys:number[]=[]
     encoders:Record<string,ObjectEncoder>={}
     ondestroy:(obj:GameObject)=>void=(_)=>{}
     oncreate:(_key:ObjectKey,_type:number)=>GameObject|undefined
@@ -176,7 +206,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
 
     // deno-lint-ignore no-explicit-any
-    add_object(obj:GameObject,category:string,id?:number,args?:Record<string,any>,sv:Record<string,any>={}):GameObject{
+    add_object(obj:GameObject,category:number,id?:number,args?:Record<string,any>,sv:Record<string,any>={}):GameObject{
         if(!this.objects[category]){
             throw new Error(`Invalid Category ${category}`)
         }
@@ -217,11 +247,13 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     add_category(category:keyof typeof this.objects){
         this.objects[category]={orden:[],objects:{}}
+        this.categorys.push(category)
+        this.cells.categorys.push(category)
     }
     proccess(packet:ObjectsPacket){
         const csize=packet.stream.readUint16()
         for(let i=0;i<csize;i++){
-            const category=packet.stream.readString()
+            const category=packet.stream.readUint8()
             if(!this.objects[category]){
                 this.add_category(category)
             }
@@ -232,7 +264,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                     const oid=packet.stream.readID()
                     const tp=packet.stream.readUint16()
                     let obj=this.objects[category].objects[oid]
-                    if(!obj&&!b[2]){
+                    if(b[3]&&!obj&&!b[2]){
                         const obb=this.oncreate({category:category,id:oid},tp)
                         if(!obb)break
                         obj=obb
@@ -240,7 +272,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                     }
                     if(obj){
                         if(b[0]||b[1]){
-                            const enc=this.encoders[obj.objectType]
+                            const enc=this.encoders[obj.stringType]
                             const data=enc.decode(b[1],packet.stream)
                             obj.updateData(data)
                         }
@@ -252,30 +284,30 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             }
         }
     }
-    encode(size:number=1024*1024,full:boolean=false):ObjectsPacket{
+    encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):ObjectsPacket{
         const stream=new NetStream(new ArrayBuffer(size))
-        stream.writeUint16(Object.keys(this.objects).length)
-        for(const c in this.objects){
-            stream.writeString(c)
-            stream.writeUint24(this.objects[c].orden.length)
-            for(let j=0;j<this.objects[c].orden.length;j++){
-                const o=this.objects[c].orden[j]
-                const obj=this.objects[c].objects[o]
-                const enc=this.encoders[obj.objectType]
-                if(!enc)continue
-                const bools=[full||obj.dirtyPart,full||obj.dirty,obj.destroyed&&obj.sendDelete]
-                stream.writeBooleanGroup(bools[0],bools[1],bools[2])
-                if(bools[0]||bools[1]||bools[2]){
-                    stream.writeID(o)
-                    stream.writeUint16(obj.numberType)
-                    if(bools[0]||bools[1]){
-                        const data=obj.getData()
-                        enc.encode(bools[1],data,stream)
-                        if(!full){
-                            obj.dirty=false
-                            obj.dirtyPart=false
-                        }
-                    }
+        if(encodeList){
+            stream.writeUint16(Object.keys(encodeList).length)
+            for(const c in encodeList){
+                // deno-lint-ignore ban-ts-comment
+                //@ts-ignore
+                stream.writeUint8(c)
+                stream.writeUint24(encodeList[c].length)
+                for(let j=0;j<encodeList[c].length;j++){
+                    const o=encodeList[c][j]
+                    const obj=this.objects[c].objects[o]
+                    obj.encodeObject(full,stream)
+                }
+            }
+        }else{
+            stream.writeUint16(this.categorys.length)
+            for(const c of this.categorys){
+                stream.writeUint8(c)
+                stream.writeUint24(this.objects[c].orden.length)
+                for(let j=0;j<this.objects[c].orden.length;j++){
+                    const o=this.objects[c].orden[j]
+                    const obj=this.objects[c].objects[o]
+                    obj.encodeObject(full,stream)
                 }
             }
         }
@@ -284,14 +316,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         op.size=stream.index
         return op
     }
-    update(){
+    update(dt:number){
         this.cells.update()
         for(const c in this.objects){
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]
                 const obj=this.objects[c].objects[o]
                 if(obj.destroyed)continue
-                obj.update()
+                obj.update(dt)
             }
         }
     }

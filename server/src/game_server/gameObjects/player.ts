@@ -19,8 +19,8 @@ import { Game } from "../others/game.ts"
 export class Player extends BaseGameObject2D{
     movement:Vec2
     oldPosition:Vec2
-    objectType:string="player"
-    numberType: number=1;
+    stringType:string="player"
+    numberType: number=1
     name:string="a"
     handItem:LItem|null=null
     using_item:boolean=false
@@ -108,7 +108,7 @@ export class Player extends BaseGameObject2D{
         action:true
     }
 
-    update(): void {
+    update(dt:number): void {
         //Movement
         let speed=1
         if(this.recoil){
@@ -120,14 +120,14 @@ export class Player extends BaseGameObject2D{
             speed*=this.using_healing_speed
         }
         if(this.extraType===ExtraType.Adrenaline){
-            speed+=this.extra/400
-            this.extra=Math.max(this.extra-0.01,0)
-            this.health=Math.min(this.health+this.extra/1600,this.maxHealth)
+            speed+=this.extra/550
+            this.extra=Math.max(this.extra-0.54*dt,0)
+            this.health=Math.min(this.health+(this.extra*dt)/90,this.maxHealth)
         }
         if(this.handItem?.tags.includes("gun")){
             speed*=(this.handItem as GunItem).def.speedMult??1
         }
-        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed)),NullVec2,(this.game as Game).map.size),3)
+        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,(this.game as Game).map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.dirtyPart=true
             this.oldPosition=this.position
@@ -155,7 +155,7 @@ export class Player extends BaseGameObject2D{
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
-            switch((obj as BaseGameObject2D).objectType){
+            switch((obj as BaseGameObject2D).stringType){
                 case "obstacle":
                     if((obj as Obstacle).def.noCollision)break
                     if((obj as Obstacle).hb){
@@ -166,11 +166,11 @@ export class Player extends BaseGameObject2D{
             }
         }
 
-        this.actions.update(1/this.game.tps)
+        this.actions.update(dt)
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,0.1)
+        this.movement=v2.scale(action.Movement,5)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }

@@ -8,7 +8,7 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 
 export class Obstacle extends BaseGameObject2D{
-    objectType:string="obstacle"
+    stringType:string="obstacle"
     numberType: number=4
 
     def!:ObstacleDef
@@ -25,7 +25,7 @@ export class Obstacle extends BaseGameObject2D{
     variation:number=1
     rotation:number=0
 
-    update(): void {
+    update(_dt:number): void {
 
     }
     create(args: {def:ObstacleDef,position:Vec2,rotation:number,variation?:number}): void {

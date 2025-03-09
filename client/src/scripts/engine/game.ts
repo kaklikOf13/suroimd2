@@ -10,7 +10,7 @@ export abstract class ClientGameObject2D extends BaseGameObject2D{
     constructor(){
         super()
     }
-    abstract render(camera:Camera2D,renderer:Renderer):void
+    abstract render(camera:Camera2D,renderer:Renderer,dt:number):void
 }
 export abstract class FormGameObject2D extends ClientGameObject2D{
     // deno-lint-ignore no-explicit-any
@@ -20,7 +20,7 @@ export abstract class FormGameObject2D extends ClientGameObject2D{
     constructor(){
         super()
     }
-    render(camera:Camera2D,renderer:Renderer){
+    render(camera:Camera2D,renderer:Renderer,_dt:number){
         renderer.draw_hitbox2D(this.hb,this.material,camera.position,this.zIndex)
     }
 }
@@ -43,12 +43,12 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.resources=resources
         this.particles=new ParticlesManager2D(this.scene.objects)
     }
-    draw(renderer:Renderer){
+    draw(renderer:Renderer,dt:number){
         renderer.clear()
-        this.on_render()
+        this.on_render(dt)
         for(const c in this.scene.objects.objects){
             for(const o of this.scene.objects.objects[c].orden){
-                this.scene.objects.objects[c].objects[o].render(this.camera,renderer)
+                this.scene.objects.objects[c].objects[o].render(this.camera,renderer,dt)
             }
         }
         const pm=(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black)
@@ -56,11 +56,11 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
             this.renderer.draw_circle2D(new CircleHitbox2D(p.position,0.04),pm,this.camera.position)
         }
     }
-    on_render(){
+    on_render(_dt:number){
 
     }
-    on_update(){
-        this.draw(this.renderer)
+    on_update(dt:number){
+        this.draw(this.renderer,dt)
         this.particles.update(1/this.tps)
         this.sounds.update(1/this.tps)
         this.key.tick()

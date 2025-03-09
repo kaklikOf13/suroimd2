@@ -4,14 +4,14 @@ import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 
 export class Loot extends BaseGameObject2D{
     velocity:Vec2
-    objectType:string="loot"
+    stringType:string="loot"
     numberType: number=2
     constructor(){
         super()
         this.velocity=v2.new(0,0)
         
     }
-    update(): void {
+    update(_dt:number): void {
         this.position=v2.add(this.position,this.velocity)
         if(!v2.greater(this.velocity,NullVec2)){
             this.dirtyPart=true
