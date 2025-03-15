@@ -137,9 +137,10 @@ export class SoundManager{
         }
 
     }
-    play(sound:Sound,params:Partial<SoundOptions>){
+    play(sound:Sound,params:Partial<SoundOptions>,volume_group?:string){
         let volume = params.volume != undefined ? params.volume : 1
         volume *= sound.volume*this.masterVolume
+        volume *= (volume_group&&this.volumes[volume_group]!==undefined)?this.volumes[volume_group]:1
         volume = this.mute ? 0 : volume
         const loop = !!params.loop
         const delay = params.delay ? params.delay * 0.001 : 0
