@@ -57,16 +57,25 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
         this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
+
         this.inventory.add(new HealingItem(Healings.getFromString("lifecandy")),20)
         this.inventory.add(new HealingItem(Healings.getFromString("gauze")),10)
         this.inventory.add(new HealingItem(Healings.getFromString("medikit")),3)
+
         this.inventory.add(new HealingItem(Healings.getFromString("soda")),8)
         this.inventory.add(new HealingItem(Healings.getFromString("inhaler")),4)
         this.inventory.add(new HealingItem(Healings.getFromString("yellow_pills")),2)
+
         this.inventory.add(new HealingItem(Healings.getFromString("small_blue_potion")),8)
         this.inventory.add(new HealingItem(Healings.getFromString("blue_potion")),4)
         this.inventory.add(new HealingItem(Healings.getFromString("blue_pills")),2)
+
         this.inventory.add(new HealingItem(Healings.getFromString("small_purple_potion")),2)
+
+        this.inventory.add(new HealingItem(Healings.getFromString("small_red_crystal")),3)
+        this.inventory.add(new HealingItem(Healings.getFromString("red_crystal")),3)
+        this.inventory.add(new HealingItem(Healings.getFromString("red_pills")),3)
+
         this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
 
@@ -132,6 +141,11 @@ export class Player extends BaseGameObject2D{
                 break
             case BoostType.Mana:
                 this.boost=Numeric.lerp(this.boost,this.maxBoost,0.03*dt)
+                break
+            case BoostType.Addiction:
+                speed+=this.boost/390
+                this.boost=Math.max(this.boost-0.49*dt,0)
+                this.health=Numeric.lerp(this.health,0,(this.maxBoost/this.boost)*0.009*dt)
                 break
         }
         if(this.handItem?.tags.includes("gun")){

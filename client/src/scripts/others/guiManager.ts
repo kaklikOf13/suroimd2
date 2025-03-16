@@ -236,5 +236,6 @@ export class GuiManager{
 const BoostsColors:Record<BoostType,string>={
     [BoostType.Adrenaline]:"#ff0",
     [BoostType.Shield]:"#08f",
-    [BoostType.Mana]:"#92a"
+    [BoostType.Mana]:"#92a",
+    [BoostType.Addiction]:"#e13"
 }

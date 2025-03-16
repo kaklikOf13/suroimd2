@@ -94,10 +94,35 @@ Healings.insert(
     //Mana
     {
         idString:"small_purple_potion",
-        size:0.7,
+        size:0.2,
         boost:10,
         use_delay:1.1,
         boost_type:BoostType.Mana,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    //Addiction
+    {
+        idString:"small_red_crystal",
+        size:0.2,
+        boost:25,
+        use_delay:1.5,
+        boost_type:BoostType.Addiction,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"red_crystal",
+        size:0.4,
+        boost:50,
+        use_delay:2.2,
+        boost_type:BoostType.Addiction,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"red_pills",
+        size:0.7,
+        boost:100,
+        use_delay:4.5,
+        boost_type:BoostType.Addiction,
         condition:[HealingCondition.UnfullExtra]
     },
 )

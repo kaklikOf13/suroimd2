@@ -48,5 +48,6 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
 export enum BoostType{
     Shield,
     Adrenaline,
-    Mana
+    Mana,
+    Addiction
 }
