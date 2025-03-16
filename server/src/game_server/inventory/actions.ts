@@ -42,12 +42,12 @@ export class HealingAction extends Action<Player>{
         if(this.def.health){
             user.health=Math.min(user.health+this.def.health,user.maxHealth)
         }
-        if(this.def.extra){
-            if(this.def.extra_type!==undefined&&this.def.extra_type!==user.extraType){
-                user.extraType=this.def.extra_type
-                user.extra=this.def.extra
+        if(this.def.boost){
+            if(this.def.boost_type!==undefined&&this.def.boost_type!==user.BoostType){
+                user.BoostType=this.def.boost_type
+                user.boost=this.def.boost
             }else{
-                user.extra=Math.min(user.extra+this.def.extra,user.maxExtra)
+                user.boost=Math.min(user.boost+this.def.boost,user.maxBoost)
             }
         }
         this.slot.quantity--

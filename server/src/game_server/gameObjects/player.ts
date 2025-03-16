@@ -1,4 +1,4 @@
-import { BaseGameObject2D, CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
@@ -9,7 +9,7 @@ import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
-import { ExtraType, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { BoostType, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Healings } from "common/scripts/definitions/healings.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
@@ -31,9 +31,9 @@ export class Player extends BaseGameObject2D{
     health:number=100
     maxHealth:number=100
 
-    extra:number=0
-    maxExtra:number=100
-    extraType:ExtraType=ExtraType.Shield
+    boost:number=0
+    maxBoost:number=100
+    BoostType:BoostType=BoostType.Shield
 
     actions:ActionsManager<this>
 
@@ -52,6 +52,7 @@ export class Player extends BaseGameObject2D{
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
         this.inventory=new InventoryCap<LItem>(undefined,100)
+
         this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
         this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
         this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
@@ -62,11 +63,13 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new HealingItem(Healings.getFromString("soda")),8)
         this.inventory.add(new HealingItem(Healings.getFromString("inhaler")),4)
         this.inventory.add(new HealingItem(Healings.getFromString("yellow_pills")),2)
-        this.inventory.add(new HealingItem(Healings.getFromString("tiny_blue_potion")),8)
+        this.inventory.add(new HealingItem(Healings.getFromString("small_blue_potion")),8)
         this.inventory.add(new HealingItem(Healings.getFromString("blue_potion")),4)
         this.inventory.add(new HealingItem(Healings.getFromString("blue_pills")),2)
+        this.inventory.add(new HealingItem(Healings.getFromString("small_purple_potion")),2)
         this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
+
         this.actions=new ActionsManager(this)
         this.load_hand(0)
 
@@ -119,10 +122,17 @@ export class Player extends BaseGameObject2D{
         if(this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing){
             speed*=this.using_healing_speed
         }
-        if(this.extraType===ExtraType.Adrenaline){
-            speed+=this.extra/550
-            this.extra=Math.max(this.extra-0.54*dt,0)
-            this.health=Math.min(this.health+(this.extra*dt)/90,this.maxHealth)
+        switch(this.BoostType){
+            case BoostType.Shield:
+                break
+            case BoostType.Adrenaline:
+                speed+=this.boost/550
+                this.boost=Math.max(this.boost-0.54*dt,0)
+                this.health=Math.min(this.health+(this.boost*dt)/90,this.maxHealth)
+                break
+            case BoostType.Mana:
+                this.boost=Numeric.lerp(this.boost,this.maxBoost,0.03*dt)
+                break
         }
         if(this.handItem?.tags.includes("gun")){
             speed*=(this.handItem as GunItem).def.speedMult??1
@@ -202,7 +212,7 @@ export class Player extends BaseGameObject2D{
     ammoCount:Partial<Record<AmmoType,number>>={}
     update2(){
         if(this.client){
-            const guiPacket=new GuiPacket(this.health,this.maxHealth,this.extra,this.maxExtra,this.extraType)
+            const guiPacket=new GuiPacket(this.health,this.maxHealth,this.boost,this.maxBoost,this.BoostType)
             guiPacket.inventory=[]
             let ii=0
             for(let i=0;i<this.inventory.slots.length;i++){
@@ -258,8 +268,8 @@ export class Player extends BaseGameObject2D{
             damage-=this.helmet.defence
         }
         damage=Math.max(damage*mod,0)
-        if(this.extraType===ExtraType.Shield&&this.extra>0){
-            this.extra=Math.max(this.extra-damage,0)
+        if(this.BoostType===BoostType.Shield&&this.boost>0){
+            this.boost=Math.max(this.boost-damage,0)
         }else{
             this.health=Math.max(this.health-damage,0)
             if(this.health===0){

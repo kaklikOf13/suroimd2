@@ -1,5 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { ExtraType, GameItem, InventoryItemType } from "./utils.ts";
+import { BoostType, GameItem, InventoryItemType } from "./utils.ts";
 
 export enum HealingCondition{
     UnfullHealth,
@@ -8,8 +8,8 @@ export enum HealingCondition{
 export interface HealingDef extends Definition{
     size:number
     health?:number
-    extra?:number
-    extra_type?:ExtraType
+    boost?:number
+    boost_type?:BoostType
     use_delay:number
     condition?:HealingCondition[]
 }
@@ -44,51 +44,60 @@ Healings.insert(
     {
         idString:"soda",
         size:0.3,
-        extra:25,
+        boost:25,
         use_delay:2.5,
-        extra_type:ExtraType.Adrenaline,
+        boost_type:BoostType.Adrenaline,
         condition:[HealingCondition.UnfullExtra]
     },
     {
         idString:"inhaler",
         size:0.4,
-        extra:50,
+        boost:50,
         use_delay:4.5,
-        extra_type:ExtraType.Adrenaline,
+        boost_type:BoostType.Adrenaline,
         condition:[HealingCondition.UnfullExtra]
     },
     {
         idString:"yellow_pills",
         size:0.7,
-        extra:100,
+        boost:100,
         use_delay:4.5,
-        extra_type:ExtraType.Adrenaline,
+        boost_type:BoostType.Adrenaline,
         condition:[HealingCondition.UnfullExtra]
     },
 
     //Shield
     {
-        idString:"tiny_blue_potion",
+        idString:"small_blue_potion",
         size:0.3,
-        extra:25,
+        boost:25,
         use_delay:2.5,
-        extra_type:ExtraType.Shield,
+        boost_type:BoostType.Shield,
         condition:[HealingCondition.UnfullExtra]
     },
     {
         idString:"blue_potion",
         size:0.4,
-        extra:50,
+        boost:50,
         use_delay:4.5,
-        extra_type:ExtraType.Shield,
+        boost_type:BoostType.Shield,
         condition:[HealingCondition.UnfullExtra]
     },
     {
         idString:"blue_pills",
         size:0.7,
-        extra:100,
+        boost:100,
         use_delay:4.5,
-        extra_type:ExtraType.Shield,
+        boost_type:BoostType.Shield,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    //Mana
+    {
+        idString:"small_purple_potion",
+        size:0.7,
+        boost:10,
+        use_delay:1.1,
+        boost_type:BoostType.Mana,
         condition:[HealingCondition.UnfullExtra]
     },
 )

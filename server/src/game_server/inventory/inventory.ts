@@ -137,7 +137,7 @@ export class HealingItem extends LItem{
             if(user.health>=user.maxHealth)return
             break
           case HealingCondition.UnfullExtra:
-            if(!(user.extra<user.maxExtra||user.extraType!==this.def.extra_type))return
+            if(!(user.boost<user.maxBoost||user.BoostType!==this.def.boost_type))return
             break
         }
       }
