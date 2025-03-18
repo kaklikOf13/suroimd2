@@ -27,6 +27,11 @@ export interface GameItem extends Definition{
     item_type:InventoryItemType
     count:number
 }
+export enum DamageReason{
+    Player,
+    SafeZone,
+    Abstinence
+}
 export interface InventoryItemData{
     count:number
     type:InventoryItemType

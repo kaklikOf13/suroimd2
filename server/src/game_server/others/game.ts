@@ -10,13 +10,16 @@ import { Bullet } from "../gameObjects/bullet.ts"
 import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
+import { DefaultGamemode, Gamemode } from "./gamemode.ts";
 export interface GameConfig{
     maxPlayers:number,
 }
 
+
 export class Game extends GameBase{
     config:GameConfig
     map:GameMap
+    gamemode:Gamemode
     constructor(id:ID,config:GameConfig){
         super(GameConstants.tps,id,PacketManager,[
             Player,
@@ -32,6 +35,7 @@ export class Game extends GameBase{
         this.clients
         this.scene.objects.encoders=ObjectsE
         this.map=new GameMap(this,v2.new(13,13))
+        this.gamemode=DefaultGamemode
     }
     on_run(): void {
         this.map.generate()

@@ -9,7 +9,7 @@ import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
-import { BoostType, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { BoostType, DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Healings } from "common/scripts/definitions/healings.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
@@ -80,7 +80,7 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
 
         this.actions=new ActionsManager(this)
-        this.load_hand(0)
+        this.load_hand(1)
 
         this.vest=Armors.getFromString("soldier_vest")
         this.helmet=Armors.getFromString("soldier_helmet")
@@ -114,6 +114,8 @@ export class Player extends BaseGameObject2D{
     dead=false
     hand:number=-1
 
+    damageMult:number=1
+
     privateDirtys={
         inventory:true,
         hand:true,
@@ -122,6 +124,7 @@ export class Player extends BaseGameObject2D{
 
     update(dt:number): void {
         //Movement
+        const gamemode=(this.game as Game).gamemode
         let speed=1
         if(this.recoil){
             speed*=this.recoil.speed
@@ -131,22 +134,30 @@ export class Player extends BaseGameObject2D{
         if(this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing){
             speed*=this.using_healing_speed
         }
+        this.damageMult=1
         switch(this.BoostType){
             case BoostType.Shield:
                 break
             case BoostType.Adrenaline:
-                speed+=this.boost/550
-                this.boost=Math.max(this.boost-0.54*dt,0)
-                this.health=Math.min(this.health+(this.boost*dt)/90,this.maxHealth)
+                speed+=this.boost*gamemode.player.boosts.adrenaline.speed
+                this.boost=Math.max(this.boost-gamemode.player.boosts.adrenaline.decay*dt,0)
+                this.health=Math.min(this.health+(this.boost*dt)*gamemode.player.boosts.adrenaline.regen,this.maxHealth)
                 break
             case BoostType.Mana:
-                this.boost=Numeric.lerp(this.boost,this.maxBoost,0.03*dt)
+                this.boost=Numeric.lerp(this.boost,this.maxBoost,gamemode.player.boosts.mana.regen*dt)
                 break
-            case BoostType.Addiction:
-                speed+=this.boost/390
-                this.boost=Math.max(this.boost-0.49*dt,0)
-                this.health=Numeric.lerp(this.health,0,(this.maxBoost/this.boost)*0.009*dt)
+            case BoostType.Addiction:{
+                speed+=this.boost*gamemode.player.boosts.addiction.speed
+                this.boost=Math.max(this.boost-gamemode.player.boosts.addiction.decay*dt,0)
+                this.health=Numeric.lerp(this.health,0,this.boost>0?(this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt:1)
+                if(this.health<=0){this.kill({
+                    amount:100,
+                    reason:DamageReason.Abstinence,
+                })}else{
+                    this.damageMult+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
+                }
                 break
+            }
         }
         if(this.handItem?.tags.includes("gun")){
             speed*=(this.handItem as GunItem).def.speedMult??1
@@ -273,6 +284,9 @@ export class Player extends BaseGameObject2D{
         if(this.dead)return
         let damage=params.amount
         let mod=1
+        if(params.owner&&params.owner instanceof Player){
+            mod*=params.owner.damageMult
+        }
         if(this.vest){
             mod-=this.vest.reduction
             damage-=this.vest.defence
