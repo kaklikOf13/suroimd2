@@ -1,10 +1,11 @@
 import { BaseGameObject2D, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { BulletDef } from "common/scripts/definitions/utils.ts";
+import { BulletDef, DamageReason } from "common/scripts/definitions/utils.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "common/scripts/definitions/ammo.ts";
+import { Game } from "../others/game.ts";
 
 export class Bullet extends BaseGameObject2D{
     velocity:Vec2
@@ -32,7 +33,7 @@ export class Bullet extends BaseGameObject2D{
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner})
+                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player})
                         this.destroy()
                         break
                     }
@@ -40,7 +41,7 @@ export class Bullet extends BaseGameObject2D{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner})
+                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player})
                         this.destroy()
                     }
                     break
@@ -59,6 +60,9 @@ export class Bullet extends BaseGameObject2D{
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed),4)
         this.dirty=true
         this.angle=angle
+    }
+    onDestroy(): void {
+        delete (this.game as Game).bullets[this.id]
     }
     tracerColor:number=0
     getData(): BulletData {

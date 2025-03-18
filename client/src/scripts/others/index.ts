@@ -12,8 +12,13 @@ import { SoundManager } from "../engine/sounds.ts";
     const renderer=new WebglRenderer(canvas,100)
     const sounds=new SoundManager()
     const resources=new ResourcesManager(renderer.gl,sounds)
-    resources.load_folders(["img/game/common"])
-    resources.load_folders(["sounds/game/common"])
+
+    let loaded=false
+
+    resources.load_folder("/common.src").then(()=>{
+        loaded=true
+        setTimeout(sounds.set_music.bind(sounds,resources.get_audio("menu_music")),1000)
+    })
     const mouseML=new MousePosListener(renderer.meter_size)
     const KeyL=new KeyListener()
     mouseML.bind(canvas,canvas)
@@ -35,12 +40,9 @@ import { SoundManager } from "../engine/sounds.ts";
             this.menuD.style.display="unset"
 
             this.elements.play_button.onclick=(_e)=>{this.playGame()}
-            setTimeout(()=>{
-                sounds.set_music(resources.get_audio("menu_music"))
-            },1000)
         }
         async playGame(){
-            if(this.game)return
+            if(this.game&&!loaded)return
             this.gameD.style.display="unset"
             this.menuD.style.display="none"
             const g=new Game(`ws${server.toString()}/${await getGame("http"+server.toString())}`,KeyL,mouseML,renderer,sounds,resources)

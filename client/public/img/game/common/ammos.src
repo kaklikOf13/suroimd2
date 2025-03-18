@@ -1,0 +1,13 @@
+{
+    "files":{
+        "9mm":"9mm.svg",
+        "12g":"12g.svg",
+        "22lr":"22lr.svg",
+        "40mm":"40mm.svg",
+        "50cal":"50cal.svg",
+        "308sub":"308sub.svg",
+        "556mm":"556mm.svg",
+        "762mm":"762mm.svg"
+    },
+    "dir":"img/game/common/ammos"
+}

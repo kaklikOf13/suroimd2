@@ -2,8 +2,7 @@ import { BaseGameObject2D, CircleHitbox2D, random, Vec2 } from "common/scripts/e
 import { Player } from "./player.ts";
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
-import { Bullet } from "./bullet.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
+import { type Game } from "../others/game.ts";
 
 export class Explosion extends BaseGameObject2D{
     stringType:string="explosion"
@@ -22,11 +21,7 @@ export class Explosion extends BaseGameObject2D{
         if(this.delay==0){
             if(this.defs.bullet){
                 for(let i=0;i<this.defs.bullet.count;i++){
-                    const b=this.manager.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
-                        defs:this.defs.bullet.def,
-                        position:this.position
-                    })as Bullet
-                    b.set_direction(random.rad())
+                    (this.game as Game).add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner)
                 }
             }
             this.destroy()

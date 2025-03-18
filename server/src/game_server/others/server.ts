@@ -2,9 +2,8 @@ import { Server,Cors} from "../../engine/mod.ts"
 import { Game, GameConfig } from "./game.ts"
 import { ID } from "common/scripts/engine/mod.ts";
 export interface GameServerConfig{
-    config:GameConfig,
-    threads?:number,
-    chunckSize?:number
+    game:GameConfig
+    max_games:number
 }
 
 export class GameServer{
@@ -20,10 +19,10 @@ export class GameServer{
         })
         this.games={}
         this.game_handles={}
-        this.addGame(0)
+        this.addGame(0,this.config.game)
     }
     addGame(id:ID,config?:GameConfig):Game{
-        this.games[id]=new Game(id,config ?? this.config.config)
+        this.games[id]=new Game(id,config ?? this.config.game)
         this.games[id].mainloop()
         console.log(`Game ${id} Started`)
         const handler=this.games[id].clients.handler()

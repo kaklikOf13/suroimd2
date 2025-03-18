@@ -147,6 +147,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.events.emit(DefaultEvents.GameTick,this)
         if(!this.running){
             this.clock.stop()
+            this.on_stop()
         }
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()
@@ -154,6 +155,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     }
     on_update(_dt:number):void{}
     on_run():void{}
+    on_stop():void{}
     mainloop(){
         // Start
         this.on_run()

@@ -92,7 +92,7 @@ export class GuiManager{
             switch(this.hand.type){
                 case InventoryItemType.gun:{
                     const def=(this.inventory[this.hand.location-1].def as GunDef)
-                    this.content.current_item_image.src=`img/game/common/guns/normal/${def.idString}.svg`
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     this.content.current_item_image.style.width="70px"
                     this.content.current_item_image.style.height="70px"
                     this.content.current_item_image.style.opacity="100%"
@@ -102,7 +102,7 @@ export class GuiManager{
                 }
                 case InventoryItemType.ammo:{
                     const def=(this.inventory[this.hand.location-1].def as AmmoDef)
-                    this.content.current_item_image.src=`img/game/common/ammos/${def.idString}.svg`
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     this.content.current_item_image.style.width="40px"
                     this.content.current_item_image.style.height="40px"
                     this.content.current_item_image.style.opacity="100%"
@@ -112,7 +112,7 @@ export class GuiManager{
                 }
                 case InventoryItemType.healing:{
                     const def=(this.inventory[this.hand.location-1].def as HealingDef)
-                    this.content.current_item_image.src=`img/game/common/healings/${def.idString}.svg`
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     this.content.current_item_image.style.width="40px"
                     this.content.current_item_image.style.height="40px"
                     this.content.current_item_image.style.opacity="100%"
@@ -133,12 +133,12 @@ export class GuiManager{
         const player=this.game.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.game.activePlayer}) as Player
         if(!player)return
         if(player.helmet){
-            this.content.helmet_slot.src=`img/game/common/equipaments/${player.helmet.idString}.svg`
+            this.content.helmet_slot.src=this.game.resources.get_sprite(player.helmet.idString).path
         }else{
             this.content.helmet_slot.src="img/game/common/icons/helmet.svg"
         }
         if(player.vest){
-            this.content.vest_slot.src=`img/game/common/equipaments/${player.vest.idString}.svg`
+            this.content.vest_slot.src=this.game.resources.get_sprite(player.vest.idString).path
         }else{
             this.content.vest_slot.src="img/game/common/icons/vest.svg"
         }
@@ -166,14 +166,14 @@ export class GuiManager{
             const img = document.createElement("img")
             switch(s.type){
                 case InventoryItemType.gun:
-                    img.src=`img/game/common/guns/normal/${s.def.idString}.svg`
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.width=40
                     img.height=40
                     img.style.width = "40px"
                     img.style.height = "40px"
                     break
                 case InventoryItemType.ammo:
-                    img.src=`img/game/common/ammos/${s.def.idString}.svg`
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width="25px"
                     img.style.height="25px"
                     img.width=25
@@ -186,7 +186,7 @@ export class GuiManager{
                     }
                     break
                 case InventoryItemType.healing:
-                    img.src=`img/game/common/healings/${s.def.idString}.svg`
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width="25px"
                     img.style.height="25px"
                     img.width=25

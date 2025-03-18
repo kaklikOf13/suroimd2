@@ -1,0 +1,13 @@
+{
+    "files":{
+        "guns-images":"img/game/common/guns.src",
+        "ammos-images":"img/game/common/ammos.src",
+        "healings-images":"img/game/common/healings.src",
+        "obstacles-images":"img/game/common/obstacles.src",
+        "projectiles-images":"img/game/common/projectiles.src",
+        "equipaments-images":"img/game/common/equipaments.src",
+
+        "obstacles-sounds":"sounds/game/common/obstacles.src"
+    },
+    "dir":""
+}

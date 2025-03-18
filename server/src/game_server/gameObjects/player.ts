@@ -109,8 +109,11 @@ export class Player extends BaseGameObject2D{
 
         this.dirty=true
     }
-
-    dirtyPrivate=3
+    update_hand(){
+        if(this.handItem&&this.inventory.slots[this.hand-1].quantity<=0){
+            this.load_hand(this.hand)
+        }
+    }
     dead=false
     hand:number=-1
 
@@ -125,14 +128,12 @@ export class Player extends BaseGameObject2D{
     update(dt:number): void {
         //Movement
         const gamemode=(this.game as Game).gamemode
-        let speed=1
+        let speed=1*(this.recoil?this.recoil.speed:1)
+                  * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing?this.using_healing_speed:1)
+                  * (this.handItem?.tags.includes("gun")?(this.handItem as GunItem).def.speedMult??1:1)
         if(this.recoil){
-            speed*=this.recoil.speed
-            this.recoil.delay-=1/this.game.tps
+            this.recoil.delay-=dt
             if(this.recoil.delay<=0)this.recoil=undefined
-        }
-        if(this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing){
-            speed*=this.using_healing_speed
         }
         this.damageMult=1
         switch(this.BoostType){
@@ -159,9 +160,6 @@ export class Player extends BaseGameObject2D{
                 break
             }
         }
-        if(this.handItem?.tags.includes("gun")){
-            speed*=(this.handItem as GunItem).def.speedMult??1
-        }
         this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,(this.game as Game).map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.dirtyPart=true
@@ -178,13 +176,6 @@ export class Player extends BaseGameObject2D{
             s.item.update(this)
         }
         this.using_item_down=false
-
-        if(this.dirtyPrivate<=0){
-            this.dirtyPrivate=4
-            this.update2()
-        }else{
-            this.dirtyPrivate--
-        }
 
         //Collision
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
@@ -205,7 +196,7 @@ export class Player extends BaseGameObject2D{
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,5)
+        this.movement=v2.scale(action.Movement,4)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }

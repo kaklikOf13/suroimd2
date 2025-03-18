@@ -1,6 +1,6 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { Sprite } from "../engine/mod.ts";
-import { Angle, BaseGameObject2D, CircleHitbox2D, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";

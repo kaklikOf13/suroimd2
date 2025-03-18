@@ -1,6 +1,4 @@
 import { Player } from "../gameObjects/player.ts";
-import { Bullet } from "../gameObjects/bullet.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Angle, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
 import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
@@ -8,6 +6,7 @@ import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
+import { type Game } from "../others/game.ts";
 export abstract class LItem extends ItemCap{
   // deno-lint-ignore no-explicit-any
   abstract on_use(user:Player,slot:SlotCap<any>):void
@@ -73,13 +72,11 @@ export class GunItem extends LItem{
       )
       const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
       for(let i=0;i<bc;i++){
-        const b:Bullet=user.game.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{defs:this.def.bullet,ammo:this.currentAmmo,position:this.def.jitterRadius?v2.add(position,patternPoint[i]):position})
         let ang=user.rotation
         if(this.def.spread){
           ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
         }
-        b.set_direction(ang)
-        b.owner=user
+        (user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user)
       }
       if(this.def.recoil){
         user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}

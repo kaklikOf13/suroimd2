@@ -52,6 +52,7 @@ export class HealingAction extends Action<Player>{
         }
         this.slot.quantity--
         user.inventory.update_infinity()
+        user.update_hand()
         user.privateDirtys.hand=true
         user.privateDirtys.inventory=true
     }

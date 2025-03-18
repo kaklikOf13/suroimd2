@@ -1,5 +1,5 @@
 import { Client,DefaultSignals,ServerGame2D as GameBase } from "../../engine/mod.ts"
-import { ID, v2 } from "common/scripts/engine/mod.ts"
+import { ID, Vec2, v2 } from "common/scripts/engine/mod.ts"
 import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -11,8 +11,12 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
+import { BulletDef } from "common/scripts/definitions/utils.ts";
+import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 export interface GameConfig{
-    maxPlayers:number,
+    maxPlayers:number
+    gameTps:number
+    netTps:number
 }
 
 
@@ -20,8 +24,13 @@ export class Game extends GameBase{
     config:GameConfig
     map:GameMap
     gamemode:Gamemode
+
+    players:Player[]=[]
+    connectedPlayers:Record<number,Player>={}
+
+    bullets:Record<number,Bullet>=[]
     constructor(id:ID,config:GameConfig){
-        super(GameConstants.tps,id,PacketManager,[
+        super(config.gameTps,id,PacketManager,[
             Player,
             Loot,
             Bullet,
@@ -37,18 +46,50 @@ export class Game extends GameBase{
         this.map=new GameMap(this,v2.new(13,13))
         this.gamemode=DefaultGamemode
     }
+
+    on_update(): void {
+      super.on_update()
+    }
+    privatesDirtysInter=0
+    on_stop():void{
+        super.on_stop()
+
+    }
     on_run(): void {
         this.map.generate()
+        this.privatesDirtysInter=setInterval(()=>{
+            for(const p of this.players){
+                p.update2()
+            }
+        },1/this.config.netTps)
     }
-
-    handleConnections(client:Client){
-        const objId={id:client.ID,category:CATEGORYS.PLAYERS}
-        client.on("join",(_packet:JoinPacket)=>{
-            if (this.allowJoin&&!this.scene.objects.exist(objId)){
-                const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,client.ID);
+    add_player(client:Client,_packet:JoinPacket):Player{
+        const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,client.ID) as Player
                 (p as Player).client=client;
                 (p as Player).update2()
-                console.log(`Player ${_packet.PlayerName} Connected`)
+        this.players.push(p)
+        return p
+    }
+    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player):Bullet{
+        const b=this.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
+            defs:def,
+            position:position,
+            owner:owner
+        })as Bullet
+        b.set_direction(angle)
+        this.bullets[b.id]=b
+        return b
+    }
+    add_explosion(position:Vec2,def:ExplosionDef,owner?:Player):Explosion{
+        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position}) as Explosion
+        return e
+    }
+    handleConnections(client:Client){
+        const objId={id:client.ID,category:CATEGORYS.PLAYERS}
+        client.on("join",(packet:JoinPacket)=>{
+            if (this.allowJoin&&!this.scene.objects.exist(objId)){
+                this.add_player(client,packet)
+                console.log(`Player ${packet.PlayerName} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))
         })

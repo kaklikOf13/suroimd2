@@ -6,6 +6,7 @@ import { random } from "common/scripts/engine/random.ts";
 import { Explosion } from "./explosion.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
+import { Game } from "../others/game.ts";
 
 export class Obstacle extends BaseGameObject2D{
     stringType:string="obstacle"
@@ -72,7 +73,7 @@ export class Obstacle extends BaseGameObject2D{
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
             if(this.def.onDestroyExplosion){
-                this.manager.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:Explosions.getFromString(this.def.onDestroyExplosion),position:this.position})
+                (this.game as Game).add_explosion(this._position,Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
             }
             this.destroy()
         }else{

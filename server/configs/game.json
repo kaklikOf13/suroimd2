@@ -1,9 +1,12 @@
 {
-    "game":{
-        "maxPlayers":5,
-        "player":{
-            "speed":5
-        }
+    "server":{
+        "game":{
+            "maxPlayers":5,
+            "gameTps":60,
+            "netTps":40,
+            "chunckSize":12
+        },
+        "max_games":5
     },
     "host":{
         "port":8080
