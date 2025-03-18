@@ -44,6 +44,10 @@ export const Materials:Record<string,MaterialDef>={
     bush:{
         sounds:"bush",
         hit_variations:2
+    },
+    metal:{
+        sounds:"metal",
+        hit_variations:2
     }
 }
 
@@ -58,8 +62,19 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
-        onDestroyExplosion:"barrel_explosion",
         material:"stone",
+    },
+    {
+        idString:"barrel",
+        health:170,
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
+        scale:{
+            destroy:0.68
+        },
+        rotationMode:RotationMode.full,
+        zIndex:zIndexes.Obstacles1,
+        onDestroyExplosion:"barrel_explosion",
+        material:"metal",
     },
     {
         idString:"oak_tree",
