@@ -95,8 +95,24 @@ Healings.insert(
     {
         idString:"small_purple_potion",
         size:0.2,
-        boost:10,
+        boost:15,
         use_delay:1.1,
+        boost_type:BoostType.Mana,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"purple_potion",
+        size:0.5,
+        boost:40,
+        use_delay:2.4,
+        boost_type:BoostType.Mana,
+        condition:[HealingCondition.UnfullExtra]
+    },
+    {
+        idString:"purple_pills",
+        size:0.75,
+        boost:100,
+        use_delay:4.5,
         boost_type:BoostType.Mana,
         condition:[HealingCondition.UnfullExtra]
     },

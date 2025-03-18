@@ -9,11 +9,13 @@
 
         "inhaler":"inhaler.svg",
         "blue_potion":"blue_potion.svg",
+        "purple_potion":"purple_potion.svg",
 
         "medikit":"medikit.svg",
         "red_pills":"red_pills.svg",
         "blue_pills":"blue_pills.svg",
-        "yellow_pills":"yellow_pills.svg"
+        "yellow_pills":"yellow_pills.svg",
+        "purple_pills":"purple_pills.svg"
     },
     "dir":"img/game/common/healings"
 }

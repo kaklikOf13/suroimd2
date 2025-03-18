@@ -71,6 +71,8 @@ export class Player extends BaseGameObject2D{
         this.inventory.add(new HealingItem(Healings.getFromString("blue_pills")),2)
 
         this.inventory.add(new HealingItem(Healings.getFromString("small_purple_potion")),2)
+        this.inventory.add(new HealingItem(Healings.getFromString("purple_potion")),2)
+        this.inventory.add(new HealingItem(Healings.getFromString("purple_pills")),3)
 
         this.inventory.add(new HealingItem(Healings.getFromString("small_red_crystal")),3)
         this.inventory.add(new HealingItem(Healings.getFromString("red_crystal")),3)
