@@ -17,10 +17,14 @@ import { SoundManager } from "../engine/sounds.ts";
 
     resources.load_folder("/common.src").then(()=>{
         loaded=true
-        setTimeout(()=>{
-            if(app.game)return
-            sounds.set_music(resources.get_audio("menu_music"))
-        },1000)
+        const lister=()=>{
+            setTimeout(()=>{
+                if(app.game)return
+                sounds.set_music(resources.get_audio("menu_music"))
+            },1000)
+            document.removeEventListener("mousedown",lister)
+        }
+        document.addEventListener("mousedown",lister)
     })
     const mouseML=new MousePosListener(renderer.meter_size)
     const KeyL=new KeyListener()
