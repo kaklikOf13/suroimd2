@@ -25,17 +25,20 @@
   }
 
 #title-section {
-    position: relative;
+    position: absolute;
     width: 90%;
     max-width: 500px;
-    margin: 8px auto;
-    padding: 20px;
+    top: 100px;
+    left: 50%;
     z-index: 1;
 
     user-select: none;
 
-    left: 50%;
-    transform: translateX(-50%);
+    animation: TitleAnimation 23s infinite ease-in-out alternate;
+}
+@keyframes TitleAnimation {
+    0% { transform: translate(-50%,-50%) rotate(-3deg) scale(100%); }
+    100% { transform: translate(-50%,-50%) rotate(3deg) scale(108%); }
 }
 
 #updates-section {
