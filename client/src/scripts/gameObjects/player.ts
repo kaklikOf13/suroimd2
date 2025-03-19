@@ -50,22 +50,6 @@ export class Player extends FormGameObject2D{
 
         this.manager.cells.updateObject(this)
 
-        //Shoot
-        /*if(this.handDef){
-            if(this.handDef.item_type===InventoryItemType.gun){
-                const gd=(this.handDef as GunDef&GameItem)
-                if(data.using_item_down&&gd.gasParticles){
-                    const position=v2.add(
-                        this.position,
-                        v2.mult(v2.from_RadAngle(this.rotation),v2.new(gd.lenght,gd.lenght))
-                    )
-                    for(let i=0;i<gd.gasParticles.count;i++){
-                        this.game.particles.add_particle(position,this.rotation,{angular_speed:random.float(-0.1,0.1),lifetime:1,speed:0.01}satisfies Particle2DLifetime1,Particles2DBase.life_timed1)
-                    }
-                }
-            }
-        }*/
-
         if(this.id===(this.game as Game).activePlayer){
             (this.game as Game).update_camera()
             if(data.full){

@@ -61,8 +61,8 @@ export abstract class BaseHitbox2D{
     }
 }
 export class NullHitbox2D extends BaseHitbox2D{
-    constructor(){
-        super(NullVec2)
+    constructor(position:Vec2){
+        super(position)
     }
     override readonly type = HitboxType2D.null
     override collidingWith(_other:Hitbox2D):boolean{
@@ -75,10 +75,10 @@ export class NullHitbox2D extends BaseHitbox2D{
         return {overlap:NullVec2,collided:false}
     }
     override center(): Vec2 {
-        return NullVec2
+        return this.position
     }
     override randomPoint(): Vec2 {
-      return NullVec2
+      return this.position
     }
     override toRect():RectHitbox2D{
         return new RectHitbox2D(this.position,v2.new(0,0))
@@ -88,11 +88,11 @@ export class NullHitbox2D extends BaseHitbox2D{
         return true
     }
 
-    override transform(_position?:Vec2,_scale?:number):Hitbox2D{
-        return new NullHitbox2D()
+    override transform(position?:Vec2,_scale?:number):Hitbox2D{
+        return new NullHitbox2D(position?v2.add(this.position,position):this.position)
     }
     override clone():Hitbox2D{
-        return new NullHitbox2D()
+        return new NullHitbox2D(this.position)
     }
 }
 export interface OverlapCollision2D{

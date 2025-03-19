@@ -18,13 +18,14 @@ export abstract class BaseObject2D{
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
     public get position():Vec2{
-        return this.hb ? this.hb.position : v2.new(0,0)
+        return this.hb.position
     }
     set position(val:Vec2){
-        this.hb.position=val
+        this.hb.position.x=val.x
+        this.hb.position.y=val.y
     }
     constructor(){
-        this.hb=new NullHitbox2D()
+        this.hb=new NullHitbox2D(v2.new(0,0))
         this.destroyed=false
     }
     updateData(_data:EncodedData):void{}

@@ -3,8 +3,6 @@ import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
-import { Explosion } from "./explosion.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { Game } from "../others/game.ts";
 
@@ -13,7 +11,6 @@ export class Obstacle extends BaseGameObject2D{
     numberType: number=4
 
     def!:ObstacleDef
-    _position!:Vec2
 
     health:number=0
 
@@ -33,9 +30,8 @@ export class Obstacle extends BaseGameObject2D{
         this.def=args.def
         if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(args.position)
-            this._position=this.hb.position
         }else{
-            this._position=args.position
+            this.position=args.position
         }
         if(args.variation){
             this.variation=args.variation
@@ -54,7 +50,7 @@ export class Obstacle extends BaseGameObject2D{
         return {
             full:{
                 definition:this.def.idNumber!,
-                position:this._position,
+                position:this.position,
                 variation:this.variation,
                 rotation:this.rotation
             },
@@ -65,15 +61,14 @@ export class Obstacle extends BaseGameObject2D{
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0);
-            this.hb=this.def.hitbox.transform(this._position,this.scale)
-            this._position=this.hb.position
+            this.hb=this.def.hitbox.transform(this.position,this.scale)
         }
     }
     damage(params:DamageParams){
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
             if(this.def.onDestroyExplosion){
-                (this.game as Game).add_explosion(this._position,Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
+                (this.game as Game).add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
             }
             this.destroy()
         }else{

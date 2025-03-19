@@ -138,6 +138,7 @@ export class SoundManager{
 
     }
     play(sound:Sound,params:Partial<SoundOptions>,volume_group?:string){
+        if(!sound)return
         let volume = params.volume != undefined ? params.volume : 1
         volume *= sound.volume*this.masterVolume
         volume *= (volume_group&&this.volumes[volume_group]!==undefined)?this.volumes[volume_group]:1

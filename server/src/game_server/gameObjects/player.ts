@@ -165,7 +165,7 @@ export class Player extends BaseGameObject2D{
         this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,(this.game as Game).map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.dirtyPart=true
-            this.oldPosition=this.position
+            this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
         }
 

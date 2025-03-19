@@ -51,7 +51,7 @@ export class Bullet extends ClientGameObject2D{
                 this.destroy()
             }
         }else{
-            this.position=v2.add(this.position,this.dts)
+            this.hb.position=v2.add(this.hb.position,this.dts)
             this.manager.cells.updateObject(this)
         }
 

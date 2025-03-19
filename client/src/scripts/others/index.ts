@@ -17,7 +17,10 @@ import { SoundManager } from "../engine/sounds.ts";
 
     resources.load_folder("/common.src").then(()=>{
         loaded=true
-        setTimeout(sounds.set_music.bind(sounds,resources.get_audio("menu_music")),1000)
+        setTimeout(()=>{
+            if(app.game)return
+            sounds.set_music(resources.get_audio("menu_music"))
+        },1000)
     })
     const mouseML=new MousePosListener(renderer.meter_size)
     const KeyL=new KeyListener()
@@ -60,5 +63,5 @@ import { SoundManager } from "../engine/sounds.ts";
         }
 
     }
-    new App()
+    const app=new App()
 })()

@@ -104,11 +104,10 @@ export class Obstacle extends ClientGameObject2D{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
             }
-
-            this.manager.cells.updateObject(this)
         }
         if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(position,data.scale)
+            this.manager.cells.updateObject(this)
         }
     }
 }
