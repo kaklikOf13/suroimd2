@@ -1,6 +1,6 @@
 import { v2, Vec2 } from "./geometry.ts"
 import { type Hitbox2D, NullHitbox2D } from "./hitbox.ts"
-import { type ID, type Tags } from "./utils.ts"
+import { type ID } from "./utils.ts"
 import { NetStream } from "./stream.ts";
 import { random } from "./random.ts";
 import { ObjectsPacket } from "./packets.ts";
@@ -78,6 +78,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     categorys:number[]=[]
     cellSize:number
     cells:Record<number,Record<number,Record<number,GameObject[]>>>
+    objectCells:Record<number,Record<number,Vec2>>={}
     constructor(cellSize:number=5){
         this.cellSize=cellSize
         this.cells={}
@@ -91,42 +92,33 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
             throw new Error(`Existent Object ${obj.id} In Cell`)
         }
         this.objects[obj.category][obj.id]=obj
+        this.updateObject(obj)
     }
     unregistry(obj:ObjectKey){
         if(!(this.objects[obj.category]&&this.objects[obj.category][obj.id])){
             throw new Error(`Invalid Object ${obj}`)
         }
+        this.removeObjectFromCells(obj)
         delete this.objects[obj.category][obj.id]
     }
-    update(){
-        this.cells={}
-        for(const c of this.categorys){
-            if(!this.objects[c])continue
-            for(const obj of Object.values(this.objects[c])){
-                const rect=obj.hb.toRect()
-                let min = this.cellPos(rect.position)
-                let max = this.cellPos(v2.add(rect.position,rect.size))
-                if(v2.less(max,min)){
-                    const m=min
-                    min=max
-                    max=m
-                }
-                for(let y=min.y;y<=max.y;y++){
-                    if(!this.cells[y]){
-                        this.cells[y]={}
-                    }
-                    for(let x=min.x;x<=max.x;x++){
-                        if(!this.cells[y][x]){
-                            this.cells[y][x]={}
-                        }
-                        if(!(this.cells[y][x][obj.category])){
-                            this.cells[y][x][obj.category]=[]
-                        }
-                        this.cells[y][x][obj.category].push(obj)
-                    }
-                }
-            }
+    private removeObjectFromCells(key:ObjectKey){
+        const c=this.objectCells[key.category][key.id]
+        if(!c)return
+        this.cells[key.category][c.y][c.x].splice(this.cells[key.category][c.y][c.x].indexOf(this.objects[key.category][key.id]),1)
+        delete this.objectCells[key.category][key.id]
+    }
+    updateObject(obj:GameObject){
+        const k=obj.get_key()
+        this.removeObjectFromCells(k)
+        const cp=this.cellPos(obj.position)
+        if(!this.cells[k.category][cp.y]){
+            this.cells[k.category][cp.y]={}
         }
+        if(!this.cells[k.category][cp.y][cp.x]){
+            this.cells[k.category][cp.y][cp.x]=[]
+        }
+        this.cells[k.category][cp.y][cp.x].push(obj)
+        this.objectCells[k.category][k.id]=cp
     }
     get_objects(hitbox:Hitbox2D,categorys:number[]):GameObject[]{
         const rect=hitbox.toRect()
@@ -137,18 +129,18 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
             min=max
             max=m
         }
-        const objects:GameObject[] = [];
-        for(let y=min.y;y<=max.y;y++){
-            if(!this.cells[y])continue
-            for(let x=min.x;x<=max.x;x++){
-                if(!this.cells[y][x])continue
-                for (const c of categorys) {
-                    if(!this.cells[y][x][c]){
-                        continue
+        const objects:GameObject[] = []
+        for (const c of categorys) {
+            if(!this.cells[c])continue
+            for(let y=min.y;y<=max.y;y++){  
+                if(!this.cells[c][y])continue
+                    for(let x=min.x;x<=max.x;x++){
+                        if(!this.cells[c][y][x]){
+                            continue
+                        }
+                        objects.push(...this.cells[c][y][x])
                     }
-                    objects.push(...this.cells[y][x][c])
                 }
-            }
         }
         return objects
     }
@@ -249,6 +241,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects[category]={orden:[],objects:{}}
         this.categorys.push(category)
         this.cells.categorys.push(category)
+        this.cells.cells[category]={}
+        this.cells.objectCells[category]={}
     }
     proccess(packet:ObjectsPacket){
         const csize=packet.stream.readUint16()
@@ -317,7 +311,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         return op
     }
     update(dt:number){
-        this.cells.update()
         for(const c in this.objects){
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]

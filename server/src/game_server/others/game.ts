@@ -53,7 +53,7 @@ export class Game extends GameBase{
     privatesDirtysInter=0
     on_stop():void{
         super.on_stop()
-
+        clearInterval(this.privatesDirtysInter)
     }
     on_run(): void {
         this.map.generate()

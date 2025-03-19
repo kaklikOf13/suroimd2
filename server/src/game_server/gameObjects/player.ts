@@ -166,6 +166,7 @@ export class Player extends BaseGameObject2D{
         if(!v2.is(this.position,this.oldPosition)){
             this.dirtyPart=true
             this.oldPosition=this.position
+            this.manager.cells.updateObject(this)
         }
 
         //Hand Use
@@ -180,7 +181,7 @@ export class Player extends BaseGameObject2D{
         this.using_item_down=false
 
         //Collision
-        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES])
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
             switch((obj as BaseGameObject2D).stringType){

@@ -1,9 +1,9 @@
-import { PacketsManager } from "../engine/packets.ts";
-export { JoinPacket } from "../packets/join_packet.ts";
-export { ActionPacket } from "../packets/action_packet.ts";
-import { JoinPacket } from "../packets/join_packet.ts";
-import { ActionPacket } from "../packets/action_packet.ts";
-import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
+import { PacketsManager } from "../engine/packets.ts"
+export { JoinPacket } from "../packets/join_packet.ts"
+export { ActionPacket } from "../packets/action_packet.ts"
+import { JoinPacket } from "../packets/join_packet.ts"
+import { ActionPacket } from "../packets/action_packet.ts"
+import { GuiPacket } from "common/scripts/packets/gui_packet.ts"
 
 export const GameConstants={
     player:{

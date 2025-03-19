@@ -25,7 +25,7 @@ export class Obstacle extends ClientGameObject2D{
     }
 
     sounds?:{
-        break?:Sound,
+        break?:Sound
         hit?:Sound[]
     }
     render(camera: Camera2D, renderer: Renderer): void {

@@ -118,7 +118,7 @@ Guns.insert(
         bullet:{
             damage:7,
             radius:0.0125,
-            speed:18,
+            speed:19,
             range:20,
             tracer:tracers.tiny
         },

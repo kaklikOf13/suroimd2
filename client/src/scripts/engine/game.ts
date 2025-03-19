@@ -61,8 +61,8 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     }
     on_update(dt:number){
         this.draw(this.renderer,dt)
-        this.particles.update(1/this.tps)
-        this.sounds.update(1/this.tps)
+        this.particles.update(dt)
+        this.sounds.update(dt)
         this.key.tick()
     }
 }

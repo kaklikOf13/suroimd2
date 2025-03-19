@@ -26,8 +26,6 @@ export class Bullet extends ClientGameObject2D{
 
     length:number=0
     maxLength:number=0.3
-    visualPos!:Vec2
-    savedPos:Vec2=v2.new(0,0)
     tracerH:number=0
 
     dying:boolean=false
@@ -35,26 +33,16 @@ export class Bullet extends ClientGameObject2D{
 
     dts:Vec2=v2.new(0,0)
 
-    render(camera: Camera2D, renderer: Renderer,dt:number): void {
-        if(this.dying){
-            this.length=Math.max(this.length-((this.speed*dt)/9),0)
-        }else{
-            if(this.length<this.maxLength){
-                this.length+=(this.speed*dt)/5
-                this.visualPos=v2.add(this.visualPos,this.dts)
-                this.savedPos=v2.sub(this.position,this.visualPos)
-            }else{
-                this.length=this.maxLength
-                this.visualPos=v2.add(this.position,v2.scale(this.savedPos,dt))
-            }
-        }
-        if(this.spr){
-            renderer.draw_image2D(this.spr,v2.sub(this.visualPos,camera.position),v2.new(this.length,this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint)
+    render(camera: Camera2D, renderer: Renderer,_dt:number): void {
+        if(this.spr){ 
+            renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(Math.max(this.length,0),this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint)
             if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
             }
         }
     }
+    private tticks:number=0
+
     update(dt:number): void {
         this.dts=v2.scale(this.velocity,dt)
         if(this.dying||v2.distance(this.initialPosition,this.position)>this.maxDistance){
@@ -64,10 +52,30 @@ export class Bullet extends ClientGameObject2D{
             }
         }else{
             this.position=v2.add(this.position,this.dts)
+            this.manager.cells.updateObject(this)
         }
+
+        const traveledDistance = v2.distance(this.initialPosition, this.position)
+
+        if(this.dying){
+            this.tticks-=dt/10
+            if(this.length<=0){
+                this.destroy()
+            }
+        }else{
+            this.tticks+=dt/10
+        }
+        this.length=Math.min(
+            Math.min(
+                this.speed * this.tticks,
+                traveledDistance
+            ),
+            this.maxLength
+        );
+        
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
-            if(this.dying||this.destroyed)break
+            if(this.dying)break
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
@@ -77,7 +85,7 @@ export class Bullet extends ClientGameObject2D{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).on_hitted(this.position)
+                        (obj as Obstacle).on_hitted(v2.duplicate(this.position))
                         this.dying=true
                     }
                     break
@@ -97,7 +105,6 @@ export class Bullet extends ClientGameObject2D{
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(this.angle),this.speed),4)
         this.tracerH=data.tracer.height
         this.maxLength=data.tracer.width
-        this.visualPos=v2.duplicate(this.position)
         this.tint=ColorM.number(data.tracerColor)
     }
 }

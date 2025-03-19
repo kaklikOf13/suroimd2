@@ -28,6 +28,7 @@ export class Bullet extends BaseGameObject2D{
             this.destroy()
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
+        this.manager.cells.updateObject(this)
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
             switch((obj as BaseGameObject2D).stringType){
