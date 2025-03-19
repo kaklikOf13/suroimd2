@@ -48,6 +48,8 @@ export class Player extends FormGameObject2D{
         this.position=data.position
         this.rotation=data.rotation
 
+        this.manager.cells.updateObject(this)
+
         //Shoot
         /*if(this.handDef){
             if(this.handDef.item_type===InventoryItemType.gun){
