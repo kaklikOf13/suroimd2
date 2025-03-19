@@ -58,7 +58,7 @@ export class Game extends GameBase{
     on_run(): void {
         this.map.generate()
         this.privatesDirtysInter=setInterval(()=>{
-            for(const p of this.players){
+            for(const p of Object.values(this.connectedPlayers)){
                 p.update2()
             }
         },1/this.config.netTps)
@@ -88,7 +88,8 @@ export class Game extends GameBase{
         const objId={id:client.ID,category:CATEGORYS.PLAYERS}
         client.on("join",(packet:JoinPacket)=>{
             if (this.allowJoin&&!this.scene.objects.exist(objId)){
-                this.add_player(client,packet)
+                const p=this.add_player(client,packet)
+                this.connectedPlayers[p.id]=p
                 console.log(`Player ${packet.PlayerName} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))
@@ -101,6 +102,7 @@ export class Game extends GameBase{
         client.on(DefaultSignals.DISCONNECT,()=>{
             if(this.scene.objects.exist(objId)){
                 const p=this.scene.objects.get_object(objId) as Player
+                delete this.connectedPlayers[p.id]
                 p.destroy()
                 console.log(`Player ${p.name} Desconnected`)
             }

@@ -28,31 +28,14 @@
     position: relative;
     width: 90%;
     max-width: 500px;
-    margin: 20px auto;
+    margin: 8px auto;
     padding: 20px;
-    text-align: center;
     z-index: 1;
-    background: rgba(13, 17, 23, 0.9);
-    border-color: rgba(7, 170, 238, 0.8);
-    box-shadow: 0 0 30px rgba(7, 170, 238, 0.3);
 
-    h1 {
-        color: #fff;
-        font-family: "Russo-One";
-        font-size: 48px;
-        text-shadow: 0 0 20px rgba(7, 170, 238, 0.5);
-        margin: 0;
-        letter-spacing: 4px;
-    }
+    user-select: none;
 
-    @media (max-width: 1200px) {
-        margin: 10px auto;
-        padding: 15px;
-
-        h1 {
-            font-size: 36px;
-        }
-    }
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 #updates-section {
