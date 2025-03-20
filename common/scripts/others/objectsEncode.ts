@@ -50,6 +50,14 @@ export interface ObstacleData extends EncodedData{
     }
     scale:number
 }
+export interface ProjectileData extends EncodedData{
+    full?:{
+        definition:number
+    }
+    z:number
+    position:Vec2
+    rotation:number
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -193,5 +201,30 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeID(data.def)
             .writeFloat(data.radius,0,20,3)
         }
-    }
+    },
+    projectile:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:ProjectileData={
+                position:stream.readPosition(),
+                rotation:stream.readRad(),
+                z:stream.readFloat(0,1,1),
+            }
+            if(full){
+                ret.full={
+                    definition:stream.readID()
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:ProjectileData,stream:NetStream){
+            stream.writePosition(data.position)
+            .writeRad(data.rotation)
+            .writeFloat(data.z,0,1,1)
+            if(full){
+                stream.writeID(data.full!.definition)
+            }
+        }
+    },
 }

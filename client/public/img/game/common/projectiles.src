@@ -1,6 +1,7 @@
 {
     "files":{
-        "base_trail":"base_trail.svg"
+        "base_trail":"base_trail.svg",
+        "proj_frag":"proj_frag.svg"
     },
     "dir":"img/game/common/projectiles"
 }

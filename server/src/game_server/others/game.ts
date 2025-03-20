@@ -1,6 +1,6 @@
 import { Client,DefaultSignals,ServerGame2D as GameBase } from "../../engine/mod.ts"
 import { ID, Vec2, v2 } from "common/scripts/engine/mod.ts"
-import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
+import { CATEGORYS,CATEGORYSL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts"
@@ -13,6 +13,8 @@ import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
 import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
+import { ProjectileDef, Projectiles } from "common/scripts/definitions/projectiles.ts";
+import { Projectile } from "../gameObjects/projectile.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -35,7 +37,8 @@ export class Game extends GameBase{
             Loot,
             Bullet,
             Obstacle,
-            Explosion
+            Explosion,
+            Projectile
         ])
         for(const i of CATEGORYSL){
             this.scene.objects.add_category(i)
@@ -73,7 +76,7 @@ export class Game extends GameBase{
     add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player):Bullet{
         const b=this.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
             defs:def,
-            position:position,
+            position:v2.duplicate(position),
             owner:owner
         })as Bullet
         b.set_direction(angle)
@@ -81,8 +84,12 @@ export class Game extends GameBase{
         return b
     }
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Player):Explosion{
-        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position}) as Explosion
+        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:v2.duplicate(position)}) as Explosion
         return e
+    }
+    add_projectile(position:Vec2,def:ProjectileDef,owner?:Player):Projectile{
+        const p=this.scene.objects.add_object(new Projectile(),CATEGORYS.PROJECTILES,undefined,{defs:def,owner,position:v2.duplicate(position)}) as Projectile
+        return p
     }
     handleConnections(client:Client){
         const objId={id:client.ID,category:CATEGORYS.PLAYERS}
@@ -90,6 +97,7 @@ export class Game extends GameBase{
             if (this.allowJoin&&!this.scene.objects.exist(objId)){
                 const p=this.add_player(client,packet)
                 this.connectedPlayers[p.id]=p
+                setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("frag_grenade"),p),1000)
                 console.log(`Player ${packet.PlayerName} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))

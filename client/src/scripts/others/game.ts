@@ -12,6 +12,7 @@ import { Explosion } from "../gameObjects/explosion.ts";
 import { Debug } from "./config.ts";
 import { SoundManager } from "../engine/sounds.ts";
 import { ColorM } from "../engine/renderer.ts";
+import { Projectile } from "../gameObjects/projectile.ts";
 
 function gameLoadMaterials(game:Game){
   game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
@@ -25,7 +26,7 @@ export class Game extends ClientGame2D{
   grid:Material2D<GridMaterialArgs>
   guiManager!:GuiManager
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion])
+    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }

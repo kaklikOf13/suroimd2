@@ -27,14 +27,16 @@ export enum CATEGORYS{
     LOOTS,
     BULLETS,
     OBSTACLES,
-    EXPLOSIONS
+    EXPLOSIONS,
+    PROJECTILES
 }
 export const CATEGORYSL=[
     CATEGORYS.PLAYERS,
     CATEGORYS.LOOTS,
     CATEGORYS.BULLETS,
     CATEGORYS.OBSTACLES,
-    CATEGORYS.EXPLOSIONS
+    CATEGORYS.EXPLOSIONS,
+    CATEGORYS.PROJECTILES
 ]
 export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
