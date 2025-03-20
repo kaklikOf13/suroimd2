@@ -27,7 +27,7 @@ export class Projectile extends BaseGameObject2D{
     fuse_delay:number=0
     update(dt:number): void {
         if(!v2.is(this.velocity,NullVec2)){
-            this.position=v2.add(this.position,v2.scale(this.velocity,dt))
+            this.position=v2.clamp2(v2.add(this.position,v2.scale(this.velocity,dt)),NullVec2,(this.game as Game).map.size)
             this.manager.cells.updateObject(this)
             this.dirtyPart=true
         }

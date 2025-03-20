@@ -15,6 +15,11 @@ export const tracers={
     tiny:{
         width:1,
         height:0.4, // 1H = 0.05 radius
+    },
+    mirv:{
+        height:0.4,
+        width:1,
+        color:0x0044aa
     }
 }
 export enum InventoryItemType{

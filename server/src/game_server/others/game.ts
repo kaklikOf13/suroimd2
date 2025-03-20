@@ -98,6 +98,7 @@ export class Game extends GameBase{
                 const p=this.add_player(client,packet)
                 this.connectedPlayers[p.id]=p
                 setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("frag_grenade"),p),1000)
+                setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("mirv_grenade"),p),10000)
                 console.log(`Player ${packet.PlayerName} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))

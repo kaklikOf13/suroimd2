@@ -47,5 +47,49 @@ Projectiles.insert(
             world:"proj_frag"
             
         }
+    },
+    //Mirv
+    {
+        idString:"mirv_grenade",
+        gravity:0.6,
+        radius:0.5,
+        zBaseScale:0.5,
+        zScaleAdd:0.6,
+        decays:{
+            ground_rotation:1,
+            ground_speed:1
+        },
+        size:1.1,
+        
+        cook:{
+            allow_hand:false,
+            fuse_time:8
+        },
+        explosion:"mirv_grenade_explosion",
+        frames:{
+            world:"proj_mirv"
+            
+        }
+    },
+    {
+        idString:"submirv_grenade",
+        gravity:1.2,
+        radius:0.5,
+        zBaseScale:0.5,
+        zScaleAdd:0.6,
+        decays:{
+            ground_rotation:3,
+            ground_speed:3
+        },
+        size:0.3,
+        
+        cook:{
+            allow_hand:false,
+            fuse_time:2
+        },
+        explosion:"submirv_grenade_explosion",
+        frames:{
+            world:"proj_submirv"
+        }
     }
 )
