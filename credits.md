@@ -1,4 +1,4 @@
-# Suroimd.io 2 By:
+# Suroimd.io 2
 ## Programmers
 * @kaklik
 * @viktor_hg
@@ -8,7 +8,10 @@
 * @cheerfulbull_29688
 * @bien.star
 * @endermanking
+* @littlethief69
 ## Sound Designers
 * Free Sounds On Net
 * @teardwop
 * @rivals2444
+## Creator
+* Kaklik
