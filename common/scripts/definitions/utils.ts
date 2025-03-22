@@ -34,6 +34,7 @@ export interface GameItem extends Definition{
 }
 export enum DamageReason{
     Player,
+    Explosion,
     SafeZone,
     Abstinence
 }

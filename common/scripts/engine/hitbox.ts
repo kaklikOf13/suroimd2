@@ -1,5 +1,6 @@
 import { NullVec2, type Vec2, v2 } from "./geometry.ts"
 import { random } from "./random.ts";
+import { Numeric } from "./utils.ts";
 
 export const Collision=Object.freeze({
     circle_with_rect(hb1:CircleHitbox2D,hb2:RectHitbox2D):boolean{
@@ -46,6 +47,7 @@ export abstract class BaseHitbox2D{
     abstract collidingWith(other: Hitbox2D):boolean
     abstract overlapCollision(other:Hitbox2D):OverlapCollision2D
     abstract pointInside(point:Vec2):boolean
+    abstract lineInside(x:Vec2,y:Vec2,width:number):boolean
     abstract center():Vec2
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
@@ -73,6 +75,9 @@ export class NullHitbox2D extends BaseHitbox2D{
     }
     override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
         return {overlap:NullVec2,collided:false}
+    }
+    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
+        return false
     }
     override center(): Vec2 {
         return this.position
@@ -146,6 +151,31 @@ export class CircleHitbox2D extends BaseHitbox2D{
     }
     override pointInside(point: Vec2): boolean {
       return v2.distance(this.position,point)<this.radius
+    }
+    override lineInside(x:Vec2,y:Vec2,_width:number):boolean{
+        let d = v2.sub(y, x)
+        const len = Numeric.max(v2.length(d), 0.000001)
+        d = v2.normalizeSafe(d)
+
+        const m = v2.sub(x, this.position)
+        const b = v2.dot(m, d)
+        const c = v2.dot(m, m) - (this.radius * this.radius)
+
+        if (c > 0 && b > 0) return false
+
+        const discSq = b * b - c
+        if (discSq < 0) return false
+
+        const disc = Math.sqrt(discSq);
+        const t = -b < disc
+            ? disc - b
+            : -b - disc;
+
+        if (t <= len) {
+            return true
+        }
+
+        return false
     }
     override center(): Vec2 {
       return this.position
@@ -230,6 +260,9 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override pointInside(point: Vec2): boolean {
         return (this.position.x+this.size.x>=point.x&&this.position.x<=point.x)&&(this.position.y+this.size.y>=point.y&&this.position.y<=point.y)
+    }
+    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
+        return false
     }
     override center(): Vec2 {
         return v2.add(this.position,v2.dscale(this.size,2))

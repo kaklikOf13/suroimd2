@@ -410,5 +410,11 @@ export const Numeric={
     },
     lerp(start:number,dest:number,inter:number):number{
         return  (start*(1-inter))+(dest*inter)
+    },
+    max(val1:number,val2:number):number{
+        return val1<val2?val1:val2
+    },
+    min(val1:number,val2:number):number{
+        return val1>val2?val1:val2
     }
 }
