@@ -46,7 +46,7 @@ export class Game extends GameBase{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(20,20))
+        this.map=new GameMap(this,v2.new(30,30))
         this.gamemode=DefaultGamemode
     }
 

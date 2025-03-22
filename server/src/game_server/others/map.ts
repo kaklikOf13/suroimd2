@@ -13,14 +13,14 @@ export class GameMap{
         this.size=size
         this.game=game
     }
-    getRandomPosition(hitbox:Hitbox2D,k:ObjectKey,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,k:ObjectKey,map:GameMap)=>boolean,maxAttempts:number=30):Vec2|undefined{
+    getRandomPosition(hitbox:Hitbox2D,k:ObjectKey,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,k:ObjectKey,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
         let pos:Vec2|undefined=undefined
         let attempt=0
         if(!valid){
             valid=(hitbox:Hitbox2D,k:ObjectKey,map:GameMap)=>{
                 const objs=map.game.scene.objects.cells.get_objects2(hitbox,CATEGORYS.OBSTACLES)
                 for(const o of objs){
-                    if(o.id!==k.id&&o.category!=k.category&&hb.collidingWith((o as Obstacle).spawnHitbox)){
+                    if(!(o.id===k.id&&o.category===k.category)&&hb.collidingWith((o as Obstacle).spawnHitbox)){
                         return false
                     }
                 }
@@ -37,7 +37,8 @@ export class GameMap{
         while(!pos){
             if(attempt>=maxAttempts)break
             pos=gp!(hc,this)
-            if(!valid!(hc,k,this)){
+            hb.position=pos
+            if(!valid!(hb,k,this)){
                 pos=undefined
             }
             attempt++

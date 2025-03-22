@@ -167,7 +167,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         const cp=this.cellPos(hitbox.position)
         const objects:GameObject[] = []
         for (const c of categorys) {
-            if(!this.cells[c]||!this.cells[c][cp.y]||!this.cells[c][cp.y][cp.x])continue
+            if(!(this.cells[c]&&this.cells[c][cp.y]&&this.cells[c][cp.y][cp.x]))continue
             objects.push(...Object.values(this.cells[c][cp.y][cp.x]))
         }
         return objects
@@ -175,6 +175,9 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     get_objects2(hitbox:Hitbox2D,category:number):GameObject[]{
         const objects:GameObject[] = []
         const cp=this.cellPos(hitbox.position)
+        if(!(this.cells[category]&&this.cells[category][cp.y]&&this.cells[category][cp.y][cp.x])){
+            return []
+        }
         objects.push(...Object.values(this.cells[category][cp.y][cp.x]))
         return objects
     }
