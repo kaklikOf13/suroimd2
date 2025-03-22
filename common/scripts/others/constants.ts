@@ -7,8 +7,9 @@ import { GuiPacket } from "common/scripts/packets/gui_packet.ts"
 
 export const GameConstants={
     player:{
-        defaultName:"player",
+        defaultName:"Player",
         playerRadius:0.3,
+        max_name_size:25,
     },
     loot:{
         velocityDecay:0.96,

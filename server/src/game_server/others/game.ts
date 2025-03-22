@@ -1,6 +1,6 @@
 import { Client,DefaultSignals,ServerGame2D as GameBase } from "../../engine/mod.ts"
-import { ID, Vec2, v2 } from "common/scripts/engine/mod.ts"
-import { CATEGORYS,CATEGORYSL, PacketManager } from "common/scripts/others/constants.ts"
+import { ID, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts"
@@ -66,10 +66,15 @@ export class Game extends GameBase{
             }
         },1/this.config.netTps)
     }
-    add_player(client:Client,_packet:JoinPacket):Player{
+    add_player(client:Client,packet:JoinPacket):Player{
         const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,client.ID) as Player
                 (p as Player).client=client;
                 (p as Player).update2()
+        if(ValidString.simple_characters(packet.PlayerName)){
+            p.name=packet.PlayerName
+        }else{
+            p.name=`${GameConstants.player.defaultName}#${this.players.length+1}`
+        }
         this.players.push(p)
         return p
     }
@@ -99,7 +104,7 @@ export class Game extends GameBase{
                 this.connectedPlayers[p.id]=p
                 setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("frag_grenade"),p),1000)
                 setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("mirv_grenade"),p),10000)
-                console.log(`Player ${packet.PlayerName} Connected`)
+                console.log(`Player ${p.name} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))
         })

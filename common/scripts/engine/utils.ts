@@ -418,3 +418,20 @@ export const Numeric={
         return val1>val2?val1:val2
     }
 }
+
+const valid_simple_character="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#.,;!%$*"
+export const ValidString={
+    simple_characters(str:string):boolean{
+        let has_letter=false
+        for(let i=0;i<str.length;i++){
+            if(str.charAt(i)===" "){
+                continue
+            }else if(!valid_simple_character.includes(str.charAt(i))){
+                return false
+            }
+            has_letter=true
+            
+        }
+        return has_letter
+    }
+}

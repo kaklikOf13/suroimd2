@@ -55,7 +55,7 @@ import { SoundManager } from "../engine/sounds.ts";
             const g=new Game(`ws${server.toString()}/${await getGame("http"+server.toString())}`,KeyL,mouseML,renderer,sounds,resources)
             sounds.set_music(null)
             g.guiManager=new GuiManager(g)
-            g.connect("kaklik")
+            g.connect("")
             this.game=g
             g.mainloop()
             g.onstop=this.closeGame.bind(this)
