@@ -1,4 +1,4 @@
-import { Angle, BaseGameObject2D, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, BaseGameObject2D, Hitbox2D, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
@@ -11,6 +11,7 @@ export class Obstacle extends BaseGameObject2D{
     numberType: number=4
 
     def!:ObstacleDef
+    spawnHitbox!:Hitbox2D
 
     health:number=0
 
@@ -32,6 +33,11 @@ export class Obstacle extends BaseGameObject2D{
             this.hb=this.def.hitbox.transform(args.position)
         }else{
             this.position=args.position
+        }
+        if(this.def.spawnHitbox){
+            this.spawnHitbox=this.def.spawnHitbox.transform(args.position)
+        }else{
+            this.spawnHitbox=this.hb.clone()
         }
         if(args.variation){
             this.variation=args.variation

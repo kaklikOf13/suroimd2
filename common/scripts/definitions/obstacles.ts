@@ -3,33 +3,34 @@ import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode } from "..
 import { zIndexes } from "common/scripts/others/constants.ts";
 
 export interface ObstacleDef extends Definition{
-    health:number,
-    hitbox?:Hitbox2D,
+    health:number
+    hitbox?:Hitbox2D
+    spawnHitbox?:Hitbox2D
     noCollision?:boolean
     noBulletCollision?:boolean
     scale?:{
-        min?:number,
-        man?:number,
-        destroy?:number,
+        min?:number
+        man?:number
+        destroy?:number
     }
     frame?:{
-        base:string,
+        base:string
     }
-    variations?:number,
+    variations?:number
     zIndex?:number
     rotationMode?:number
 
-    onDestroyExplosion?:string,
+    onDestroyExplosion?:string
     material?:string
 
     sounds?:{
-        hit:string,
-        break:string,
+        hit:string
+        break:string
         hit_variations?:number
     }
 }
 export interface MaterialDef{
-    sounds:string,
+    sounds:string
     hit_variations?:number
 }
 export const Materials:Record<string,MaterialDef>={
