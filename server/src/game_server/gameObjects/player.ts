@@ -7,15 +7,15 @@ import { GunDef } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
-import { Obstacle } from "./obstacle.ts";
+import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { BoostType, DamageReason, type GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { AmmoDef, AmmoType } from "common/scripts/definitions/ammo.ts";
-import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
+import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { Game } from "../others/game.ts"
-import { OtherDef } from "common/scripts/definitions/others.ts";
-import { HealingDef } from "common/scripts/definitions/healings.ts";
+import { type Game } from "../others/game.ts"
+import { type OtherDef } from "common/scripts/definitions/others.ts";
+import { type HealingDef } from "common/scripts/definitions/healings.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -304,5 +304,7 @@ export class Player extends BaseGameObject2D{
         if(this.client){
             setTimeout(this.client.disconnect.bind(this.client),500)
         }
+        (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);
+        (this.game as Game).modeManager.on_player_die(this)
     }
 }

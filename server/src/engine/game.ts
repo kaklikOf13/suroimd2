@@ -24,6 +24,12 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     private _handle(client:Client) {
         this.handleConnections(client)
     }
+    on_stop(): void {
+      super.on_stop()
+      for(const c of this.clients.clients.values()){
+        c.disconnect()
+      }
+    }
     abstract handleConnections(client:Client):void
     update_delay:number=3
     on_update(): void {

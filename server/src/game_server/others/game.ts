@@ -21,16 +21,52 @@ export interface GameConfig{
     netTps:number
 }
 
-
+export class GamemodeManager{
+    game:Game
+    closed:boolean=false
+    can_join():boolean{
+        return !this.closed&&!this.game.fineshed
+    }
+    constructor(game:Game){
+        this.game=game
+    }
+    on_start(){
+        this.game.addTimeout(()=>{
+            this.closed=true
+            console.log(`Game ${this.game.id} Clossed`)
+        },10)
+    }
+    on_finish(){
+        this.game.addTimeout(()=>{
+            this.game.running=false
+        },2)
+    }
+    on_player_join(_p:Player){
+        if(this.game.livingPlayers.length>1){
+            this.game.start()
+        }
+    }
+    on_player_die(_p:Player){
+        if(this.game.livingPlayers.length<=1){
+            this.game.finish()
+        }
+    }
+}
 export class Game extends GameBase{
     config:GameConfig
     map:GameMap
     gamemode:Gamemode
 
     players:Player[]=[]
+    livingPlayers:Player[]=[]
     connectedPlayers:Record<number,Player>={}
 
     bullets:Record<number,Bullet>=[]
+
+    modeManager:GamemodeManager
+
+    started:boolean=false
+
     constructor(id:ID,config:GameConfig){
         super(config.gameTps,id,PacketManager,[
             Player,
@@ -48,6 +84,7 @@ export class Game extends GameBase{
         this.scene.objects.encoders=ObjectsE
         this.map=new GameMap(this,v2.new(30,30))
         this.gamemode=DefaultGamemode
+        this.modeManager=new GamemodeManager(this)
     }
 
     on_update(): void {
@@ -57,6 +94,7 @@ export class Game extends GameBase{
     on_stop():void{
         super.on_stop()
         clearInterval(this.privatesDirtysInter)
+        console.log(`Game ${this.id} Stopped`)
     }
     on_run(): void {
         this.map.generate()
@@ -76,7 +114,24 @@ export class Game extends GameBase{
             p.name=`${GameConstants.player.defaultName}#${this.players.length+1}`
         }
         this.players.push(p)
+        this.livingPlayers.push(p)
+
+        this.modeManager.on_player_join(p)
+
         return p
+    }
+    fineshed:boolean=false
+    start(){
+        if(this.started)return
+        this.started=true
+        this.modeManager.on_start()
+        console.log(`Game ${this.id} Started`)
+    }
+    finish(){
+        if(this.fineshed)return
+        this.fineshed=true
+        this.modeManager.on_finish()
+        console.log(`Game ${this.id} Fineshed`)
     }
     add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player):Bullet{
         const b=this.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
@@ -104,7 +159,7 @@ export class Game extends GameBase{
                 this.connectedPlayers[p.id]=p
                 setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("frag_grenade"),p),1000)
                 setTimeout(this.add_projectile.bind(this,p.position,Projectiles.getFromString("mirv_grenade"),p),10000)
-                console.log(`Player ${p.name} Connected`)
+                console.log(`${p.name} Connected`)
             }
             client.emit(this.scene.objects.encode(undefined,true))
         })
@@ -118,7 +173,7 @@ export class Game extends GameBase{
                 const p=this.scene.objects.get_object(objId) as Player
                 delete this.connectedPlayers[p.id]
                 p.destroy()
-                console.log(`Player ${p.name} Desconnected`)
+                console.log(`${p.name} Disconnected`)
             }
         })
     }

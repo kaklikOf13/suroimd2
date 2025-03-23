@@ -122,6 +122,8 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     scene:Scene2DInstance<DefaultGameObject,Events,Map>
     destroy_queue:boolean=true
     objects:DefinitionsSimple<new()=>DefaultGameObject>=new DefinitionsSimple()
+
+    timeouts:{c:()=>void,delay:number}[]=[]
     constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.events=new EventsManager()
@@ -145,6 +147,14 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.on_update(dt)
         this.scene.objects.update(dt)
         this.events.emit(DefaultEvents.GameTick,this)
+        for(let i=0;i<this.timeouts.length;i++){
+            this.timeouts[i].delay-=dt
+            if(this.timeouts[i].delay<=0){
+                this.timeouts[i].c()
+                this.timeouts.splice(i,1)
+                i--
+            }
+        }
         if(!this.running){
             this.clock.stop()
             this.on_stop()
@@ -152,6 +162,10 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()
         }
+    }
+    addTimeout(callback:()=>void,delay:number):number{
+        this.timeouts.push({c:callback,delay:delay})
+        return this.timeouts.length-1
     }
     on_update(_dt:number):void{}
     on_run():void{}
