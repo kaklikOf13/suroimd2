@@ -2,19 +2,20 @@ import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "c
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
-import { AmmoItem, GunItem, HealingItem, LItem } from "../inventory/inventory.ts";
-import { Guns } from "common/scripts/definitions/guns.ts";
+import { AmmoItem, GunItem, HealingItem, LItem, OtherItem} from "../inventory/inventory.ts";
+import { GunDef } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Ammos, AmmoType } from "common/scripts/definitions/ammo.ts";
-import { Healings } from "common/scripts/definitions/healings.ts";
+import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { AmmoDef, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { Game } from "../others/game.ts"
+import { OtherDef } from "common/scripts/definitions/others.ts";
+import { HealingDef } from "common/scripts/definitions/healings.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -53,39 +54,32 @@ export class Player extends BaseGameObject2D{
         this.oldPosition=this.position
         this.inventory=new InventoryCap<LItem>(undefined,100)
 
-        this.inventory.add(new GunItem(Guns.getFromString("m870")),1)
-        this.inventory.add(new GunItem(Guns.getFromString("spas12")),1)
-        this.inventory.add(new GunItem(Guns.getFromString("ak47")),1)
-        this.inventory.add(new GunItem(Guns.getFromString("kar98k")),1)
-
-        this.inventory.add(new HealingItem(Healings.getFromString("lifecandy")),20)
-        this.inventory.add(new HealingItem(Healings.getFromString("gauze")),10)
-        this.inventory.add(new HealingItem(Healings.getFromString("medikit")),3)
-
-        this.inventory.add(new HealingItem(Healings.getFromString("soda")),8)
-        this.inventory.add(new HealingItem(Healings.getFromString("inhaler")),4)
-        this.inventory.add(new HealingItem(Healings.getFromString("yellow_pills")),2)
-
-        this.inventory.add(new HealingItem(Healings.getFromString("small_blue_potion")),8)
-        this.inventory.add(new HealingItem(Healings.getFromString("blue_potion")),4)
-        this.inventory.add(new HealingItem(Healings.getFromString("blue_pills")),2)
-
-        this.inventory.add(new HealingItem(Healings.getFromString("small_purple_potion")),2)
-        this.inventory.add(new HealingItem(Healings.getFromString("purple_potion")),2)
-        this.inventory.add(new HealingItem(Healings.getFromString("purple_pills")),3)
-
-        this.inventory.add(new HealingItem(Healings.getFromString("small_red_crystal")),3)
-        this.inventory.add(new HealingItem(Healings.getFromString("red_crystal")),3)
-        this.inventory.add(new HealingItem(Healings.getFromString("red_pills")),3)
-
-        this.inventory.add(new AmmoItem(Ammos.getFromString("12g")),30)
-        this.inventory.add(new AmmoItem(Ammos.getFromString("762mm")),120)
+        this.give_item(GameItems.valueString["cellphone"],1)
 
         this.actions=new ActionsManager(this)
         this.load_hand(1)
 
         this.vest=Armors.getFromString("soldier_vest")
         this.helmet=Armors.getFromString("soldier_helmet")
+    }
+    give_item(def:GameItem,count:number){
+        switch(def.item_type){
+            case InventoryItemType.gun:
+                this.inventory.add(new GunItem(def as unknown as GunDef),count)
+                break
+            case InventoryItemType.ammo:
+                this.inventory.add(new AmmoItem(def as unknown as AmmoDef),count)
+                break
+            case InventoryItemType.healing:
+                this.inventory.add(new HealingItem(def as unknown as HealingDef),count)
+                break
+            case InventoryItemType.equipament:
+                break
+            case InventoryItemType.other:
+                this.inventory.add(new OtherItem(def as unknown as OtherDef),count)
+                break
+        }
+        this.privateDirtys.inventory=true
     }
 
     load_hand(h:number){
@@ -112,7 +106,7 @@ export class Player extends BaseGameObject2D{
         this.dirty=true
     }
     update_hand(){
-        if(this.handItem&&this.inventory.slots[this.hand-1].quantity<=0){
+        if(this.handItem&&(!this.inventory.slots[this.hand-1]||this.inventory.slots[this.hand-1].quantity<=0)){
             this.load_hand(this.hand)
         }
     }
@@ -209,6 +203,11 @@ export class Player extends BaseGameObject2D{
         if(action.Reloading&&this.handItem&&this.handItem.itemType===InventoryItemType.gun){
             (this.handItem as GunItem).reloading=true
         }
+        if(action.cellphoneAction){
+            if(this.handItem&&this.handItem instanceof OtherItem){
+                this.handItem.cellphone_action(this,action.cellphoneAction)
+            }
+        }
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
@@ -238,7 +237,7 @@ export class Player extends BaseGameObject2D{
                 const s=this.inventory.slots[i]
                 if(!s.item)continue
                 if(i===this.hand-1)this.handL=ii+1
-                guiPacket.inventory.push({count:s.quantity,idNumber:s.item!.def.idNumber!,type:s.item.itemType})
+                guiPacket.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
                 ii++
             }
             if(this.handItem){
@@ -251,8 +250,8 @@ export class Player extends BaseGameObject2D{
                         guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
                         break
                     case InventoryItemType.ammo:
-                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
-                        break
+                    case InventoryItemType.other:
+                    case InventoryItemType.equipament:
                     case InventoryItemType.healing:
                         guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
                         break

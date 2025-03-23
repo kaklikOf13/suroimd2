@@ -6,6 +6,7 @@
         "obstacles-images":"img/game/common/obstacles.src",
         "projectiles-images":"img/game/common/projectiles.src",
         "equipaments-images":"img/game/common/equipaments.src",
+        "others-images":"img/game/common/others.src",
 
         "obstacles-sounds":"sounds/game/common/obstacles.src"
     },

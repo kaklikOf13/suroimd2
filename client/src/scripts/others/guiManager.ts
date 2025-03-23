@@ -2,12 +2,15 @@ import { GuiPacket, HandData } from "common/scripts/packets/gui_packet.ts";
 import { Game } from "./game.ts";
 import { Definition } from "common/scripts/engine/definitions.ts";
 import { BoostType, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
+import { GunDef } from "common/scripts/definitions/guns.ts";
 import { ActionsType, CATEGORYS } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
-import { AmmoDef, Ammos } from "common/scripts/definitions/ammo.ts";
-import { HealingDef, Healings } from "common/scripts/definitions/healings.ts";
+import { AmmoDef } from "common/scripts/definitions/ammo.ts";
+import { HealingDef} from "common/scripts/definitions/healings.ts";
 import { Player } from "../gameObjects/player.ts";
+import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { OtherDef } from "common/scripts/definitions/others.ts";
+import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 
 export class GuiManager{
     game:Game
@@ -29,6 +32,11 @@ export class GuiManager{
 
         helmet_slot:document.querySelector("#helmet-slot") as HTMLImageElement,
         vest_slot:document.querySelector("#vest-slot") as HTMLImageElement,
+
+        cellphone_actions:document.querySelector("#cellphone-actions") as HTMLDivElement,
+        cellphone_input_item_id:document.querySelector("#cellphone-insert-item-id") as HTMLInputElement,
+        cellphone_input_item_count:document.querySelector("#cellphone-insert-item-count") as HTMLInputElement,
+        cellphone_give_item:document.querySelector("#cellphone-give-item-button") as HTMLButtonElement
     }
     inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     hand:HandData
@@ -42,19 +50,7 @@ export class GuiManager{
             if(p.inventory){
                 this.inventory.length=0
                 for(const s of p.inventory){
-                    let def:Definition
-                    switch(s.type){
-                        case InventoryItemType.gun:
-                            def=Guns.getFromNumber(s.idNumber)
-                            break
-                        case InventoryItemType.ammo:
-                            def=Ammos.getFromNumber(s.idNumber)
-                            break
-                        case InventoryItemType.healing:
-                            def=Healings.getFromNumber(s.idNumber)
-                            break
-                    }
-                    this.inventory.push({count:s.count,def:def!,type:s.type})
+                    this.inventory.push({count:s.count,def:GameItems.valueNumber[s.idNumber],type:s.type})
                 }
                 this.inventory_cache=this.inventory_reset()
             }
@@ -79,8 +75,33 @@ export class GuiManager{
         })
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
         this.set_health(100,100)
+
+        //Cellphone
+        this.content.cellphone_actions.style.display="none"
+
+        const deenable_act=()=>{
+            this.game.can_act=false
+        }
+        const enable_act=()=>{
+            this.game.can_act=true
+        }
+
+        this.content.cellphone_input_item_id.addEventListener("focus",deenable_act)
+        this.content.cellphone_input_item_id.addEventListener("blur",enable_act)
+
+        this.content.cellphone_input_item_count.addEventListener("focus",deenable_act)
+        this.content.cellphone_input_item_count.addEventListener("blur",enable_act)
+
+        this.content.cellphone_give_item.addEventListener("click",(_)=>{
+            this.game.action.cellphoneAction={
+                type:CellphoneActionType.GiveItem,
+                item_id:GameItems.keysString[this.content.cellphone_input_item_id.value],
+                count:parseInt(this.content.cellphone_input_item_count.value),
+            }
+        })
     }
     set_hand_item(){
+        this.content.cellphone_actions.style.display="none"
         if(!this.hand){
             this.content.current_item_image.style.backgroundImage="none"
             return
@@ -113,6 +134,18 @@ export class GuiManager{
                 case InventoryItemType.healing:{
                     const def=(this.inventory[this.hand.location-1].def as HealingDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
+                    this.content.current_item_image.style.width="40px"
+                    this.content.current_item_image.style.height="40px"
+                    this.content.current_item_image.style.opacity="100%"
+                    this.content.current_item_image.style.transform="unset"
+                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+                    break
+                }
+                case InventoryItemType.other:{
+                    const def=(this.inventory[this.hand.location-1].def as OtherDef)
+                    if(def.idString==="cellphone"){
+                        this.content.cellphone_actions.style.display="unset"
+                    }
                     this.content.current_item_image.style.width="40px"
                     this.content.current_item_image.style.height="40px"
                     this.content.current_item_image.style.opacity="100%"
@@ -197,6 +230,13 @@ export class GuiManager{
                         another.innerText=`${s.count}`
                         slot.appendChild(another)
                     }
+                    break
+                case InventoryItemType.other:
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
+                    img.width=40
+                    img.height=40
+                    img.style.width = "40px"
+                    img.style.height = "40px"
                     break
             }
             slot.appendChild(img)

@@ -1,0 +1,19 @@
+@use "../utils/buttons.scss";
+#cellphone-actions{
+    left: 5px;
+    top: 5px;
+    position: absolute;
+    width: 400px;
+    height: 400px;
+
+    .tab-button{
+        @extend .btn-blue;
+        font-size: 10px;
+        padding: 5px 20px;
+        border-radius: 3px;
+        margin-left: 5px;
+    }
+    #cellphone-give-item-tab *{
+        margin-top: 5px;
+    }
+}

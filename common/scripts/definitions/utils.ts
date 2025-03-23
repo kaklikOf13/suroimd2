@@ -26,7 +26,8 @@ export enum InventoryItemType{
     gun,
     ammo,
     healing,
-    equipament
+    equipament,
+    other
 }
 export interface GameItem extends Definition{
     item_type:InventoryItemType

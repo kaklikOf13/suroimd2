@@ -13,8 +13,10 @@
     />
   
     <title>Suroimd.io 2</title>
-    <link rel="stylesheet" href="src/styles/menu.scss">
-    <link rel="stylesheet" href="src/styles/others.scss">
+
+    <script src="./src/scripts/engine/extra_elements.js"></script>
+    <link rel="stylesheet" href="src/scripts/engine/extra_elements.css">
+
     <link rel="icon" type="image/x-icon" href="favicon.ico">
   </head>
   <body>
@@ -63,6 +65,16 @@
           </div>
           <div id="inventory"></div>
         </div>
+        <tabs-container id="cellphone-actions" header-position="bottom" class="background-menu">
+          <tab text="Give Item" id="cellphone-give-item-tab">
+            <input type="text" id="cellphone-insert-item-id" class="text-input" placeholder="Item-ID">
+            <input type="text" id="cellphone-insert-item-count" class="text-input" placeholder="Item-Count">
+            <button class="btn-blue" id="cellphone-give-item-button">Give Item</button>
+          </tab>
+          <tab text="Spawn Obstacle">
+            #2
+          </tab>
+        </tabs-container>
       </div>
       <canvas id="game-canvas"></canvas>
     </div>

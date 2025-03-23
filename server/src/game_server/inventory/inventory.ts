@@ -7,6 +7,9 @@ import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
 import { type Game } from "../others/game.ts";
+import { OtherDef } from "common/scripts/definitions/others.ts";
+import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
+import { GameItems } from "common/scripts/definitions/alldefs.ts";
 export abstract class LItem extends ItemCap{
   // deno-lint-ignore no-explicit-any
   abstract on_use(user:Player,slot:SlotCap<any>):void
@@ -141,6 +144,36 @@ export class HealingItem extends LItem{
     }
     user.privateDirtys.action=true
     user.actions.play(new HealingAction(this.def,slot))
+  }
+  update(_user: Player): void {
+    
+  }
+}
+export class OtherItem extends LItem{
+  limit_per_slot: number=Infinity
+  def:OtherDef
+  cap: number
+  itemType: InventoryItemType.other=InventoryItemType.other
+
+  constructor(def:OtherDef){
+    super()
+    this.def=def
+    this.cap=def.size
+  }
+  is(other: LItem): boolean {
+    return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
+  }
+  on_use(user: Player,slot:SlotCap): void {
+  }
+  cellphone_action(user:Player,action:CellphoneAction){
+    if(this.def.idString!=="cellphone")return
+    switch(action!.type){
+      case CellphoneActionType.GiveItem:
+        user.give_item(GameItems.valueNumber[action!.item_id],action!.count)
+        break
+      case CellphoneActionType.SpawnObstacle:
+    }
+    
   }
   update(_user: Player): void {
     

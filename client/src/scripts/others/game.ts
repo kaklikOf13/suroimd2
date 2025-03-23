@@ -25,6 +25,8 @@ export class Game extends ClientGame2D{
   action:ActionPacket=new ActionPacket()
   grid:Material2D<GridMaterialArgs>
   guiManager!:GuiManager
+
+  can_act:boolean=true
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
     super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile])
     for(const i of CATEGORYSL){
@@ -68,8 +70,10 @@ export class Game extends ClientGame2D{
       1000,  1000
     ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:zIndexes.Grid})
   }
+  old_hand=0
   on_run(): void {
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
+      if(!this.can_act)return
       switch(k){
         case Key.Number_1:
           this.action.hand=0
@@ -107,25 +111,30 @@ export class Game extends ClientGame2D{
   on_update(dt:number): void {
     super.on_update(dt)
     if(this.client.opened){
-      if(this.key.keyPress(Key.A)){
-        this.action.Movement.x=-1
-      }else if(this.key.keyPress(Key.D)){
-        this.action.Movement.x=1
-      }else{
-        this.action.Movement.x=0
+      if(this.can_act){
+        if(this.key.keyPress(Key.A)){
+          this.action.Movement.x=-1
+        }else if(this.key.keyPress(Key.D)){
+          this.action.Movement.x=1
+        }else{
+          this.action.Movement.x=0
+        }
+  
+        if(this.key.keyPress(Key.W)){
+          this.action.Movement.y=-1
+        }else if(this.key.keyPress(Key.S)){
+          this.action.Movement.y=1
+        }else{
+          this.action.Movement.y=0
+        }
+        this.action.UsingItem=this.action.hand===this.old_hand&&this.key.keyPress(Key.Mouse_Left)
+        this.action.Reloading=this.key.keyPress(Key.R)
       }
-
-      if(this.key.keyPress(Key.W)){
-        this.action.Movement.y=-1
-      }else if(this.key.keyPress(Key.S)){
-        this.action.Movement.y=1
-      }else{
-        this.action.Movement.y=0
-      }
-      this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)
       if(this.actionDelay<=0){
         this.client.emit(this.action)
-        this.actionDelay=3
+        this.action.cellphoneAction=undefined
+        this.actionDelay=1
+        this.old_hand=this.action.hand
       }else{
         this.actionDelay--
       }
@@ -134,8 +143,6 @@ export class Game extends ClientGame2D{
       if(activePlayer){
         this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
       }
-
-      this.action.Reloading=this.key.keyPress(Key.R)
     }
     this.camera.zoom=0.7
     this.renderer.fullCanvas(this.camera)
