@@ -162,7 +162,7 @@ export abstract class Renderer {
     // deno-lint-ignore no-explicit-any
     abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2,zIndex?:number): void
     abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2,zIndex?:number, precision?: number): void
-    abstract draw_image2D(image: Sprite, position: Vec2, size: Vec2, angle: number, hotspot?: Vec2,zIndex?:number,tint?:Color): void
+    abstract draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot?: Vec2,zIndex?:number,tint?:Color,size?:Vec2): void
     abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2,zIndex?:number): void
 
     abstract clear(): void
@@ -453,12 +453,18 @@ void main() {
         }
     }
 
-    draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0,tint:Color=ColorM.default.white): void {
-        const size=v2.new((image.source.width/this.meter_size)*(scale.x/2),(image.source.height/this.meter_size)*(scale.y/2))
-        const x1 = -size.x*hotspot.x
-        const y1 = -size.y*hotspot.y
-        const x2 = size.x+x1
-        const y2 = size.y+y1
+    draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0,tint:Color=ColorM.default.white,size?:Vec2): void {
+        if(!size){
+            size={
+                x:image.source.width,
+                y:image.source.height
+            }
+        }
+        const sizeR=v2.new((size.x/this.meter_size)*(scale.x/2),(size.y/this.meter_size)*(scale.y/2))
+        const x1 = -sizeR.x*hotspot.x
+        const y1 = -sizeR.y*hotspot.y
+        const x2 = sizeR.x+x1
+        const y2 = sizeR.y+y1
 
         const verticesB = [
             { x: x1, y: y1 },

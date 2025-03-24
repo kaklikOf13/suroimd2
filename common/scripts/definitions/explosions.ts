@@ -36,7 +36,7 @@ Explosions.insert(
                 radius:0.0125,
                 speed:20,
                 range:10,
-                tracer:tracers.tiny
+                tracer:tracers.medium
             },
             count:5
         }
@@ -55,7 +55,7 @@ Explosions.insert(
                 radius:0.0125,
                 speed:18,
                 range:8,
-                tracer:tracers.tiny
+                tracer:tracers.medium
             },
             count:5
         }

@@ -34,13 +34,6 @@ export class Obstacle extends ClientGameObject2D{
             if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
             }
-        }else{
-            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            if(this.def.variations){
-                this.sprite=this.game.resources.get_sprite(spr_id+`_${spr_id}`)
-            }else{
-                this.sprite=this.game.resources.get_sprite(spr_id)
-            }
         }
     }
     onDestroy(): void {
@@ -103,6 +96,12 @@ export class Obstacle extends ClientGameObject2D{
                 }else{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
+            }
+            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+            if(this.def.variations){
+                this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
+            }else{
+                this.sprite=this.game.resources.get_sprite(spr_id)
             }
         }
         if(this.def.hitbox){

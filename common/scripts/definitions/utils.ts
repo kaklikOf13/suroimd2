@@ -12,9 +12,17 @@ export interface BulletDef{
     }
 }
 export const tracers={
-    tiny:{
+    small:{
         width:1,
-        height:0.4, // 1H = 0.05 radius
+        height:0.6, // 0.6H = 0.012 radius
+    },
+    medium:{
+        width:1,
+        height:0.7, // 0.7H = 0.014 radius
+    },
+    large:{
+        width:1,
+        height:1, // 1H = 0.02 radius
     },
     mirv:{
         height:0.4,

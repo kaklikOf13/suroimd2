@@ -35,7 +35,7 @@ export class Bullet extends ClientGameObject2D{
 
     render(camera: Camera2D, renderer: Renderer,_dt:number): void {
         if(this.spr){ 
-            renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(Math.max(this.length,0),this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint)
+            renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(Math.max(this.length,0),this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint,v2.new(400,10))
             if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
             }
@@ -51,19 +51,19 @@ export class Bullet extends ClientGameObject2D{
                 this.destroy()
             }
         }else{
-            this.hb.position=v2.add(this.hb.position,this.dts)
             this.manager.cells.updateObject(this)
+            this.hb.position=v2.add(this.hb.position,this.dts)
         }
 
         const traveledDistance = v2.distance(this.initialPosition, this.position)
 
         if(this.dying){
-            this.tticks-=dt/10
+            this.tticks-=dt
             if(this.length<=0){
                 this.destroy()
             }
         }else{
-            this.tticks+=dt/10
+            this.tticks+=dt/2
         }
         this.length=Math.min(
             Math.min(

@@ -58,13 +58,10 @@ Guns.insert(
         ammoSpawnAmount:90,
         bullet:{
             damage:10,
-            radius:0.02,
+            radius:0.014,
             range:150,
-            speed:39,
-            tracer:{
-                width:1,
-                height:0.4,
-            }
+            speed:15,
+            tracer:tracers.medium
         },
         reload:{
             delay:2,
@@ -88,11 +85,8 @@ Guns.insert(
             damage:54,
             radius:0.02,
             range:220,
-            speed:44,
-            tracer:{
-                width:2,
-                height:0.4,
-            }
+            speed:25,
+            tracer:tracers.large
         },
         reload:{
             delay:0.9,
@@ -112,15 +106,15 @@ Guns.insert(
         lenght:0.8,
         ammoType:AmmoType["12g"],
         bulletsCount:10,
-        jitterRadius:0.3,
+        jitterRadius:0.25,
         size:4.3,
         fireMode:FireMode.Single,
         bullet:{
             damage:7,
-            radius:0.0125,
-            speed:19,
+            radius:0.014,
+            speed:14,
             range:20,
-            tracer:tracers.tiny
+            tracer:tracers.medium
         },
         reload:{
             delay:0.8,
@@ -146,10 +140,10 @@ Guns.insert(
         fireMode:FireMode.Single,
         bullet:{
             damage:6,
-            radius:0.0125,
-            speed:20,
+            radius:0.012,
+            speed:13,
             range:75,
-            tracer:tracers.tiny
+            tracer:tracers.small
         },
         reload:{
             delay:0.8,

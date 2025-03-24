@@ -114,31 +114,17 @@ export class GuiManager{
                 case InventoryItemType.gun:{
                     const def=(this.inventory[this.hand.location-1].def as GunDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    this.content.current_item_image.style.width="70px"
-                    this.content.current_item_image.style.height="70px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="rotate(-30deg)"
                     this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
                     break
                 }
                 case InventoryItemType.ammo:{
                     const def=(this.inventory[this.hand.location-1].def as AmmoDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    this.content.current_item_image.style.width="40px"
-                    this.content.current_item_image.style.height="40px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="unset"
-                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
                     break
                 }
                 case InventoryItemType.healing:{
                     const def=(this.inventory[this.hand.location-1].def as HealingDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    this.content.current_item_image.style.width="40px"
-                    this.content.current_item_image.style.height="40px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="unset"
-                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
                     break
                 }
                 case InventoryItemType.other:{
@@ -146,14 +132,20 @@ export class GuiManager{
                     if(def.idString==="cellphone"){
                         this.content.cellphone_actions.style.display="unset"
                     }
-                    this.content.current_item_image.style.width="40px"
-                    this.content.current_item_image.style.height="40px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="unset"
-                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
                     break
                 }
             }
+            if(this.hand.type===InventoryItemType.gun){
+                this.content.current_item_image.style.width="70px"
+                this.content.current_item_image.style.height="70px"
+                this.content.current_item_image.style.transform="rotate(-30deg)"
+            }else{
+                this.content.current_item_image.style.width="40px"
+                this.content.current_item_image.style.height="40px"
+                this.content.current_item_image.style.transform="unset"
+                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+            }
+            this.content.current_item_image.style.opacity="100%"
             this.handSelection=this.inventory_cache[this.hand.location-1]
             this.handSelection.classList.add("inventory-slot-selected")
 
@@ -200,8 +192,6 @@ export class GuiManager{
             switch(s.type){
                 case InventoryItemType.gun:
                     img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.width=40
-                    img.height=40
                     img.style.width = "40px"
                     img.style.height = "40px"
                     break
@@ -209,8 +199,6 @@ export class GuiManager{
                     img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width="25px"
                     img.style.height="25px"
-                    img.width=25
-                    img.height=25
                     img.style.transform="unset"
                     if(s.count>0){
                         const another=document.createElement("span")
@@ -222,8 +210,6 @@ export class GuiManager{
                     img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width="25px"
                     img.style.height="25px"
-                    img.width=25
-                    img.height=25
                     img.style.transform="unset"
                     if(s.count>0){
                         const another=document.createElement("span")
@@ -233,8 +219,6 @@ export class GuiManager{
                     break
                 case InventoryItemType.other:
                     img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.width=40
-                    img.height=40
                     img.style.width = "40px"
                     img.style.height = "40px"
                     break
@@ -251,10 +235,10 @@ export class GuiManager{
     update(){
         if(this.action){
             const w=(Date.now()-this.action.start)/1000
-            this.content.action_info.style.opacity="100%"
-            this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay-w,1)}s`
-            if(w>this.action.delay){
-                this.action=undefined
+            
+            if(w<this.action.delay){
+                this.content.action_info.style.opacity="100%"
+                this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay-w,1)}s`
             }
         }else{
             this.content.action_info.style.opacity="0%"

@@ -307,4 +307,10 @@ export class Player extends BaseGameObject2D{
         (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);
         (this.game as Game).modeManager.on_player_die(this)
     }
+    onDestroy(): void {
+        const idx=(this.game as Game).livingPlayers.indexOf(this)
+        if(idx!==-1){
+            (this.game as Game).livingPlayers.splice(idx,1);
+        }
+    }
 }

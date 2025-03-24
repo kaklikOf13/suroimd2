@@ -25,7 +25,7 @@ export class GamemodeManager{
     game:Game
     closed:boolean=false
     can_join():boolean{
-        return !this.closed&&!this.game.fineshed
+        return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
     }
     constructor(game:Game){
         this.game=game
