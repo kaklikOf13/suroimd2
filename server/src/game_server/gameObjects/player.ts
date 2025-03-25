@@ -68,6 +68,8 @@ export class Player extends BaseGameObject2D{
         this.accessories=new AccessoriesManager(this,3)
 
         this.accessories.slots[0].item=Accessories.getFromString("rubber_bracelet")
+        this.accessories.slots[1].item=Accessories.getFromString("bullet_wind")
+        this.accessories.slots[2].item=Accessories.getFromString("uranium_bracelet")
     }
     give_item(def:GameItem,count:number){
         switch(def.item_type){
@@ -156,6 +158,8 @@ export class Player extends BaseGameObject2D{
 
         this.maxHealth=100*this.modifiers.health
         this.maxBoost=100*this.modifiers.boost
+
+        this.health=Math.min(this.health,this.maxHealth)
     }
 
     update(dt:number): void {

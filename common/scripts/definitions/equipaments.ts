@@ -98,7 +98,30 @@ Accessories.insert(
         idString:"rubber_bracelet",
         size:1,
         modifiers:{
-            bullet_size:2,
+            bullet_size:1.8,
+        }
+    },
+    {
+        idString:"bullet_wind",
+        size:1,
+        modifiers:{
+            bullet_speed:1.7,
+        }
+    },
+    {
+        idString:"cobalt_bracelet",
+        size:1,
+        modifiers:{
+            health:0.9,
+            boost:1.1
+        }
+    },
+    {
+        idString:"uranium_bracelet",
+        size:1,
+        modifiers:{
+            health:0.85,
+            damage:1.2
         }
     },
 )
