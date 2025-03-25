@@ -56,3 +56,12 @@ export enum ActionsType{
     Reload,
     Healing
 }
+
+export type PlayerModifiers={
+    damage:number,
+    speed:number,
+    health:number,
+    boost:number,
+    bullet_speed:number,
+    bullet_size:number
+}

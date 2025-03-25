@@ -34,7 +34,7 @@ export const DefaultGamemode:Gamemode={
             },
             addiction:{
                 decay:0.3,
-                damage:1.4,
+                damage:1,
                 speed:0.0029,
                 abstinence:0.009
             },

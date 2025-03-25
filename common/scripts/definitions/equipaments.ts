@@ -1,6 +1,7 @@
 import { Definitions,Definition } from "../engine/mod.ts"
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { PlayerModifiers } from "common/scripts/others/constants.ts";
 
 export enum EquipamentType{
     Helmet,
@@ -82,5 +83,22 @@ Armors.insert(
         reduction:0,
         size:1.7,
         type:EquipamentType.Helmet,
+    },
+)
+export interface AccessorieDef extends Definition{
+    size:number
+    modifiers:Partial<PlayerModifiers>
+}
+export const Accessories=new Definitions<AccessorieDef,GameItem>((obj)=>{
+    obj.item_type=InventoryItemType.accessorie
+    obj.count=1
+})
+Accessories.insert(
+    {
+        idString:"rubber_bracelet",
+        size:1,
+        modifiers:{
+            bullet_size:2,
+        }
     },
 )

@@ -18,6 +18,12 @@ export class Bullet extends BaseGameObject2D{
 
     owner?:Player
     angle:number=0
+
+    modifiers={
+        speed:1,
+        size:1,
+    }
+
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -51,16 +57,18 @@ export class Bullet extends BaseGameObject2D{
     }
     create(args: {defs:BulletDef,position:Vec2,ammo:string}): void {
         this.defs=args.defs
-        this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius)
+        this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
         this.initialPosition=v2.duplicate(this.hb.position)
         this.maxDistance=this.defs.range/2.5
         const ad=Ammos.getFromString(args.ammo)
         this.tracerColor=this.defs.tracer.color??(ad?ad.defaultTrail:0xffffff)
     }
     set_direction(angle:number){
-        this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed),4)
+        this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed*this.modifiers.speed),4)
         this.dirty=true
-        this.angle=angle
+        this.angle=angle;
+
+        (this.hb as CircleHitbox2D).radius=this.defs.radius*this.modifiers.size
     }
     onDestroy(): void {
         delete (this.game as Game).bullets[this.id]
@@ -72,9 +80,10 @@ export class Bullet extends BaseGameObject2D{
             initialPos:this.initialPosition,
             maxDistance:this.maxDistance,
             radius:(this.hb as CircleHitbox2D).radius,
-            speed:this.defs.speed,
+            speed:this.defs.speed*this.modifiers.speed,
             angle:this.angle,
-            tracer:this.defs.tracer,
+            tracerWidth:this.defs.tracer.width,
+            tracerHeight:this.defs.tracer.height*this.modifiers.size,
             tracerColor:this.tracerColor
         }
     }

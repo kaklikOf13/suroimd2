@@ -79,7 +79,12 @@ export class GunItem extends LItem{
         if(this.def.spread){
           ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
         }
-        (user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user)
+        const b=(user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user)
+        b.modifiers={
+          speed:user.modifiers.bullet_speed,
+          size:user.modifiers.bullet_size,
+        }
+        b.set_direction(ang)
       }
       if(this.def.recoil){
         user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
@@ -129,7 +134,7 @@ export class HealingItem extends LItem{
     return (other instanceof HealingItem)&&other.def.idNumber==this.def.idNumber
   }
   on_use(user: Player,slot:SlotCap): void {
-    if(!user.using_item_down)return
+    if(!user.using_item_down||!user.handItem||!user.handItem.is(this))return
     if(this.def.condition){
       for(const c of this.def.condition){
         switch(c){
@@ -163,7 +168,8 @@ export class OtherItem extends LItem{
   is(other: LItem): boolean {
     return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
   }
-  on_use(user: Player,slot:SlotCap): void {
+  on_use(_user: Player,_slot:SlotCap): void {
+    
   }
   cellphone_action(user:Player,action:CellphoneAction){
     if(this.def.idString!=="cellphone")return

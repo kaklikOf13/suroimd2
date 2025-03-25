@@ -24,11 +24,11 @@ export interface BulletData extends EncodedData{
     full?:{}
     speed:number
     angle:number
-    tracer:{
-        width:number
-        height:number
-    }
-    tracerColor:number,
+
+    tracerWidth:number
+    tracerHeight:number
+    tracerColor:number
+
     radius:number
     position:Vec2
     initialPos:Vec2
@@ -129,10 +129,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 radius:stream.readFloat(0,2,2),
                 speed:stream.readFloat32(),
                 angle:stream.readRad(),
-                tracer:{
-                    width:stream.readFloat(0,2,2),
-                    height:stream.readFloat(0,2,2),
-                },
+                tracerWidth:stream.readFloat(0,3,2),
+                tracerHeight:stream.readFloat(0,3,2),
                 tracerColor:stream.readUint32()
             }
             if(full){
@@ -149,8 +147,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeFloat(data.radius,0,2,2)
             .writeFloat32(data.speed)
             .writeRad(data.angle)
-            .writeFloat(data.tracer.width,0,2,2)
-            .writeFloat(data.tracer.height,0,2,2)
+            .writeFloat(data.tracerWidth,0,3,2)
+            .writeFloat(data.tracerHeight,0,3,2)
             .writeUint32(data.tracerColor)
         }
     },

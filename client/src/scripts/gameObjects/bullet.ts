@@ -103,8 +103,8 @@ export class Bullet extends ClientGameObject2D{
         this.speed=data.speed
         this.angle=data.angle
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(this.angle),this.speed),4)
-        this.tracerH=data.tracer.height
-        this.maxLength=data.tracer.width
+        this.tracerH=data.tracerHeight
+        this.maxLength=data.tracerWidth
         this.tint=ColorM.number(data.tracerColor)
     }
 }

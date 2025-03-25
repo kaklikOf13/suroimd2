@@ -11,11 +11,13 @@ import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, type GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { AmmoDef, AmmoType } from "common/scripts/definitions/ammo.ts";
-import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
+import { Accessories, Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { type Game } from "../others/game.ts"
 import { type OtherDef } from "common/scripts/definitions/others.ts";
 import { type HealingDef } from "common/scripts/definitions/healings.ts";
+import { type PlayerModifiers } from "common/scripts/others/constants.ts";
+import { AccessoriesManager } from "../inventory/accesories.ts";
 
 export class Player extends BaseGameObject2D{
     movement:Vec2
@@ -48,6 +50,7 @@ export class Player extends BaseGameObject2D{
 
     vest?:EquipamentDef
     helmet?:EquipamentDef
+    accessories:AccessoriesManager
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -61,6 +64,10 @@ export class Player extends BaseGameObject2D{
 
         this.vest=Armors.getFromString("soldier_vest")
         this.helmet=Armors.getFromString("soldier_helmet")
+
+        this.accessories=new AccessoriesManager(this,3)
+
+        this.accessories.slots[0].item=Accessories.getFromString("rubber_bracelet")
     }
     give_item(def:GameItem,count:number){
         switch(def.item_type){
@@ -113,12 +120,42 @@ export class Player extends BaseGameObject2D{
     dead=false
     hand:number=-1
 
-    damageMult:number=1
+    modifiers:PlayerModifiers={
+        boost:1,
+        bullet_size:1,
+        bullet_speed:1,
+        damage:1,
+        health:1,
+        speed:1
+    }
 
     privateDirtys={
         inventory:true,
         hand:true,
         action:true
+    }
+
+    update_modifiers(){
+        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=1
+        const gamemode=(this.game as Game).gamemode
+        if(this.BoostType===BoostType.Addiction){
+            this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
+        }
+
+        for(const acc of this.accessories.slots){
+            if(acc.item){
+                const mods=acc.item.modifiers
+                this.modifiers.boost*=mods.boost??1
+                this.modifiers.bullet_size*=mods.bullet_size??1
+                this.modifiers.bullet_speed*=mods.bullet_speed??1
+                this.modifiers.damage*=mods.damage??1
+                this.modifiers.health*=mods.health??1
+                this.modifiers.speed*=mods.speed??1
+            }
+        }
+
+        this.maxHealth=100*this.modifiers.health
+        this.maxBoost=100*this.modifiers.boost
     }
 
     update(dt:number): void {
@@ -127,11 +164,11 @@ export class Player extends BaseGameObject2D{
         let speed=1*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing?this.using_healing_speed:1)
                   * (this.handItem?.tags.includes("gun")?(this.handItem as GunItem).def.speedMult??1:1)
+                  * this.modifiers.speed
         if(this.recoil){
             this.recoil.delay-=dt
             if(this.recoil.delay<=0)this.recoil=undefined
         }
-        this.damageMult=1
         switch(this.BoostType){
             case BoostType.Shield:
                 break
@@ -146,13 +183,10 @@ export class Player extends BaseGameObject2D{
             case BoostType.Addiction:{
                 speed+=this.boost*gamemode.player.boosts.addiction.speed
                 this.boost=Math.max(this.boost-gamemode.player.boosts.addiction.decay*dt,0)
-                this.health=Numeric.lerp(this.health,0,this.boost>0?(this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt:1)
-                if(this.health<=0){this.kill({
-                    amount:100,
-                    reason:DamageReason.Abstinence,
-                })}else{
-                    this.damageMult+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
-                }
+                this.piercingDamage({
+                    amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt)*50,
+                    reason:DamageReason.Abstinence
+                })
                 break
             }
         }
@@ -229,6 +263,7 @@ export class Player extends BaseGameObject2D{
     handL=0
     ammoCount:Partial<Record<AmmoType,number>>={}
     update2(){
+        this.update_modifiers()
         if(this.client){
             const guiPacket=new GuiPacket(this.health,this.maxHealth,this.boost,this.maxBoost,this.BoostType)
             guiPacket.inventory=[]
@@ -278,7 +313,7 @@ export class Player extends BaseGameObject2D{
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
-            mod*=params.owner.damageMult
+            mod*=params.owner.modifiers.damage
         }
         if(this.vest){
             mod-=this.vest.reduction
@@ -289,10 +324,14 @@ export class Player extends BaseGameObject2D{
             damage-=this.helmet.defence
         }
         damage=Math.max(damage*mod,0)
+        params.amount=damage
+        this.piercingDamage(params)
+    }
+    piercingDamage(params:DamageParams){
         if(this.BoostType===BoostType.Shield&&this.boost>0){
-            this.boost=Math.max(this.boost-damage,0)
+            this.boost=Math.max(this.boost-params.amount,0)
         }else{
-            this.health=Math.max(this.health-damage,0)
+            this.health=Math.max(this.health-params.amount,0)
             if(this.health===0){
                 this.kill(params)
             }
