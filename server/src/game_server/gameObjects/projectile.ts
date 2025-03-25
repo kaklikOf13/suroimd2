@@ -1,11 +1,12 @@
-import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { type Player } from "./player.ts";
 import { type Game } from "../others/game.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 
-export class Projectile extends BaseGameObject2D{
+export class Projectile extends ServerGameObject{
     stringType:string="projectile"
     numberType: number=6
     defs!:ProjectileDef
@@ -22,6 +23,9 @@ export class Projectile extends BaseGameObject2D{
         super()
         this.velocity=v2.new(3,0)
         this.angularVelocity=10
+    }
+    interact(_user: Player): void {
+        return
     }
 
     fuse_delay:number=0

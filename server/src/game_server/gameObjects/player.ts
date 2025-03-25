@@ -18,8 +18,10 @@ import { type OtherDef } from "common/scripts/definitions/others.ts";
 import { type HealingDef } from "common/scripts/definitions/healings.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
+import { type Loot } from "./loot.ts";
 
-export class Player extends BaseGameObject2D{
+export class Player extends ServerGameObject{
     movement:Vec2
     oldPosition:Vec2
     stringType:string="player"
@@ -70,6 +72,10 @@ export class Player extends BaseGameObject2D{
         this.accessories.slots[0].item=Accessories.getFromString("rubber_bracelet")
         this.accessories.slots[1].item=Accessories.getFromString("bullet_wind")
         this.accessories.slots[2].item=Accessories.getFromString("uranium_bracelet")
+    }
+    interaction_input:boolean=false
+    interact(_user: Player): void {
+        return
     }
     give_item(def:GameItem,count:number){
         switch(def.item_type){
@@ -213,7 +219,8 @@ export class Player extends BaseGameObject2D{
         this.using_item_down=false
 
         //Collision
-        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES])
+        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
+        let can_interact=true
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
             switch((obj as BaseGameObject2D).stringType){
@@ -224,8 +231,14 @@ export class Player extends BaseGameObject2D{
                         if(ov.collided)this.position=v2.sub(this.position,v2.scale(ov.overlap,0.9))
                     }
                     break
+                case "loot":
+                    if(can_interact&&this.interaction_input&&this.hb.collidingWith((obj as Loot).hb)){
+                        (obj as Loot).interact(this)
+                        can_interact=false
+                    }
             }
         }
+        this.interaction_input=false
 
         this.actions.update(dt)
     }
@@ -237,6 +250,7 @@ export class Player extends BaseGameObject2D{
         }
         this.using_item=action.UsingItem
         this.rotation=action.angle
+        this.interaction_input=action.interact
         this.load_hand(action.hand)
         if(action.Reloading&&this.handItem&&this.handItem.itemType===InventoryItemType.gun){
             (this.handItem as GunItem).reloading=true

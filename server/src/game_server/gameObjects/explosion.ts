@@ -1,4 +1,4 @@
-import { BaseGameObject2D, CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { Player } from "./player.ts";
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
@@ -7,8 +7,9 @@ import { Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 
-export class Explosion extends BaseGameObject2D{
+export class Explosion extends ServerGameObject{
     stringType:string="explosion"
     numberType: number=5
     defs!:ExplosionDef
@@ -21,6 +22,9 @@ export class Explosion extends BaseGameObject2D{
         this.netSync.deletion=false
     }
     delay:number=2
+    interact(_user: Player): void {
+        return
+    }
     update(_dt:number): void {
         if(this.delay==0){
             this.manager.cells.updateObject(this)
@@ -38,9 +42,9 @@ export class Explosion extends BaseGameObject2D{
             }
 
             const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS,CATEGORYS.PROJECTILES])
-            const damageCollisions:BaseGameObject2D[]=[]
+            const damageCollisions:ServerGameObject[]=[]
             for(const obj of objs){
-                switch((obj as BaseGameObject2D).stringType){
+                switch((obj as ServerGameObject).stringType){
                     case "player":
                         if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
                             damageCollisions.push(obj)

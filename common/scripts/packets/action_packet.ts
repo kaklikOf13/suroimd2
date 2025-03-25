@@ -22,6 +22,7 @@ export class ActionPacket extends Packet{
     angle:number
     hand:number
     cellphoneAction:CellphoneAction
+    interact:boolean=false
     constructor(movement:Vec2=v2.new(0,0),using_item=false,angle:number=0,hand:number=0){
         super()
         this.Movement=movement
@@ -31,7 +32,7 @@ export class ActionPacket extends Packet{
     }
     encode(stream: NetStream): void {
       stream.writePosition(this.Movement)
-      stream.writeBooleanGroup(this.UsingItem,this.Reloading,this.cellphoneAction!==undefined)
+      stream.writeBooleanGroup(this.UsingItem,this.Reloading,this.cellphoneAction!==undefined,this.interact)
       stream.writeRad(this.angle)
       stream.writeUint8(this.hand)
       if(this.cellphoneAction){
@@ -51,6 +52,7 @@ export class ActionPacket extends Packet{
       const b=stream.readBooleanGroup()
       this.UsingItem=b[0]
       this.Reloading=b[1]
+      this.interact=b[3]
       this.angle=stream.readRad()
       this.hand=stream.readUint8()
       if(b[2]){

@@ -6,8 +6,9 @@ import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "common/scripts/definitions/ammo.ts";
 import { Game } from "../others/game.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 
-export class Bullet extends BaseGameObject2D{
+export class Bullet extends ServerGameObject{
     velocity:Vec2
     stringType:string="bullet"
     numberType: number=3
@@ -28,6 +29,9 @@ export class Bullet extends BaseGameObject2D{
         super()
         this.velocity=v2.new(0,0)
         this.netSync.deletion=false
+    }
+    interact(_user: Player): void {
+      return
     }
     update(dt:number): void {
         if(v2.distance(this.initialPosition,this.position)>this.maxDistance){

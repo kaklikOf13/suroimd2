@@ -1,12 +1,14 @@
-import { Angle, BaseGameObject2D, Hitbox2D, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, Hitbox2D, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { Game } from "../others/game.ts";
+import { type Player } from "./player.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 
-export class Obstacle extends BaseGameObject2D{
+export class Obstacle extends ServerGameObject{
     stringType:string="obstacle"
     numberType: number=4
 
@@ -26,6 +28,9 @@ export class Obstacle extends BaseGameObject2D{
 
     update(_dt:number): void {
 
+    }
+    interact(_user: Player): void {
+        return
     }
     create(args: {def:ObstacleDef,position:Vec2,rotation:number,variation?:number}): void {
         this.def=args.def

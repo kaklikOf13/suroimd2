@@ -27,6 +27,7 @@ export class Game extends ClientGame2D{
   guiManager!:GuiManager
 
   can_act:boolean=true
+
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
     super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile])
     for(const i of CATEGORYSL){
@@ -106,6 +107,8 @@ export class Game extends ClientGame2D{
         case Key.Number_0:
           this.action.hand=9
           break
+        case Key.E:
+          this.action.interact=true
       }
     })
   }
@@ -133,6 +136,7 @@ export class Game extends ClientGame2D{
       }
       if(this.actionDelay<=0){
         this.client.emit(this.action)
+        this.action.interact=false
         this.action.cellphoneAction=undefined
         this.actionDelay=1
         this.old_hand=this.action.hand

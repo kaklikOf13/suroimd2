@@ -11,7 +11,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef } from "common/scripts/definitions/utils.ts";
+import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef, Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
@@ -150,6 +150,10 @@ export class Game extends GameBase{
     add_projectile(position:Vec2,def:ProjectileDef,owner?:Player):Projectile{
         const p=this.scene.objects.add_object(new Projectile(),CATEGORYS.PROJECTILES,undefined,{defs:def,owner,position:v2.duplicate(position)}) as Projectile
         return p
+    }
+    add_loot(position:Vec2,def:GameItem,count:number):Loot{
+        const l=this.scene.objects.add_object(new Loot(),CATEGORYS.LOOTS,undefined,{item:def,count:count,position:v2.duplicate(position)}) as Loot
+        return l
     }
     handleConnections(client:Client){
         const objId={id:client.ID,category:CATEGORYS.PLAYERS}
