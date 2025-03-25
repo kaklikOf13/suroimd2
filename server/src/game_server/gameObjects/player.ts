@@ -355,12 +355,23 @@ export class Player extends ServerGameObject{
             }
         }
     }
+    dropAll(){
+        for(const s of this.inventory.slots){
+            if(s.quantity>0&&s.item){
+                (this.game as Game).add_loot(this.position,s.item.def as GameItem,s.quantity)
+                s.quantity=0
+                s.item=null
+            }
+        }
+        this.inventory.update_infinity()
+    }
     kill(_params:DamageParams){
         this.dead=true
         this.update2()
         if(this.client){
             setTimeout(this.client.disconnect.bind(this.client),500)
         }
+        this.dropAll();
         (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);
         (this.game as Game).modeManager.on_player_die(this)
     }
