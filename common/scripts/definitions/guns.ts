@@ -8,6 +8,12 @@ export enum FireMode{
 export interface GasParticle{
     count:number
 }
+export enum GunClasses{
+    Shotgun,
+    Sniper,
+    Automatic,
+    SMG
+}
 export interface GunDef extends Definition{
     bullet:BulletDef
     ammoSpawnAmount?:number
@@ -21,6 +27,7 @@ export interface GunDef extends Definition{
     speedMult?:number
     size:number
     ammoType:AmmoType
+    class:GunClasses
     reload:{
         capacity:number
         delay:number
@@ -56,6 +63,7 @@ Guns.insert(
         size:4,
         ammoType:AmmoType["762mm"],
         ammoSpawnAmount:90,
+        class:GunClasses.Automatic,
         bullet:{
             damage:10,
             radius:0.014,
@@ -81,6 +89,7 @@ Guns.insert(
         lenght:0.8,
         size:4.5,
         ammoType:AmmoType["762mm"],
+        class:GunClasses.Sniper,
         bullet:{
             damage:54,
             radius:0.02,
@@ -109,6 +118,7 @@ Guns.insert(
         jitterRadius:0.25,
         size:4.3,
         fireMode:FireMode.Single,
+        class:GunClasses.Shotgun,
         bullet:{
             damage:7,
             radius:0.014,
@@ -136,6 +146,7 @@ Guns.insert(
         ammoType:AmmoType["12g"],
         bulletsCount:10,
         jitterRadius:0.05,
+        class:GunClasses.Shotgun,
         size:4.5,
         fireMode:FireMode.Single,
         bullet:{
@@ -156,5 +167,57 @@ Guns.insert(
         },
         speedMult:0.95,
         gasParticles:GasParticles.shotgun
+    },
+    {
+        idString:"awp",
+        fireDelay:1.3,
+        spread:1.1,
+        lenght:0.8,
+        size:6,
+        ammoType:AmmoType["762mm"],
+        class:GunClasses.Sniper,
+        bullet:{
+            damage:59,
+            radius:0.025,
+            range:220,
+            speed:26,
+            tracer:tracers.xl
+        },
+        reload:{
+            delay:3.3,
+            capacity:10,
+            shotsPerReload:10,
+        },
+        recoil:{
+            duration:1.34,
+            speed:0.4
+        },
+        speedMult:0.9,
+    },
+    {
+        idString:"awms",
+        fireDelay:1.3,
+        spread:1.2,
+        lenght:0.8,
+        size:6,
+        ammoType:AmmoType["308sub"],
+        class:GunClasses.Sniper,
+        bullet:{
+            damage:88,
+            radius:0.02,
+            range:220,
+            speed:25,
+            tracer:tracers.large
+        },
+        reload:{
+            delay:5.5,
+            capacity:5,
+            shotsPerReload:5,
+        },
+        recoil:{
+            duration:1.34,
+            speed:0.1
+        },
+        speedMult:0.9,
     },
 )

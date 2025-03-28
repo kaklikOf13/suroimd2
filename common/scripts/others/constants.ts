@@ -17,7 +17,7 @@ export const GameConstants={
             ammo:0.3,
         }
     },
-    tps:60,
+    tps:100,
     collision:{
         threads:2,
         chunckSize:32

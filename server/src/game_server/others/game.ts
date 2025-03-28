@@ -133,11 +133,12 @@ export class Game extends GameBase{
         this.modeManager.on_finish()
         console.log(`Game ${this.id} Fineshed`)
     }
-    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player):Bullet{
+    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string):Bullet{
         const b=this.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
             defs:def,
             position:v2.duplicate(position),
-            owner:owner
+            owner:owner,
+            ammo:ammo
         })as Bullet
         b.set_direction(angle)
         this.bullets[b.id]=b

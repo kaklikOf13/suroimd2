@@ -17,12 +17,16 @@ export const tracers={
         height:0.6, // 0.6H = 0.012 radius
     },
     medium:{
-        width:1,
+        width:1.5,
         height:0.7, // 0.7H = 0.014 radius
     },
     large:{
-        width:1,
+        width:2,
         height:1, // 1H = 0.02 radius
+    },
+    xl:{
+        width:3,
+        height:1.4, // 1.2H = 0.025 radius
     },
     mirv:{
         height:0.4,

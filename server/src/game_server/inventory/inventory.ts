@@ -79,7 +79,7 @@ export class GunItem extends LItem{
         if(this.def.spread){
           ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
         }
-        const b=(user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user)
+        const b=(user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user,defaultAmmos[this.def.ammoType])
         b.modifiers={
           speed:user.modifiers.bullet_speed,
           size:user.modifiers.bullet_size,

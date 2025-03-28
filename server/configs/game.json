@@ -2,7 +2,7 @@
     "server":{
         "game":{
             "maxPlayers":5,
-            "gameTps":60,
+            "gameTps":100,
             "netTps":40,
             "chunckSize":12
         },

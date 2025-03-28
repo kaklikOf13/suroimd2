@@ -68,10 +68,6 @@ export class Player extends ServerGameObject{
         this.helmet=Armors.getFromString("soldier_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
-
-        this.accessories.slots[0].item=Accessories.getFromString("rubber_bracelet")
-        this.accessories.slots[1].item=Accessories.getFromString("bullet_wind")
-        this.accessories.slots[2].item=Accessories.getFromString("uranium_bracelet")
     }
     interaction_input:boolean=false
     interact(_user: Player): void {
