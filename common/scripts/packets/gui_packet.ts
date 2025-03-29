@@ -1,4 +1,5 @@
 import { BoostType, InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode, InventoryItemType } from "../definitions/utils.ts";
+import { Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
 export type HandData=
@@ -15,7 +16,12 @@ export type HandData=
 }|{
     type:InventoryItemType.equipament
 })&{location:number})|undefined
-
+export interface DamageSplash{
+    count:number
+    critical:boolean
+    position:Vec2
+    shield:boolean
+}
 export class GuiPacket extends Packet{
     ID=2
     Name="gui"
@@ -32,6 +38,8 @@ export class GuiPacket extends Packet{
     inventory?:InventoryItemData[]
     hand?:HandData
     action?:{delay:number,type:ActionsType}
+
+    damages?:DamageSplash
     constructor(health=0,max_health=0,boost:number=0,max_boost:number=0,boost_type:BoostType=0){
         super()
         this.Health=health
@@ -46,7 +54,7 @@ export class GuiPacket extends Packet{
         stream.writeUint8(this.Boost)
         stream.writeUint8(this.MaxBoost)
         stream.writeUint8(this.BoostType)
-        stream.writeBooleanGroup(this.dirty.inventory,this.dirty.hand,this.hand!==undefined,this.dirty.action,this.action!==undefined)
+        stream.writeBooleanGroup(this.dirty.inventory,this.dirty.hand,this.hand!==undefined,this.dirty.action,this.action!==undefined,this.damages!==undefined)
         if(this.dirty.inventory){
             stream.writeArray<InventoryItemData>(this.inventory!,(i)=>{
                 InventoryItemDataEncode(stream,i)
@@ -66,6 +74,11 @@ export class GuiPacket extends Packet{
             stream.writeFloat(this.action.delay,0,20,3)
             stream.writeUint8(this.action.type)
         }
+        if(this.damages){
+            stream.writeBooleanGroup(this.damages.critical,this.damages.shield)
+            stream.writeUint16(this.damages.count)
+            stream.writePosition(this.damages.position)
+        }
     }
     decode(stream: NetStream): void {
         this.Health=stream.readUint8()
@@ -73,7 +86,7 @@ export class GuiPacket extends Packet{
         this.Boost=stream.readUint8()
         this.MaxBoost=stream.readUint8()
         this.BoostType=stream.readUint8()
-        const [dirtyInventory,dirtyHand,hasHand,dirtyAction,hasAction]=stream.readBooleanGroup()
+        const [dirtyInventory,dirtyHand,hasHand,dirtyAction,hasAction,hasDamages]=stream.readBooleanGroup()
         if(dirtyInventory){
             this.dirty.inventory=true
             this.inventory=stream.readArray<InventoryItemData>(()=>{
@@ -106,6 +119,15 @@ export class GuiPacket extends Packet{
                     delay:stream.readFloat(0,20,3),
                     type:stream.readUint8(),
                 }
+            }
+        }
+        if(hasDamages){
+            const boo=stream.readBooleanGroup()
+            this.damages={
+                count:stream.readUint16(),
+                critical:boo[0],
+                shield:boo[1],
+                position:stream.readPosition()
             }
         }
     }

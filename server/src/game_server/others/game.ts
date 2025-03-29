@@ -13,7 +13,7 @@ import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
 import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
-import { ProjectileDef, Projectiles } from "common/scripts/definitions/projectiles.ts";
+import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 export interface GameConfig{
     maxPlayers:number

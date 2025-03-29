@@ -47,6 +47,10 @@ export class GuiManager{
         this.game.client.on("gui",(p:GuiPacket)=>{
             this.set_health(p.Health,p.MaxHealth)
             this.set_boost(p.Boost,p.MaxBoost,p.BoostType)
+
+            if(p.damages){
+                this.game.add_damageSplash(p.damages.position,p.damages.count,p.damages.critical,p.damages.shield)
+            }
             if(p.inventory){
                 this.inventory.length=0
                 for(const s of p.inventory){

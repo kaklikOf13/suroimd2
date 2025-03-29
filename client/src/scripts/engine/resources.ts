@@ -8,15 +8,19 @@ export interface SoundDef{
 }
 export class Sprite{
     source:HTMLImageElement
-    texture:WebGLTexture
+    texture!:WebGLTexture
     src:string
     path:string
     readonly resourceType:SourceType.Sprite=SourceType.Sprite
-    constructor(source:HTMLImageElement,texture:WebGLTexture,src:string,path:string){
+    gl:WebGLRenderingContext
+    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string,path:string){
         this.source=source
-        this.texture=texture
         this.path=path
         this.src=src
+        this.gl=gl
+    }
+    free(){
+        this.gl.deleteTexture(this.texture)
     }
 }
 export interface KeyFrame{
@@ -39,6 +43,7 @@ export enum SourceType{
     Sprite,
     Animation,
     Sound,
+    Material
 }
 export type Source=Sprite|Animation|Sound|Material2D
 function getSvgUrl(svg:string) {
@@ -106,6 +111,33 @@ export class ResourcesManager{
 
         return undefined
     }
+    render_text(text:string, fontSize = 32,color="white",font:string="Arial"):Promise<Sprite>{
+        return new Promise<Sprite>((resolve, _reject) => {
+            this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
+            this.ctx.save()
+            this.ctx.font = `${fontSize}px ${font}`
+            const textMetrics = this.ctx.measureText(text)
+            this.canvas.width = textMetrics.width
+            this.canvas.height = fontSize * 1.5
+
+
+            this.ctx.font=`${fontSize}px ${font}`
+            this.ctx.font = `${fontSize}px ${font}`
+            this.ctx.fillStyle = color
+            this.ctx.fillText(text, 0, fontSize)
+
+            const src=this.canvas.toDataURL()
+
+            this.ctx.restore()
+            const ret=new Sprite(new Image(),this.gl,src,"");
+            ret.source.addEventListener("load",()=>{
+                const sp=ret as Sprite
+                sp.texture=loadTexture(this.gl,sp.source)!
+                resolve(ret)
+            });
+            ret.source.src=src
+        })
+    }
     get_sprite(id:string):Sprite{
         if(!this.sources[id]){
             return this.default_sprite
@@ -123,9 +155,7 @@ export class ResourcesManager{
                     resolve(this.load_svg(id,svg.querySelector("svg"),src,scale))
                 })
             }else{
-                // deno-lint-ignore ban-ts-comment
-                //@ts-ignore
-                this.sources[id]=new Sprite(new Image(),null,src,src);
+                this.sources[id]=new Sprite(new Image(),this.gl,src,src);
                 (this.sources[id] as Sprite).source.addEventListener("load",()=>{
                     const sp=this.sources[id] as Sprite
                     sp.texture=loadTexture(this.gl,sp.source)!
@@ -152,9 +182,7 @@ export class ResourcesManager{
                 this.ctx.drawImage(img, 0, 0,size.x,size.y)
                 this.ctx.restore()
                 const src=this.canvas.toDataURL()
-                // deno-lint-ignore ban-ts-comment
-                //@ts-ignore
-                this.sources[id]=new Sprite(new Image(),null,src,svg_path);
+                this.sources[id]=new Sprite(new Image(),this.gl,src,svg_path);
                 (this.sources[id] as Sprite).source.addEventListener("load",()=>{
                     const sp=this.sources[id] as Sprite
                     sp.texture=loadTexture(this.gl,sp.source)!
@@ -223,11 +251,17 @@ export class ResourcesManager{
         this.sources[id]=anim
         return this.sources[id] as Animation
     }
-    delete_source(id:string){
-        delete this.sources[id]
-    }
     unload(id:string){
-        delete this.sources[id]
+        if(this.sources[id]){
+            switch(this.sources[id].resourceType){
+                case SourceType.Sprite:
+                    (this.sources[id] as Sprite).free();
+                    break
+                default:
+                    break
+            }
+            delete this.sources[id]
+        }
     }
     async load_folder(folder:string,scale:number=1){
         const foundeds:Record<string,string|SpriteDef> = {};
@@ -247,6 +281,7 @@ export class ResourcesManager{
         }
         for(const f of Object.keys(foundeds)){
             if(typeof foundeds[f]==="string"){
+                this.unload(f)
                 await this.load_source(f,`${foundeds[f]}`,scale)
             }else{
                 if((foundeds[f] as SpriteDef).variations){
@@ -256,9 +291,12 @@ export class ResourcesManager{
                         const ext=extF[extF.length-1]
                         extF.length--
                         const name=extF.join(".")
-                        await this.load_source(f+`_${i+1}`,`${name}_${i+1}.${ext}`,sca)
+                        const id=f+`_${i+1}`
+                        this.unload(id)
+                        await this.load_source(id,`${name}_${i+1}.${ext}`,sca)
                     }
                 }else{
+                    this.unload(f)
                     await this.load_source(f,`${(foundeds[f] as SpriteDef).path}`,((foundeds[f] as SpriteDef).scale??1)*scale)
                 }
             }

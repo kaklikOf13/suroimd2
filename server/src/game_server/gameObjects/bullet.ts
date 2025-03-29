@@ -44,7 +44,7 @@ export class Bullet extends ServerGameObject{
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player})
+                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position)})
                         this.destroy()
                         break
                     }
@@ -52,20 +52,21 @@ export class Bullet extends ServerGameObject{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player})
+                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position)})
                         this.destroy()
                     }
                     break
             }
         }
     }
-    create(args: {defs:BulletDef,position:Vec2,ammo:string}): void {
+    create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
         this.initialPosition=v2.duplicate(this.hb.position)
         this.maxDistance=this.defs.range/2.5
         const ad=Ammos.getFromString(args.ammo)
         this.tracerColor=this.defs.tracer.color??(ad?ad.defaultTrail:0xffffff)
+        this.owner=args.owner
     }
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed*this.modifiers.speed),4)

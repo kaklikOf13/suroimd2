@@ -1,6 +1,6 @@
 import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { NullVec2, ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
+import { NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -13,6 +13,7 @@ import { Debug } from "./config.ts";
 import { SoundManager } from "../engine/sounds.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
+import { DamageSplash } from "../gameObjects/damageSplash.ts";
 
 function gameLoadMaterials(game:Game){
   game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
@@ -29,10 +30,11 @@ export class Game extends ClientGame2D{
   can_act:boolean=true
 
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile])
+    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
+    this.scene.objects.add_category(7)
     this.client=new Client(new WebSocket(ip),PacketManager)
     this.client.on(DefaultSignals.OBJECTS,(obj:ObjectsPacket)=>{
       this.scene.objects.proccess(obj)
@@ -61,6 +63,9 @@ export class Game extends ClientGame2D{
     gameLoadMaterials(this)
 
     this.request_animation_frame=true
+  }
+  add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
+    this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
   }
   onstop?:(g:Game)=>void
   actionDelay:number=3
