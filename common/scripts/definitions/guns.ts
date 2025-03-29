@@ -68,7 +68,7 @@ Guns.insert(
             damage:10,
             radius:0.014,
             range:150,
-            speed:15,
+            speed:21,
             tracer:tracers.medium
         },
         reload:{
@@ -174,7 +174,7 @@ Guns.insert(
         bullet:{
             damage:7,
             radius:0.014,
-            speed:14,
+            speed:16,
             range:17,
             tracer:tracers.medium
         },
@@ -204,7 +204,7 @@ Guns.insert(
         bullet:{
             damage:6.3,
             radius:0.012,
-            speed:15,
+            speed:19,
             range:35,
             tracer:tracers.small
         },
@@ -223,16 +223,16 @@ Guns.insert(
     {
         idString:"hp18",
         fireDelay:0.2,
-        spread:6,
+        spread:9,
         lenght:0.8,
         ammoType:AmmoType["12g"],
         bulletsCount:15,
-        jitterRadius:0.14,
+        jitterRadius:0.15,
         class:GunClasses.Shotgun,
         size:3.8,
         fireMode:FireMode.Auto,
         bullet:{
-            damage:1.6,
+            damage:1.4,
             radius:0.01,
             speed:15,
             range:18,
