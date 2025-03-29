@@ -2,7 +2,7 @@ import { Player } from "../gameObjects/player.ts";
 import { Angle, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
 import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
@@ -79,7 +79,7 @@ export class GunItem extends LItem{
         if(this.def.spread){
           ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
         }
-        const b=(user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user,defaultAmmos[this.def.ammoType])
+        const b=(user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user,defaultAmmos[this.def.ammoType],this.def as unknown as GameItem)
         b.modifiers={
           speed:user.modifiers.bullet_speed,
           size:user.modifiers.bullet_size,

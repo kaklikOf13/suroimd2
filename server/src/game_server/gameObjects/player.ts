@@ -135,7 +135,8 @@ export class Player extends ServerGameObject{
         bullet_speed:1,
         damage:1,
         health:1,
-        speed:1
+        speed:1,
+        critical_mult:1
     }
 
     privateDirtys={
@@ -145,7 +146,7 @@ export class Player extends ServerGameObject{
     }
 
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=1
+        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
         const gamemode=(this.game as Game).gamemode
         if(this.BoostType===BoostType.Addiction){
             this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
@@ -197,7 +198,8 @@ export class Player extends ServerGameObject{
                 this.piercingDamage({
                     amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt)*50,
                     reason:DamageReason.Abstinence,
-                    position:v2.duplicate(this.position)
+                    position:v2.duplicate(this.position),
+                    critical:false,
                 })
                 break
             }
@@ -284,12 +286,19 @@ export class Player extends ServerGameObject{
     ammoCount:Partial<Record<AmmoType,number>>={}
 
     damageSplash?:DamageSplash
+
+    splashDelay:number=0
     update2(){
         this.update_modifiers()
         if(this.client){
             const guiPacket=new GuiPacket(this.health,this.maxHealth,this.boost,this.maxBoost,this.BoostType)
             guiPacket.inventory=[]
-            guiPacket.damages=this.damageSplash
+            if(this.splashDelay<=0){
+                guiPacket.damages=this.damageSplash
+                this.damageSplash=undefined
+            }else{
+                this.splashDelay--
+            }
             let ii=0
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
@@ -329,7 +338,6 @@ export class Player extends ServerGameObject{
                 guiPacket.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
             this.client.emit(guiPacket)
-            this.damageSplash=undefined
         }
     }
     damage(params:DamageParams){
@@ -347,20 +355,34 @@ export class Player extends ServerGameObject{
             mod-=this.helmet.reduction
             damage-=this.helmet.defence
         }
-        damage=Math.max(damage*mod,0)
+        if(params.critical){
+            if(params.owner&&params.owner instanceof Player&&params.source&&params.source.item_type === InventoryItemType.gun){
+                damage*=((params.source as unknown as GunDef).criticalMult??1.5)*this.modifiers.critical_mult
+            }
+        }
+        damage=Numeric.clamp(damage*mod,0,this.health)
         params.amount=damage
         this.piercingDamage(params)
     }
     piercingDamage(params:DamageParams){
+        if(this.BoostType===BoostType.Shield&&this.boost>0){
+            params.amount=Math.min(this.boost,params.amount)
+        }else{
+            params.amount=Math.min(this.health,params.amount)
+        }
         if(params.owner&&params.owner instanceof Player){
             params.owner.status.damage+=params.amount
             if(!params.owner.damageSplash){
                 params.owner.damageSplash={
                     count:0,
                     shield:false,
-                    critical:Math.random()<=0.15,
+                    critical:false,
                     position:params.position
                 }
+                params.owner.splashDelay=2
+            }
+            if(params.critical){
+                params.owner.damageSplash.critical=true
             }
             params.owner.damageSplash.count+=params.amount
         }
@@ -371,9 +393,9 @@ export class Player extends ServerGameObject{
             }
         }else{
             this.health=Math.max(this.health-params.amount,0)
-            if(this.health===0){
-                this.kill(params)
-            }
+        }
+        if(this.health===0){
+            this.kill(params)
         }
     }
     dropAll(){
@@ -390,7 +412,7 @@ export class Player extends ServerGameObject{
         this.dead=true
         this.update2()
         if(this.client){
-            setTimeout(this.client.disconnect.bind(this.client),500)
+            this.destroy()
         }
         this.dropAll();
         (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);

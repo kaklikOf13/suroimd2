@@ -1,7 +1,7 @@
 {
     "server":{
         "game":{
-            "maxPlayers":5,
+            "maxPlayers":10,
             "gameTps":100,
             "netTps":40,
             "chunckSize":12

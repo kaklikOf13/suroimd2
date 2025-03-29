@@ -58,10 +58,11 @@ export enum ActionsType{
 }
 
 export type PlayerModifiers={
-    damage:number,
-    speed:number,
-    health:number,
-    boost:number,
-    bullet_speed:number,
+    damage:number
+    speed:number
+    health:number
+    boost:number
+    bullet_speed:number
     bullet_size:number
+    critical_mult:number
 }

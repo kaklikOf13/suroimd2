@@ -62,11 +62,11 @@ export class Explosion extends ServerGameObject{
             for(const obj of damageCollisions){
                 switch(obj.stringType){
                     case "player":{
-                        (obj as Player).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(this.position)})
+                        (obj as Player).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(this.position),critical:false})
                         break
                     }
                     case "obstacle":
-                        (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(this.position)})
+                        (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(this.position),critical:false})
                         break
                 }
             }

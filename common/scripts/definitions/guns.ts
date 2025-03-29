@@ -33,6 +33,7 @@ export interface GunDef extends Definition{
         delay:number
         shotsPerReload?:number
     }
+    criticalMult?:number
     recoil?:{
         duration:number
         speed:number
@@ -59,7 +60,7 @@ Guns.insert(
         idString:"ak47",
         fireDelay:0.1,
         spread:5,
-        lenght:0.8,
+        lenght:0.7,
         size:4,
         ammoType:AmmoType["762mm"],
         ammoSpawnAmount:90,
@@ -67,13 +68,40 @@ Guns.insert(
         bullet:{
             damage:10,
             radius:0.014,
-            range:150,
+            range:85,
             speed:21,
             tracer:tracers.medium
         },
         reload:{
             delay:2,
             capacity:30
+        },
+        recoil:{
+            duration:0.1,
+            speed:0.7
+        },
+        speedMult:0.96,
+        gasParticles:GasParticles.automatic
+    },
+    {
+        idString:"vector",
+        fireDelay:0.03,
+        spread:1,
+        lenght:0.68,
+        size:4,
+        ammoType:AmmoType["9mm"],
+        ammoSpawnAmount:90,
+        class:GunClasses.Automatic,
+        bullet:{
+            damage:4,
+            radius:0.014,
+            range:30,
+            speed:21,
+            tracer:tracers.medium
+        },
+        reload:{
+            delay:1.7,
+            capacity:33
         },
         recoil:{
             duration:0.1,
@@ -91,9 +119,9 @@ Guns.insert(
         ammoType:AmmoType["762mm"],
         class:GunClasses.Sniper,
         bullet:{
-            damage:54,
+            damage:44,
             radius:0.02,
-            range:220,
+            range:85,
             speed:32,
             tracer:tracers.large
         },
@@ -112,14 +140,14 @@ Guns.insert(
         idString:"awp",
         fireDelay:1.3,
         spread:1.1,
-        lenght:0.8,
+        lenght:0.9,
         size:6,
         ammoType:AmmoType["762mm"],
         class:GunClasses.Sniper,
         bullet:{
-            damage:59,
+            damage:50,
             radius:0.025,
-            range:220,
+            range:88,
             speed:35,
             tracer:tracers.xl
         },
@@ -138,14 +166,14 @@ Guns.insert(
         idString:"awms",
         fireDelay:1.3,
         spread:1.2,
-        lenght:0.8,
+        lenght:1,
         size:6,
         ammoType:AmmoType["308sub"],
         class:GunClasses.Sniper,
         bullet:{
-            damage:88,
+            damage:70,
             radius:0.02,
-            range:220,
+            range:90,
             speed:33,
             tracer:tracers.large
         },
@@ -164,7 +192,7 @@ Guns.insert(
         idString:"m870",
         fireDelay:1.2,
         spread:3,
-        lenght:0.8,
+        lenght:0.7,
         ammoType:AmmoType["12g"],
         bulletsCount:10,
         jitterRadius:0.25,
@@ -194,7 +222,7 @@ Guns.insert(
         idString:"spas12",
         fireDelay:0.9,
         spread:3,
-        lenght:0.8,
+        lenght:0.6,
         ammoType:AmmoType["12g"],
         bulletsCount:10,
         jitterRadius:0.05,
@@ -224,7 +252,7 @@ Guns.insert(
         idString:"hp18",
         fireDelay:0.2,
         spread:9,
-        lenght:0.8,
+        lenght:0.65,
         ammoType:AmmoType["12g"],
         bulletsCount:15,
         jitterRadius:0.15,

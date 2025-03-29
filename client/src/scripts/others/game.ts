@@ -156,7 +156,10 @@ export class Game extends ClientGame2D{
         this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
       }
     }
-    this.camera.zoom=1.3
+    this.camera.zoom=1.7
+    //3.4=64x
+    //2.8=32x
+    //2.3=16x
     //1.7=8x
     //1.3=4x
     this.renderer.fullCanvas(this.camera)

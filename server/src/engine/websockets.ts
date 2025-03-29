@@ -15,11 +15,9 @@ export class ClientsManager{
     }
 
 
-    private activate_ws(ws:WebSocket,ip:string):ID{
+    private activate_ws(ws:WebSocket,id:number,ip:string):ID{
         const client=new Client(ws,this.packets_manager,ip)
-        while (this.clients.has(client.ID)){
-            client.ID=random.id()
-        }
+        client.ID=id
         client.on(DefaultSignals.DISCONNECT,(packet:DisconnectPacket)=>{
             this.clients.delete(packet.client_id)
         })
@@ -44,7 +42,16 @@ export class ClientsManager{
         }
     }
     
-    handler():(req:Request,url:string[],info:Deno.ServeHandlerInfo)=>Response|null{
+    handler(IDGen?:()=>number):(req:Request,url:string[],info:Deno.ServeHandlerInfo)=>Response|null{
+        if(!IDGen){
+            IDGen=()=>{
+                let id:number=random.id()
+                while(this.clients.get(id)){
+                    id=random.id()
+                }
+                return id
+            }
+        }
         return (req:Request,url:string[],info:Deno.ServeHandlerInfo)=>{
             if(url.length>1&&url[url.length-1]!="index.html"){
                 return null
@@ -56,7 +63,7 @@ export class ClientsManager{
             }
             
             const { socket, response } = Deno.upgradeWebSocket(req)
-            socket.onopen = () => {this.activate_ws(socket,info.remoteAddr.hostname)}
+            socket.onopen = () => {this.activate_ws(socket,IDGen(),info.remoteAddr.hostname)}
             return response
         }
     }

@@ -1,12 +1,12 @@
 import { BaseGameObject2D, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { BulletDef, DamageReason } from "common/scripts/definitions/utils.ts";
+import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "common/scripts/definitions/ammo.ts";
 import { Game } from "../others/game.ts";
-import { ServerGameObject } from "../others/gameObject.ts";
+import { ServerGameObject } from "../others/gameObject.ts"; 
 
 export class Bullet extends ServerGameObject{
     velocity:Vec2
@@ -25,6 +25,8 @@ export class Bullet extends ServerGameObject{
         size:1,
     }
 
+    critical:boolean=false
+    source?:GameItem
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -44,7 +46,7 @@ export class Bullet extends ServerGameObject{
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position)})
+                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         break
                     }
@@ -52,14 +54,14 @@ export class Bullet extends ServerGameObject{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position)})
+                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                     }
                     break
             }
         }
     }
-    create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string}): void {
+    create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:GameItem}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
         this.initialPosition=v2.duplicate(this.hb.position)
@@ -67,6 +69,8 @@ export class Bullet extends ServerGameObject{
         const ad=Ammos.getFromString(args.ammo)
         this.tracerColor=this.defs.tracer.color??(ad?ad.defaultTrail:0xffffff)
         this.owner=args.owner
+        this.critical=args.critical??(Math.random()<=0.15)
+        this.source=args.source
     }
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed*this.modifiers.speed),4)

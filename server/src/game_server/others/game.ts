@@ -11,7 +11,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
@@ -39,6 +39,7 @@ export class GamemodeManager{
     on_finish(){
         this.game.addTimeout(()=>{
             this.game.running=false
+            console.log(`Game ${this.game.id} Fineshed`)
         },2)
     }
     on_player_join(_p:Player){
@@ -104,8 +105,8 @@ export class Game extends GameBase{
             }
         },1/this.config.netTps)
     }
-    add_player(client:Client,packet:JoinPacket):Player{
-        const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,client.ID) as Player
+    add_player(client:Client,id:number,packet:JoinPacket):Player{
+        const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,id) as Player
                 (p as Player).client=client;
                 (p as Player).update2()
         if(ValidString.simple_characters(packet.PlayerName)){
@@ -133,12 +134,13 @@ export class Game extends GameBase{
         this.modeManager.on_finish()
         console.log(`Game ${this.id} Fineshed`)
     }
-    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string):Bullet{
+    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:GameItem):Bullet{
         const b=this.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
             defs:def,
             position:v2.duplicate(position),
             owner:owner,
-            ammo:ammo
+            ammo:ammo,
+            source
         })as Bullet
         b.set_direction(angle)
         this.bullets[b.id]=b
@@ -160,7 +162,7 @@ export class Game extends GameBase{
         const objId={id:client.ID,category:CATEGORYS.PLAYERS}
         client.on("join",(packet:JoinPacket)=>{
             if (this.allowJoin&&!this.scene.objects.exist(objId)){
-                const p=this.add_player(client,packet)
+                const p=this.add_player(client,objId.id,packet)
                 this.connectedPlayers[p.id]=p
                 console.log(`${p.name} Connected`)
             }
@@ -175,7 +177,6 @@ export class Game extends GameBase{
             if(this.scene.objects.exist(objId)){
                 const p=this.scene.objects.get_object(objId) as Player
                 delete this.connectedPlayers[p.id]
-                p.destroy()
                 console.log(`${p.name} Disconnected`)
             }
         })
