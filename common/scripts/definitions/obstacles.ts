@@ -3,57 +3,101 @@ import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode } from "..
 import { zIndexes } from "common/scripts/others/constants.ts";
 
 export interface ObstacleDef extends Definition{
-    health:number,
-    hitbox?:Hitbox2D,
+    health:number
+    hitbox?:Hitbox2D
+    spawnHitbox?:Hitbox2D
     noCollision?:boolean
     noBulletCollision?:boolean
     scale?:{
-        min?:number,
-        man?:number,
-        destroy?:number,
+        min?:number
+        man?:number
+        destroy?:number
     }
     frame?:{
-        base:string,
+        base:string
     }
-    variations?:number,
+    variations?:number
     zIndex?:number
     rotationMode?:number
 
-    onDestroyExplosion?:string,
+    onDestroyExplosion?:string
+    material?:string
+
+    sounds?:{
+        hit:string
+        break:string
+        hit_variations?:number
+    }
+}
+export interface MaterialDef{
+    sounds:string
+    hit_variations?:number
+}
+export const Materials:Record<string,MaterialDef>={
+    tree:{
+        sounds:"tree",
+        hit_variations:2
+    },
+    stone:{
+        sounds:"stone",
+        hit_variations:2
+    },
+    bush:{
+        sounds:"bush",
+        hit_variations:2
+    },
+    metal:{
+        sounds:"metal",
+        hit_variations:2
+    }
 }
 
-export const Obstacles=new Definitions<ObstacleDef>()
+export const Obstacles=new Definitions<ObstacleDef,null>((_v)=>{})
 Obstacles.insert(
     {
         idString:"stone",
         health:150,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.3),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
         scale:{
             destroy:0.7
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
-        onDestroyExplosion:"barrel_explosion"
+        material:"stone",
+    },
+    {
+        idString:"barrel",
+        health:170,
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
+        scale:{
+            destroy:0.68
+        },
+        rotationMode:RotationMode.full,
+        zIndex:zIndexes.Obstacles1,
+        onDestroyExplosion:"barrel_explosion",
+        material:"metal",
     },
     {
         idString:"oak_tree",
         health:80,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.3),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
         scale:{
             destroy:0.8
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles3,
+        material:"tree",
     },
     {
         idString:"bush",
         health:100,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.3),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.42),
         noCollision:true,
         scale:{
             destroy:1
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles2,
+        material:"bush",
     }
 )

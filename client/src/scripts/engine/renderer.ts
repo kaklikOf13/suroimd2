@@ -17,7 +17,7 @@ export interface Color {
     a: number; // Alpha
 }
 
-export const RGBA = Object.freeze({
+export const ColorM={
     /**
      * Create The Color RGBA, limit=`(0 To 255)`
      * @param r Red
@@ -26,15 +26,10 @@ export const RGBA = Object.freeze({
      * @param a Alpha
      * @returns A New Color
      */
-    new(r: number, g: number, b: number, a: number = 255): Color {
+    rgba(r: number, g: number, b: number, a: number = 255): Color {
         return { r: r / 255, g: g / 255, b: b / 255, a: a / 255 };
     },
-    from(json:RGBAT): Color{
-        return {r:json.r/255,g:json.g/255,b:json.b/255,a:(json.a??255)/255}
-    }
-})
-export const HEXCOLOR=Object.freeze({
-    new(hex:string):Color{
+    hex(hex:string):Color{
         let result:RegExpExecArray|null
         switch(hex.length){
             case 4:
@@ -59,38 +54,107 @@ export const HEXCOLOR=Object.freeze({
                     b:parseInt(hex[3], 16)/15,
                     a:parseInt(hex[4], 16)/15
                 }
-                case 7:
-                    result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-                    if(!result){
-                        throw new Error("Invalid Hex")
-                    }
-                    return {
-                        r:parseInt(result[1], 16)/255,
-                        g:parseInt(result[2], 16)/255,
-                        b:parseInt(result[3], 16)/255,
-                        a:1
-                    }
-                case 9:
-                    result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-                    if(!result){
-                        throw new Error("Invalid Hex")
-                    }
-                    return {
-                        r:parseInt(result[1], 16)/255,
-                        g:parseInt(result[2], 16)/255,
-                        b:parseInt(result[3], 16)/255,
-                        a:parseInt(result[4], 16)/255
-                    }
+            case 7:
+                result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+                if(!result){
+                    throw new Error("Invalid Hex")
+                }
+                return {
+                    r:parseInt(result[1], 16)/255,
+                    g:parseInt(result[2], 16)/255,
+                    b:parseInt(result[3], 16)/255,
+                    a:1
+                }
+            case 9:
+                result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+                if(!result){
+                    throw new Error("Invalid Hex")
+                }
+                return {
+                    r:parseInt(result[1], 16)/255,
+                    g:parseInt(result[2], 16)/255,
+                    b:parseInt(result[3], 16)/255,
+                    a:parseInt(result[4], 16)/255
+                }
             default:
                 throw new Error("Invalid Hex")
         }
-      }
-})
+    },
+    number(color:number):Color{
+        const r = (color >> 16) & 0xFF
+        const g = (color >> 8) & 0xFF
+        const b = color & 0xFF
+        return { r:r/255, g:g/255, b:b/255, a: 1 }
+    },
+    rgba2hex(color:Color):string{
+        const red = (color.r*255).toString(16).padStart(2, '0')
+        const green = (color.g*255).toString(16).padStart(2, '0')
+        const blue = (color.b*255).toString(16).padStart(2, '0')
+
+        const alpha = (color.a*255).toString(16).padStart(2, '0')
+
+        if (alpha === 'ff') {
+            return `#${red}${green}${blue}`
+        }
+
+        return `#${red}${green}${blue}${alpha}`
+    },
+    number2hex(color:number):string{
+        return `0x${color.toString(16).padStart(6, '0')}`
+    },
+    hex2number(color: string): number {
+        return parseInt(color.replace(/^0x/, ''), 16)
+    },
+    default:{
+        black:{
+            r:0,
+            g:0,
+            b:0,
+            a:1
+        },
+        white:{
+            r:1,
+            g:1,
+            b:1,
+            a:1
+        },
+        transparent:{
+            r:0,
+            g:0,
+            b:0,
+            a:0,
+        },
+        red:{
+            r:1,
+            g:0,
+            b:0,
+            a:1
+        },
+        green:{
+            r:0,
+            g:1,
+            b:0,
+            a:1
+        },
+        blue:{
+            r:0,
+            g:0,
+            b:1,
+            a:1
+        },
+        yellow:{
+            r:1,
+            g:1,
+            b:0,
+            a:1
+        }
+    }
+}
 export type RGBAT={r: number, g: number, b: number, a?: number}
 export abstract class Renderer {
     canvas: HTMLCanvasElement
     readonly meter_size: number
-    background: Color = RGBA.new(255, 255, 255);
+    background: Color = ColorM.default.white;
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100) {
         this.canvas = canvas
         this.meter_size = meter_size
@@ -98,7 +162,7 @@ export abstract class Renderer {
     // deno-lint-ignore no-explicit-any
     abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2,zIndex?:number): void
     abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2,zIndex?:number, precision?: number): void
-    abstract draw_image2D(image: Sprite, position: Vec2, size: Vec2, angle: number, hotspot?: Vec2,zIndex?:number): void
+    abstract draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot?: Vec2,zIndex?:number,tint?:Color,size?:Vec2): void
     abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2,zIndex?:number): void
 
     abstract clear(): void
@@ -130,10 +194,11 @@ precision mediump float;
 
 varying highp vec2 vTextureCoord;
 uniform sampler2D u_Texture;
+uniform vec4 u_Tint;
 
 void main(void) {
     vec2 flippedCoord = vec2(vTextureCoord.x, 1.0 - vTextureCoord.y);
-    gl_FragColor = texture2D(u_Texture, flippedCoord);
+    gl_FragColor = texture2D(u_Texture, flippedCoord)*u_Tint;
 }`;
 // deno-lint-ignore no-explicit-any
 export class Material2D<MaterialArgs=any>{
@@ -181,7 +246,7 @@ export class WebglRenderer extends Renderer {
         grid:Material2DFactory<GridMaterialArgs>
     }
     cam2Dsize!:Vec2
-    constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = RGBA.new(255, 255, 255),depth:number=500) {
+    constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white,depth:number=500) {
         super(canvas, meter_size);
         const gl = this.canvas.getContext("webgl", { antialias: true });
         this.background = background;
@@ -388,12 +453,18 @@ void main() {
         }
     }
 
-    draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0): void {
-        const size=v2.new((image.source.width/this.meter_size)*(scale.x/2),(image.source.height/this.meter_size)*(scale.y/2))
-        const x1 = -size.x*hotspot.x
-        const y1 = -size.y*hotspot.y
-        const x2 = size.x+x1
-        const y2 = size.y+y1
+    draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0,tint:Color=ColorM.default.white,size?:Vec2): void {
+        if(!size){
+            size={
+                x:image.source.width,
+                y:image.source.height
+            }
+        }
+        const sizeR=v2.new((size.x/this.meter_size)*(scale.x/2),(size.y/this.meter_size)*(scale.y/2))
+        const x1 = -sizeR.x*hotspot.x
+        const y1 = -sizeR.y*hotspot.y
+        const x2 = sizeR.x+x1
+        const y2 = sizeR.y+y1
 
         const verticesB = [
             { x: x1, y: y1 },
@@ -454,6 +525,9 @@ void main() {
 
         location = this.gl.getUniformLocation(program, "u_Translation")
         this.gl.uniform3f(location,position.x,position.y,zIndex)
+
+        location = this.gl.getUniformLocation(program, "u_Tint")
+        this.gl.uniform4f(location,tint.r,tint.g,tint.b,tint.a)
 
         this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length / 2)
     }

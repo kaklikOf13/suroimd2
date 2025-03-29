@@ -1,13 +1,16 @@
 import { GuiPacket, HandData } from "common/scripts/packets/gui_packet.ts";
 import { Game } from "./game.ts";
 import { Definition } from "common/scripts/engine/definitions.ts";
-import { ExtraType, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GunDef, Guns } from "common/scripts/definitions/guns.ts";
+import { BoostType, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GunDef } from "common/scripts/definitions/guns.ts";
 import { ActionsType, CATEGORYS } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
-import { AmmoDef, Ammos } from "common/scripts/definitions/ammo.ts";
-import { HealingDef, Healings } from "common/scripts/definitions/healings.ts";
+import { AmmoDef } from "common/scripts/definitions/ammo.ts";
+import { HealingDef} from "common/scripts/definitions/healings.ts";
 import { Player } from "../gameObjects/player.ts";
+import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { OtherDef } from "common/scripts/definitions/others.ts";
+import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 
 export class GuiManager{
     game:Game
@@ -16,8 +19,8 @@ export class GuiManager{
         health_bar_animation:document.querySelector("#health-bar-animation") as HTMLDivElement,
         health_bar_amount:document.querySelector("#health-bar-amount") as HTMLSpanElement,
 
-        extra_bar_interior:document.querySelector("#extra-bar") as HTMLDivElement,
-        extra_bar_amount:document.querySelector("#extra-bar-amount") as HTMLSpanElement,
+        _bar_interior:document.querySelector("#boost-bar") as HTMLDivElement,
+        _bar_amount:document.querySelector("#boost-bar-amount") as HTMLSpanElement,
 
         hand_info_count:document.querySelector("#hand-info-count") as HTMLSpanElement,
         current_item_image:document.querySelector("#current-item-image") as HTMLImageElement,
@@ -29,32 +32,25 @@ export class GuiManager{
 
         helmet_slot:document.querySelector("#helmet-slot") as HTMLImageElement,
         vest_slot:document.querySelector("#vest-slot") as HTMLImageElement,
+
+        cellphone_actions:document.querySelector("#cellphone-actions") as HTMLDivElement,
+        cellphone_input_item_id:document.querySelector("#cellphone-insert-item-id") as HTMLInputElement,
+        cellphone_input_item_count:document.querySelector("#cellphone-insert-item-count") as HTMLInputElement,
+        cellphone_give_item:document.querySelector("#cellphone-give-item-button") as HTMLButtonElement
     }
     inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     hand:HandData
     handSelection?:HTMLDivElement
-    action?:{delay:number,type:ActionsType}
+    action?:{delay:number,start:number,type:ActionsType}
     constructor(game:Game){
         this.game=game
         this.game.client.on("gui",(p:GuiPacket)=>{
             this.set_health(p.Health,p.MaxHealth)
-            this.set_extra(p.Extra,p.MaxExtra,p.ExtraType)
+            this.set_boost(p.Boost,p.MaxBoost,p.BoostType)
             if(p.inventory){
                 this.inventory.length=0
                 for(const s of p.inventory){
-                    let def:Definition
-                    switch(s.type){
-                        case InventoryItemType.gun:
-                            def=Guns.getFromNumber(s.idNumber)
-                            break
-                        case InventoryItemType.ammo:
-                            def=Ammos.getFromNumber(s.idNumber)
-                            break
-                        case InventoryItemType.healing:
-                            def=Healings.getFromNumber(s.idNumber)
-                            break
-                    }
-                    this.inventory.push({count:s.count,def:def!,type:s.type})
+                    this.inventory.push({count:s.count,def:GameItems.valueNumber[s.idNumber],type:s.type})
                 }
                 this.inventory_cache=this.inventory_reset()
             }
@@ -66,13 +62,46 @@ export class GuiManager{
                 this.set_hand_item()
             }
             if(p.dirty.action){
-                this.action=p.action
+                if(p.action){
+                    this.action={
+                        delay:p.action.delay,
+                        start:Date.now(),
+                        type:p.action.type
+                    }
+                }else{
+                    this.action=undefined
+                }
             }
         })
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
         this.set_health(100,100)
+
+        //Cellphone
+        this.content.cellphone_actions.style.display="none"
+
+        const deenable_act=()=>{
+            this.game.can_act=false
+        }
+        const enable_act=()=>{
+            this.game.can_act=true
+        }
+
+        this.content.cellphone_input_item_id.addEventListener("focus",deenable_act)
+        this.content.cellphone_input_item_id.addEventListener("blur",enable_act)
+
+        this.content.cellphone_input_item_count.addEventListener("focus",deenable_act)
+        this.content.cellphone_input_item_count.addEventListener("blur",enable_act)
+
+        this.content.cellphone_give_item.addEventListener("click",(_)=>{
+            this.game.action.cellphoneAction={
+                type:CellphoneActionType.GiveItem,
+                item_id:GameItems.keysString[this.content.cellphone_input_item_id.value],
+                count:parseInt(this.content.cellphone_input_item_count.value),
+            }
+        })
     }
     set_hand_item(){
+        this.content.cellphone_actions.style.display="none"
         if(!this.hand){
             this.content.current_item_image.style.backgroundImage="none"
             return
@@ -84,35 +113,39 @@ export class GuiManager{
             switch(this.hand.type){
                 case InventoryItemType.gun:{
                     const def=(this.inventory[this.hand.location-1].def as GunDef)
-                    this.content.current_item_image.src=`img/game/common/guns/normal/${def.idString}.svg`
-                    this.content.current_item_image.style.width="70px"
-                    this.content.current_item_image.style.height="70px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="rotate(-30deg)"
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
                     break
                 }
                 case InventoryItemType.ammo:{
                     const def=(this.inventory[this.hand.location-1].def as AmmoDef)
-                    this.content.current_item_image.src=`img/game/common/ammos/${def.idString}.svg`
-                    this.content.current_item_image.style.width="40px"
-                    this.content.current_item_image.style.height="40px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="unset"
-                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     break
                 }
                 case InventoryItemType.healing:{
                     const def=(this.inventory[this.hand.location-1].def as HealingDef)
-                    this.content.current_item_image.src=`img/game/common/healings/${def.idString}.svg`
-                    this.content.current_item_image.style.width="40px"
-                    this.content.current_item_image.style.height="40px"
-                    this.content.current_item_image.style.opacity="100%"
-                    this.content.current_item_image.style.transform="unset"
-                    this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
+                    break
+                }
+                case InventoryItemType.other:{
+                    const def=(this.inventory[this.hand.location-1].def as OtherDef)
+                    if(def.idString==="cellphone"){
+                        this.content.cellphone_actions.style.display="unset"
+                    }
                     break
                 }
             }
+            if(this.hand.type===InventoryItemType.gun){
+                this.content.current_item_image.style.width="70px"
+                this.content.current_item_image.style.height="70px"
+                this.content.current_item_image.style.transform="rotate(-30deg)"
+            }else{
+                this.content.current_item_image.style.width="40px"
+                this.content.current_item_image.style.height="40px"
+                this.content.current_item_image.style.transform="unset"
+                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+            }
+            this.content.current_item_image.style.opacity="100%"
             this.handSelection=this.inventory_cache[this.hand.location-1]
             this.handSelection.classList.add("inventory-slot-selected")
 
@@ -125,12 +158,12 @@ export class GuiManager{
         const player=this.game.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.game.activePlayer}) as Player
         if(!player)return
         if(player.helmet){
-            this.content.helmet_slot.src=`img/game/common/equipaments/${player.helmet.idString}.svg`
+            this.content.helmet_slot.src=this.game.resources.get_sprite(player.helmet.idString).path
         }else{
             this.content.helmet_slot.src="img/game/common/icons/helmet.svg"
         }
         if(player.vest){
-            this.content.vest_slot.src=`img/game/common/equipaments/${player.vest.idString}.svg`
+            this.content.vest_slot.src=this.game.resources.get_sprite(player.vest.idString).path
         }else{
             this.content.vest_slot.src="img/game/common/icons/vest.svg"
         }
@@ -158,18 +191,14 @@ export class GuiManager{
             const img = document.createElement("img")
             switch(s.type){
                 case InventoryItemType.gun:
-                    img.src=`img/game/common/guns/normal/${s.def.idString}.svg`
-                    img.width=40
-                    img.height=40
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width = "40px"
                     img.style.height = "40px"
                     break
                 case InventoryItemType.ammo:
-                    img.src=`img/game/common/ammos/${s.def.idString}.svg`
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width="25px"
                     img.style.height="25px"
-                    img.width=25
-                    img.height=25
                     img.style.transform="unset"
                     if(s.count>0){
                         const another=document.createElement("span")
@@ -178,17 +207,20 @@ export class GuiManager{
                     }
                     break
                 case InventoryItemType.healing:
-                    img.src=`img/game/common/healings/${s.def.idString}.svg`
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width="25px"
                     img.style.height="25px"
-                    img.width=25
-                    img.height=25
                     img.style.transform="unset"
                     if(s.count>0){
                         const another=document.createElement("span")
                         another.innerText=`${s.count}`
                         slot.appendChild(another)
                     }
+                    break
+                case InventoryItemType.other:
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
+                    img.style.width = "40px"
+                    img.style.height = "40px"
                     break
             }
             slot.appendChild(img)
@@ -202,11 +234,11 @@ export class GuiManager{
     }
     update(){
         if(this.action){
-            this.content.action_info.style.opacity="100%"
-            this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay,1)}s`
-            this.action.delay-=1/this.game.tps
-            if(this.action.delay<=0){
-                this.action=undefined
+            const w=(Date.now()-this.action.start)/1000
+            
+            if(w<this.action.delay){
+                this.content.action_info.style.opacity="100%"
+                this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay-w,1)}s`
             }
         }else{
             this.content.action_info.style.opacity="0%"
@@ -218,14 +250,16 @@ export class GuiManager{
         this.content.health_bar_animation.style.width=`${p*100}%`
         this.content.health_bar_amount.innerText=`${health}/${max_health}`
     }
-    set_extra(extra:number,max_extra:number,extra_type:ExtraType){
-        const p=extra/max_extra
-        this.content.extra_bar_interior.style.width =`${p*100}%`
-        this.content.extra_bar_amount.innerText=`${extra}/${max_extra}`
-        this.content.extra_bar_interior.style.backgroundColor=ExtrasColors[extra_type]
+    set_boost(boost:number,max_boost:number,_type:BoostType){
+        const p=boost/max_boost
+        this.content._bar_interior.style.width =`${p*100}%`
+        this.content._bar_amount.innerText=`${boost}/${max_boost}`
+        this.content._bar_interior.style.backgroundColor=BoostsColors[_type]
     }
 }
-const ExtrasColors:Record<ExtraType,string>={
-    [ExtraType.Adrenaline]:"#ff0",
-    [ExtraType.Shield]:"#08f"
+const BoostsColors:Record<BoostType,string>={
+    [BoostType.Adrenaline]:"#ff0",
+    [BoostType.Shield]:"#08f",
+    [BoostType.Mana]:"#92a",
+    [BoostType.Addiction]:"#e13"
 }

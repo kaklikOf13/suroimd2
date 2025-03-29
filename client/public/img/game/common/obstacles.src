@@ -1,0 +1,12 @@
+{
+    "files":{
+        "stone":"stones/stone.svg",
+
+        "oak_tree":"trees/oak_tree.svg",
+
+        "bush":"bushes/bush.svg",
+
+        "barrel":"explosives/barrel.svg"
+    },
+    "dir":"img/game/common/obstacles"
+}

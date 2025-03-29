@@ -92,25 +92,27 @@ export class Clock {
     private frameDuration: number;
     private lastFrameTime: number;
     public timeScale: number;
-    // deno-lint-ignore ban-types
-    public callback: Function;
+    public callback: (dt:number)=>void;
 
-    // deno-lint-ignore ban-types
-    constructor(targetFPS: number, timeScale: number, callback: Function) {
+    constructor(targetFPS: number, timeScale: number, callback: (dt:number)=>void) {
         this.frameDuration = 1000 / targetFPS;
         this.lastFrameTime = Date.now();
         this.timeScale = timeScale;
         this.callback = callback;
     }
 
-    public tick() {
-        const currentTime = Date.now();
-        const elapsedTime = currentTime - this.lastFrameTime;
-        const nextFrame = Math.max(0, this.frameDuration - elapsedTime);
-        setTimeout(() => {
-            this.lastFrameTime = Date.now();
-            this.callback();
-        }, nextFrame);
+    interval:number=0
+
+    public start() {
+        this.interval=setInterval(() => {
+            const currentTime = Date.now()
+            const elapsedTime = currentTime - this.lastFrameTime
+            this.lastFrameTime = Date.now()
+            this.callback(elapsedTime/1000)
+        }, this.frameDuration)
+    }
+    public stop(){
+        clearInterval(this.interval)
     }
 }
 
@@ -405,5 +407,31 @@ export const Numeric={
     maxDecimals(value:number,decimalPlaces=3):number{
         const factor = Math.pow(10, decimalPlaces)
         return Math.round(value * factor) / factor
+    },
+    lerp(start:number,dest:number,inter:number):number{
+        return  (start*(1-inter))+(dest*inter)
+    },
+    max(val1:number,val2:number):number{
+        return val1<val2?val1:val2
+    },
+    min(val1:number,val2:number):number{
+        return val1>val2?val1:val2
+    }
+}
+
+const valid_simple_character="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#.,;!%$*"
+export const ValidString={
+    simple_characters(str:string):boolean{
+        let has_letter=false
+        for(let i=0;i<str.length;i++){
+            if(str.charAt(i)===" "){
+                continue
+            }else if(!valid_simple_character.includes(str.charAt(i))){
+                return false
+            }
+            has_letter=true
+            
+        }
+        return has_letter
     }
 }

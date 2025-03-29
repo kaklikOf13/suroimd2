@@ -3,7 +3,7 @@ import { Server } from "../../engine/mod.ts"
 import { HostConfig } from "../../engine/websockets.ts";
 
 export interface Config{
-  game:GameServerConfig
+  server:GameServerConfig
   host:HostConfig
 }
 function new_server_from_hc(hc:HostConfig):Server{
@@ -17,7 +17,7 @@ function new_server_from_hc(hc:HostConfig):Server{
 function hostGame(){
   return new Promise(()=>{
     if(config.host){
-      const server=new GameServer(new_server_from_hc(config.host),config.game)
+      const server=new GameServer(new_server_from_hc(config.host),config.server)
       server.run()
     }
   })

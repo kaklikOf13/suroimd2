@@ -1,12 +1,23 @@
 import { Definitions,Definition } from "../engine/mod.ts";
 import { AmmoType } from "common/scripts/definitions/ammo.ts";
-import { BulletDef, tracers } from "./utils.ts";
+import { BulletDef, GameItem, InventoryItemType, tracers } from "./utils.ts";
 export enum FireMode{
     Auto,
     Single
 }
+export interface GasParticle{
+    count:number
+}
+export enum GunClasses{
+    Shotgun,
+    Sniper,
+    Automatic,
+    SMG
+}
 export interface GunDef extends Definition{
     bullet:BulletDef
+    ammoSpawnAmount?:number
+    ammoSpawn?:string
     fireDelay:number
     bulletsCount?:number
     spread?:number
@@ -16,6 +27,7 @@ export interface GunDef extends Definition{
     speedMult?:number
     size:number
     ammoType:AmmoType
+    class:GunClasses
     reload:{
         capacity:number
         delay:number
@@ -25,9 +37,23 @@ export interface GunDef extends Definition{
         duration:number
         speed:number
     }
+    gasParticles?:GasParticle
 }
 
-export const Guns=new Definitions<GunDef>()
+export const Guns=new Definitions<GunDef,GameItem>((g)=>{
+    g.item_type=InventoryItemType.gun
+    g.count=1
+})
+
+export const GasParticles={
+    shotgun:{
+        count:5
+    } satisfies GasParticle,
+    automatic:{
+        count:1
+    } satisfies GasParticle
+}
+
 Guns.insert(
     {
         idString:"ak47",
@@ -36,15 +62,14 @@ Guns.insert(
         lenght:0.8,
         size:4,
         ammoType:AmmoType["762mm"],
+        ammoSpawnAmount:90,
+        class:GunClasses.Automatic,
         bullet:{
             damage:10,
-            radius:0.02,
+            radius:0.014,
             range:150,
-            speed:0.4,
-            tracer:{
-                width:1,
-                height:0.4,
-            }
+            speed:15,
+            tracer:tracers.medium
         },
         reload:{
             delay:2,
@@ -55,6 +80,7 @@ Guns.insert(
             speed:0.7
         },
         speedMult:0.96,
+        gasParticles:GasParticles.automatic
     },
     {
         idString:"kar98k",
@@ -63,15 +89,13 @@ Guns.insert(
         lenght:0.8,
         size:4.5,
         ammoType:AmmoType["762mm"],
+        class:GunClasses.Sniper,
         bullet:{
             damage:54,
             radius:0.02,
             range:220,
-            speed:0.5,
-            tracer:{
-                width:1,
-                height:0.4,
-            }
+            speed:32,
+            tracer:tracers.large
         },
         reload:{
             delay:0.9,
@@ -85,21 +109,74 @@ Guns.insert(
         speedMult:0.9,
     },
     {
+        idString:"awp",
+        fireDelay:1.3,
+        spread:1.1,
+        lenght:0.8,
+        size:6,
+        ammoType:AmmoType["762mm"],
+        class:GunClasses.Sniper,
+        bullet:{
+            damage:59,
+            radius:0.025,
+            range:220,
+            speed:35,
+            tracer:tracers.xl
+        },
+        reload:{
+            delay:3.3,
+            capacity:10,
+            shotsPerReload:10,
+        },
+        recoil:{
+            duration:1.34,
+            speed:0.4
+        },
+        speedMult:0.9,
+    },
+    {
+        idString:"awms",
+        fireDelay:1.3,
+        spread:1.2,
+        lenght:0.8,
+        size:6,
+        ammoType:AmmoType["308sub"],
+        class:GunClasses.Sniper,
+        bullet:{
+            damage:88,
+            radius:0.02,
+            range:220,
+            speed:33,
+            tracer:tracers.large
+        },
+        reload:{
+            delay:5.5,
+            capacity:5,
+            shotsPerReload:5,
+        },
+        recoil:{
+            duration:1.34,
+            speed:0.1
+        },
+        speedMult:0.9,
+    },
+    {
         idString:"m870",
         fireDelay:1.2,
         spread:3,
         lenght:0.8,
         ammoType:AmmoType["12g"],
         bulletsCount:10,
-        jitterRadius:0.3,
+        jitterRadius:0.25,
         size:4.3,
         fireMode:FireMode.Single,
+        class:GunClasses.Shotgun,
         bullet:{
             damage:7,
-            radius:0.2,
-            speed:0.3,
-            range:20,
-            tracer:tracers.redTiny
+            radius:0.014,
+            speed:14,
+            range:17,
+            tracer:tracers.medium
         },
         reload:{
             delay:0.8,
@@ -111,23 +188,25 @@ Guns.insert(
             speed:0.4
         },
         speedMult:0.94,
+        gasParticles:GasParticles.shotgun
     },
     {
         idString:"spas12",
         fireDelay:0.9,
-        spread:4,
+        spread:3,
         lenght:0.8,
         ammoType:AmmoType["12g"],
         bulletsCount:10,
         jitterRadius:0.05,
+        class:GunClasses.Shotgun,
         size:4.5,
         fireMode:FireMode.Single,
         bullet:{
-            damage:6,
-            radius:0.0125,
-            speed:0.4,
-            range:75,
-            tracer:tracers.redTiny
+            damage:6.3,
+            radius:0.012,
+            speed:15,
+            range:35,
+            tracer:tracers.small
         },
         reload:{
             delay:0.8,
@@ -139,5 +218,36 @@ Guns.insert(
             speed:0.5
         },
         speedMult:0.95,
+        gasParticles:GasParticles.shotgun
+    },
+    {
+        idString:"hp18",
+        fireDelay:0.2,
+        spread:6,
+        lenght:0.8,
+        ammoType:AmmoType["12g"],
+        bulletsCount:15,
+        jitterRadius:0.14,
+        class:GunClasses.Shotgun,
+        size:3.8,
+        fireMode:FireMode.Auto,
+        bullet:{
+            damage:1.6,
+            radius:0.01,
+            speed:15,
+            range:18,
+            tracer:tracers.tiny
+        },
+        reload:{
+            delay:0.7,
+            capacity:5,
+            shotsPerReload:1,
+        },
+        recoil:{
+            duration:0.5,
+            speed:0.6
+        },
+        speedMult:0.98,
+        gasParticles:GasParticles.shotgun
     },
 )

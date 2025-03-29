@@ -1,0 +1,9 @@
+{
+    "files":{
+        "m870":"normal/m870.svg",
+        "spas12":"normal/spas12.svg",
+        "ak47":"normal/ak47.svg",
+        "kar98k":"normal/kar98k.svg"
+    },
+    "dir":"img/game/common/guns"
+}

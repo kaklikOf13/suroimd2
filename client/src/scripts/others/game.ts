@@ -1,4 +1,4 @@
-import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, RGBA, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
+import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
 import { NullVec2, ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -9,6 +9,15 @@ import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "./guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
+import { Debug } from "./config.ts";
+import { SoundManager } from "../engine/sounds.ts";
+import { ColorM } from "../engine/renderer.ts";
+import { Projectile } from "../gameObjects/projectile.ts";
+
+function gameLoadMaterials(game:Game){
+  game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
+}
+
 export class Game extends ClientGame2D{
   client:Client
   activePlayer=0
@@ -16,8 +25,11 @@ export class Game extends ClientGame2D{
   action:ActionPacket=new ActionPacket()
   grid:Material2D<GridMaterialArgs>
   guiManager!:GuiManager
-  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-    super(keyl,mp,resources,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion])
+
+  can_act:boolean=true
+
+  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
+    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
@@ -26,20 +38,31 @@ export class Game extends ClientGame2D{
       this.scene.objects.proccess(obj)
     })
     this.scene.objects.encoders=ObjectsE
-    this.renderer.background=RGBA.new(50,160,30)
+    this.renderer.background=ColorM.rgba(50,160,30)
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.scene.objects.clear()
+      this.running=false
+      if(this.onstop)this.onstop(this)
     })
 
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
-      color:RGBA.new(0,0,0,90),
+      color:ColorM.rgba(0,0,0,90),
       gridSize:this.scene.objects.cells.cellSize,
       width:0.03
     })
+
+    if(Debug.hitbox){
+      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+    }
+
+    gameLoadMaterials(this)
   }
+  onstop?:(g:Game)=>void
   actionDelay:number=3
-  on_render():void{
+  on_render(_dt:number):void{
     (this.renderer as WebglRenderer)._draw_vertices([
       -1000, -1000, 
       1000, -1000,
@@ -49,8 +72,10 @@ export class Game extends ClientGame2D{
       1000,  1000
     ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:zIndexes.Grid})
   }
+  old_hand=0
   on_run(): void {
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
+      if(!this.can_act)return
       switch(k){
         case Key.Number_1:
           this.action.hand=0
@@ -82,31 +107,39 @@ export class Game extends ClientGame2D{
         case Key.Number_0:
           this.action.hand=9
           break
+        case Key.E:
+          this.action.interact=true
       }
     })
   }
-  on_update(): void {
-    super.on_update()
+  on_update(dt:number): void {
+    super.on_update(dt)
     if(this.client.opened){
-      if(this.key.keyPress(Key.A)){
-        this.action.Movement.x=-1
-      }else if(this.key.keyPress(Key.D)){
-        this.action.Movement.x=1
-      }else{
-        this.action.Movement.x=0
+      if(this.can_act){
+        if(this.key.keyPress(Key.A)){
+          this.action.Movement.x=-1
+        }else if(this.key.keyPress(Key.D)){
+          this.action.Movement.x=1
+        }else{
+          this.action.Movement.x=0
+        }
+  
+        if(this.key.keyPress(Key.W)){
+          this.action.Movement.y=-1
+        }else if(this.key.keyPress(Key.S)){
+          this.action.Movement.y=1
+        }else{
+          this.action.Movement.y=0
+        }
+        this.action.UsingItem=this.action.hand===this.old_hand&&this.key.keyPress(Key.Mouse_Left)
+        this.action.Reloading=this.key.keyPress(Key.R)
       }
-
-      if(this.key.keyPress(Key.W)){
-        this.action.Movement.y=-1
-      }else if(this.key.keyPress(Key.S)){
-        this.action.Movement.y=1
-      }else{
-        this.action.Movement.y=0
-      }
-      this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)
       if(this.actionDelay<=0){
         this.client.emit(this.action)
-        this.actionDelay=3
+        this.action.interact=false
+        this.action.cellphoneAction=undefined
+        this.actionDelay=1
+        this.old_hand=this.action.hand
       }else{
         this.actionDelay--
       }
@@ -115,10 +148,10 @@ export class Game extends ClientGame2D{
       if(activePlayer){
         this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
       }
-
-      this.action.Reloading=this.key.keyPress(Key.R)
     }
-    this.camera.zoom=0.7
+    this.camera.zoom=1.3
+    //1.7=8x
+    //1.3=4x
     this.renderer.fullCanvas(this.camera)
   }
   update_camera(){

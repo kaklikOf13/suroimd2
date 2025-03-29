@@ -1,6 +1,8 @@
 @use "palette.scss";
 @use "./fonts.scss";
 @use "./game/game.scss";
+@use "./utils/others.scss";
+@use "./menu.scss";
 html, body {
     width: 100vw;
     height: 100vh;

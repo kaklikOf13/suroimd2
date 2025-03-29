@@ -1,0 +1,111 @@
+@use "../palette.scss";
+@use "./buttons.scss";
+
+.background-menu {
+    background: rgba(13, 17, 23, 0.8);
+    border-radius: 15px;
+    border: 2px solid rgba(7, 170, 238, 0.5);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+        border-color: rgba(7, 170, 238, 0.8);
+        box-shadow: 0 0 20px rgba(7, 170, 238, 0.2);
+    }
+}
+
+.background-menu-green {
+    @extend .background-menu;
+    border: 2px solid rgba(0, 170, 119, 0.5);
+    
+    &:hover {
+        border-color: rgba(0, 170, 119, 0.8);
+        box-shadow: 0 0 20px rgba(0, 170, 119, 0.2);
+    }
+}
+
+.text-input {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(7, 170, 238, 0.5);
+    border-radius: 10px;
+    font-family: "Russo-One";
+    font-size: 20px;
+    padding: 15px;
+    outline: none;
+    transition: all 0.3s ease;
+    
+    &:focus {
+        border-color: rgba(7, 170, 238, 0.8);
+        box-shadow: 0 0 15px rgba(7, 170, 238, 0.2);
+    }
+
+    &::placeholder {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    @media screen and (max-width: palette.$screen_large) {
+        font-size: 16px;
+    }
+}
+
+.character {
+    width: 300px;
+    height: 300px;
+    transform: rotate(90deg);
+    padding: 0;
+    margin: 0;
+    transition: transform 0.3s ease;
+    
+    &:hover {
+        transform: rotate(90deg) scale(1.05);
+    }
+
+    .body {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background-size: cover;
+    }
+
+    .fist-left,
+    .fist-right {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 190px;
+        background-size: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .fist-left {
+        top: 185px;
+    }
+
+    .fist-right {
+        top: 35px;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(7, 170, 238, 0.3);
+    border-radius: 4px;
+    
+    &:hover {
+        background: rgba(7, 170, 238, 0.5);
+    }
+}

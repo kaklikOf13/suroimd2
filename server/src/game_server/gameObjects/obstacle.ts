@@ -1,18 +1,19 @@
-import { Angle, BaseGameObject2D, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, Hitbox2D, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
-import { Explosion } from "./explosion.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
+import { Game } from "../others/game.ts";
+import { type Player } from "./player.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 
-export class Obstacle extends BaseGameObject2D{
-    objectType:string="obstacle"
+export class Obstacle extends ServerGameObject{
+    stringType:string="obstacle"
     numberType: number=4
 
     def!:ObstacleDef
-    _position!:Vec2
+    spawnHitbox!:Hitbox2D
 
     health:number=0
 
@@ -25,16 +26,23 @@ export class Obstacle extends BaseGameObject2D{
     variation:number=1
     rotation:number=0
 
-    update(): void {
+    update(_dt:number): void {
 
+    }
+    interact(_user: Player): void {
+        return
     }
     create(args: {def:ObstacleDef,position:Vec2,rotation:number,variation?:number}): void {
         this.def=args.def
         if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(args.position)
-            this._position=this.hb.position
         }else{
-            this._position=args.position
+            this.position=args.position
+        }
+        if(this.def.spawnHitbox){
+            this.spawnHitbox=this.def.spawnHitbox.transform(args.position)
+        }else{
+            this.spawnHitbox=this.hb.clone()
         }
         if(args.variation){
             this.variation=args.variation
@@ -53,7 +61,7 @@ export class Obstacle extends BaseGameObject2D{
         return {
             full:{
                 definition:this.def.idNumber!,
-                position:this._position,
+                position:this.position,
                 variation:this.variation,
                 rotation:this.rotation
             },
@@ -64,15 +72,14 @@ export class Obstacle extends BaseGameObject2D{
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0);
-            this.hb=this.def.hitbox.transform(this._position,this.scale)
-            this._position=this.hb.position
+            this.hb=this.def.hitbox.transform(this.position,this.scale)
         }
     }
     damage(params:DamageParams){
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
             if(this.def.onDestroyExplosion){
-                this.manager.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:Explosions.getFromString(this.def.onDestroyExplosion),position:this.position})
+                (this.game as Game).add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
             }
             this.destroy()
         }else{

@@ -1,0 +1,23 @@
+{
+    "files":{
+        "lifecandy":"lifecandy.svg",
+
+        "gauze":"gauze.svg",
+        "soda":"soda.svg",
+        "small_blue_potion":"small_blue_potion.svg",
+        "small_purple_potion":"small_purple_potion.svg",
+        "small_red_crystal":"small_red_crystal.svg",
+
+        "inhaler":"inhaler.svg",
+        "blue_potion":"blue_potion.svg",
+        "purple_potion":"purple_potion.svg",
+        "red_crystal":"red_crystal.svg",
+
+        "medikit":"medikit.svg",
+        "red_pills":"red_pills.svg",
+        "blue_pills":"blue_pills.svg",
+        "yellow_pills":"yellow_pills.svg",
+        "purple_pills":"purple_pills.svg"
+    },
+    "dir":"img/game/common/healings"
+}

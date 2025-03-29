@@ -1,5 +1,6 @@
 import { NullVec2, type Vec2, v2 } from "./geometry.ts"
 import { random } from "./random.ts";
+import { Numeric } from "./utils.ts";
 
 export const Collision=Object.freeze({
     circle_with_rect(hb1:CircleHitbox2D,hb2:RectHitbox2D):boolean{
@@ -46,6 +47,7 @@ export abstract class BaseHitbox2D{
     abstract collidingWith(other: Hitbox2D):boolean
     abstract overlapCollision(other:Hitbox2D):OverlapCollision2D
     abstract pointInside(point:Vec2):boolean
+    abstract lineInside(x:Vec2,y:Vec2,width:number):boolean
     abstract center():Vec2
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
@@ -61,8 +63,8 @@ export abstract class BaseHitbox2D{
     }
 }
 export class NullHitbox2D extends BaseHitbox2D{
-    constructor(){
-        super(NullVec2)
+    constructor(position:Vec2){
+        super(position)
     }
     override readonly type = HitboxType2D.null
     override collidingWith(_other:Hitbox2D):boolean{
@@ -74,11 +76,14 @@ export class NullHitbox2D extends BaseHitbox2D{
     override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
         return {overlap:NullVec2,collided:false}
     }
+    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
+        return false
+    }
     override center(): Vec2 {
-        return NullVec2
+        return this.position
     }
     override randomPoint(): Vec2 {
-      return NullVec2
+      return this.position
     }
     override toRect():RectHitbox2D{
         return new RectHitbox2D(this.position,v2.new(0,0))
@@ -88,11 +93,11 @@ export class NullHitbox2D extends BaseHitbox2D{
         return true
     }
 
-    override transform(_position?:Vec2,_scale?:number):Hitbox2D{
-        return new NullHitbox2D()
+    override transform(position?:Vec2,_scale?:number):Hitbox2D{
+        return new NullHitbox2D(position?v2.add(this.position,position):this.position)
     }
     override clone():Hitbox2D{
-        return new NullHitbox2D()
+        return new NullHitbox2D(this.position)
     }
 }
 export interface OverlapCollision2D{
@@ -119,14 +124,13 @@ export class CircleHitbox2D extends BaseHitbox2D{
         if(other){
             switch(other.type){
                 case HitboxType2D.circle:{
-                    const dists = v2.distanceSquared(this.position,other.position)
+                    const dist = v2.distance(this.position,other.position)
                     const dis=v2.sub(this.position,other.position)
-                    if(dists<0.0001){
+                    if(dist<0.0001){
                         return {overlap:v2.new(1,1),collided:true}
                     }
                     const sr=(this.radius + other.radius)
-                    if (dists < sr){
-                        const dist=Math.sqrt(dists)
+                    if (dist < sr){
                         return {overlap:v2.scale(v2.dscale(dis,dist),-((sr/2)*(1-dist))),collided:true}
                     }
                     break
@@ -147,6 +151,31 @@ export class CircleHitbox2D extends BaseHitbox2D{
     }
     override pointInside(point: Vec2): boolean {
       return v2.distance(this.position,point)<this.radius
+    }
+    override lineInside(x:Vec2,y:Vec2,_width:number):boolean{
+        let d = v2.sub(y, x)
+        const len = Numeric.max(v2.length(d), 0.000001)
+        d = v2.normalizeSafe(d)
+
+        const m = v2.sub(x, this.position)
+        const b = v2.dot(m, d)
+        const c = v2.dot(m, m) - (this.radius * this.radius)
+
+        if (c > 0 && b > 0) return false
+
+        const discSq = b * b - c
+        if (discSq < 0) return false
+
+        const disc = Math.sqrt(discSq);
+        const t = -b < disc
+            ? disc - b
+            : -b - disc;
+
+        if (t <= len) {
+            return true
+        }
+
+        return false
     }
     override center(): Vec2 {
       return this.position
@@ -231,6 +260,9 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override pointInside(point: Vec2): boolean {
         return (this.position.x+this.size.x>=point.x&&this.position.x<=point.x)&&(this.position.y+this.size.y>=point.y&&this.position.y<=point.y)
+    }
+    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
+        return false
     }
     override center(): Vec2 {
         return v2.add(this.position,v2.dscale(this.size,2))

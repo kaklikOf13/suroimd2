@@ -1,13 +1,15 @@
 import { Player } from "../gameObjects/player.ts";
-import { Bullet } from "../gameObjects/bullet.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Angle, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
 import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
-import { AmmoDef } from "common/scripts/definitions/ammo.ts";
+import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
+import { type Game } from "../others/game.ts";
+import { OtherDef } from "common/scripts/definitions/others.ts";
+import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
+import { GameItems } from "common/scripts/definitions/alldefs.ts";
 export abstract class LItem extends ItemCap{
   // deno-lint-ignore no-explicit-any
   abstract on_use(user:Player,slot:SlotCap<any>):void
@@ -22,12 +24,14 @@ export class GunItem extends LItem{
     cap:number
 
     ammo:number=0
+    currentAmmo:string=""
     constructor(def?:GunDef){
       super()
       this.def=def!
       this.tags.push("gun")
       this.cap=this.def.size
       this.ammo=this.def.reload.capacity
+      this.currentAmmo=defaultAmmos[def!.ammoType]
     }
     reloading=false
     itemType=InventoryItemType.gun
@@ -71,13 +75,16 @@ export class GunItem extends LItem{
       )
       const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
       for(let i=0;i<bc;i++){
-        const b:Bullet=user.game.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{defs:this.def.bullet,position:this.def.jitterRadius?v2.add(position,patternPoint[i]):position})
         let ang=user.rotation
         if(this.def.spread){
           ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
         }
+        const b=(user.game as Game).add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet,user,defaultAmmos[this.def.ammoType])
+        b.modifiers={
+          speed:user.modifiers.bullet_speed,
+          size:user.modifiers.bullet_size,
+        }
         b.set_direction(ang)
-        b.owner=user
       }
       if(this.def.recoil){
         user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
@@ -127,7 +134,7 @@ export class HealingItem extends LItem{
     return (other instanceof HealingItem)&&other.def.idNumber==this.def.idNumber
   }
   on_use(user: Player,slot:SlotCap): void {
-    if(!user.using_item_down)return
+    if(!user.using_item_down||!user.handItem||!user.handItem.is(this))return
     if(this.def.condition){
       for(const c of this.def.condition){
         switch(c){
@@ -135,13 +142,44 @@ export class HealingItem extends LItem{
             if(user.health>=user.maxHealth)return
             break
           case HealingCondition.UnfullExtra:
-            if(!(user.extra<user.maxExtra||user.extraType!==this.def.extra_type))return
+            if(!(user.boost<user.maxBoost||user.BoostType!==this.def.boost_type))return
             break
         }
       }
     }
     user.privateDirtys.action=true
     user.actions.play(new HealingAction(this.def,slot))
+  }
+  update(_user: Player): void {
+    
+  }
+}
+export class OtherItem extends LItem{
+  limit_per_slot: number=Infinity
+  def:OtherDef
+  cap: number
+  itemType: InventoryItemType.other=InventoryItemType.other
+
+  constructor(def:OtherDef){
+    super()
+    this.def=def
+    this.cap=def.size
+  }
+  is(other: LItem): boolean {
+    return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
+  }
+  on_use(_user: Player,_slot:SlotCap): void {
+    
+  }
+  cellphone_action(user:Player,action:CellphoneAction){
+    if(this.def.idString!=="cellphone")return
+    switch(action!.type){
+      case CellphoneActionType.GiveItem:
+        user.give_item(GameItems.valueNumber[action!.item_id],action!.count)
+        break
+      case CellphoneActionType.SpawnObstacle:
+    }
+    
   }
   update(_user: Player): void {
     

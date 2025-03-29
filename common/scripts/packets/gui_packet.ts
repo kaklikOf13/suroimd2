@@ -1,4 +1,4 @@
-import { ExtraType, InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode, InventoryItemType } from "../definitions/utils.ts";
+import { BoostType, InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode, InventoryItemType } from "../definitions/utils.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
 export type HandData=
@@ -10,16 +10,20 @@ export type HandData=
     type:InventoryItemType.ammo
 }|{
     type:InventoryItemType.healing
-})&{location:number})
-|undefined
+}|{
+    type:InventoryItemType.other
+}|{
+    type:InventoryItemType.equipament
+})&{location:number})|undefined
+
 export class GuiPacket extends Packet{
     ID=2
     Name="gui"
     Health:number
     MaxHealth:number
-    Extra:number
-    MaxExtra:number
-    ExtraType:ExtraType
+    Boost:number
+    MaxBoost:number
+    BoostType:BoostType
     dirty={
         inventory:false,
         hand:false,
@@ -28,20 +32,20 @@ export class GuiPacket extends Packet{
     inventory?:InventoryItemData[]
     hand?:HandData
     action?:{delay:number,type:ActionsType}
-    constructor(health=0,max_health=0,extra:number=0,max_extra:number=0,extra_type:ExtraType=0){
+    constructor(health=0,max_health=0,boost:number=0,max_boost:number=0,boost_type:BoostType=0){
         super()
         this.Health=health
         this.MaxHealth=max_health
-        this.Extra=extra
-        this.MaxExtra=max_extra
-        this.ExtraType=extra_type
+        this.Boost=boost
+        this.MaxBoost=max_boost
+        this.BoostType=boost_type
     }
     encode(stream: NetStream): void {
         stream.writeUint8(this.Health)
         stream.writeUint8(this.MaxHealth)
-        stream.writeUint8(this.Extra)
-        stream.writeUint8(this.MaxExtra)
-        stream.writeUint8(this.ExtraType)
+        stream.writeUint8(this.Boost)
+        stream.writeUint8(this.MaxBoost)
+        stream.writeUint8(this.BoostType)
         stream.writeBooleanGroup(this.dirty.inventory,this.dirty.hand,this.hand!==undefined,this.dirty.action,this.action!==undefined)
         if(this.dirty.inventory){
             stream.writeArray<InventoryItemData>(this.inventory!,(i)=>{
@@ -66,9 +70,9 @@ export class GuiPacket extends Packet{
     decode(stream: NetStream): void {
         this.Health=stream.readUint8()
         this.MaxHealth=stream.readUint8()
-        this.Extra=stream.readUint8()
-        this.MaxExtra=stream.readUint8()
-        this.ExtraType=stream.readUint8()
+        this.Boost=stream.readUint8()
+        this.MaxBoost=stream.readUint8()
+        this.BoostType=stream.readUint8()
         const [dirtyInventory,dirtyHand,hasHand,dirtyAction,hasAction]=stream.readBooleanGroup()
         if(dirtyInventory){
             this.dirty.inventory=true
