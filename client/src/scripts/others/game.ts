@@ -59,6 +59,8 @@ export class Game extends ClientGame2D{
     }
 
     gameLoadMaterials(this)
+
+    this.request_animation_frame=true
   }
   onstop?:(g:Game)=>void
   actionDelay:number=3

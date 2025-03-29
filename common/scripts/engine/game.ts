@@ -124,6 +124,8 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     objects:DefinitionsSimple<new()=>DefaultGameObject>=new DefinitionsSimple()
 
     timeouts:{c:()=>void,delay:number}[]=[]
+
+    request_animation_frame:boolean=false
     constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.events=new EventsManager()
@@ -142,7 +144,13 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.events.clearAll()
     }
     dt:number=0
+    last_time:number=0
     update(dt:number) {
+        if(this.request_animation_frame){
+            const ldt=dt
+            dt=(dt-this.last_time)/1000
+            this.last_time=ldt
+        }
         this.dt=dt
         this.on_update(dt)
         this.scene.objects.update(dt)
@@ -162,6 +170,10 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()
         }
+        
+        if(this.request_animation_frame){
+            self.requestAnimationFrame(this.update.bind(this))
+        }
     }
     addTimeout(callback:()=>void,delay:number):number{
         this.timeouts.push({c:callback,delay:delay})
@@ -174,7 +186,11 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         // Start
         this.on_run()
         this.events.emit(DefaultEvents.GameRun,this)
-        this.clock.start()
+        if(!this.request_animation_frame){
+            this.clock.start()
+        }else{
+            self.requestAnimationFrame(this.update.bind(this))
+        }
     }
     instantiate(scene:Scene2D):Scene2DInstance<DefaultGameObject,Events,Map>{
         return new Scene2DInstance<DefaultGameObject,Events,Map>(scene,this)

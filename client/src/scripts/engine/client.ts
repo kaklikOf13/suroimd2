@@ -24,12 +24,16 @@ export class Client{
             this.signals.emit(DefaultSignals.DISCONNECT,new DisconnectPacket(this.ID))
         }
         this.ws.onmessage=async(msg)=>{
-            if (msg.data instanceof ArrayBuffer){
-                const packet=this.manager.decode(new NetStream(msg.data))
-                this.signals.emit(packet.Name,packet)
-            }else if(msg.data instanceof Blob){
-                const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
-                this.signals.emit(packet.Name,packet)
+            try{
+                if (msg.data instanceof ArrayBuffer){
+                    const packet=this.manager.decode(new NetStream(msg.data))
+                    this.signals.emit(packet.Name,packet)
+                }else if(msg.data instanceof Blob){
+                    const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
+                    this.signals.emit(packet.Name,packet)
+                }
+            }catch(error){
+                console.error("decode Message Error:",error)
             }
         }
         this.IP=ip
