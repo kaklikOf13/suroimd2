@@ -34,7 +34,7 @@ export class GamemodeManager{
         this.game.addTimeout(()=>{
             this.closed=true
             console.log(`Game ${this.game.id} Clossed`)
-        },10)
+        },50)
     }
     on_finish(){
         this.game.addTimeout(()=>{
