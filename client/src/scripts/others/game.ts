@@ -29,6 +29,8 @@ export class Game extends ClientGame2D{
 
   can_act:boolean=true
 
+  gameOver:boolean=false
+
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
     super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
     for(const i of CATEGORYSL){
@@ -43,9 +45,7 @@ export class Game extends ClientGame2D{
     this.renderer.background=ColorM.rgba(50,160,30)
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
-      this.scene.objects.clear()
       this.running=false
-      if(this.onstop)this.onstop(this)
     })
 
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
@@ -66,6 +66,13 @@ export class Game extends ClientGame2D{
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
+  }
+  on_stop(): void {
+    super.on_stop()
+    if(!this.gameOver){
+      this.scene.objects.clear()
+      if(this.onstop)this.onstop(this)
+    }
   }
   onstop?:(g:Game)=>void
   actionDelay:number=3

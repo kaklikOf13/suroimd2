@@ -1,7 +1,7 @@
 import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { ActionsType, CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
+import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { AmmoItem, GunItem, HealingItem, LItem, OtherItem} from "../inventory/inventory.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
@@ -421,6 +421,18 @@ export class Player extends ServerGameObject{
         if(params.owner&&params.owner instanceof Player){
             params.owner.status.kills++
         }
+
+        this.game.addTimeout(()=>{
+            this.send_game_over(false)
+        },2)
+    }
+    send_game_over(win:boolean=false){
+        const p=new GameOverPacket()
+        p.Kills=this.status.kills
+        p.DamageDealth=this.status.damage
+        p.Win=win
+        p.Score=0
+        this.client!.emit(p)
     }
     onDestroy(): void {
         const idx=(this.game as Game).livingPlayers.indexOf(this)

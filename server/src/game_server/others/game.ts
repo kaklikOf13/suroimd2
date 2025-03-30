@@ -11,7 +11,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
@@ -38,6 +38,9 @@ export class GamemodeManager{
     }
     on_finish(){
         this.game.addTimeout(()=>{
+            for(const p of this.game.livingPlayers){
+                p.send_game_over(true)
+            }
             this.game.running=false
             console.log(`Game ${this.game.id} Fineshed`)
         },2)

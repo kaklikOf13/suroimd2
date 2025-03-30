@@ -1,6 +1,7 @@
 @use "../palette.scss";
 @use "../fonts.scss";
 @use "./cellphone.scss";
+@use "./gameOver.scss";
 #game {
     user-select: none;
     --webkit-user-select: none;
