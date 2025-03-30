@@ -11,7 +11,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";

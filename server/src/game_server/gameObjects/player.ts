@@ -368,7 +368,7 @@ export class Player extends ServerGameObject{
         }else{
             params.amount=Math.min(this.health,params.amount)
         }
-        if(params.owner&&params.owner instanceof Player){
+        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id){
             params.owner.status.damage+=params.amount
             if(!params.owner.damageSplash){
                 params.owner.damageSplash={

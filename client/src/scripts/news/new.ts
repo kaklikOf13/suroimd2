@@ -7,8 +7,8 @@ const news=[
 `<h2>News</h2>
 <h3> Guns</h3>
   * <b>Vector</b> - 9mm. Automatic<br>
-  * <b>Awp</b> Placeholder Design<br>
-  * <b>Awms</b> Placeholder Design<br>
+  * <b>Awp</b> Design<br>
+  * <b>Awms</b> Design<br>
 <h3> Others</h3>
   * Damage Texts<br>
   * Critical Hits<br>

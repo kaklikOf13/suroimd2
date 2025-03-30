@@ -149,7 +149,7 @@ Guns.insert(
             range:88,
             speed:35,
             tracer:tracers.xl,
-            obstacleMult:2,
+            obstacleMult:1.5,
         },
         reload:{
             delay:3.3,
@@ -175,7 +175,7 @@ Guns.insert(
             radius:0.02,
             range:90,
             speed:33,
-            obstacleMult:2.2,
+            obstacleMult:1.7,
             tracer:tracers.large
         },
         reload:{
