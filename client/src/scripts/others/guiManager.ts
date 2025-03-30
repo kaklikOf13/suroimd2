@@ -144,13 +144,14 @@ export class GuiManager{
                 }
                 case InventoryItemType.other:{
                     const def=(this.inventory[this.hand.location-1].def as OtherDef)
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     if(def.idString==="cellphone"){
                         this.content.cellphone_actions.style.display="unset"
                     }
                     break
                 }
             }
-            if(this.hand.type===InventoryItemType.gun){
+            if(this.hand.type===InventoryItemType.gun||this.hand.type===InventoryItemType.other){
                 this.content.current_item_image.style.width="70px"
                 this.content.current_item_image.style.height="70px"
                 this.content.current_item_image.style.transform="rotate(-30deg)"
@@ -175,10 +176,10 @@ export class GuiManager{
         this.content.gameOver.style.opacity="100%"
         if(g.Win){
             this.content.gameOver_status.innerText=`Winner Winner Chicken Dinner!`
-            this.content.gameOver_status.style.color="#ff0"
+            this.content.gameOver_status.style.color="#fe3"
         }else{
-            this.content.gameOver_status.innerText=`Off`
-            this.content.gameOver_status.style.color="#eee"
+            this.content.gameOver_status.innerText=`You Lose!`
+            this.content.gameOver_status.style.color="#e05"
         }
         this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
         this.content.gameOver_damaged.innerText=`Damage Dealth: ${g.DamageDealth}`

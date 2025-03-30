@@ -26,9 +26,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="5.7513468"
-     inkscape:cx="39.295144"
-     inkscape:cy="61.11612"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="-1.2374369"
+     inkscape:cy="44.105786"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -42,22 +42,45 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#d7d6dc;fill-opacity:1;stroke:#68667c;stroke-width:1.7647;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#e8edf4;fill-opacity:1;stroke:#8692a7;stroke-width:1.31997;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        id="rect1"
-       width="13.235293"
-       height="13.235296"
-       x="0.88235307"
-       y="0.88235307" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.76111px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#9694a4;fill-opacity:1;stroke-width:0.264583"
-       x="1.9896113"
-       y="10.216389"
-       id="text1"><tspan
-         sodipodi:role="line"
-         id="tspan1"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.76111px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#9694a4;fill-opacity:1;stroke-width:0.264583"
-         x="1.9896113"
-         y="10.216389">.22</tspan></text>
+       width="13.680029"
+       height="13.680032"
+       x="0.65998536"
+       y="0.65998536" />
+    <g
+       id="g3"
+       style="stroke:#afb7c4;stroke-opacity:1;stroke-width:0.7;stroke-dasharray:none">
+      <circle
+         style="fill:none;stroke:#afb7c4;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="path1"
+         cx="2.95"
+         cy="2.95"
+         r="1" />
+      <circle
+         style="fill:none;stroke:#afb7c4;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="circle1"
+         cx="12.05"
+         cy="2.95"
+         r="1" />
+      <circle
+         style="fill:none;stroke:#afb7c4;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="path1-8"
+         cx="2.95"
+         cy="12.05"
+         r="1" />
+      <circle
+         style="fill:none;stroke:#afb7c4;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="circle1-8"
+         cx="12.05"
+         cy="12.05"
+         r="1" />
+    </g>
+    <path
+       d="m 7.3236103,6.5827773 c 0,0.3998151 -0.1693335,0.7455375 -0.5080004,1.0371674 -0.1034815,0.08937 -0.2163705,0.1787408 -0.3386668,0.2681112 L 4.9599976,8.9816678 H 7.3236103 V 9.9694462 H 3.5136078 V 8.6288898 L 6.0536094,6.7944441 v -0.352778 c 0,-0.2822224 -0.1411112,-0.4233336 -0.4233336,-0.4233336 H 3.654719 V 5.0305541 h 2.2577792 c 0.4938893,0 0.851371,0.112889 1.0724452,0.3386669 0.2257779,0.2210742 0.3386669,0.5785559 0.3386669,1.0724451 z m 4.1627817,0 c 0,0.3998151 -0.169333,0.7455375 -0.508,1.0371674 -0.103482,0.08937 -0.216371,0.1787408 -0.338667,0.2681112 L 9.1227793,8.9816678 H 11.486392 V 9.9694462 H 7.6763895 V 8.6288898 L 10.216391,6.7944441 v -0.352778 c 0,-0.2822224 -0.141111,-0.4233336 -0.4233334,-0.4233336 H 7.8175007 V 5.0305541 H 10.07528 c 0.493889,0 0.851371,0.112889 1.072445,0.3386669 0.225778,0.2210742 0.338667,0.5785559 0.338667,1.0724451 z"
+       id="text1"
+       style="font-size:7.05556px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';fill:#a0a8b9"
+       aria-label="22"
+       sodipodi:nodetypes="sccccccccssccscsssccccccccssccscss" />
   </g>
 </svg>

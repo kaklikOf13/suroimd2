@@ -26,9 +26,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="5.7513468"
-     inkscape:cx="38.25191"
-     inkscape:cy="55.552206"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="26.958446"
+     inkscape:cy="44.105786"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -42,16 +42,44 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#2d2d2d;fill-opacity:1;stroke:#040404;stroke-width:1.7647;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#535050;fill-opacity:1;stroke:#404048;stroke-width:1.31997;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        id="rect1"
-       width="13.235293"
-       height="13.235296"
-       x="0.88235307"
-       y="0.88235307" />
+       width="13.680029"
+       height="13.680032"
+       x="0.65998536"
+       y="0.65998536" />
+    <g
+       id="g3"
+       style="stroke:#46454c;stroke-opacity:1;stroke-width:0.7;stroke-dasharray:none">
+      <circle
+         style="fill:none;stroke:#46454c;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="path1"
+         cx="2.95"
+         cy="2.95"
+         r="1" />
+      <circle
+         style="fill:none;stroke:#46454c;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="circle1"
+         cx="12.05"
+         cy="2.95"
+         r="1" />
+      <circle
+         style="fill:none;stroke:#46454c;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="path1-8"
+         cx="2.95"
+         cy="12.05"
+         r="1" />
+      <circle
+         style="fill:none;stroke:#46454c;stroke-width:0.7;stroke-dasharray:none;stroke-opacity:1"
+         id="circle1-8"
+         cx="12.05"
+         cy="12.05"
+         r="1" />
+    </g>
     <path
-       d="m 2.4199996,8.9111122 h 1.2700008 v 1.058334 H 2.4199996 Z M 6.653334,10.040002 q -1.1782785,0 -2.6105572,-0.1411114 V 8.94639 q 1.5592788,0.1058334 2.3283348,0.1058334 0.1622779,0 0.2540002,-0.091722 0.098778,-0.098778 0.098778,-0.2610557 v -0.352778 q 0,-0.4233337 -0.4233336,-0.4233337 H 4.2544436 V 5.0305541 H 7.6411124 V 6.0183325 H 5.5244444 V 6.9355553 H 6.653334 q 0.6914449,0 1.0160007,0.3175002 0.3245557,0.3104447 0.3245557,0.9525007 v 0.4938892 q 0,0.6914449 -0.3245557,1.0160006 -0.3245558,0.324556 -1.0160007,0.324556 z m 4.656672,-3.6688915 q 0,-0.4233336 -0.423333,-0.4233336 h -0.776112 q -0.4233335,0 -0.4233335,0.4233336 v 2.2577793 q 0,0.4233336 0.4233335,0.4233336 h 0.776112 q 0.423333,0 0.423333,-0.4233336 z m 1.270001,2.2577793 q 0,0.7408338 -0.338667,1.0795007 -0.331611,0.3316115 -1.072445,0.3316115 H 9.8283387 q -0.7408338,0 -1.0795007,-0.3316115 Q 8.4172267,9.3697236 8.4172267,8.6288898 V 6.3711105 q 0,-0.7408338 0.3316113,-1.0724451 0.3386669,-0.3386669 1.0795007,-0.3386669 h 1.3405563 q 0.740834,0 1.072445,0.3386669 0.338667,0.3316113 0.338667,1.0724451 z"
+       d="m 2.9279997,8.7699999 h 1.143 v 0.9524999 h -1.143 z m 3.8099985,1.0159999 q -1.06045,0 -2.3495,-0.127 V 8.8017499 q 1.40335,0.09525 2.0955,0.09525 0.14605,0 0.2286,-0.08255 0.0889,-0.0889 0.0889,-0.23495 v -0.3175 q 0,-0.381 -0.381,-0.381 h -1.8415 v -2.6035 h 3.048 v 0.889 h -1.905 v 0.8255 h 1.016 q 0.6223,0 0.9144,0.28575 0.2921,0.2794 0.2921,0.85725 v 0.4445 q 0,0.6223 -0.2921,0.9144 -0.2921,0.2920999 -0.9144,0.2920999 z M 10.929,6.4839999 q 0,-0.381 -0.381,-0.381 H 9.8495003 q -0.381,0 -0.381,0.381 v 2.032 q 0,0.381 0.381,0.381 H 10.548 q 0.381,0 0.381,-0.381 z m 1.143,2.032 q 0,0.66675 -0.3048,0.97155 -0.29845,0.2984499 -0.9652,0.2984499 H 9.5955003 q -0.66675,0 -0.97155,-0.2984499 -0.29845,-0.3048 -0.29845,-0.97155 v -2.032 q 0,-0.66675 0.29845,-0.9652 0.3048,-0.3048 0.97155,-0.3048 H 10.802 q 0.66675,0 0.9652,0.3048 0.3048,0.29845 0.3048,0.9652 z"
        id="text1"
-       style="font-size:7.05556px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';fill:#434343;stroke-width:0.264583"
+       style="font-size:6.35px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';fill:#31313a"
        aria-label=".50" />
   </g>
 </svg>

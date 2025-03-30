@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="206.72186mm"
-   height="42.702126mm"
-   viewBox="0 0 206.72186 42.702126"
+   width="50mm"
+   height="10.328402mm"
+   viewBox="0 0 49.999999 10.328402"
    version="1.1"
    id="svg5"
    sodipodi:docname="hp18.svg"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,25 +25,27 @@
      showgrid="false"
      showguides="false"
      inkscape:zoom="0.80910843"
-     inkscape:cx="351.00363"
-     inkscape:cy="122.3569"
+     inkscape:cx="351.6216"
+     inkscape:cy="122.97487"
      inkscape:window-width="1920"
-     inkscape:window-height="996"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
      id="defs2" />
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-1.1192505,-101.93782)">
+     transform="matrix(0.24187089,0,0,0.24187089,-0.27071412,-24.655792)">
     <rect
        style="fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:0.0627047;stroke-linecap:square"
        id="rect935"

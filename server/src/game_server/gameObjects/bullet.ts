@@ -46,7 +46,7 @@ export class Bullet extends ServerGameObject{
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        (obj as Player).damage({amount:this.defs.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         break
                     }
@@ -54,7 +54,7 @@ export class Bullet extends ServerGameObject{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).damage({amount:this.defs.damage,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        (obj as Obstacle).damage({amount:this.defs.damage*(this.defs.obstacleMult??1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                     }
                     break

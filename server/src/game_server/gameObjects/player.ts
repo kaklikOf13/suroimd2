@@ -356,9 +356,7 @@ export class Player extends ServerGameObject{
             damage-=this.helmet.defence
         }
         if(params.critical){
-            if(params.owner&&params.owner instanceof Player&&params.source&&params.source.item_type === InventoryItemType.gun){
-                damage*=((params.source as unknown as GunDef).criticalMult??1.5)*this.modifiers.critical_mult
-            }
+            mod+=this.modifiers.critical_mult-1
         }
         damage=Numeric.clamp(damage*mod,0,this.health)
         params.amount=damage

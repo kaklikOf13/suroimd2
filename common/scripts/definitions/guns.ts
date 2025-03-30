@@ -33,7 +33,6 @@ export interface GunDef extends Definition{
         delay:number
         shotsPerReload?:number
     }
-    criticalMult?:number
     recoil?:{
         duration:number
         speed:number
@@ -95,7 +94,7 @@ Guns.insert(
         bullet:{
             damage:4,
             radius:0.014,
-            range:30,
+            range:35,
             speed:21,
             tracer:tracers.medium
         },
@@ -149,7 +148,8 @@ Guns.insert(
             radius:0.025,
             range:88,
             speed:35,
-            tracer:tracers.xl
+            tracer:tracers.xl,
+            obstacleMult:2,
         },
         reload:{
             delay:3.3,
@@ -175,6 +175,7 @@ Guns.insert(
             radius:0.02,
             range:90,
             speed:33,
+            obstacleMult:2.2,
             tracer:tracers.large
         },
         reload:{

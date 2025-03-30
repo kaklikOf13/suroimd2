@@ -67,7 +67,7 @@ Obstacles.insert(
     },
     {
         idString:"barrel",
-        health:170,
+        health:100,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
         scale:{
             destroy:0.68
@@ -90,7 +90,7 @@ Obstacles.insert(
     },
     {
         idString:"bush",
-        health:100,
+        health:70,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.42),
         noCollision:true,
         scale:{

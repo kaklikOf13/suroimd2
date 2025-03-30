@@ -42,7 +42,7 @@ export class Game extends ClientGame2D{
       this.scene.objects.proccess(obj)
     })
     this.scene.objects.encoders=ObjectsE
-    this.renderer.background=ColorM.rgba(50,160,30)
+    this.renderer.background=ColorM.hex("#68ad49")
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false
@@ -51,7 +51,7 @@ export class Game extends ClientGame2D{
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
       color:ColorM.rgba(0,0,0,90),
       gridSize:this.scene.objects.cells.cellSize,
-      width:0.03
+      width:0.034
     })
 
     if(Debug.hitbox){
@@ -163,12 +163,14 @@ export class Game extends ClientGame2D{
         this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
       }
     }
-    this.camera.zoom=1.7
-    //3.4=64x
-    //2.8=32x
-    //2.3=16x
-    //1.7=8x
-    //1.3=4x
+    this.camera.zoom=1.3
+    //3.40=64x
+    //2.80=32x
+    //2.30=16x
+    //1.70=8x
+    //1.30=4x
+    //1.00=2x
+    //0.85=1x
     this.renderer.fullCanvas(this.camera)
   }
   update_camera(){

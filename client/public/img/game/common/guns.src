@@ -4,7 +4,10 @@
         "spas12":"normal/spas12.svg",
         "hp18":"normal/hp18.svg",
         "ak47":"normal/ak47.svg",
-        "kar98k":"normal/kar98k.svg"
+        "vector":"normal/vector.svg",
+        "kar98k":"normal/kar98k.svg",
+        "awms":"normal/awms.svg",
+        "awp":"normal/awp.svg"
     },
     "dir":"img/game/common/guns"
 }

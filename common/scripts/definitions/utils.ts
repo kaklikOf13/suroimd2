@@ -10,6 +10,8 @@ export interface BulletDef{
         height:number
         color?:number
     }
+    obstacleMult?:number
+    criticalMult?:number
 }
 export const tracers={
     tiny:{
