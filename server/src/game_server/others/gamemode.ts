@@ -25,7 +25,7 @@ export const DefaultGamemode:Gamemode={
     player:{
         boosts:{
             adrenaline:{
-                decay:0.46,
+                decay:0.35,
                 speed:0.0017,
                 regen:0.0112
             },
