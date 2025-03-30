@@ -3,7 +3,7 @@ import { Game } from "./game.ts";
 import { Definition } from "common/scripts/engine/definitions.ts";
 import { BoostType, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
-import { ActionsType, CATEGORYS } from "common/scripts/others/constants.ts";
+import { ActionsType, CATEGORYS, GameOverPacket } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
 import { AmmoDef } from "common/scripts/definitions/ammo.ts";
 import { HealingDef} from "common/scripts/definitions/healings.ts";
@@ -36,7 +36,15 @@ export class GuiManager{
         cellphone_actions:document.querySelector("#cellphone-actions") as HTMLDivElement,
         cellphone_input_item_id:document.querySelector("#cellphone-insert-item-id") as HTMLInputElement,
         cellphone_input_item_count:document.querySelector("#cellphone-insert-item-count") as HTMLInputElement,
-        cellphone_give_item:document.querySelector("#cellphone-give-item-button") as HTMLButtonElement
+        cellphone_give_item:document.querySelector("#cellphone-give-item-button") as HTMLButtonElement,
+
+        gameOver:document.querySelector("#gameover-container") as HTMLDivElement,
+        
+        gameOver_status:document.querySelector("#gameover-status") as HTMLDivElement,
+        gameOver_kills:document.querySelector("#gameover-kills") as HTMLDivElement,
+        gameOver_damaged:document.querySelector("#gameover-damaged") as HTMLDivElement,
+        gameOver_score:document.querySelector("#gameover-score") as HTMLDivElement,
+        gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
     }
     inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     hand:HandData
@@ -44,9 +52,14 @@ export class GuiManager{
     action?:{delay:number,start:number,type:ActionsType}
     constructor(game:Game){
         this.game=game
+        this.game.client.on("gameover",this.show_game_over.bind(this))
         this.game.client.on("gui",(p:GuiPacket)=>{
             this.set_health(p.Health,p.MaxHealth)
             this.set_boost(p.Boost,p.MaxBoost,p.BoostType)
+
+            if(p.damages){
+                this.game.add_damageSplash(p.damages.position,p.damages.count,p.damages.critical,p.damages.shield)
+            }
             if(p.inventory){
                 this.inventory.length=0
                 for(const s of p.inventory){
@@ -76,6 +89,8 @@ export class GuiManager{
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
         this.set_health(100,100)
 
+        this.content.gameOver.style.opacity="0%"
+
         //Cellphone
         this.content.cellphone_actions.style.display="none"
 
@@ -86,19 +101,19 @@ export class GuiManager{
             this.game.can_act=true
         }
 
-        this.content.cellphone_input_item_id.addEventListener("focus",deenable_act)
-        this.content.cellphone_input_item_id.addEventListener("blur",enable_act)
+        this.content.cellphone_input_item_id.onfocus=deenable_act
+        this.content.cellphone_input_item_id.onblur=enable_act
 
-        this.content.cellphone_input_item_count.addEventListener("focus",deenable_act)
-        this.content.cellphone_input_item_count.addEventListener("blur",enable_act)
+        this.content.cellphone_input_item_count.onfocus=deenable_act
+        this.content.cellphone_input_item_count.onblur=enable_act
 
-        this.content.cellphone_give_item.addEventListener("click",(_)=>{
+        this.content.cellphone_give_item.onclick=(_)=>{
             this.game.action.cellphoneAction={
                 type:CellphoneActionType.GiveItem,
                 item_id:GameItems.keysString[this.content.cellphone_input_item_id.value],
                 count:parseInt(this.content.cellphone_input_item_count.value),
             }
-        })
+        }
     }
     set_hand_item(){
         this.content.cellphone_actions.style.display="none"
@@ -129,13 +144,14 @@ export class GuiManager{
                 }
                 case InventoryItemType.other:{
                     const def=(this.inventory[this.hand.location-1].def as OtherDef)
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     if(def.idString==="cellphone"){
                         this.content.cellphone_actions.style.display="unset"
                     }
                     break
                 }
             }
-            if(this.hand.type===InventoryItemType.gun){
+            if(this.hand.type===InventoryItemType.gun||this.hand.type===InventoryItemType.other){
                 this.content.current_item_image.style.width="70px"
                 this.content.current_item_image.style.height="70px"
                 this.content.current_item_image.style.transform="rotate(-30deg)"
@@ -153,6 +169,23 @@ export class GuiManager{
             this.handSelection=undefined
             this.content.current_item_image.style.opacity="0%"
         }
+    }
+    show_game_over(g:GameOverPacket){
+        if(this.game.gameOver)return
+        this.game.gameOver=true
+        this.content.gameOver.style.opacity="100%"
+        if(g.Win){
+            this.content.gameOver_status.innerText=`Winner Winner Chicken Dinner!`
+            this.content.gameOver_status.style.color="#fe3"
+        }else{
+            this.content.gameOver_status.innerText=`You Lose!`
+            this.content.gameOver_status.style.color="#e05"
+        }
+        this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
+        this.content.gameOver_damaged.innerText=`Damage Dealth: ${g.DamageDealth}`
+        this.content.gameOver_score.innerText=`Score: 0`
+
+        this.content.gameOver_menu_btn.onclick=this.game.onstop!.bind(this.game,this.game)
     }
     update_equipaments(){
         const player=this.game.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.game.activePlayer}) as Player

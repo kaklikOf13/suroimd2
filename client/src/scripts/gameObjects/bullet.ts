@@ -58,8 +58,8 @@ export class Bullet extends ClientGameObject2D{
         const traveledDistance = v2.distance(this.initialPosition, this.position)
 
         if(this.dying){
-            this.tticks-=dt
-            if(this.length<=0){
+            this.tticks-=dt*2.5
+            if(this.tticks<=0){
                 this.destroy()
             }
         }else{

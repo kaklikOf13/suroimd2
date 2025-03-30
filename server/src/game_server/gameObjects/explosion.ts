@@ -62,11 +62,11 @@ export class Explosion extends ServerGameObject{
             for(const obj of damageCollisions){
                 switch(obj.stringType){
                     case "player":{
-                        (obj as Player).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner})
+                        (obj as Player).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
                         break
                     }
                     case "obstacle":
-                        (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner})
+                        (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
                         break
                 }
             }
@@ -75,8 +75,9 @@ export class Explosion extends ServerGameObject{
             this.delay--
         }
     }
-    create(args: {defs:ExplosionDef,position:Vec2}): void {
+    create(args: {defs:ExplosionDef,position:Vec2,owner?:Player}): void {
         this.defs=args.defs
+        this.owner=args.owner
         this.hb=new CircleHitbox2D(args.position,random.float(this.defs.size.min,this.defs.size.max))
     }
     getData(): ExplosionData {

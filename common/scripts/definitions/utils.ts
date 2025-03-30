@@ -10,6 +10,8 @@ export interface BulletDef{
         height:number
         color?:number
     }
+    obstacleMult?:number
+    criticalMult?:number
 }
 export const tracers={
     tiny:{
@@ -54,7 +56,8 @@ export enum DamageReason{
     Player,
     Explosion,
     SafeZone,
-    Abstinence
+    Abstinence,
+    Disconnect
 }
 export interface InventoryItemData{
     count:number

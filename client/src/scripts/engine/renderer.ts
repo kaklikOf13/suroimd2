@@ -1,5 +1,5 @@
 import { Angle, CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
-import { type Sprite } from "./resources.ts";
+import { SourceType, type Sprite } from "./resources.ts";
 export interface Camera2D{
     position:Vec2
     zoom:number
@@ -204,6 +204,7 @@ void main(void) {
 export class Material2D<MaterialArgs=any>{
     factory:Material2DFactory<MaterialArgs>
     args!:MaterialArgs
+    resourceType=SourceType.Material
     constructor(factory:Material2DFactory<MaterialArgs>){
         this.factory=factory
     }

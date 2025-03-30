@@ -1,17 +1,17 @@
 import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { ActionsType, CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
+import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { AmmoItem, GunItem, HealingItem, LItem, OtherItem} from "../inventory/inventory.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
-import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
+import { GuiPacket,DamageSplash } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager, InventoryCap } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, type GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { AmmoDef, AmmoType } from "common/scripts/definitions/ammo.ts";
-import { Accessories, Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
+import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { type Game } from "../others/game.ts"
 import { type OtherDef } from "common/scripts/definitions/others.ts";
@@ -53,6 +53,11 @@ export class Player extends ServerGameObject{
     vest?:EquipamentDef
     helmet?:EquipamentDef
     accessories:AccessoriesManager
+
+    status={
+        damage:0,
+        kills:0
+    }
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -130,7 +135,8 @@ export class Player extends ServerGameObject{
         bullet_speed:1,
         damage:1,
         health:1,
-        speed:1
+        speed:1,
+        critical_mult:1
     }
 
     privateDirtys={
@@ -140,7 +146,7 @@ export class Player extends ServerGameObject{
     }
 
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=1
+        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
         const gamemode=(this.game as Game).gamemode
         if(this.BoostType===BoostType.Addiction){
             this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
@@ -191,7 +197,9 @@ export class Player extends ServerGameObject{
                 this.boost=Math.max(this.boost-gamemode.player.boosts.addiction.decay*dt,0)
                 this.piercingDamage({
                     amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt)*50,
-                    reason:DamageReason.Abstinence
+                    reason:DamageReason.Abstinence,
+                    position:v2.duplicate(this.position),
+                    critical:false,
                 })
                 break
             }
@@ -276,11 +284,21 @@ export class Player extends ServerGameObject{
     }
     handL=0
     ammoCount:Partial<Record<AmmoType,number>>={}
+
+    damageSplash?:DamageSplash
+
+    splashDelay:number=0
     update2(){
         this.update_modifiers()
         if(this.client){
             const guiPacket=new GuiPacket(this.health,this.maxHealth,this.boost,this.maxBoost,this.BoostType)
             guiPacket.inventory=[]
+            if(this.splashDelay<=0){
+                guiPacket.damages=this.damageSplash
+                this.damageSplash=undefined
+            }else{
+                this.splashDelay--
+            }
             let ii=0
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
@@ -337,18 +355,45 @@ export class Player extends ServerGameObject{
             mod-=this.helmet.reduction
             damage-=this.helmet.defence
         }
-        damage=Math.max(damage*mod,0)
+        if(params.critical){
+            mod+=this.modifiers.critical_mult-1
+        }
+        damage=Numeric.clamp(damage*mod,0,this.health)
         params.amount=damage
         this.piercingDamage(params)
     }
     piercingDamage(params:DamageParams){
         if(this.BoostType===BoostType.Shield&&this.boost>0){
+            params.amount=Math.min(this.boost,params.amount)
+        }else{
+            params.amount=Math.min(this.health,params.amount)
+        }
+        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id){
+            params.owner.status.damage+=params.amount
+            if(!params.owner.damageSplash){
+                params.owner.damageSplash={
+                    count:0,
+                    shield:false,
+                    critical:false,
+                    position:params.position
+                }
+                params.owner.splashDelay=2
+            }
+            if(params.critical){
+                params.owner.damageSplash.critical=true
+            }
+            params.owner.damageSplash.count+=params.amount
+        }
+        if(this.BoostType===BoostType.Shield&&this.boost>0){
             this.boost=Math.max(this.boost-params.amount,0)
+            if(params.owner&&params.owner instanceof Player){
+                params.owner.damageSplash!.shield=true
+            }
         }else{
             this.health=Math.max(this.health-params.amount,0)
-            if(this.health===0){
-                this.kill(params)
-            }
+        }
+        if(this.health===0){
+            this.kill(params)
         }
     }
     dropAll(){
@@ -361,15 +406,31 @@ export class Player extends ServerGameObject{
         }
         this.inventory.update_infinity()
     }
-    kill(_params:DamageParams){
+    kill(params:DamageParams){
         this.dead=true
         this.update2()
         if(this.client){
-            setTimeout(this.client.disconnect.bind(this.client),500)
+            this.destroy()
         }
         this.dropAll();
         (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);
-        (this.game as Game).modeManager.on_player_die(this)
+        (this.game as Game).modeManager.on_player_die(this);
+
+        if(params.owner&&params.owner instanceof Player){
+            params.owner.status.kills++
+        }
+
+        this.game.addTimeout(()=>{
+            this.send_game_over(false)
+        },2)
+    }
+    send_game_over(win:boolean=false){
+        const p=new GameOverPacket()
+        p.Kills=this.status.kills
+        p.DamageDealth=this.status.damage
+        p.Win=win
+        p.Score=0
+        this.client!.emit(p)
     }
     onDestroy(): void {
         const idx=(this.game as Game).livingPlayers.indexOf(this)

@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="87.29509mm"
-   height="16.083839mm"
-   viewBox="0 0 87.29509 16.083839"
+   width="50mm"
+   height="9.2123384mm"
+   viewBox="0 0 50 9.2123382"
    version="1.1"
    id="svg5"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
    sodipodi:docname="kar98k.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,25 +24,27 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.1455122"
-     inkscape:cx="90.789079"
-     inkscape:cy="-84.678276"
+     inkscape:cx="90.789081"
+     inkscape:cy="-84.241792"
      inkscape:window-width="1920"
-     inkscape:window-height="996"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer2"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
      id="defs2" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2"
-     transform="translate(-92.679137,-138.14993)">
+     transform="matrix(0.57276989,0,0,0.57276989,-53.083819,-79.128118)">
     <path
        id="path5411"
        style="fill:#383838;fill-opacity:1;stroke:#303030;stroke-width:0;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
@@ -56,7 +58,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-92.679137,-138.14993)">
+     transform="matrix(0.57276989,0,0,0.57276989,-53.083819,-79.128118)">
     <g
        id="g889"
        transform="translate(63.254621,34.406235)"

@@ -1,6 +1,6 @@
 import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { NullVec2, ObjectsPacket, v2 } from "common/scripts/engine/mod.ts";
+import { NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -13,6 +13,7 @@ import { Debug } from "./config.ts";
 import { SoundManager } from "../engine/sounds.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
+import { DamageSplash } from "../gameObjects/damageSplash.ts";
 
 function gameLoadMaterials(game:Game){
   game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
@@ -28,28 +29,29 @@ export class Game extends ClientGame2D{
 
   can_act:boolean=true
 
+  gameOver:boolean=false
+
   constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
-    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile])
+    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
+    this.scene.objects.add_category(7)
     this.client=new Client(new WebSocket(ip),PacketManager)
     this.client.on(DefaultSignals.OBJECTS,(obj:ObjectsPacket)=>{
       this.scene.objects.proccess(obj)
     })
     this.scene.objects.encoders=ObjectsE
-    this.renderer.background=ColorM.rgba(50,160,30)
+    this.renderer.background=ColorM.hex("#68ad49")
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
-      this.scene.objects.clear()
       this.running=false
-      if(this.onstop)this.onstop(this)
     })
 
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
       color:ColorM.rgba(0,0,0,90),
       gridSize:this.scene.objects.cells.cellSize,
-      width:0.03
+      width:0.034
     })
 
     if(Debug.hitbox){
@@ -59,6 +61,18 @@ export class Game extends ClientGame2D{
     }
 
     gameLoadMaterials(this)
+
+    this.request_animation_frame=true
+  }
+  add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
+    this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
+  }
+  on_stop(): void {
+    super.on_stop()
+    if(!this.gameOver){
+      this.scene.objects.clear()
+      if(this.onstop)this.onstop(this)
+    }
   }
   onstop?:(g:Game)=>void
   actionDelay:number=3
@@ -150,8 +164,13 @@ export class Game extends ClientGame2D{
       }
     }
     this.camera.zoom=1.3
-    //1.7=8x
-    //1.3=4x
+    //3.40=64x
+    //2.80=32x
+    //2.30=16x
+    //1.70=8x
+    //1.30=4x
+    //1.00=2x
+    //0.85=1x
     this.renderer.fullCanvas(this.camera)
   }
   update_camera(){

@@ -1,9 +1,11 @@
 import { PacketsManager } from "../engine/packets.ts"
 export { JoinPacket } from "../packets/join_packet.ts"
 export { ActionPacket } from "../packets/action_packet.ts"
+export { GameOverPacket } from "../packets/gameOver.ts"
 import { JoinPacket } from "../packets/join_packet.ts"
 import { ActionPacket } from "../packets/action_packet.ts"
 import { GuiPacket } from "common/scripts/packets/gui_packet.ts"
+import { GameOverPacket } from "../packets/gameOver.ts"
 
 export const GameConstants={
     player:{
@@ -43,6 +45,7 @@ export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)
 PacketManager.add_packet(GuiPacket)
+PacketManager.add_packet(GameOverPacket)
 
 export enum zIndexes{
     Obstacles3=1,
@@ -58,10 +61,11 @@ export enum ActionsType{
 }
 
 export type PlayerModifiers={
-    damage:number,
-    speed:number,
-    health:number,
-    boost:number,
-    bullet_speed:number,
+    damage:number
+    speed:number
+    health:number
+    boost:number
+    bullet_speed:number
     bullet_size:number
+    critical_mult:number
 }
