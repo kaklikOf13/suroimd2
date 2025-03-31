@@ -471,10 +471,14 @@ export type LootTable={
     max:number
     content:LootTableItem[]
 }|LootTableItem[]
+export type LootTableItemRet<Item>={
+    count:number
+    item:Item
+}
 export class LootTablesDefs<TP,Aditional>{
     tables:Record<string,LootTable>={}
-    get_item:(id:string,count:number,aditional:Aditional)=>TP[]
-    constructor(get_item:(id:string,count:number,aditional:Aditional)=>TP[]){
+    get_item:(id:string,count:number,aditional:Aditional)=>LootTableItemRet<TP>[]
+    constructor(get_item:(id:string,count:number,aditional:Aditional)=>LootTableItemRet<TP>[]){
         this.get_item=get_item
     }
     add_loot_table(name:string,table:LootTable){
@@ -485,8 +489,8 @@ export class LootTablesDefs<TP,Aditional>{
             this.tables[t]=tables[t]
         }
     }
-    get_loot(table:string,aditional:Aditional):TP[]{
-        const ret:TP[]=[]
+    get_loot(table:string,aditional:Aditional):LootTableItemRet<TP>[]{
+        const ret:LootTableItemRet<TP>[]=[]
         const lt=this.tables[table]
         if(!lt){
             return []

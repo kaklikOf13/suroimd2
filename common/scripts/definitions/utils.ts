@@ -50,7 +50,6 @@ export enum InventoryItemType{
 }
 export interface GameItem extends Definition{
     item_type:InventoryItemType
-    count:number
 }
 export enum DamageReason{
     Player,

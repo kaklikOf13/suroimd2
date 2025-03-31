@@ -9,7 +9,7 @@ export class Loot extends FormGameObject2D{
     numberType: number=2
     name:string=""
     create(_args: Record<string, void>): void {
-        this.hb=new RectHitbox2D(v2.new(3,3),v2.new(GameConstants.loot.radius.ammo,GameConstants.loot.radius.ammo))
+        this.hb=RectHitbox2D.positioned(v2.new(3,3),v2.new(GameConstants.loot.radius.ammo,GameConstants.loot.radius.ammo))
         this.material=(this.game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.red)
     }
     update(_dt:number): void {

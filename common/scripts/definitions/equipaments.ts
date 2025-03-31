@@ -16,7 +16,6 @@ export interface EquipamentDef extends Definition{
 }
 export const Armors=new Definitions<EquipamentDef,GameItem>((obj)=>{
     obj.item_type=InventoryItemType.equipament
-    obj.count=1
 })
 Armors.insert(
     //Normals Vest

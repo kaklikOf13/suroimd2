@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Hitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
@@ -40,7 +40,7 @@ export class GameMap{
         while(!pos){
             if(attempt>=maxAttempts)break
             pos=gp!(hc,this)
-            hb.position=pos
+            hb.translate(pos)
             if(!valid!(hb,k,this)){
                 pos=undefined
             }
@@ -56,12 +56,12 @@ export class GameMap{
     }
     generate_obstacle(def:ObstacleDef):Obstacle|undefined{
         const o=this.add_obstacle(def)
-        const p=this.getRandomPosition(o.spawnHitbox,o.get_key())
+        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.get_key())
         if(!p){
             o.destroy()
             return undefined
         }
-        o.position=p
+        o.set_position(p)
         o.manager.cells.updateObject(o)
         return o
     }
@@ -71,6 +71,9 @@ export class GameMap{
         }
         for(let i=0;i<15;i++){
             this.generate_obstacle(Obstacles.getFromString("stone"))
+        }
+        for(let i=0;i<5;i++){
+            this.generate_obstacle(Obstacles.getFromString("normal_crate"))
         }
         for(let i=0;i<10;i++){
             this.generate_obstacle(Obstacles.getFromString("bush"))

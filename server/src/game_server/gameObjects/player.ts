@@ -80,9 +80,12 @@ export class Player extends ServerGameObject{
     }
     give_item(def:GameItem,count:number){
         switch(def.item_type){
-            case InventoryItemType.gun:
-                this.inventory.add(new GunItem(def as unknown as GunDef),count)
+            case InventoryItemType.gun:{
+                const i=new GunItem(def as unknown as GunDef)
+                i.ammo=0
+                this.inventory.add(i,count)
                 break
+            }
             case InventoryItemType.ammo:
                 this.inventory.add(new AmmoItem(def as unknown as AmmoDef),count)
                 break

@@ -6,7 +6,6 @@ export interface OtherDef extends Definition{
 }
 export const Others=new Definitions<OtherDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.other
-    i.count=1
 })
 Others.insert(
     {

@@ -410,8 +410,8 @@ void main() {
     draw_rect2D(rect: RectHitbox2D, material: Material2D,offset:Vec2=NullVec2,zIndex=0) {
         const x1 = 0
         const y1 = 0
-        const x2 = rect.size.x
-        const y2 = rect.size.y
+        const x2 = rect.max.x-rect.min.x
+        const y2 = rect.max.y-rect.min.y
 
         this._draw_vertices([
             x1, y1,
@@ -420,7 +420,7 @@ void main() {
             x1, y2,
             x2, y1,
             x2, y2
-        ], material,{position:v2.sub(rect.position,offset),scale:v2.new(1,1),rotation:0,zIndex});
+        ], material,{position:v2.sub(rect.min,offset),scale:v2.new(1,1),rotation:0,zIndex});
     }
 
     draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2,zIndex:number=0, precision: number = 50): void {

@@ -42,7 +42,6 @@ export interface GunDef extends Definition{
 
 export const Guns=new Definitions<GunDef,GameItem>((g)=>{
     g.item_type=InventoryItemType.gun
-    g.count=1
 })
 
 export const GasParticles={
@@ -89,7 +88,7 @@ Guns.insert(
         lenght:0.68,
         size:4,
         ammoType:AmmoType["9mm"],
-        ammoSpawnAmount:90,
+        ammoSpawnAmount:96,
         class:GunClasses.Automatic,
         bullet:{
             damage:4,
@@ -116,6 +115,7 @@ Guns.insert(
         lenght:0.8,
         size:4.5,
         ammoType:AmmoType["762mm"],
+        ammoSpawnAmount:20,
         class:GunClasses.Sniper,
         bullet:{
             damage:44,
@@ -143,6 +143,7 @@ Guns.insert(
         size:6,
         ammoType:AmmoType["762mm"],
         class:GunClasses.Sniper,
+        ammoSpawnAmount:30,
         bullet:{
             damage:50,
             radius:0.025,
@@ -170,6 +171,7 @@ Guns.insert(
         size:6,
         ammoType:AmmoType["308sub"],
         class:GunClasses.Sniper,
+        ammoSpawnAmount:25,
         bullet:{
             damage:70,
             radius:0.02,
@@ -195,6 +197,7 @@ Guns.insert(
         spread:3,
         lenght:0.7,
         ammoType:AmmoType["12g"],
+        ammoSpawnAmount:10,
         bulletsCount:10,
         jitterRadius:0.25,
         size:4.3,
@@ -225,6 +228,7 @@ Guns.insert(
         spread:3,
         lenght:0.6,
         ammoType:AmmoType["12g"],
+        ammoSpawnAmount:18,
         bulletsCount:10,
         jitterRadius:0.05,
         class:GunClasses.Shotgun,
@@ -255,6 +259,7 @@ Guns.insert(
         spread:9,
         lenght:0.65,
         ammoType:AmmoType["12g"],
+        ammoSpawnAmount:15,
         bulletsCount:15,
         jitterRadius:0.15,
         class:GunClasses.Shotgun,

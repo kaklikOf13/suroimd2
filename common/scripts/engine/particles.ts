@@ -1,5 +1,5 @@
 import { BaseObject2D, GameObjectManager2D } from "./gameObject.ts";
-import { Angle, Vec2, v2 } from "./geometry.ts";
+import { Vec2, v2 } from "./geometry.ts";
 
 export type Particle2DUpdateFunction<GameObject  extends BaseObject2D>=(particle:Particle2D<GameObject>,dt:number)=>void
 export class Particle2D<GameObject extends BaseObject2D>{

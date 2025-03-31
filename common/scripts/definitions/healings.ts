@@ -15,7 +15,6 @@ export interface HealingDef extends Definition{
 }
 export const Healings=new Definitions<HealingDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.healing
-    i.count=1
 })
 Healings.insert(
     {

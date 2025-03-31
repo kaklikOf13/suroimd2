@@ -31,22 +31,25 @@ export class Obstacle extends ClientGameObject2D{
         break?:Sound
         hit?:Sound[]
     }
+    hotspot=v2.new(0.5,0.5)
     render(camera: Camera2D, renderer: Renderer): void {
         if(this.sprite){
-            renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.scale,this.scale),Angle.rad2deg(this.rotation),v2.new(0.5,0.5),this.zIndex)
+            renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.scale,this.scale),Angle.rad2deg(this.rotation),this.hotspot,this.zIndex)
             if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
             }
-        }else if(!this.dead){
-            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            if(this.def.variations){
-                this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
+        }else if(this.def){
+            if(!this.dead){
+                const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+                if(this.def.variations){
+                    this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
+                }else{
+                    this.sprite=this.game.resources.get_sprite(spr_id)
+                }
             }else{
-                this.sprite=this.game.resources.get_sprite(spr_id)
+                const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+                this.sprite=this.game.resources.get_sprite(spr_id+"_dead")
             }
-        }else{
-            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            this.sprite=this.game.resources.get_sprite(spr_id+"_dead")
         }
     }
     onDie(): void {
@@ -116,8 +119,11 @@ export class Obstacle extends ClientGameObject2D{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
             }
+            if(this.def.hotspot){
+                this.hotspot=this.def.hotspot
+            }
         }
-        if(this.def.hitbox){
+        if(this.def&&this.def.hitbox){
             this.hb=this.def.hitbox.transform(position,data.scale)
             this.manager.cells.updateObject(this)
         }

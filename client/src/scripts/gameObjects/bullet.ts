@@ -52,7 +52,7 @@ export class Bullet extends ClientGameObject2D{
             }
         }else{
             this.manager.cells.updateObject(this)
-            this.hb.position=v2.add(this.hb.position,this.dts)
+            this.position=v2.add(this.hb.position,this.dts)
         }
 
         const traveledDistance = v2.distance(this.initialPosition, this.position)

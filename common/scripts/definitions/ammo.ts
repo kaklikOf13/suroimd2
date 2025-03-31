@@ -34,7 +34,6 @@ export interface AmmoDef extends Definition{
 }
 export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.ammo
-    i.count=1
 })
 Ammos.insert(
     //Normals

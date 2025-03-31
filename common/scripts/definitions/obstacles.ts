@@ -1,11 +1,13 @@
 import { v2 } from "common/scripts/engine/geometry.ts";
-import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode } from "../engine/mod.ts";
+import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2 } from "../engine/mod.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
+import { RectHitbox2D } from "common/scripts/engine/hitbox.ts";
 
 export interface ObstacleDef extends Definition{
     health:number
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
+    hotspot?:Vec2
     noCollision?:boolean
     noBulletCollision?:boolean
     scale?:{
@@ -22,6 +24,8 @@ export interface ObstacleDef extends Definition{
 
     onDestroyExplosion?:string
     material?:string
+
+    lootTable?:string
 
     sounds?:{
         hit:string
@@ -87,6 +91,20 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles3,
         material:"tree",
+    },
+    {
+        idString:"normal_crate",
+        health:80,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+
+        lootTable:"normal_crate"
     },
     {
         idString:"bush",

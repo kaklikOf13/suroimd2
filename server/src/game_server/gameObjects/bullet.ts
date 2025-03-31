@@ -27,6 +27,8 @@ export class Bullet extends ServerGameObject{
 
     critical:boolean=false
     source?:GameItem
+
+    damage:number=0
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -46,7 +48,7 @@ export class Bullet extends ServerGameObject{
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
                     if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.defs.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        (obj as Player).damage({amount:this.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         break
                     }
@@ -54,10 +56,14 @@ export class Bullet extends ServerGameObject{
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&!(obj as Obstacle).dead&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).damage({amount:this.defs.damage*(this.defs.obstacleMult??1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        const od=(obj as Obstacle).health;
+                        (obj as Obstacle).damage({amount:this.damage*(this.defs.obstacleMult??1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         if((obj as Obstacle).dead){
-                            (this.game as Game).add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
+                            this.damage-=od*(this.defs.obstacleMult??1)
+                            if(this.damage>0){
+                                (this.game as Game).add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
+                            }
                         }
                     }
                     break
@@ -76,6 +82,8 @@ export class Bullet extends ServerGameObject{
         this.critical=args.critical??(Math.random()<=0.15)
         this.source=args.source
         this.ammo=args.ammo
+
+        this.damage=args.defs.damage
     }
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed*this.modifiers.speed),4)

@@ -39,7 +39,7 @@ export class Loot extends ServerGameObject{
     }
     create(args: {position:Vec2,item:GameItem,count:number}): void {
         this.hb=new RectHitbox2D(v2.new(0,0),v2.new(GameConstants.loot.radius.ammo,GameConstants.loot.radius.ammo))
-        this.hb.position=args.position
+        this.hb.translate(args.position)
         this.item=args.item
         this.count=args.count
     }

@@ -150,15 +150,15 @@ export class Game extends GameBase{
         return b
     }
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Player):Explosion{
-        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:v2.duplicate(position)}) as Explosion
+        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position}) as Explosion
         return e
     }
     add_projectile(position:Vec2,def:ProjectileDef,owner?:Player):Projectile{
-        const p=this.scene.objects.add_object(new Projectile(),CATEGORYS.PROJECTILES,undefined,{defs:def,owner,position:v2.duplicate(position)}) as Projectile
+        const p=this.scene.objects.add_object(new Projectile(),CATEGORYS.PROJECTILES,undefined,{defs:def,owner,position:position}) as Projectile
         return p
     }
     add_loot(position:Vec2,def:GameItem,count:number):Loot{
-        const l=this.scene.objects.add_object(new Loot(),CATEGORYS.LOOTS,undefined,{item:def,count:count,position:v2.duplicate(position)}) as Loot
+        const l=this.scene.objects.add_object(new Loot(),CATEGORYS.LOOTS,undefined,{item:def,count:count,position:position}) as Loot
         return l
     }
     handleConnections(client:Client){
