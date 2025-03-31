@@ -1,12 +1,16 @@
 {
     "files":{
         "stone":"stones/stone.svg",
+        "stone_dead":"stones/stone_dead.svg",
 
         "oak_tree":"trees/oak_tree.svg",
+        "oak_tree_dead":"trees/oak_tree_dead.svg",
 
         "bush":"bushes/bush.svg",
+        "bush_dead":"bushes/bush_dead.svg",
 
-        "barrel":"explosives/barrel.svg"
+        "barrel":"explosives/barrel.svg",
+        "barrel_dead":"explosives/barrel_dead.svg"
     },
     "dir":"img/game/common/obstacles"
 }

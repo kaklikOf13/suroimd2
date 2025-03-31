@@ -52,6 +52,7 @@ export enum zIndexes{
     Obstacles2,
     Players,
     Obstacles1,
+    DeadObstacles,
     Grid,
     Terrain,
 }

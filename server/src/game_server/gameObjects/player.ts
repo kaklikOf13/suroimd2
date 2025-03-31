@@ -230,7 +230,7 @@ export class Player extends ServerGameObject{
             switch((obj as BaseGameObject2D).stringType){
                 case "obstacle":
                     if((obj as Obstacle).def.noCollision)break
-                    if((obj as Obstacle).hb){
+                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
                         const ov=this.hb.overlapCollision((obj as Obstacle).hb)
                         if(ov.collided)this.position=v2.sub(this.position,v2.scale(ov.overlap,0.9))
                     }

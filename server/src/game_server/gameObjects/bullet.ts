@@ -53,14 +53,18 @@ export class Bullet extends ServerGameObject{
                     break
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
-                    if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
+                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead&&this.hb.collidingWith((obj as Obstacle).hb)){
                         (obj as Obstacle).damage({amount:this.defs.damage*(this.defs.obstacleMult??1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
+                        if((obj as Obstacle).dead){
+                            (this.game as Game).add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
+                        }
                     }
                     break
             }
         }
     }
+    ammo:string=""
     create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:GameItem}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
@@ -71,6 +75,7 @@ export class Bullet extends ServerGameObject{
         this.owner=args.owner
         this.critical=args.critical??(Math.random()<=0.15)
         this.source=args.source
+        this.ammo=args.ammo
     }
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed*this.modifiers.speed),4)

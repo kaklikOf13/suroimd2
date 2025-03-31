@@ -8,13 +8,14 @@ import { Particles2DBase } from "common/scripts/engine/particles.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 export class Obstacle extends ClientGameObject2D{
     stringType:string="obstacle"
     numberType: number=4
     name:string=""
     def!:ObstacleDef
 
-    sprite!:Sprite
+    sprite?:Sprite
 
     rotation:number=0
     variation:number=1
@@ -23,6 +24,8 @@ export class Obstacle extends ClientGameObject2D{
     create(_args: Record<string, void>): void {
         
     }
+
+    dead:boolean=false
 
     sounds?:{
         break?:Sound
@@ -34,12 +37,23 @@ export class Obstacle extends ClientGameObject2D{
             if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
             }
+        }else if(!this.dead){
+            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+            if(this.def.variations){
+                this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
+            }else{
+                this.sprite=this.game.resources.get_sprite(spr_id)
+            }
+        }else{
+            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+            this.sprite=this.game.resources.get_sprite(spr_id+"_dead")
         }
     }
-    onDestroy(): void {
+    onDie(): void {
         for(let i=0;i<5;i++){
             this._add_own_particle(this.hb.randomPoint())
         }
+        this.zIndex=zIndexes.DeadObstacles
         if(this.sounds&&this.sounds.break){
             this.game.sounds.play(this.sounds.break,{})
         }
@@ -63,6 +77,11 @@ export class Obstacle extends ClientGameObject2D{
     updateData(data:ObstacleData){
         let position=this.position
         this.scale=data.scale
+        if(!this.dead&&data.dead){
+            this.sprite=undefined
+            this.onDie()
+        }
+        this.dead=data.dead
         if(data.full){
             this.def=Obstacles.getFromNumber(data.full.definition)
             position=data.full.position
@@ -96,12 +115,6 @@ export class Obstacle extends ClientGameObject2D{
                 }else{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
-            }
-            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            if(this.def.variations){
-                this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
-            }else{
-                this.sprite=this.game.resources.get_sprite(spr_id)
             }
         }
         if(this.def.hitbox){

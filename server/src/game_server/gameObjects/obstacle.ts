@@ -26,6 +26,8 @@ export class Obstacle extends ServerGameObject{
     variation:number=1
     rotation:number=0
 
+    dead:boolean=false
+
     update(_dt:number): void {
 
     }
@@ -65,6 +67,7 @@ export class Obstacle extends ServerGameObject{
                 variation:this.variation,
                 rotation:this.rotation
             },
+            dead:this.dead,
             scale:this.scale
         }
     }
@@ -76,12 +79,14 @@ export class Obstacle extends ServerGameObject{
         }
     }
     damage(params:DamageParams){
+        if(this.dead)return
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
             if(this.def.onDestroyExplosion){
                 (this.game as Game).add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
             }
-            this.destroy()
+            this.dirtyPart=true
+            this.dead=true
         }else{
             this.reset_scale()
         }

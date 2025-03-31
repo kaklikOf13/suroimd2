@@ -167,9 +167,9 @@ export class Game extends GameBase{
             if (this.allowJoin&&!this.scene.objects.exist(objId)){
                 const p=this.add_player(client,objId.id,packet)
                 this.connectedPlayers[p.id]=p
+                this.addTimeout(client.emit.bind(client,this.scene.objects.encode(undefined,true)),0.3)
                 console.log(`${p.name} Connected`)
             }
-            client.emit(this.scene.objects.encode(undefined,true))
         })
         client.on("action",(p:ActionPacket)=>{
             if(this.scene.objects.exist(objId)){

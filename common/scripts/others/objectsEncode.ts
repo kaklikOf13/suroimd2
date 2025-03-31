@@ -48,6 +48,7 @@ export interface ObstacleData extends EncodedData{
         rotation:number
         variation:number
     }
+    dead:boolean
     scale:number
 }
 export interface ProjectileData extends EncodedData{
@@ -154,8 +155,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
     },
     obstacle:{
         decode:(full:boolean,stream:NetStream)=>{
+            const bools=stream.readBooleanGroup()
             const ret:ObstacleData={
                 scale:stream.readFloat(0,3,3),
+                dead:bools[0],
                 full:undefined
             }
             if(full){
@@ -171,12 +174,13 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         encode(full:boolean,data:ObstacleData,stream:NetStream){
-            stream.writeFloat(data.scale,0,3,3)
+            stream.writeBooleanGroup(data.dead)
+            .writeFloat(data.scale,0,3,3)
             if(full){
                 stream.writeUint24(data.full!.definition)
-                stream.writePosition(data.full!.position)
-                stream.writeRad(data.full!.rotation)
-                stream.writeUint8(data.full!.variation-1)
+                .writePosition(data.full!.position)
+                .writeRad(data.full!.rotation)
+                .writeUint8(data.full!.variation-1)
             }
         }
     },
