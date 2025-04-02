@@ -6,7 +6,7 @@ export const Collision=Object.freeze({
     circle_with_rect(hb1:CircleHitbox2D,hb2:RectHitbox2D):boolean{
         const cp=v2.clamp2(hb1.position,hb2.min,hb2.max)
         const dist=v2.distance(hb1.position,cp)
-        return (dist<hb1.radius*hb1.radius)||((hb1.position.x>=hb2.min.x&&hb1.position.x<=hb2.max.x)&&(hb1.position.x>=hb2.position.x&&hb1.position.x<=hb2.max.x))
+        return (dist<hb1.radius*hb1.radius)||((hb1.position.x>=hb2.min.x&&hb1.position.x<=hb2.max.x)&&(hb1.position.y>=hb2.position.y&&hb1.position.y<=hb2.max.y))
     },
     circle_with_rect_ov(_hb1:CircleHitbox2D,_hb2:RectHitbox2D){
         return null

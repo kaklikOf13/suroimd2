@@ -82,6 +82,60 @@ Guns.insert(
         gasParticles:GasParticles.automatic
     },
     {
+        idString:"ar15",
+        fireDelay:0.12,
+        spread:2,
+        lenght:0.7,
+        size:4,
+        ammoType:AmmoType["556mm"],
+        ammoSpawnAmount:90,
+        class:GunClasses.Automatic,
+        bullet:{
+            damage:9.8,
+            radius:0.014,
+            range:85,
+            speed:24,
+            tracer:tracers.medium
+        },
+        reload:{
+            delay:2.2,
+            capacity:30
+        },
+        recoil:{
+            duration:0.1,
+            speed:0.7
+        },
+        speedMult:0.96,
+        gasParticles:GasParticles.automatic
+    },
+    {
+        idString:"mp5",
+        fireDelay:0.09,
+        spread:3,
+        lenght:0.7,
+        size:4,
+        ammoType:AmmoType["9mm"],
+        ammoSpawnAmount:96,
+        class:GunClasses.Automatic,
+        bullet:{
+            damage:8,
+            radius:0.014,
+            range:85,
+            speed:24,
+            tracer:tracers.medium
+        },
+        reload:{
+            delay:2,
+            capacity:32
+        },
+        recoil:{
+            duration:0.1,
+            speed:0.7
+        },
+        speedMult:0.96,
+        gasParticles:GasParticles.automatic
+    },
+    {
         idString:"vector",
         fireDelay:0.03,
         spread:1,

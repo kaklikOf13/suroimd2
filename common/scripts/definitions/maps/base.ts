@@ -40,12 +40,28 @@ export const LootTables=new LootTablesDefs<GameItem,Aditional>(get_item)
 LootTables.add_tables({
     //Guns
     "uncommon_guns":[
+        {item:"mp5",weight:1.4},
         {item:"ak47",weight:1},
         {item:"hp18",weight:1},
-        {item:"m870",weight:0.8},
+        {item:"ar15",weight:0.6},
+        {item:"m870",weight:0.6},
+    ],
+    "rare_guns":[
+        {item:"spas12",weight:3},
+    ],
+    "epic_guns":[
+        {item:"vector",weight:3},
+        {item:"kar98k",weight:1},
+        {item:"awp",weight:0.5},
+    ],
+    "legendary_guns":[
+        {item:"awms",weight:1},
     ],
     "guns":[
-        {table:"uncommon_guns",weight:10}
+        {table:"uncommon_guns",weight:29},
+        {table:"rare_guns",weight:9},
+        {table:"epic_guns",weight:1},
+        {table:"legendary_guns",weight:0.1}
     ],
     //Consumibles
     "consumibles":[
@@ -54,7 +70,7 @@ LootTables.add_tables({
         {table:"shield",weight:2},
         {table:"addiction",weight:0.7},
     ],
-    "healings":[
+    "healing":[
         {item:"gauze",count:5,weight:1},
         {item:"medikit",count:1,weight:0.6},
     ],
@@ -83,6 +99,7 @@ LootTables.add_tables({
         {item:"12g",count:10,weight:1},
         {item:"9mm",count:60,weight:1},
         {item:"762mm",count:60,weight:1},
+        {item:"556mm",count:60,weight:1},
     ],
     //Loot Tables
     "normal_crate":{
@@ -92,6 +109,6 @@ LootTables.add_tables({
             {weight:0.6,table:"guns"},
         ],
         min:1,
-        max:3
+        max:4
     }
 })
