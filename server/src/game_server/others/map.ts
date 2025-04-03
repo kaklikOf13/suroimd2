@@ -66,6 +66,21 @@ export class GameMap{
         return o
     }
     generate(){
+        //Feast
+        const crate=Obstacles.getFromString("normal_crate")
+        let obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(2,4))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(3,4))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(2,5))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(3,5))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(2,6))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(3,6))
+        // Map
         for(let i=0;i<10;i++){
             this.generate_obstacle(Obstacles.getFromString("barrel"))
         }
@@ -73,7 +88,7 @@ export class GameMap{
             this.generate_obstacle(Obstacles.getFromString("stone"))
         }
         for(let i=0;i<5;i++){
-            this.generate_obstacle(Obstacles.getFromString("normal_crate"))
+            this.generate_obstacle(crate)
         }
         for(let i=0;i<10;i++){
             this.generate_obstacle(Obstacles.getFromString("bush"))
