@@ -58,6 +58,8 @@ export class Player extends ServerGameObject{
         damage:0,
         kills:0
     }
+
+    pvpEnabled:boolean=false
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -215,7 +217,7 @@ export class Player extends ServerGameObject{
         }
 
         //Hand Use
-        if(this.using_item&&this.handItem){
+        if(this.using_item&&this.handItem&&this.pvpEnabled){
             this.handItem.on_use(this,this.inventory.slots[this.hand-1])
         }
         //Update Inventory
@@ -227,13 +229,22 @@ export class Player extends ServerGameObject{
 
         //Collision
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-        let can_interact=true
+        let can_interact=this.pvpEnabled
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
             switch((obj as BaseGameObject2D).stringType){
                 case "obstacle":
                     if((obj as Obstacle).def.noCollision)break
                     if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
+                        if(can_interact&&this.interaction_input&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
+                            (obj as Obstacle).kill({
+                                amount:(obj as Obstacle).health,
+                                position:this.position,
+                                reason:DamageReason.Player,
+                                owner:this,
+                                critical:false
+                            })
+                        }
                         const ov=this.hb.overlapCollision((obj as Obstacle).hb)
                         if(ov.collided)this.position=v2.sub(this.position,v2.scale(ov.overlap,0.9))
                     }
@@ -344,7 +355,7 @@ export class Player extends ServerGameObject{
         }
     }
     damage(params:DamageParams){
-        if(this.dead)return
+        if(this.dead||!this.pvpEnabled)return
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){

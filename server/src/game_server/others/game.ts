@@ -31,10 +31,14 @@ export class GamemodeManager{
         this.game=game
     }
     on_start(){
+
         this.game.addTimeout(()=>{
             this.closed=true
+            for(const p of this.game.livingPlayers){
+                p.pvpEnabled=true
+            }
             console.log(`Game ${this.game.id} Clossed`)
-        },50)
+        },20)
     }
     on_finish(){
         this.game.addTimeout(()=>{

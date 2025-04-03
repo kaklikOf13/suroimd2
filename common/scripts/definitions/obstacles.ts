@@ -27,6 +27,8 @@ export interface ObstacleDef extends Definition{
 
     lootTable?:string
 
+    interactDestroy?:boolean
+
     sounds?:{
         hit:string
         break:string
@@ -104,6 +106,7 @@ Obstacles.insert(
         zIndex:zIndexes.Obstacles3,
         material:"tree",
 
+        interactDestroy:true,
         lootTable:"normal_crate"
     },
     {

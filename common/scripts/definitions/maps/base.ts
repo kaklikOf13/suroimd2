@@ -104,9 +104,9 @@ LootTables.add_tables({
     //Loot Tables
     "normal_crate":{
         content:[
-            {weight:1.3,table:"consumibles"},
-            {weight:1.2,table:"ammos"},
-            {weight:0.6,table:"guns"},
+            {weight:1.5,table:"consumibles"},
+            {weight:1.3,table:"ammos"},
+            {weight:0.5,table:"guns"},
         ],
         min:1,
         max:4

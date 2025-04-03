@@ -94,19 +94,23 @@ export class Obstacle extends ServerGameObject{
         if(this.dead)return
         this.health=Math.max(this.health-params.amount,0)
         if(this.health===0){
-            if(this.def.onDestroyExplosion){
-                (this.game as Game).add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
-            }
-
-            for(const l of this.loot){
-                (this.game as Game).add_loot(this.position,l.item,l.count)
-            }
-
-            this.dirtyPart=true
-            this.dead=true
+            this.kill(params)
         }else{
             this.reset_scale()
         }
         this.dirtyPart=true
+    }
+    kill(params:DamageParams){
+        if(this.dead)return
+        if(this.def.onDestroyExplosion){
+            (this.game as Game).add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
+        }
+
+        for(const l of this.loot){
+            (this.game as Game).add_loot(this.position,l.item,l.count)
+        }
+
+        this.dirtyPart=true
+        this.dead=true
     }
 }
