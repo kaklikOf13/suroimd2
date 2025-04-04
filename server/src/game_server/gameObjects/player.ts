@@ -60,6 +60,7 @@ export class Player extends ServerGameObject{
     }
 
     pvpEnabled:boolean=false
+    interactionsEnabled:boolean=false
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -229,7 +230,7 @@ export class Player extends ServerGameObject{
 
         //Collision
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-        let can_interact=this.pvpEnabled
+        let can_interact=this.interactionsEnabled
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
             switch((obj as BaseGameObject2D).stringType){

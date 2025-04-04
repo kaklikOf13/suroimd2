@@ -116,7 +116,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
 export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D,Events extends DefaultEvents=DefaultEvents,Map extends DefaultEventsMap2D=DefaultEventsMap2D>{
     readonly tps:number
 
-    private readonly clock:Clock
+    readonly clock:Clock
     running:boolean=true
     readonly events:EventsManager<Events,Map>
     scene:Scene2DInstance<DefaultGameObject,Events,Map>
@@ -126,6 +126,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     timeouts:{c:()=>void,delay:number}[]=[]
 
     request_animation_frame:boolean=false
+
     constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.events=new EventsManager()

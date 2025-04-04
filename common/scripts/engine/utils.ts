@@ -108,7 +108,7 @@ export class Clock {
             const currentTime = Date.now()
             const elapsedTime = currentTime - this.lastFrameTime
             this.lastFrameTime = Date.now()
-            this.callback(elapsedTime/1000)
+            this.callback((elapsedTime/1000)*this.timeScale)
         }, this.frameDuration)
     }
     public stop(){

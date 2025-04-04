@@ -1,5 +1,5 @@
 import { Client,DefaultSignals,ServerGame2D as GameBase } from "../../engine/mod.ts"
-import { ID, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { ID, Numeric, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
 import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -31,12 +31,10 @@ export class GamemodeManager{
         this.game=game
     }
     on_start(){
-
+        this.game.interactionsEnabled=true
         this.game.addTimeout(()=>{
             this.closed=true
-            for(const p of this.game.livingPlayers){
-                p.pvpEnabled=true
-            }
+            this.game.pvpEnabled=true
             console.log(`Game ${this.game.id} Clossed`)
         },20)
     }
@@ -45,13 +43,16 @@ export class GamemodeManager{
             for(const p of this.game.livingPlayers){
                 p.send_game_over(true)
             }
-            this.game.running=false
+            this.game.killing_game=true
             console.log(`Game ${this.game.id} Fineshed`)
         },2)
     }
+    startRules():boolean{
+        return this.game.livingPlayers.length>1
+    }
     on_player_join(_p:Player){
-        if(this.game.livingPlayers.length>1){
-            this.game.start()
+        if(!this.game.started&&this.game.livingPlayers.length>1){
+            this.game.addTimeout(this.game.start.bind(this.game),3)
         }
     }
     on_player_die(_p:Player){
@@ -75,6 +76,27 @@ export class Game extends GameBase{
 
     started:boolean=false
 
+    private _pvpEnabled:boolean=false
+    set pvpEnabled(v:boolean){
+        this._pvpEnabled=v
+        for(const p of this.livingPlayers){
+            p.pvpEnabled=v
+        }
+    }
+    get pvpEnabled():boolean{
+        return this._pvpEnabled
+    }
+    private _interactionsEnabled:boolean=false
+    get interactionsEnabled():boolean{
+        return this._interactionsEnabled
+    }
+    set interactionsEnabled(v:boolean){
+        this._interactionsEnabled=v
+        for(const p of this.livingPlayers){
+            p.interactionsEnabled=v
+        }
+    }
+
     constructor(id:ID,config:GameConfig){
         super(config.gameTps,id,PacketManager,[
             Player,
@@ -96,7 +118,14 @@ export class Game extends GameBase{
     }
 
     on_update(): void {
-      super.on_update()
+        super.on_update()
+        if(this.killing_game){
+            this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
+            if(this.clock.timeScale<=0.05){
+                this.clock.timeScale=1
+                this.running=false
+            }
+        }
     }
     privatesDirtysInter=0
     on_stop():void{
@@ -104,6 +133,7 @@ export class Game extends GameBase{
         clearInterval(this.privatesDirtysInter)
         console.log(`Game ${this.id} Stopped`)
     }
+    killing_game:boolean=false
     on_run(): void {
         this.map.generate()
         this.privatesDirtysInter=setInterval(()=>{
@@ -124,13 +154,16 @@ export class Game extends GameBase{
         this.players.push(p)
         this.livingPlayers.push(p)
 
+        p.pvpEnabled=this._pvpEnabled
+        p.interactionsEnabled=this._interactionsEnabled
+
         this.modeManager.on_player_join(p)
 
         return p
     }
     fineshed:boolean=false
     start(){
-        if(this.started)return
+        if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
         console.log(`Game ${this.id} Started`)
