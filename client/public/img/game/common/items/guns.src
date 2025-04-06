@@ -11,5 +11,5 @@
         "awms":"normal/awms.svg",
         "awp":"normal/awp.svg"
     },
-    "dir":"img/game/common/guns"
+    "dir":"img/game/common/items/guns"
 }

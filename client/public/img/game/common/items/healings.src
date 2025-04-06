@@ -19,5 +19,5 @@
         "yellow_pills":"yellow_pills.svg",
         "purple_pills":"purple_pills.svg"
     },
-    "dir":"img/game/common/healings"
+    "dir":"img/game/common/items/healings"
 }

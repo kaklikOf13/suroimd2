@@ -1,14 +1,15 @@
 {
     "files":{
-        "guns-images":"img/game/common/guns.src",
-        "ammos-images":"img/game/common/ammos.src",
-        "healings-images":"img/game/common/healings.src",
-        "obstacles-images":"img/game/common/obstacles.src",
-        "projectiles-images":"img/game/common/projectiles.src",
-        "equipaments-images":"img/game/common/equipaments.src",
-        "others-images":"img/game/common/others.src",
+        "guns-images":"img/game/common/items/guns.src",
+        "ammos-images":"img/game/common/items/ammos.src",
+        "healings-images":"img/game/common/items/healings.src",
+        "equipaments-images":"img/game/common/items/equipaments.src",
+        "others-images":"img/game/common/items/others.src",
 
-        "obstacles-sounds":"sounds/game/common/obstacles.src"
+        "obstacles-images":"img/game/common/objects/obstacles.src",
+        "projectiles-images":"img/game/common/objects/projectiles.src",
+
+        "obstacles-sounds":"sounds/game/common/objects/obstacles.src"
     },
     "dir":""
 }

@@ -15,5 +15,5 @@
         "barrel":"explosives/barrel.svg",
         "barrel_dead":"explosives/barrel_dead.svg"
     },
-    "dir":"img/game/common/obstacles"
+    "dir":"img/game/common/objects/obstacles"
 }

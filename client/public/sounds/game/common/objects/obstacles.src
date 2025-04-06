@@ -16,5 +16,5 @@
         "metal_hit_1":"metal/hit_1.mp3",
         "metal_hit_2":"metal/hit_2.mp3"
     },
-    "dir":"sounds/game/common/obstacles"
+    "dir":"sounds/game/common/objects/obstacles"
 }

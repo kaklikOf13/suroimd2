@@ -3,5 +3,5 @@
         "soldier_helmet":"soldier_helmet.svg",
         "soldier_vest":"soldier_vest.svg"
     },
-    "dir":"img/game/common/equipaments"
+    "dir":"img/game/common/items/equipaments"
 }
