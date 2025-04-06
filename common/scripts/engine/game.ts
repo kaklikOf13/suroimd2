@@ -132,7 +132,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.events=new EventsManager()
         this.clock=new Clock(tps,1,this.update.bind(this))
         for(const o of objects){
-            const oi= new o()
+            const oi=new o()
             this.objects.set(o,oi.stringType,oi.numberType)
         }
         this.scene=new Scene2DInstance<DefaultGameObject,Events,Map>({objects:{}},this)

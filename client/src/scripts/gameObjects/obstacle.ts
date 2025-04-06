@@ -4,11 +4,11 @@ import { Materials, ObstacleDef, Obstacles } from "common/scripts/definitions/ob
 import { Camera2D, Renderer } from "../engine/renderer.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Debug } from "../others/config.ts";
-import { Particles2DBase } from "common/scripts/engine/particles.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
+import { Particles } from "../defs/particles.ts";
 export class Obstacle extends ClientGameObject2D{
     stringType:string="obstacle"
     numberType: number=4
@@ -62,7 +62,7 @@ export class Obstacle extends ClientGameObject2D{
         }
     }
     _add_own_particle(position:Vec2){
-        this.game.particles.add_particle(position,random.rad(),{lifetime:random.float(0.6,0.7),speed:0.05,angular_speed:Angle.deg2rad(random.int(-1,1))},Particles2DBase.life_timed1)
+        if(this.def.particle&&Particles.exist(this.def.particle))this.game.particles.add_particle_with_def(position,this.rotation,Particles.getFromString(this.def.particle))
     }
     update(_dt:number): void {
         

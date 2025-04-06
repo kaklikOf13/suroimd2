@@ -18,6 +18,7 @@ export interface ObstacleDef extends Definition{
     frame?:{
         base:string
     }
+    particle?:string
     variations?:number
     zIndex?:number
     rotationMode?:number
@@ -70,6 +71,7 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
         material:"stone",
+        particle:"stone_particle"
     },
     {
         idString:"barrel",
@@ -117,6 +119,7 @@ Obstacles.insert(
         scale:{
             destroy:1
         },
+        particle:"leaf_green_particle",
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles2,
         material:"bush",

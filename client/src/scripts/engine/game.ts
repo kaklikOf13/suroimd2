@@ -1,6 +1,6 @@
-import { BaseGameObject2D, CircleHitbox2D, DefaultEvents, DefaultEventsMap2D, Game2D, ParticlesManager2D, v2 } from "common/scripts/engine/mod.ts";
-import { Camera2D,  ColorM,  Material2D, Renderer, WebglRenderer } from "./renderer.ts";
-import { ResourcesManager } from "./resources.ts";
+import { Angle, BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, Particle2D, ParticlesManager2D, v2 } from "common/scripts/engine/mod.ts";
+import { Camera2D, Material2D, Renderer } from "./renderer.ts";
+import { ResourcesManager, Sprite } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 export abstract class ClientGameObject2D extends BaseGameObject2D{
@@ -24,6 +24,13 @@ export abstract class FormGameObject2D extends ClientGameObject2D{
         renderer.draw_hitbox2D(this.hb,this.material,camera.position,this.zIndex)
     }
 }
+
+export class ClientParticle2D<GameObject extends BaseGameObject2D=BaseGameObject2D> extends Particle2D<GameObject>{
+    sprite?:Sprite
+    process_sprite(game:Game2D,sprite: string): void {
+        this.sprite=(game as unknown as ClientGame2D).resources.get_sprite(sprite)
+    }
+}
 export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{
     camera:Camera2D={position:v2.new(0,0),zoom:1}
     renderer:Renderer
@@ -41,7 +48,8 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.key=keyl
         this.renderer=renderer
         this.resources=resources
-        this.particles=new ParticlesManager2D(this.scene.objects)
+        this.particles=new ParticlesManager2D(this as unknown as Game2D,this.scene.objects)
+        this.particles.particle=ClientParticle2D
     }
     draw(renderer:Renderer,dt:number){
         renderer.clear()
@@ -51,9 +59,10 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
                 this.scene.objects.objects[c].objects[o].render(this.camera,renderer,dt)
             }
         }
-        const pm=(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black)
         for(const p of this.particles.particles){
-            this.renderer.draw_circle2D(new CircleHitbox2D(p.position,0.04),pm,this.camera.position)
+            if((p as unknown as ClientParticle2D).sprite){
+                renderer.draw_image2D((p as unknown as ClientParticle2D).sprite!,v2.sub(p.position,this.camera.position),v2.new(1,1),Angle.rad2deg(p.rotation),v2.new(.5,.5))
+            }
         }
     }
     on_render(_dt:number){
