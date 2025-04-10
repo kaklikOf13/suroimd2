@@ -1,4 +1,4 @@
-import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, ClientGameObject2D, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
+import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
 import { NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -14,12 +14,13 @@ import { SoundManager } from "../engine/sounds.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplash } from "../gameObjects/damageSplash.ts";
+import { GameObject } from "./gameObject.ts";
 
 function gameLoadMaterials(game:Game){
   game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
 }
 
-export class Game extends ClientGame2D{
+export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayer=0
 
@@ -31,7 +32,7 @@ export class Game extends ClientGame2D{
 
   gameOver:boolean=false
 
-  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>ClientGameObject2D>=[]){
+  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>GameObject>=[]){
     super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)

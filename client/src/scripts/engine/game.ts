@@ -31,17 +31,17 @@ export class ClientParticle2D<GameObject extends BaseGameObject2D=BaseGameObject
         this.sprite=(game as unknown as ClientGame2D).resources.get_sprite(sprite)
     }
 }
-export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{
+export class ClientGame2D<GameObject extends ClientGameObject2D=ClientGameObject2D,Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<GameObject,Events,EMap>{
     camera:Camera2D={position:v2.new(0,0),zoom:1}
     renderer:Renderer
     key:KeyListener
     mouse:MousePosListener
     resources:ResourcesManager
 
-    particles:ParticlesManager2D<ClientGameObject2D>
+    particles:ParticlesManager2D<GameObject>
 
     sounds:SoundManager
-    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
         super(60,objects)
         this.sounds=sounds
         this.mouse=mouse

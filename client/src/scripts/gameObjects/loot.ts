@@ -1,9 +1,10 @@
 import { LootData } from "common/scripts/others/objectsEncode.ts";
-import { FormGameObject2D, Material2D, WebglRenderer } from "../engine/mod.ts";
+import { Material2D, WebglRenderer } from "../engine/mod.ts";
 import { RectHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { ColorM } from "../engine/renderer.ts";
-export class Loot extends FormGameObject2D{
+import { FormGameObject } from "../others/gameObject.ts";
+export class Loot extends FormGameObject{
     material!:Material2D
     stringType:string="loot"
     numberType: number=2

@@ -13,7 +13,6 @@ import { BoostType, DamageReason, type GameItem, InventoryItemType } from "commo
 import { AmmoDef, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { type Game } from "../others/game.ts"
 import { type OtherDef } from "common/scripts/definitions/others.ts";
 import { type HealingDef } from "common/scripts/definitions/healings.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
@@ -153,7 +152,7 @@ export class Player extends ServerGameObject{
 
     update_modifiers(){
         this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
-        const gamemode=(this.game as Game).gamemode
+        const gamemode=this.game.gamemode
         if(this.BoostType===BoostType.Addiction){
             this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
         }
@@ -178,7 +177,7 @@ export class Player extends ServerGameObject{
 
     update(dt:number): void {
         //Movement
-        const gamemode=(this.game as Game).gamemode
+        const gamemode=this.game.gamemode
         let speed=1*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing?this.using_healing_speed:1)
                   * (this.handItem?.tags.includes("gun")?(this.handItem as GunItem).def.speedMult??1:1)
@@ -210,7 +209,7 @@ export class Player extends ServerGameObject{
                 break
             }
         }
-        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,(this.game as Game).map.size),3)
+        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,this.game.map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.dirtyPart=true
             this.oldPosition=v2.duplicate(this.position)
@@ -414,7 +413,7 @@ export class Player extends ServerGameObject{
     dropAll(){
         for(const s of this.inventory.slots){
             if(s.quantity>0&&s.item){
-                (this.game as Game).add_loot(this.position,s.item.def as GameItem,s.quantity)
+                this.game.add_loot(this.position,s.item.def as GameItem,s.quantity)
                 s.quantity=0
                 s.item=null
             }
@@ -428,8 +427,8 @@ export class Player extends ServerGameObject{
             this.destroy()
         }
         this.dropAll();
-        (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);
-        (this.game as Game).modeManager.on_player_die(this);
+        this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
+        this.game.modeManager.on_player_die(this);
 
         if(params.owner&&params.owner instanceof Player){
             params.owner.status.kills++
@@ -448,9 +447,9 @@ export class Player extends ServerGameObject{
         this.client!.emit(p)
     }
     onDestroy(): void {
-        const idx=(this.game as Game).livingPlayers.indexOf(this)
+        const idx=this.game.livingPlayers.indexOf(this)
         if(idx!==-1){
-            (this.game as Game).livingPlayers.splice(idx,1);
+            this.game.livingPlayers.splice(idx,1);
         }
     }
 }

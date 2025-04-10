@@ -15,6 +15,7 @@ import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
+import { ServerGameObject } from "./gameObject.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -61,7 +62,7 @@ export class GamemodeManager{
         }
     }
 }
-export class Game extends GameBase{
+export class Game extends GameBase<ServerGameObject>{
     config:GameConfig
     map:GameMap
     gamemode:Gamemode

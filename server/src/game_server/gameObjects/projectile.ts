@@ -1,6 +1,5 @@
 import { CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { type Player } from "./player.ts";
-import { type Game } from "../others/game.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
@@ -31,7 +30,7 @@ export class Projectile extends ServerGameObject{
     fuse_delay:number=0
     update(dt:number): void {
         if(!v2.is(this.velocity,NullVec2)){
-            this.position=v2.clamp2(v2.add(this.position,v2.scale(this.velocity,dt)),NullVec2,(this.game as Game).map.size)
+            this.position=v2.clamp2(v2.add(this.position,v2.scale(this.velocity,dt)),NullVec2,this.game.map.size)
             this.manager.cells.updateObject(this)
             this.dirtyPart=true
         }
@@ -49,7 +48,7 @@ export class Projectile extends ServerGameObject{
             this.fuse_delay-=dt
             if(this.fuse_delay<=0){
                 this.destroy();
-                if(this.defs.explosion)(this.game as Game).add_explosion(this.position,Explosions.getFromString(this.defs.explosion),this.owner)
+                if(this.defs.explosion)this.game.add_explosion(this.position,Explosions.getFromString(this.defs.explosion),this.owner)
             }
         }
     }

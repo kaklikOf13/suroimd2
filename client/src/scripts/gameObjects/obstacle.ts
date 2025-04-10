@@ -1,5 +1,5 @@
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
-import { ClientGameObject2D, Sprite } from "../engine/mod.ts";
+import { Sprite } from "../engine/mod.ts";
 import { Materials, ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
 import { Camera2D, Renderer } from "../engine/renderer.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
@@ -9,7 +9,8 @@ import { Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Particles } from "../defs/particles.ts";
-export class Obstacle extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class Obstacle extends GameObject{
     stringType:string="obstacle"
     numberType: number=4
     name:string=""

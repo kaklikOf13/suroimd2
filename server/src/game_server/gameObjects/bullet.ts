@@ -5,7 +5,6 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "common/scripts/definitions/ammo.ts";
-import { Game } from "../others/game.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 
 export class Bullet extends ServerGameObject{
@@ -62,7 +61,7 @@ export class Bullet extends ServerGameObject{
                         if((obj as Obstacle).dead){
                             this.damage-=od*(this.defs.obstacleMult??1)
                             if(this.damage>0){
-                                (this.game as Game).add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
+                                this.game.add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
                             }
                         }
                     }
@@ -93,7 +92,7 @@ export class Bullet extends ServerGameObject{
         (this.hb as CircleHitbox2D).radius=this.defs.radius*this.modifiers.size
     }
     onDestroy(): void {
-        delete (this.game as Game).bullets[this.id]
+        delete this.game.bullets[this.id]
     }
     tracerColor:number=0
     getData(): BulletData {

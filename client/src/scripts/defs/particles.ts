@@ -1,8 +1,8 @@
 import { Definitions } from "common/scripts/engine/definitions.ts";
 import { ParticleDef2D,Particles2DBase,Particle2DLifetime1Args } from "common/scripts/engine/particles.ts";
-import { ClientGameObject2D } from "../engine/game.ts";
+import { GameObject } from "../others/gameObject.ts";
 
-export const Particles:Definitions<ParticleDef2D<ClientGameObject2D>,undefined>=new Definitions()
+export const Particles:Definitions<ParticleDef2D<GameObject>,undefined>=new Definitions()
 Particles.insert(
     {
         update:Particles2DBase.life_timed1_update,

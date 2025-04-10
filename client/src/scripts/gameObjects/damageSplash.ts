@@ -1,8 +1,9 @@
-import { ClientGameObject2D, Sprite } from "../engine/mod.ts";
+import { Sprite } from "../engine/mod.ts";
 import { Camera2D, Renderer } from "../engine/renderer.ts";
 import {Vec2, v2 } from "common/scripts/engine/geometry.ts";
 import { Sound } from "../engine/resources.ts";
-export class DamageSplash extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class DamageSplash extends GameObject{
     stringType:string="damage_splash"
     numberType: number=7
 

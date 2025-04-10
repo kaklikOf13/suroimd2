@@ -4,10 +4,10 @@ import { Angle, BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/script
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
-import { ClientGameObject2D } from "../engine/game.ts";
 import { Camera2D, Color, ColorM, Renderer } from "../engine/renderer.ts";
 import { Debug } from "../others/config.ts";
-export class Bullet extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class Bullet extends GameObject{
     stringType:string="bullet"
     numberType: number=3
     name:string=""

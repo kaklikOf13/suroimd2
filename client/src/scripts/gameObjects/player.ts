@@ -1,13 +1,13 @@
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { FormGameObject2D, Material2D, WebglRenderer } from "../engine/mod.ts";
+import { Material2D, WebglRenderer } from "../engine/mod.ts";
 import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
-import { Game } from "../others/game.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { ColorM } from "../engine/renderer.ts";
-export class Player extends FormGameObject2D{
+import { FormGameObject } from "../others/gameObject.ts";
+export class Player extends FormGameObject{
     material!:Material2D
     stringType:string="player"
     numberType: number=1
@@ -50,10 +50,10 @@ export class Player extends FormGameObject2D{
 
         this.manager.cells.updateObject(this)
 
-        if(this.id===(this.game as Game).activePlayer){
-            (this.game as Game).update_camera()
+        if(this.id===this.game.activePlayer){
+            this.game.update_camera()
             if(data.full){
-                (this.game as Game).guiManager.update_equipaments()
+                this.game.guiManager.update_equipaments()
             }
         }
     }

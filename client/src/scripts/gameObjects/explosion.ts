@@ -1,9 +1,10 @@
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
-import { Color, FormGameObject2D, Material2D, WebglRenderer } from "../engine/mod.ts";
+import { Color, Material2D, WebglRenderer } from "../engine/mod.ts";
 import { CircleHitbox2D } from "common/scripts/engine/mod.ts";
 import { ExplosionDef, Explosions } from "common/scripts/definitions/explosions.ts";
 import { ColorM } from "../engine/renderer.ts";
-export class Explosion extends FormGameObject2D{
+import { FormGameObject } from "../others/gameObject.ts";
+export class Explosion extends FormGameObject{
     material!:Material2D<Color>
     stringType:string="explosion"
     numberType: number=5

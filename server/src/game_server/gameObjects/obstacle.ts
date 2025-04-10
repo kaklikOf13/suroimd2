@@ -4,7 +4,6 @@ import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
-import { Game } from "../others/game.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
@@ -103,11 +102,11 @@ export class Obstacle extends ServerGameObject{
     kill(params:DamageParams){
         if(this.dead)return
         if(this.def.onDestroyExplosion){
-            (this.game as Game).add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
+            this.game.add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
         }
 
         for(const l of this.loot){
-            (this.game as Game).add_loot(this.position,l.item,l.count)
+            this.game.add_loot(this.position,l.item,l.count)
         }
 
         this.dirtyPart=true
