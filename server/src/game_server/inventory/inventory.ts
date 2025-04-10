@@ -1,8 +1,8 @@
 import { Player } from "../gameObjects/player.ts";
-import { Angle, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, CircleHitbox2D, Definition, getPatterningShape, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef } from "common/scripts/definitions/guns.ts";
 import { ItemCap, SlotCap } from "common/scripts/engine/inventory.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
@@ -10,6 +10,10 @@ import { type Game } from "../others/game.ts";
 import { OtherDef } from "common/scripts/definitions/others.ts";
 import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { MeleeDef } from "common/scripts/definitions/melees.ts";
+import { CATEGORYS } from "common/scripts/others/constants.ts";
+import { type ServerGameObject } from "../others/gameObject.ts";
+import { Obstacle } from "../gameObjects/obstacle.ts";
 export abstract class LItem extends ItemCap{
   // deno-lint-ignore no-explicit-any
   abstract on_use(user:Player,slot:SlotCap<any>):void
@@ -183,5 +187,64 @@ export class OtherItem extends LItem{
   }
   update(_user: Player): void {
     
+  }
+}
+export class MeleeItem extends LItem{
+  limit_per_slot: number=Infinity
+  def:MeleeDef
+  cap: number
+  itemType: InventoryItemType.melee=InventoryItemType.melee
+  use_delay:number=0
+
+  constructor(def:MeleeDef){
+    super()
+    this.cap=def.size
+    this.limit_per_slot=1
+    this.def=def
+  }
+  is(other: LItem): boolean {
+    return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
+  }
+  attack(user:Player):void{
+    if(!(user.handItem&&user.handItem.is(this)))return
+    const position=v2.add(
+      user.position,
+      v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.offset,this.def.offset))
+    )
+    const hb=new CircleHitbox2D(position,this.def.radius)
+    const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,[CATEGORYS.PLAYERS,CATEGORYS.OBSTACLES])
+    for(const c of collidibles){
+      if(!hb.collidingWith(c.hb))continue
+      if(c instanceof Obstacle){
+        c.damage({
+          amount:this.def.damage,
+          critical:false,
+          position:hb.position,
+          reason:DamageReason.Player,
+          owner:user,
+          source:this.def as unknown as GameItem
+        })
+      }else if(c instanceof Player&&c.id!==user.id){
+        c.damage({
+          amount:this.def.damage,
+          critical:false,
+          position:hb.position,
+          reason:DamageReason.Player,
+          owner:user,
+          source:this.def as unknown as GameItem
+        })
+      }
+    }
+  }
+  on_use(user: Player,_slot:SlotCap): void {
+    if(this.use_delay<=0){
+      for(const t of this.def.damage_delays){
+        user.game.addTimeout(this.attack.bind(this,user),t)
+        this.use_delay=this.def.attack_delay
+      }
+    }
+  }
+  update(user: Player): void {
+    this.use_delay-=1/user.game.tps
   }
 }

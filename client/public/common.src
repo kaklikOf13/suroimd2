@@ -1,6 +1,7 @@
 {
     "files":{
         "guns-images":"img/game/common/items/guns.src",
+        "melees-images":"img/game/common/items/melees.src",
         "ammos-images":"img/game/common/items/ammos.src",
         "healings-images":"img/game/common/items/healings.src",
         "equipaments-images":"img/game/common/items/equipaments.src",

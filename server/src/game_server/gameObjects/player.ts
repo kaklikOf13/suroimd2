@@ -2,7 +2,7 @@ import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "c
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
-import { AmmoItem, GunItem, HealingItem, LItem, OtherItem} from "../inventory/inventory.ts";
+import { AmmoItem, GunItem, HealingItem, LItem, MeleeItem, OtherItem} from "../inventory/inventory.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
 import { Client } from "../../engine/mod.ts";
 import { GuiPacket,DamageSplash } from "common/scripts/packets/gui_packet.ts";
@@ -19,6 +19,7 @@ import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
+import { MeleeDef, Melees } from "common/scripts/definitions/melees.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -45,7 +46,7 @@ export class Player extends ServerGameObject{
 
     inventory:InventoryCap<LItem>
 
-    melee:LItem|null=null
+    default_melee:MeleeDef=Melees.getFromString("survival_knife")
 
     using_healing_speed:number=0.4
 
@@ -66,10 +67,11 @@ export class Player extends ServerGameObject{
         this.oldPosition=this.position
         this.inventory=new InventoryCap<LItem>(undefined,100)
 
+        this.give_item(this.default_melee as unknown as GameItem,1)
+
         this.give_item(GameItems.valueString["cellphone"],1)
 
         this.actions=new ActionsManager(this)
-        this.load_hand(1)
 
         this.vest=Armors.getFromString("soldier_vest")
         this.helmet=Armors.getFromString("soldier_helmet")
@@ -88,6 +90,9 @@ export class Player extends ServerGameObject{
                 this.inventory.add(i,count)
                 break
             }
+            case InventoryItemType.melee: 
+                this.inventory.add(new MeleeItem(def as unknown as MeleeDef),count)
+                break
             case InventoryItemType.ammo:
                 this.inventory.add(new AmmoItem(def as unknown as AmmoDef),count)
                 break
@@ -105,19 +110,24 @@ export class Player extends ServerGameObject{
 
     load_hand(h:number){
         if(this.hand==h)return
-        if(this.handItem&&this.handItem.itemType===InventoryItemType.gun){
-            (this.handItem as GunItem).reloading=false
+        if(this.handItem){
+            switch(this.handItem.itemType){
+                case InventoryItemType.gun:
+                    (this.handItem as GunItem).reloading=false
+                    break
+                case InventoryItemType.melee:
+                    (this.handItem as MeleeItem).use_delay=(this.handItem as MeleeItem).def.attack_delay
+                    break
+            }
         }
-        if(h<1||h>this.inventory.slots.length){
+        if(h<0||h>this.inventory.slots.length){
             h=0
             this.hand=0
         }else{
             this.hand=h
         }
-        if(this.hand>0&&this.hand<=this.inventory.slots.length){ 
-            this.handItem=this.inventory.slots[this.hand-1].item
-        }else{
-            this.handItem=this.melee
+        if(this.hand<=this.inventory.slots.length){ 
+            this.handItem=this.inventory.slots[this.hand].item
         }
         this.recoil=undefined
         this.privateDirtys.hand=true
@@ -127,12 +137,12 @@ export class Player extends ServerGameObject{
         this.dirty=true
     }
     update_hand(){
-        if(this.handItem&&(!this.inventory.slots[this.hand-1]||this.inventory.slots[this.hand-1].quantity<=0)){
+        if(this.handItem&&(!this.inventory.slots[this.hand]||this.inventory.slots[this.hand].quantity<=0)){
             this.load_hand(this.hand)
         }
     }
     dead=false
-    hand:number=-1
+    hand:number=0
 
     modifiers:PlayerModifiers={
         boost:1,
@@ -141,7 +151,8 @@ export class Player extends ServerGameObject{
         damage:1,
         health:1,
         speed:1,
-        critical_mult:1
+        critical_mult:1,
+        luck:1,
     }
 
     privateDirtys={
@@ -218,7 +229,7 @@ export class Player extends ServerGameObject{
 
         //Hand Use
         if(this.using_item&&this.handItem&&this.pvpEnabled){
-            this.handItem.on_use(this,this.inventory.slots[this.hand-1])
+            this.handItem.on_use(this,this.inventory.slots[this.hand])
         }
         //Update Inventory
         for(const s of this.inventory.slots){
@@ -281,6 +292,7 @@ export class Player extends ServerGameObject{
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
+        this.load_hand(0)
     }
     getData(): PlayerData {
         return {
@@ -317,7 +329,7 @@ export class Player extends ServerGameObject{
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
                 if(!s.item)continue
-                if(i===this.hand-1)this.handL=ii+1
+                if(i===this.hand)this.handL=ii
                 guiPacket.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
                 ii++
             }
@@ -330,6 +342,7 @@ export class Player extends ServerGameObject{
                         }
                         guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
                         break
+                    case InventoryItemType.melee:
                     case InventoryItemType.ammo:
                     case InventoryItemType.other:
                     case InventoryItemType.equipament:

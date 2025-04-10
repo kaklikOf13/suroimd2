@@ -109,4 +109,5 @@ export type PlayerModifiers={
     bullet_speed:number
     bullet_size:number
     critical_mult:number
+    luck:number
 }
