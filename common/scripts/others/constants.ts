@@ -41,6 +41,14 @@ export const CATEGORYSL=[
     CATEGORYS.EXPLOSIONS,
     CATEGORYS.PROJECTILES
 ]
+export enum ItemQuality{
+    Common,
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary,
+    Developer
+}
 export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)

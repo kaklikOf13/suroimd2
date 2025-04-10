@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="119.46174mm"
-   height="23.272339mm"
-   viewBox="0 0 119.46174 23.272339"
+   width="50mm"
+   height="9.7404995mm"
+   viewBox="0 0 50.000001 9.7404996"
    version="1.1"
    id="svg5"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
    sodipodi:docname="ar15.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -28,14 +28,16 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:zoom="1.1407905"
-     inkscape:cx="361.15309"
-     inkscape:cy="50.84194"
+     inkscape:cx="81.084125"
+     inkscape:cy="50.403646"
      inkscape:window-width="1920"
-     inkscape:window-height="996"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
      id="defs2">
     <clipPath
@@ -136,7 +138,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-22.10429,-125.51274)">
+     transform="matrix(0.41854405,0,0,0.41854405,-9.2516192,-52.532612)">
     <path
        style="fill:#242424;fill-opacity:1;stroke:#242424;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 23.298922,143.9576 19.461587,-5.36865 8.04502,-1.05433 V 132.3018 H 22.243936 c 0.258128,4.7689 0.688925,6.89155 1.054986,11.6558 z"

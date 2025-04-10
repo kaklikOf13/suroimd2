@@ -67,7 +67,7 @@ export class GameMap{
     }
     generate(){
         //Feast
-        const crate=Obstacles.getFromString("normal_crate")
+        const crate=Obstacles.getFromString("wood_crate")
         let obs=this.add_obstacle(crate)
         obs.set_position(v2.new(2,4))
         obs=this.add_obstacle(crate)
@@ -89,6 +89,15 @@ export class GameMap{
         }
         for(let i=0;i<5;i++){
             this.generate_obstacle(crate)
+        }
+        for(let i=0;i<3;i++){
+            this.generate_obstacle(Obstacles.getFromString("copper_crate"))
+        }
+        for(let i=0;i<1;i++){
+            this.generate_obstacle(Obstacles.getFromString("iron_crate"))
+        }
+        for(let i=0;i<1;i++){
+            this.generate_obstacle(Obstacles.getFromString("gold_crate"))
         }
         for(let i=0;i<10;i++){
             this.generate_obstacle(Obstacles.getFromString("bush"))

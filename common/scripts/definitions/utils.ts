@@ -1,5 +1,6 @@
 import { type NetStream } from "../engine/stream.ts";
 import { Definition } from "../engine/definitions.ts";
+import { type ItemQuality } from "../others/constants.ts";
 export interface BulletDef{
     damage:number
     range:number
@@ -23,6 +24,7 @@ export enum InventoryItemType{
 }
 export interface GameItem extends Definition{
     item_type:InventoryItemType
+    quality:ItemQuality
 }
 export enum DamageReason{
     Player,

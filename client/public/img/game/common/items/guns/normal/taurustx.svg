@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="75.72554mm"
-   height="47.28788mm"
-   viewBox="0 0 75.72554 47.28788"
+   width="50mm"
+   height="31.223206mm"
+   viewBox="0 0 50 31.223206"
    version="1.1"
    id="svg18667"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
    sodipodi:docname="taurustx.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -25,24 +25,26 @@
      showgrid="false"
      inkscape:zoom="1.6234012"
      inkscape:cx="149.68573"
-     inkscape:cy="4.9279254"
+     inkscape:cy="4.6199301"
      inkscape:window-width="1920"
-     inkscape:window-height="996"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
      id="defs18664" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2"
-     transform="translate(-76.728131,-129.53671)">
+     transform="matrix(0.66027924,0,0,0.66027924,-50.661992,-85.5304)">
     <rect
        style="fill:#666666;fill-opacity:1;stroke:none;stroke-width:0.078668;stroke-linecap:square;stroke-opacity:1"
        id="rect22625"
@@ -55,7 +57,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-76.728131,-129.53671)">
+     transform="matrix(0.66027924,0,0,0.66027924,-50.661992,-85.5304)">
     <path
        style="fill:#1c1c1c;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 98.503587,129.604 h 1.661143 l -2.778703,6.85123 h -1.722033 z"

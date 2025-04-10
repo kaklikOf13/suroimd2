@@ -1,4 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts"
+import { ItemQuality } from "../others/constants.ts";
 import { GameItem, InventoryItemType } from "./utils.ts";
 
 export enum AmmoType{
@@ -34,13 +35,14 @@ export interface AmmoDef extends Definition{
 }
 export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.ammo
+    i.quality=ItemQuality.Common
 })
 Ammos.insert(
     //Normals
     {
         idString:"12g",
         ammoType:AmmoType["12g"],
-        defaultTrail:0xeeebec,
+        defaultTrail:0xcfada0,
         strongTrail:0xdb2218,
         tint:0xff0000,
         size:0.01,

@@ -3,8 +3,14 @@
         "stone":"stones/stone.svg",
         "stone_dead":"stones/stone_dead.svg",
 
-        "normal_crate":"crates/normal_crate.svg",
-        "normal_crate_dead":"crates/normal_crate_dead.svg",
+        "wood_crate":"crates/wood_crate.svg",
+        "wood_crate_dead":"crates/wood_crate_dead.svg",
+
+        "copper_crate":"crates/copper_crate.svg",
+
+        "iron_crate":"crates/iron_crate.svg",
+
+        "gold_crate":"crates/gold_crate.svg",
 
         "oak_tree":"trees/oak_tree.svg",
         "oak_tree_dead":"trees/oak_tree_dead.svg",

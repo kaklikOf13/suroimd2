@@ -97,8 +97,8 @@ Obstacles.insert(
         material:"tree",
     },
     {
-        idString:"normal_crate",
-        health:80,
+        idString:"wood_crate",
+        health:130,
         hotspot:v2.new(0,0),
         hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
         scale:{
@@ -109,7 +109,52 @@ Obstacles.insert(
         material:"tree",
 
         interactDestroy:true,
-        lootTable:"normal_crate"
+        lootTable:"wood_crate"
+    },
+    {
+        idString:"copper_crate",
+        health:160,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+
+        interactDestroy:true,
+        lootTable:"copper_crate"
+    },
+    {
+        idString:"iron_crate", //Airdrop
+        health:170,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+
+        interactDestroy:true,
+        lootTable:"iron_crate"
+    },
+    {
+        idString:"gold_crate", //Gold Airdrop
+        health:180,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+
+        interactDestroy:true,
+        lootTable:"gold_crate"
     },
     {
         idString:"bush",

@@ -63,12 +63,25 @@ LootTables.add_tables({
         {table:"epic_guns",weight:1},
         {table:"legendary_guns",weight:0.1}
     ],
+    "special_guns":[
+        {table:"uncommon_guns",weight:29},
+        {table:"rare_guns",weight:11},
+        {table:"epic_guns",weight:3},
+        {table:"legendary_guns",weight:0.3}
+    ],
     //Consumibles
     "consumibles":[
         {table:"healing",weight:13},
         {table:"adrenaline",weight:6},
         {table:"shield",weight:2},
         {table:"addiction",weight:0.7},
+    ],
+    "special_consumibles":[
+        {table:"healing",weight:13},
+        {table:"adrenaline",weight:6},
+        {table:"",weight:4},
+        {table:"shield",count:2,weight:2},
+        {table:"addiction",count:2,weight:0.7},
     ],
     "healing":[
         {item:"gauze",count:5,weight:1},
@@ -85,8 +98,8 @@ LootTables.add_tables({
         {item:"blue_pills",count:1,weight:0.6},
     ],
     "addiction":[
-        {item:"small_red_crystal",count:2,weight:3},
-        {item:"red_crystal",count:1,weight:1},
+        {item:"small_red_crystal",count:4,weight:3},
+        {item:"red_crystal",count:2,weight:1},
         {item:"red_pills",count:1,weight:0.6},
     ],
     "mana":[
@@ -102,7 +115,7 @@ LootTables.add_tables({
         {item:"556mm",count:60,weight:1},
     ],
     //Loot Tables
-    "normal_crate":{
+    "wood_crate":{
         content:[
             {weight:1.5,table:"consumibles"},
             {weight:1.3,table:"ammos"},
@@ -110,5 +123,24 @@ LootTables.add_tables({
         ],
         min:1,
         max:4
-    }
+    },
+    "copper_crate":{
+        content:[
+            {weight:1.5,table:"consumibles"},
+            {weight:1.3,table:"ammos"},
+            {weight:0.5,table:"special_guns"},
+        ],
+        min:2,
+        max:5
+    },
+    "iron_crate":[
+        [{weight:1,count:4,table:"special_consumibles"}],
+        [{weight:1,count:3,table:"ammos"}],
+        [{weight:1,count:1,table:"epic_guns"}],
+    ],
+    "gold_crate":[
+        [{weight:1,count:5,table:"special_consumibles"}],
+        [{weight:1,count:4,table:"ammos"}],
+        [{weight:1,count:1,table:"legendary_guns"}],
+    ],
 })

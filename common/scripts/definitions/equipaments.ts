@@ -1,7 +1,7 @@
 import { Definitions,Definition } from "../engine/mod.ts"
 import { GameItem } from "./utils.ts";
 import { InventoryItemType } from "./utils.ts";
-import { PlayerModifiers } from "../others/constants.ts";
+import { ItemQuality, PlayerModifiers } from "../others/constants.ts";
 
 export enum EquipamentType{
     Helmet,
@@ -16,6 +16,7 @@ export interface EquipamentDef extends Definition{
 }
 export const Armors=new Definitions<EquipamentDef,GameItem>((obj)=>{
     obj.item_type=InventoryItemType.equipament
+    obj.quality=ItemQuality.Common
 })
 Armors.insert(
     //Normals Vest
@@ -90,6 +91,7 @@ export interface AccessorieDef extends Definition{
 }
 export const Accessories=new Definitions<AccessorieDef,GameItem>((obj)=>{
     obj.item_type=InventoryItemType.accessorie
+    obj.quality=ItemQuality.Common
 })
 Accessories.insert(
     {
