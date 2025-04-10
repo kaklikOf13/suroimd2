@@ -239,8 +239,8 @@ export const v2 = Object.freeze({
      * @param Vec2 `Vec2`
      * @returns A new `Vec2` With squared of `Vec21`
      */
-    squared(Vec2:Vec2):number{
-        return Vec2.x*Vec2.x+Vec2.y*Vec2.y
+    squared(Vec:Vec2):number{
+        return Vec.x*Vec.x+Vec.y*Vec.y
     },
     dot(x: Vec2, y: Vec2): number {
         return x.x * y.x + x.y * y.y;
@@ -295,9 +295,10 @@ export const v2 = Object.freeze({
      * @param fallback A `Vec2` to clone and return in case the normalization operation fails
      * @returns A `Vec2` whose length is 1 and is parallel to the original Vec2
      */
-    normalizeSafe(Vec2:Vec2,fallback:Vec2=NullVec2):Vec2 {
+    normalizeSafe(Vec2:Vec2,fallback?:Vec2):Vec2 {
         const eps = 0.000001
         const len = this.length(Vec2)
+        fallback??=this.new(1,0)
         return len > eps
             ? {
                 x:Vec2.x/len,

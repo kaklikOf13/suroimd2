@@ -29,6 +29,7 @@ export interface ObstacleDef extends Definition{
     lootTable?:string
 
     interactDestroy?:boolean
+    reflectBullets?:boolean
 
     sounds?:{
         hit:string
@@ -84,6 +85,7 @@ Obstacles.insert(
         zIndex:zIndexes.Obstacles1,
         onDestroyExplosion:"barrel_explosion",
         material:"metal",
+        reflectBullets:true
     },
     {
         idString:"oak_tree",
@@ -122,6 +124,7 @@ Obstacles.insert(
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"tree",
+        reflectBullets:true,
 
         interactDestroy:true,
         lootTable:"copper_crate"
@@ -137,6 +140,7 @@ Obstacles.insert(
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"tree",
+        reflectBullets:true,
 
         interactDestroy:true,
         lootTable:"iron_crate"
@@ -152,6 +156,7 @@ Obstacles.insert(
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"tree",
+        reflectBullets:true,
 
         interactDestroy:true,
         lootTable:"gold_crate"

@@ -28,6 +28,8 @@ export class Bullet extends ServerGameObject{
     source?:GameItem
 
     damage:number=0
+
+    reflectionCount:number=0
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -46,7 +48,7 @@ export class Bullet extends ServerGameObject{
         for(const obj of objs){
             switch((obj as BaseGameObject2D).stringType){
                 case "player":
-                    if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
+                    if((obj as Player).hb&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)){
                         (obj as Player).damage({amount:this.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         break
@@ -54,13 +56,20 @@ export class Bullet extends ServerGameObject{
                     break
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
-                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead&&this.hb.collidingWith((obj as Obstacle).hb)){
+                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
+                        const col=this.hb.overlapCollision((obj as Obstacle).hb)
+                        if(!col)continue
                         const od=(obj as Obstacle).health;
-                        (obj as Obstacle).damage({amount:this.damage*(this.defs.obstacleMult??1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3){
+                            const angle = 2 * Math.atan2(col.dir.y, -col.dir.x) - this.angle
+                            this.position = v2.add(this.position, v2.new(Math.cos(angle), -Math.sin(angle)))
+                            this.reflect(angle)
+                        }
                         this.destroy()
                         if((obj as Obstacle).dead){
                             this.damage-=od*(this.defs.obstacleMult??1)
-                            if(this.damage>0){
+                            if(this.damage>0&&!(obj as Obstacle).def.reflectBullets){
                                 this.game.add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
                             }
                         }
@@ -90,6 +99,11 @@ export class Bullet extends ServerGameObject{
         this.angle=angle;
 
         (this.hb as CircleHitbox2D).radius=this.defs.radius*this.modifiers.size
+    }
+    reflect(angle:number){
+        const b=this.game.add_bullet(this.position,angle,this.defs,this.owner,this.ammo,this.source)
+        b.damage=this.damage/2
+        b.reflectionCount=this.reflectionCount+1
     }
     onDestroy(): void {
         delete this.game.bullets[this.id]

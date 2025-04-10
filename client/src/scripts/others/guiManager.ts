@@ -216,7 +216,7 @@ export class GuiManager{
         const sMM=(slot:HTMLDivElement,i:number)=>{
             slot.addEventListener("mousedown",(e)=>{
                 if(e.button!==0)return
-                this.game.action.hand=i+1
+                this.game.action.hand=i
                 this.game.action.UsingItem=false
             })
         }

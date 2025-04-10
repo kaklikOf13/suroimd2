@@ -67,7 +67,7 @@ export class Player extends ServerGameObject{
         this.oldPosition=this.position
         this.inventory=new InventoryCap<LItem>(undefined,100)
 
-        this.give_item(this.default_melee as unknown as GameItem,1)
+        this.give_item(this.default_melee as unknown as GameItem,1,false)
 
         this.give_item(GameItems.valueString["cellphone"],1)
 
@@ -82,34 +82,34 @@ export class Player extends ServerGameObject{
     interact(_user: Player): void {
         return
     }
-    give_item(def:GameItem,count:number){
+    give_item(def:GameItem,count:number,droppable:boolean=true){
         switch(def.item_type){
             case InventoryItemType.gun:{
-                const i=new GunItem(def as unknown as GunDef)
+                const i=new GunItem(def as unknown as GunDef,droppable)
                 i.ammo=0
                 this.inventory.add(i,count)
                 break
             }
             case InventoryItemType.melee: 
-                this.inventory.add(new MeleeItem(def as unknown as MeleeDef),count)
+                this.inventory.add(new MeleeItem(def as unknown as MeleeDef,droppable),count)
                 break
             case InventoryItemType.ammo:
-                this.inventory.add(new AmmoItem(def as unknown as AmmoDef),count)
+                this.inventory.add(new AmmoItem(def as unknown as AmmoDef,droppable),count)
                 break
             case InventoryItemType.healing:
-                this.inventory.add(new HealingItem(def as unknown as HealingDef),count)
+                this.inventory.add(new HealingItem(def as unknown as HealingDef,droppable),count)
                 break
             case InventoryItemType.equipament:
                 break
             case InventoryItemType.other:
-                this.inventory.add(new OtherItem(def as unknown as OtherDef),count)
+                this.inventory.add(new OtherItem(def as unknown as OtherDef,droppable),count)
                 break
         }
         this.privateDirtys.inventory=true
     }
 
-    load_hand(h:number){
-        if(this.hand==h)return
+    load_hand(h:number,force:boolean=false){
+        if(this.hand==h&&!force)return
         if(this.handItem){
             switch(this.handItem.itemType){
                 case InventoryItemType.gun:
@@ -138,11 +138,12 @@ export class Player extends ServerGameObject{
     }
     update_hand(){
         if(this.handItem&&(!this.inventory.slots[this.hand]||this.inventory.slots[this.hand].quantity<=0)){
-            this.load_hand(this.hand)
+            this.inventory.update_infinity()
+            this.load_hand(this.hand,true)
         }
     }
     dead=false
-    hand:number=0
+    hand:number=-1
 
     modifiers:PlayerModifiers={
         boost:1,
@@ -257,7 +258,9 @@ export class Player extends ServerGameObject{
                             })
                         }
                         const ov=this.hb.overlapCollision((obj as Obstacle).hb)
-                        if(ov.collided)this.position=v2.sub(this.position,v2.scale(ov.overlap,0.9))
+                        if(ov){
+                            this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                        }
                     }
                     break
                 case "loot":
@@ -308,7 +311,6 @@ export class Player extends ServerGameObject{
             }
         }
     }
-    handL=0
     ammoCount:Partial<Record<AmmoType,number>>={}
 
     damageSplash?:DamageSplash
@@ -329,7 +331,6 @@ export class Player extends ServerGameObject{
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
                 if(!s.item)continue
-                if(i===this.hand)this.handL=ii
                 guiPacket.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
                 ii++
             }
@@ -340,14 +341,14 @@ export class Player extends ServerGameObject{
                             this.ammoCount[(this.handItem as GunItem).def.ammoType]=this.inventory.getCountTag(`ammo_${(this.handItem as GunItem).def.ammoType}`)
                             this.privateDirtys.hand=true
                         }
-                        guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
+                        guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.hand,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
                         break
                     case InventoryItemType.melee:
                     case InventoryItemType.ammo:
                     case InventoryItemType.other:
                     case InventoryItemType.equipament:
                     case InventoryItemType.healing:
-                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
+                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.hand}:undefined
                         break
                 }
             }
@@ -425,7 +426,7 @@ export class Player extends ServerGameObject{
     }
     dropAll(){
         for(const s of this.inventory.slots){
-            if(s.quantity>0&&s.item){
+            if(s.quantity>0&&s.item&&s.item.droppable){
                 this.game.add_loot(this.position,s.item.def as GameItem,s.quantity)
                 s.quantity=0
                 s.item=null

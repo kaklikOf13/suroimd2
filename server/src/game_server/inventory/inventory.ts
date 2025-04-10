@@ -20,6 +20,7 @@ export abstract class LItem extends ItemCap{
   abstract update(user:Player):void
   abstract itemType:InventoryItemType
   abstract def:Definition
+  droppable:boolean=true
 }
 export class GunItem extends LItem{
     limit_per_slot: number=1
@@ -29,13 +30,14 @@ export class GunItem extends LItem{
 
     ammo:number=0
     currentAmmo:string=""
-    constructor(def?:GunDef){
+    constructor(def?:GunDef,droppable=true){
       super()
       this.def=def!
       this.tags.push("gun")
       this.cap=this.def.size
       this.ammo=this.def.reload.capacity
       this.currentAmmo=defaultAmmos[def!.ammoType]
+      this.droppable=droppable
     }
     reloading=false
     itemType=InventoryItemType.gun
@@ -108,10 +110,11 @@ export class AmmoItem extends LItem{
   cap: number
   itemType: InventoryItemType.ammo=InventoryItemType.ammo
 
-  constructor(def:AmmoDef){
+  constructor(def:AmmoDef,droppable=true){
     super()
     this.def=def
     this.cap=def.size
+    this.droppable=droppable
     this.tags.push("ammo",`ammo_${this.def.ammoType}`)
   }
   is(other: LItem): boolean {
@@ -129,10 +132,11 @@ export class HealingItem extends LItem{
   cap: number
   itemType: InventoryItemType.healing=InventoryItemType.healing
 
-  constructor(def:HealingDef){
+  constructor(def:HealingDef,droppable=true){
     super()
     this.def=def
     this.cap=def.size
+    this.droppable=droppable
   }
   is(other: LItem): boolean {
     return (other instanceof HealingItem)&&other.def.idNumber==this.def.idNumber
@@ -164,10 +168,11 @@ export class OtherItem extends LItem{
   cap: number
   itemType: InventoryItemType.other=InventoryItemType.other
 
-  constructor(def:OtherDef){
+  constructor(def:OtherDef,droppable:boolean=true){
     super()
     this.def=def
     this.cap=def.size
+    this.droppable=droppable
   }
   is(other: LItem): boolean {
     return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
@@ -196,11 +201,12 @@ export class MeleeItem extends LItem{
   itemType: InventoryItemType.melee=InventoryItemType.melee
   use_delay:number=0
 
-  constructor(def:MeleeDef){
+  constructor(def:MeleeDef,droppable=true){
     super()
     this.cap=def.size
     this.limit_per_slot=1
     this.def=def
+    this.droppable=droppable
   }
   is(other: LItem): boolean {
     return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber

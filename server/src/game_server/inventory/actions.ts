@@ -1,4 +1,4 @@
-import { Action, SlotCap } from "common/scripts/engine/inventory.ts";
+import { Action, type SlotCap } from "common/scripts/engine/inventory.ts";
 import { Player } from "../gameObjects/player.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
@@ -38,7 +38,7 @@ export class HealingAction extends Action<Player>{
         this.slot=slot
     }
     on_execute(user:Player){
-        if(!user.handItem||user.handItem.itemType!=InventoryItemType.healing)return
+        if(!user.handItem||!this.slot||user.handItem.itemType!=InventoryItemType.healing||user.handItem.def.idNumber!==this.def.idNumber)return
         if(this.def.health){
             user.health=Math.min(user.health+this.def.health,user.maxHealth)
         }
@@ -51,7 +51,6 @@ export class HealingAction extends Action<Player>{
             }
         }
         this.slot.quantity--
-        user.inventory.update_infinity()
         user.update_hand()
         user.privateDirtys.hand=true
         user.privateDirtys.inventory=true

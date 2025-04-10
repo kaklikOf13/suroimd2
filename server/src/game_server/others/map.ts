@@ -107,7 +107,7 @@ export class GameMap{
         }
         this.game.add_loot(v2.new(3,3),Guns.getFromNumber(0) as unknown as GameItem,1)
 
-        this.game.add_loot(v2.new(2,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
-        this.game.add_loot(v2.new(4,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
+        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
+        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
     }
 }

@@ -61,7 +61,7 @@ export class NullHitbox2D extends BaseHitbox2D{
         return false
     }
     override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
-        return {overlap:NullVec2,collided:false}
+        return undefined
     }
     override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
         return false
@@ -91,10 +91,10 @@ export class NullHitbox2D extends BaseHitbox2D{
         return new NullHitbox2D(this.position)
     }
 }
-export interface OverlapCollision2D{
-    overlap:Vec2
-    collided:boolean
-}
+export type OverlapCollision2D={
+    dir:Vec2
+    pen:number
+}|undefined|null
 export class CircleHitbox2D extends BaseHitbox2D{
     override readonly type = HitboxType2D.circle
     radius:number
@@ -117,16 +117,16 @@ export class CircleHitbox2D extends BaseHitbox2D{
         if(other){
             switch(other.type){
                 case HitboxType2D.circle:{
-                    const dist = v2.distance(this.position,other.position)
-                    const dis=v2.sub(this.position,other.position)
-                    if(dist<0.0001){
-                        return {overlap:v2.new(1,1),collided:true}
-                    }
-                    const sr=(this.radius + other.radius)
-                    if (dist < sr){
-                        return {overlap:v2.scale(v2.dscale(dis,dist),-((sr/2)*(1-dist))),collided:true}
-                    }
-                    break
+                    const r = this.radius + other.radius;
+                    const toP1 = v2.sub(other.position, this.position);
+                    const distSqr = v2.squared(toP1);
+
+                    return distSqr < r * r
+                        ? {
+                            dir: v2.normalizeSafe(toP1),
+                            pen: r - Math.sqrt(distSqr)
+                        }
+                        : undefined
                 }case HitboxType2D.rect: {
                     const result = Collision.circle_with_rect_ov(this,other)
                     if (result) {
@@ -134,13 +134,13 @@ export class CircleHitbox2D extends BaseHitbox2D{
                         if(v2.is(pos,NullVec2)){
                             break
                         }
-                        return {overlap:pos,collided:true}
+                        return undefined
                     }
                     break
                 }
             }
         }
-        return {overlap:NullVec2,collided:false}
+        return undefined
     }
     override pointInside(point: Vec2): boolean {
       return v2.distance(this.position,point)<this.radius
@@ -245,7 +245,7 @@ export class RectHitbox2D extends BaseHitbox2D{
                         }else{
                             ov2.y=dist.y>0?-ov2.y:ov2.y
                         }
-                        return {overlap:ov2,collided:!v2.is(ov2,NullVec2)}
+                        return undefined
                     }
                     break
                 }case HitboxType2D.circle: {
@@ -255,13 +255,13 @@ export class RectHitbox2D extends BaseHitbox2D{
                         if(v2.is(pos,NullVec2)){
                             break
                         }
-                        return {overlap:pos,collided:true}
+                        return undefined
                     }
                     break
                 }
             }
         }
-        return {overlap:NullVec2,collided:false}
+        return undefined
     }
     override pointInside(point: Vec2): boolean {
         return (point.x>=this.max.x&&point.x<=this.min.x)&&(point.y>=this.max.y&&point.y<=this.min.y)
