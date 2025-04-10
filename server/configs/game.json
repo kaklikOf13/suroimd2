@@ -4,7 +4,8 @@
             "maxPlayers":10,
             "gameTps":100,
             "netTps":40,
-            "chunckSize":12
+            "chunckSize":12,
+            "deenable_feast":true
         },
         "max_games":5
     },

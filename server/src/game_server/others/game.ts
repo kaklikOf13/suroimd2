@@ -20,6 +20,7 @@ export interface GameConfig{
     maxPlayers:number
     gameTps:number
     netTps:number
+    deenable_feast:boolean
 }
 
 export class GamemodeManager{
@@ -155,8 +156,8 @@ export class Game extends GameBase<ServerGameObject>{
         this.players.push(p)
         this.livingPlayers.push(p)
 
-        p.pvpEnabled=this._pvpEnabled
-        p.interactionsEnabled=this._interactionsEnabled
+        p.pvpEnabled=this._pvpEnabled||this.config.deenable_feast
+        p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
 
         this.modeManager.on_player_join(p)
 

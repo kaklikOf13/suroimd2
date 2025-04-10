@@ -16,7 +16,7 @@ export class Bullet extends GameObject{
     speed:number=0
 
     initialPosition!:Vec2
-    maxDistance:number=1000
+    maxDistance:number=1
 
     sendDelete: boolean=true;
     spr!:Sprite

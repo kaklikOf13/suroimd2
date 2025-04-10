@@ -1,5 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { BulletDef, tracers } from "common/scripts/definitions/utils.ts";
+import { BulletDef } from "./utils.ts";
+import { tracers } from "../others/constants.ts";
 
 export type ExplosionDef={
     size:{
@@ -24,19 +25,19 @@ export const Explosions=new Definitions<ExplosionDef,null>((_v)=>{})
 Explosions.insert(
     {
         idString:"barrel_explosion",
-        tint:"#fff",
+        tint:"#445",
         size:{
-            min:0.5,
-            max:0.7
+            min:1.6,
+            max:2
         },
         damage:80,
         bullet:{
             def:{
                 damage:7,
-                radius:0.0125,
+                radius:0.02,
                 speed:20,
                 range:10,
-                tracer:tracers.medium
+                tracer:tracers.black_projectile
             },
             count:5
         }

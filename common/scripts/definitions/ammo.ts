@@ -1,5 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItem, InventoryItemType } from "./utils.ts";
 
 export enum AmmoType{
     //Simples

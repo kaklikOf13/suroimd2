@@ -1,6 +1,7 @@
 import { Definitions,Definition } from "../engine/mod.ts";
-import { AmmoType } from "common/scripts/definitions/ammo.ts";
-import { BulletDef, GameItem, InventoryItemType, tracers } from "./utils.ts";
+import { AmmoType } from "./ammo.ts";
+import { BulletDef, GameItem, InventoryItemType } from "./utils.ts";
+import { tracers } from "../others/constants.ts";
 export enum FireMode{
     Auto,
     Single

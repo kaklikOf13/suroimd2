@@ -38,7 +38,7 @@ Particles.insert(
             },
             speed:{
                 min:0.01,
-                max:0.1
+                max:0.02
             }
         } as Particle2DLifetime1Args,
         idString:"stone_particle",

@@ -1,8 +1,8 @@
 import { LootTableItemRet, LootTablesDefs } from "../../engine/inventory.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { GunDef } from "common/scripts/definitions/guns.ts";
-import { defaultAmmos } from "common/scripts/definitions/ammo.ts";
+import { GameItem, InventoryItemType } from "../utils.ts";
+import { GameItems } from "../alldefs.ts";
+import { GunDef } from "../guns.ts";
+import { defaultAmmos } from "../ammo.ts";
 
 export interface Aditional{
     withammo:boolean

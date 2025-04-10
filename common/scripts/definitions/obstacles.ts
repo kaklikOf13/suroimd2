@@ -1,7 +1,7 @@
-import { v2 } from "common/scripts/engine/geometry.ts";
+import { v2 } from "../engine/geometry.ts";
 import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2 } from "../engine/mod.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
-import { RectHitbox2D } from "common/scripts/engine/hitbox.ts";
+import { zIndexes } from "../others/constants.ts";
+import { RectHitbox2D } from "../engine/hitbox.ts";
 
 export interface ObstacleDef extends Definition{
     health:number
