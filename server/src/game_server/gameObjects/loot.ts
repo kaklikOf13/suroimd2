@@ -4,6 +4,7 @@ import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -12,7 +13,6 @@ export class Loot extends ServerGameObject{
     count:number=1
     item!:GameItem
 
-    private loot_collisions:number[]=[]
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -25,18 +25,31 @@ export class Loot extends ServerGameObject{
     }
     update(dt:number): void {
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
-        this.loot_collisions=[]
         if(!v2.greater(this.velocity,NullVec2)){
             this.dirtyPart=true
         }
-        const others:ServerGameObject[]=this.game.scene.cells.get_objects2(this.hb,CATEGORYS.LOOTS)
+        const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
         for(const other of others){
-            if(other.id===this.id||(other as Loot).loot_collisions.includes(this.id))continue
-            const col=this.hb.overlapCollision(other.hb)
-            if(col){
-                (other as Loot).loot_collisions.push(this.id)
-                this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.05))
+            switch(other.stringType){
+                case "loot":{
+                    if(other.id===this.id)continue
+                    const col=this.hb.overlapCollision(other.hb)
+                    if(col){
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.05))
+                    }
+                    break
+                }
+                case "obstacle":{
+                    if(!(other as Obstacle).dead||(other as Obstacle).def.noCollision)break
+                    const col=this.hb.overlapCollision(other.hb)
+                    if(col){
+                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
+                        this.velocity=v2.sub(this.velocity,v2.scale(col.dir,0.1))
+                    }
+                    break
+                }
             }
+            
         }
         this.velocity=v2.scale(this.velocity,GameConstants.loot.velocityDecay)
     }
