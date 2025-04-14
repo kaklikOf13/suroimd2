@@ -126,7 +126,7 @@ export class Player extends ServerGameObject{
         }else{
             this.hand=h
         }
-        if(this.hand<=this.inventory.slots.length){ 
+        if(this.hand<=this.inventory.slots.length&&this.inventory.slots[this.hand]){ 
             this.handItem=this.inventory.slots[this.hand].item
         }
         this.recoil=undefined

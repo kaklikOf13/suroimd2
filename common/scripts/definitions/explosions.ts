@@ -46,8 +46,8 @@ Explosions.insert(
         idString:"frag_grenade_explosion",
         tint:"#355",
         size:{
-            min:0.5,
-            max:0.6
+            min:1.5,
+            max:2
         },
         damage:110,
         bullet:{
@@ -65,8 +65,8 @@ Explosions.insert(
         idString:"mirv_grenade_explosion",
         tint:"#09e",
         size:{
-            min:0.5,
-            max:0.6
+            min:1.6,
+            max:2.2
         },
         damage:110,
         bullet:{

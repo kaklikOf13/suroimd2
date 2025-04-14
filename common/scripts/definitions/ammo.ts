@@ -12,7 +12,8 @@ export enum AmmoType{
     //Anothers
     "50cal",
     "308sub",
-    "40mm"
+    "40mm",
+    "mana",
 }
 export const defaultAmmos:Record<AmmoType,string>={
     //Simples
@@ -25,6 +26,7 @@ export const defaultAmmos:Record<AmmoType,string>={
     [AmmoType["50cal"]]:"50cal",
     [AmmoType["308sub"]]:"308sub",
     [AmmoType["40mm"]]:"40mm",
+    [AmmoType["mana"]]:"mana_mm",
 }
 export interface AmmoDef extends Definition{
     size:number
@@ -99,6 +101,14 @@ Ammos.insert(
     {
         idString:"40mm",
         ammoType:AmmoType["40mm"],
+        defaultTrail:0x889fcb,
+        strongTrail:0x009fcb,
+        tint:0x001330,
+        size:0.09,
+    },
+    {
+        idString:"mana_mm",
+        ammoType:AmmoType["mana"],
         defaultTrail:0x889fcb,
         strongTrail:0x009fcb,
         tint:0x001330,

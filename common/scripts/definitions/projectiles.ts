@@ -23,6 +23,9 @@ export type ProjectileDef={
     frames:{
         world:string
     }
+
+    destroy_on_collide?:boolean
+    collision_damage?:number
 }&Definition
 export const Projectiles=new Definitions<ProjectileDef,null>((_v)=>{})
 Projectiles.insert(
@@ -91,5 +94,26 @@ Projectiles.insert(
         frames:{
             world:"proj_submirv"
         }
-    }
+    },
+    {
+        idString:"bomb_staff_projectile",
+        gravity:0.45,
+        radius:0.5,
+        zBaseScale:0.5,
+        zScaleAdd:0.6,
+        decays:{
+            ground_rotation:1,
+            ground_speed:1
+        },
+        size:0.9,
+        
+        cook:{
+            allow_hand:false,
+            fuse_time:1
+        },
+        explosion:"frag_grenade_explosion",
+        frames:{
+            world:"proj_bomb_staff"
+        }
+    },
 )

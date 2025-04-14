@@ -13,14 +13,24 @@ export enum GunClasses{
     Shotgun,
     Sniper,
     Automatic,
-    SMG
+    SMG,
+    Magic
 }
 export interface GunDef extends Definition{
-    bullet:BulletDef
+    bullet?:{
+        def:BulletDef
+        count?:number
+    }
+    projectile?:{
+        def:string
+        count?:number
+        angular_speed?:number
+        speed?:number
+    }
+    mana_consume?:number
     ammoSpawnAmount?:number
     ammoSpawn?:string
     fireDelay:number
-    bulletsCount?:number
     spread?:number
     lenght:number
     jitterRadius?:number
@@ -30,7 +40,7 @@ export interface GunDef extends Definition{
     ammoType:AmmoType
     class:GunClasses
     quality:ItemQuality
-    reload:{
+    reload?:{
         capacity:number
         delay:number
         shotsPerReload?:number
@@ -67,11 +77,13 @@ Guns.insert(
         class:GunClasses.Automatic,
         quality:ItemQuality.Uncommon,
         bullet:{
-            damage:10,
-            radius:0.014,
-            range:85,
-            speed:21,
-            tracer:tracers.medium
+            def:{
+                damage:10,
+                radius:0.014,
+                range:85,
+                speed:21,
+                tracer:tracers.medium
+            }
         },
         reload:{
             delay:2,
@@ -95,11 +107,13 @@ Guns.insert(
         class:GunClasses.Automatic,
         quality:ItemQuality.Uncommon,
         bullet:{
-            damage:9.8,
-            radius:0.014,
-            range:85,
-            speed:24,
-            tracer:tracers.medium
+            def:{
+                damage:9.8,
+                radius:0.014,
+                range:85,
+                speed:24,
+                tracer:tracers.medium
+            }
         },
         reload:{
             delay:2.2,
@@ -123,11 +137,13 @@ Guns.insert(
         class:GunClasses.Automatic,
         quality:ItemQuality.Uncommon,
         bullet:{
-            damage:8,
-            radius:0.014,
-            range:85,
-            speed:24,
-            tracer:tracers.medium
+            def:{
+                damage:8,
+                radius:0.014,
+                range:85,
+                speed:24,
+                tracer:tracers.medium
+            }
         },
         reload:{
             delay:2,
@@ -151,11 +167,13 @@ Guns.insert(
         class:GunClasses.Automatic,
         quality:ItemQuality.Epic,
         bullet:{
-            damage:4,
-            radius:0.014,
-            range:35,
-            speed:21,
-            tracer:tracers.medium
+            def:{
+                damage:4,
+                radius:0.014,
+                range:35,
+                speed:21,
+                tracer:tracers.medium
+            }
         },
         reload:{
             delay:1.7,
@@ -179,11 +197,13 @@ Guns.insert(
         class:GunClasses.Sniper,
         quality:ItemQuality.Epic,
         bullet:{
-            damage:44,
-            radius:0.02,
-            range:85,
-            speed:32,
-            tracer:tracers.large
+            def:{
+                damage:44,
+                radius:0.02,
+                range:85,
+                speed:32,
+                tracer:tracers.large
+            }
         },
         reload:{
             delay:0.9,
@@ -207,12 +227,14 @@ Guns.insert(
         quality:ItemQuality.Epic,
         ammoSpawnAmount:30,
         bullet:{
-            damage:50,
-            radius:0.025,
-            range:88,
-            speed:35,
-            tracer:tracers.xl,
-            obstacleMult:1.5,
+            def:{
+                damage:50,
+                radius:0.025,
+                range:88,
+                speed:35,
+                tracer:tracers.xl,
+                obstacleMult:1.5,
+            }
         },
         reload:{
             delay:3.3,
@@ -236,12 +258,14 @@ Guns.insert(
         quality:ItemQuality.Legendary,
         ammoSpawnAmount:25,
         bullet:{
-            damage:70,
-            radius:0.02,
-            range:90,
-            speed:33,
-            obstacleMult:1.7,
-            tracer:tracers.large
+            def:{
+                damage:70,
+                radius:0.02,
+                range:90,
+                speed:33,
+                obstacleMult:1.7,
+                tracer:tracers.large
+            }
         },
         reload:{
             delay:5.5,
@@ -261,18 +285,20 @@ Guns.insert(
         lenght:0.7,
         ammoType:AmmoType["12g"],
         ammoSpawnAmount:10,
-        bulletsCount:10,
         jitterRadius:0.25,
         size:4.3,
         fireMode:FireMode.Single,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Uncommon,
         bullet:{
-            damage:7,
-            radius:0.014,
-            speed:16,
-            range:17,
-            tracer:tracers.medium
+            def:{
+                damage:7,
+                radius:0.014,
+                speed:16,
+                range:17,
+                tracer:tracers.medium
+            },
+            count:10
         },
         reload:{
             delay:0.8,
@@ -293,18 +319,20 @@ Guns.insert(
         lenght:0.6,
         ammoType:AmmoType["12g"],
         ammoSpawnAmount:18,
-        bulletsCount:10,
         jitterRadius:0.05,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Rare,
         size:4.5,
         fireMode:FireMode.Single,
         bullet:{
-            damage:6.3,
-            radius:0.012,
-            speed:19,
-            range:35,
-            tracer:tracers.small
+            def:{
+                damage:6.3,
+                radius:0.012,
+                speed:19,
+                range:35,
+                tracer:tracers.small
+            },
+            count:10
         },
         reload:{
             delay:0.8,
@@ -325,18 +353,20 @@ Guns.insert(
         lenght:0.65,
         ammoType:AmmoType["12g"],
         ammoSpawnAmount:15,
-        bulletsCount:15,
         jitterRadius:0.15,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Uncommon,
         size:3.8,
         fireMode:FireMode.Auto,
         bullet:{
-            damage:1.4,
-            radius:0.01,
-            speed:15,
-            range:18,
-            tracer:tracers.tiny
+            def:{
+                damage:1.4,
+                radius:0.01,
+                speed:15,
+                range:18,
+                tracer:tracers.tiny
+            },
+            count:16
         },
         reload:{
             delay:0.7,
@@ -349,5 +379,28 @@ Guns.insert(
         },
         speedMult:1,
         gasParticles:GasParticles.shotgun
+    },
+    {
+        idString:"bomb_staff",
+        fireDelay:0.9,
+        spread:3,
+        lenght:0.7,
+        size:3.8,
+        ammoType:AmmoType["mana"],
+        ammoSpawnAmount:2,
+        ammoSpawn:"blue_pills",
+        mana_consume:20,
+        class:GunClasses.Magic,
+        quality:ItemQuality.Legendary,
+        projectile:{
+            def:"bomb_staff_projectile",
+            angular_speed:0,
+            speed:11
+        },
+        recoil:{
+            duration:1,
+            speed:0.6
+        },
+        speedMult:0.97,
     },
 )

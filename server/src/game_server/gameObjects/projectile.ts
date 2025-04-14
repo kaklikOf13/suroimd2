@@ -23,6 +23,11 @@ export class Projectile extends ServerGameObject{
         this.velocity=v2.new(3,0)
         this.angularVelocity=10
     }
+    throw_projectile(ang:number,speed:number=3,angularVelocity:number=10){
+        this.velocity=v2.scale(v2.from_RadAngle(ang),speed)
+        this.angularVelocity=angularVelocity
+        this.rotation=ang
+    }
     interact(_user: Player): void {
         return
     }
@@ -52,12 +57,13 @@ export class Projectile extends ServerGameObject{
             }
         }
     }
-    create(args: {defs:ProjectileDef,position:Vec2}): void {
+    create(args: {defs:ProjectileDef,position:Vec2,owner?:Player}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius)
         if(this.defs.cook){
             this.fuse_delay=this.defs.cook.fuse_time
         }
+        this.owner=args.owner
     }
     getData(): ProjectileData {
         return {
