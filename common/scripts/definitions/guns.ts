@@ -388,10 +388,11 @@ Guns.insert(
         size:3.8,
         ammoType:AmmoType["mana"],
         ammoSpawnAmount:2,
-        ammoSpawn:"blue_pills",
+        ammoSpawn:"purple_pills",
         mana_consume:20,
         class:GunClasses.Magic,
         quality:ItemQuality.Legendary,
+        fireMode:FireMode.Single,
         projectile:{
             def:"bomb_staff_projectile",
             angular_speed:0,
@@ -400,6 +401,30 @@ Guns.insert(
         recoil:{
             duration:1,
             speed:0.6
+        },
+        speedMult:0.97,
+    },
+    {
+        idString:"fireball_staff",
+        fireDelay:0.5,
+        spread:4,
+        lenght:0.7,
+        size:3.7,
+        ammoType:AmmoType["mana"],
+        ammoSpawnAmount:2,
+        ammoSpawn:"purple_pills",
+        mana_consume:5,
+        class:GunClasses.Magic,
+        quality:ItemQuality.Epic,
+        fireMode:FireMode.Auto,
+        projectile:{
+            def:"fireball_projectile",
+            angular_speed:0,
+            speed:14
+        },
+        recoil:{
+            duration:0.6,
+            speed:0.8
         },
         speedMult:0.97,
     },

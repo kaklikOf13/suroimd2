@@ -154,6 +154,7 @@ export class Player extends ServerGameObject{
         speed:1,
         critical_mult:1,
         luck:1,
+        mana_consume:1,
     }
 
     privateDirtys={
@@ -163,7 +164,7 @@ export class Player extends ServerGameObject{
     }
 
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
+        this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
         const gamemode=this.game.gamemode
         if(this.BoostType===BoostType.Addiction){
             this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage

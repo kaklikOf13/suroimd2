@@ -110,4 +110,5 @@ export type PlayerModifiers={
     bullet_size:number
     critical_mult:number
     luck:number
+    mana_consume:number
 }

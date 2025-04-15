@@ -53,7 +53,7 @@ export class GunItem extends LItem{
       }
     }
     has_mana(user:Player){
-      return user.BoostType===BoostType.Mana&&this.def.mana_consume!<=user.boost
+      return user.BoostType===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
     }
     reload(user:Player){
       if(!this.def.reload)return
@@ -79,7 +79,7 @@ export class GunItem extends LItem{
       user.privateDirtys.action=true
       this.reloading=false
       if(this.def.reload)this.ammo--
-      if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume,0)
+      if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
       const position=v2.add(
         user.position,
         v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.lenght,this.def.lenght))

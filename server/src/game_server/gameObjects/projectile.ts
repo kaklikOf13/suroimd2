@@ -4,6 +4,9 @@ import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
+import { CATEGORYS } from "common/scripts/others/constants.ts";
+import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export class Projectile extends ServerGameObject{
     stringType:string="projectile"
@@ -56,10 +59,35 @@ export class Projectile extends ServerGameObject{
                 if(this.defs.explosion)this.game.add_explosion(this.position,Explosions.getFromString(this.defs.explosion),this.owner)
             }
         }
+        if(this.fuse_delay>0){
+            const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+            for(const obj of objs){
+                switch(obj.stringType){
+                    case "player":
+                        if((obj as Player).hb&&obj.hb.collidingWith(this.hb)&&this.defs.destroy_on_collide){
+                            if(this.defs.collision_damage)(obj as Player).damage({amount:this.defs.collision_damage,critical:false,position:this.position,reason:DamageReason.Player,owner:this.owner})
+                            this.fuse_delay=0
+                            break
+                        }
+                        break
+                    case "obstacle":
+                        if((obj as Obstacle).def.noCollision)break
+                        if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
+                            const col=this.hb.overlapCollision((obj as Obstacle).hb)
+                            if(!col)continue
+                            if(this.defs.destroy_on_collide){
+                                if(this.defs.collision_damage)(obj as Obstacle).damage({amount:this.defs.collision_damage,critical:false,position:this.position,reason:DamageReason.Player,owner:this.owner})
+                                this.fuse_delay=0
+                            }
+                        }
+                        break
+                }
+            }
+        }
     }
     create(args: {defs:ProjectileDef,position:Vec2,owner?:Player}): void {
         this.defs=args.defs
-        this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius)
+        this.hb=new CircleHitbox2D(args.position,this.defs.radius)
         if(this.defs.cook){
             this.fuse_delay=this.defs.cook.fuse_time
         }
