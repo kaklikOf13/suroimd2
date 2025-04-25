@@ -1,7 +1,8 @@
-import { Definitions,Definition } from "../engine/mod.ts"
+import { Definitions,Definition, Vec2 } from "../engine/mod.ts"
 import { GameItem } from "./utils.ts";
 import { InventoryItemType } from "./utils.ts";
 import { ItemQuality, PlayerModifiers } from "../others/constants.ts";
+import { v2 } from "common/scripts/engine/geometry.ts";
 
 export enum EquipamentType{
     Helmet,
@@ -13,6 +14,7 @@ export interface EquipamentDef extends Definition{
     reduction:number
     level:number
     type:EquipamentType
+    position?:Vec2
 }
 export const Armors=new Definitions<EquipamentDef,GameItem>((obj)=>{
     obj.item_type=InventoryItemType.equipament
@@ -35,6 +37,7 @@ Armors.insert(
         reduction:0.1,
         size:1,
         type:EquipamentType.Helmet,
+        position:v2.new(0,0)
     },
     {
         idString:"regular_vest",
@@ -51,6 +54,7 @@ Armors.insert(
         reduction:0.15,
         size:1,
         type:EquipamentType.Helmet,
+        position:v2.new(-23,0)
     },
     {
         idString:"soldier_vest",
@@ -67,6 +71,7 @@ Armors.insert(
         reduction:0.2,
         size:1.7,
         type:EquipamentType.Helmet,
+        position:v2.new(-23,0)
     },
     {
         idString:"warrior_vest",

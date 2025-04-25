@@ -1,10 +1,10 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { Sprite } from "../engine/mod.ts";
-import { Angle, BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
-import { Camera2D, Color, ColorM, Renderer } from "../engine/renderer.ts";
+import { Color, ColorM } from "../engine/renderer.ts";
 import { Debug } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
 export class Bullet extends GameObject{
@@ -33,14 +33,6 @@ export class Bullet extends GameObject{
 
     dts:Vec2=v2.new(0,0)
 
-    render(camera: Camera2D, renderer: Renderer,_dt:number): void {
-        if(this.spr){ 
-            renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(Math.max(this.length,0),this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint,v2.new(400,10))
-            if(Debug.hitbox){
-                renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
-            }
-        }
-    }
     private tticks:number=0
 
     update(dt:number): void {

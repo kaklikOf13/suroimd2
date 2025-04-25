@@ -1,6 +1,6 @@
-import {Client, ClientGame2D, type MousePosListener, type KeyListener, Renderer, DefaultSignals, ResourcesManager, Key, Material2D, GridMaterialArgs, WebglRenderer, KeyEvents} from "../engine/mod.ts"
-import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents} from "../engine/mod.ts"
+import { ActionPacket, CATEGORYSL, PacketManager } from "common/scripts/others/constants.ts";
+import { BasicSocket, Client, DefaultSignals, ObjectsPacket, OfflineSocket, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -9,61 +9,39 @@ import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "./guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
-import { Debug } from "./config.ts";
 import { SoundManager } from "../engine/sounds.ts";
-import { ColorM } from "../engine/renderer.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplash } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-
-function gameLoadMaterials(game:Game){
-  game.resources.load_material2D("gun_gas_particles",(game.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.rgba(0,0,0,0.4)))
-}
-
+import * as PIXI from "pixi.js";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayer=0
 
   action:ActionPacket=new ActionPacket()
-  grid:Material2D<GridMaterialArgs>
   guiManager!:GuiManager
 
   can_act:boolean=true
 
   gameOver:boolean=false
 
-  constructor(ip:string,keyl:KeyListener,mp:MousePosListener,renderer:Renderer,sounds:SoundManager,resources:ResourcesManager,objects:Array<new ()=>GameObject>=[]){
-    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
+  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,resources:ResourcesManager,socket:BasicSocket,app:PIXI.Application,objects:Array<new ()=>GameObject>=[]){
+    super(keyl,mp,resources,sounds,app,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
     this.scene.objects.add_category(7)
-    this.client=new Client(new WebSocket(ip),PacketManager)
+    this.client=new Client(socket,PacketManager)
     this.client.on(DefaultSignals.OBJECTS,(obj:ObjectsPacket)=>{
       this.scene.objects.proccess(obj)
     })
-    this.scene.objects.encoders=ObjectsE
-    this.renderer.background=ColorM.hex("#68ad49")
+    this.scene.objects.encoders=ObjectsE;
+
+    this.app.renderer.background.color="#68ad49";
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false
     })
-
-    this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
-      color:ColorM.rgba(0,0,0,90),
-      gridSize:this.scene.objects.cells.cellSize,
-      width:0.034
-    })
-
-    if(Debug.hitbox){
-      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
-      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
-      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
-    }
-
-    gameLoadMaterials(this)
-
-    this.request_animation_frame=true
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -76,17 +54,6 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   onstop?:(g:Game)=>void
-  actionDelay:number=3
-  on_render(_dt:number):void{
-    (this.renderer as WebglRenderer)._draw_vertices([
-      -1000, -1000, 
-      1000, -1000,
-      -1000,  1000,
-      -1000,  1000,
-      1000, -1000,
-      1000,  1000
-    ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:zIndexes.Grid})
-  }
   old_hand=0
   on_run(): void {
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
@@ -149,22 +116,13 @@ export class Game extends ClientGame2D<GameObject>{
         this.action.UsingItem=this.action.hand===this.old_hand&&this.key.keyPress(Key.Mouse_Left)
         this.action.Reloading=this.key.keyPress(Key.R)
       }
-      if(this.actionDelay<=0){
-        this.client.emit(this.action)
-        this.action.interact=false
-        this.action.cellphoneAction=undefined
-        this.actionDelay=1
-        this.old_hand=this.action.hand
-      }else{
-        this.actionDelay--
-      }
+      this.client.emit(this.action)
+      this.action.interact=false
+      this.action.cellphoneAction=undefined
+      this.old_hand=this.action.hand
 
-      const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
-      if(activePlayer){
-        this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
-      }
+      this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),this.mouse.position)
     }
-    this.camera.zoom=1.3
     //3.40=64x
     //2.80=32x
     //2.30=16x
@@ -172,18 +130,10 @@ export class Game extends ClientGame2D<GameObject>{
     //1.30=4x
     //1.00=2x
     //0.85=1x
-    this.renderer.fullCanvas(this.camera)
-  }
-  update_camera(){
-    const p=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
-    const cc=(this.renderer as WebglRenderer).cam2Dsize
-    this.camera.position=v2.sub(p.position,v2.new(cc.x/2,cc.y/2))
   }
   connect(playerName:string){
-    this.client.on("connect",()=>{
-      this.client.emit(new JoinPacket(playerName))
-      this.activePlayer=this.client.ID
-    })
+    this.client.emit(new JoinPacket(playerName))
+    this.activePlayer=this.client.ID
   }
 }
 export async function getGame(server:string){

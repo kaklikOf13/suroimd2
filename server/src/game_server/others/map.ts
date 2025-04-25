@@ -66,8 +66,17 @@ export class GameMap{
         return o
     }
     generate(){
+        for(let i=0;i<15;i++){
+            this.generate_obstacle(Obstacles.getFromString("stone"))
+        }
+        for(let i=0;i<10;i++){
+            this.generate_obstacle(Obstacles.getFromString("bush"))
+        }
+        for(let i=0;i<15;i++){
+            this.generate_obstacle(Obstacles.getFromString("oak_tree"))
+        }
         //Feast
-        const crate=Obstacles.getFromString("wood_crate")
+        /*const crate=Obstacles.getFromString("wood_crate")
         let obs=this.add_obstacle(crate)
         obs.set_position(v2.new(2,4))
         obs=this.add_obstacle(crate)
@@ -108,6 +117,6 @@ export class GameMap{
         this.game.add_loot(v2.new(3,3),Guns.getFromNumber(0) as unknown as GameItem,1)
 
         this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
-        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
+        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)*/
     }
 }

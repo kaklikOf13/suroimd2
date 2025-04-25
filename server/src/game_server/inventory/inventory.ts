@@ -6,7 +6,6 @@ import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scr
 import { HealingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef, defaultAmmos } from "common/scripts/definitions/ammo.ts";
 import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
-import { type Game } from "../others/game.ts";
 import { OtherDef } from "common/scripts/definitions/others.ts";
 import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";

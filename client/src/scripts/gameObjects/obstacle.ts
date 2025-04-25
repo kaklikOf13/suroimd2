@@ -1,7 +1,5 @@
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
-import { Sprite } from "../engine/mod.ts";
 import { Materials, ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
-import { Camera2D, Renderer } from "../engine/renderer.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Debug } from "../others/config.ts";
 import { random } from "common/scripts/engine/random.ts";
@@ -10,20 +8,21 @@ import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Particles } from "../defs/particles.ts";
 import { GameObject } from "../others/gameObject.ts";
+import * as PIXI from "pixi.js"
 export class Obstacle extends GameObject{
     stringType:string="obstacle"
     numberType: number=4
     name:string=""
     def!:ObstacleDef
 
-    sprite?:Sprite
-
     rotation:number=0
     variation:number=1
-
-    zIndex=0
     create(_args: Record<string, void>): void {
-        
+        this.sprite=new PIXI.Sprite()
+        this.sprite.anchor.set(0.5)
+        this.container=new PIXI.Container()
+        this.container.addChild(this.sprite)
+        this.game.camera.addObject(this.container!)
     }
 
     dead:boolean=false
@@ -33,34 +32,22 @@ export class Obstacle extends GameObject{
         hit?:Sound[]
     }
     hotspot=v2.new(0.5,0.5)
-    render(camera: Camera2D, renderer: Renderer): void {
-        if(this.sprite){
-            renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.scale,this.scale),Angle.rad2deg(this.rotation),this.hotspot,this.zIndex)
-            if(Debug.hitbox){
-                renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
-            }
-        }else if(this.def){
-            if(!this.dead){
-                const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-                if(this.def.variations){
-                    this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
-                }else{
-                    this.sprite=this.game.resources.get_sprite(spr_id)
-                }
-            }else{
-                const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-                this.sprite=this.game.resources.get_sprite(spr_id+"_dead")
-            }
-        }
-    }
+    sprite!:PIXI.Sprite
     onDie(): void {
         for(let i=0;i<5;i++){
             this._add_own_particle(this.hb.randomPoint())
         }
-        this.zIndex=zIndexes.DeadObstacles
+        this.container!.zIndex=zIndexes.DeadObstacles
+
         if(this.sounds&&this.sounds.break){
             this.game.sounds.play(this.sounds.break,{})
         }
+        const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+            this.sprite.texture=this.game.resources.get_sprite(spr_id+"_dead").texture
+    }
+    onDestroy(): void {
+        this.sprite.destroy()
+        this.container?.destroy()
     }
     _add_own_particle(position:Vec2){
         if(this.def.particle&&Particles.exist(this.def.particle))this.game.particles.add_particle_with_def(position,this.rotation,Particles.getFromString(this.def.particle))
@@ -82,7 +69,6 @@ export class Obstacle extends GameObject{
         let position=this.position
         this.scale=data.scale
         if(!this.dead&&data.dead){
-            this.sprite=undefined
             this.onDie()
         }
         this.dead=data.dead
@@ -91,8 +77,6 @@ export class Obstacle extends GameObject{
             position=data.full.position
             this.rotation=data.full.rotation
             this.variation=data.full.variation
-
-            this.zIndex=this.def.zIndex??0
 
             if(this.def.sounds){
                 this.sounds={
@@ -123,6 +107,17 @@ export class Obstacle extends GameObject{
             if(this.def.hotspot){
                 this.hotspot=this.def.hotspot
             }
+            if(!this.dead){
+                const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+                if(this.def.variations){
+                    this.sprite.texture=this.game.resources.get_sprite(spr_id+`_${this.variation}`).texture
+                }else{
+                    this.sprite.texture=this.game.resources.get_sprite(spr_id).texture
+                }
+            }
+            this.container?.position.set(position.x,position.y)
+            this.sprite.anchor.set(this.hotspot.x,this.hotspot.y)
+            this.container!.zIndex=this.def.zIndex??zIndexes.Obstacles1
         }
         if(this.def&&this.def.hitbox){
             this.hb=this.def.hitbox.transform(position,data.scale)

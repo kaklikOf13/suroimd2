@@ -2,7 +2,7 @@ import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { Color } from "../engine/mod.ts";
 import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { ExplosionDef, Explosions } from "common/scripts/definitions/explosions.ts";
-import { Camera2D, ColorM, Renderer } from "../engine/renderer.ts";
+import { Camera2D, ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Sprite } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -29,9 +29,6 @@ export class Explosion extends GameObject{
         }
     }
     tint!:Color
-    render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        if(this.sprite)renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.hb.radius,this.hb.radius),0,v2.new(.5,.5),zIndexes.Explosions,this.tint,v2.new(600,600))
-    }
     constructor(){
         super()
     }

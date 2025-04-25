@@ -1,10 +1,9 @@
-import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { AmmoItem, GunItem, HealingItem, LItem, MeleeItem, OtherItem} from "../inventory/inventory.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
-import { Client } from "../../engine/mod.ts";
 import { GuiPacket,DamageSplash } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -74,7 +73,7 @@ export class Player extends ServerGameObject{
         this.actions=new ActionsManager(this)
 
         this.vest=Armors.getFromString("soldier_vest")
-        this.helmet=Armors.getFromString("soldier_helmet")
+        this.helmet=Armors.getFromString("regular_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -224,10 +223,10 @@ export class Player extends ServerGameObject{
         }
         this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,this.game.map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
-            this.dirtyPart=true
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
         }
+        this.dirtyPart=true
 
         //Hand Use
         if(this.using_item&&this.handItem&&this.pvpEnabled){
@@ -277,7 +276,7 @@ export class Player extends ServerGameObject{
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,4)
+        this.movement=v2.scale(action.Movement,500)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }

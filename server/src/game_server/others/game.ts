@@ -1,4 +1,3 @@
-import { Client,DefaultSignals,ServerGame2D as GameBase } from "../../engine/mod.ts"
 import { ID, Numeric, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
 import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
@@ -16,6 +15,7 @@ import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
+import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -63,7 +63,7 @@ export class GamemodeManager{
         }
     }
 }
-export class Game extends GameBase<ServerGameObject>{
+export class Game extends ServerGame2D<ServerGameObject>{
     config:GameConfig
     map:GameMap
     gamemode:Gamemode
@@ -99,8 +99,8 @@ export class Game extends GameBase<ServerGameObject>{
         }
     }
 
-    constructor(id:ID,config:GameConfig){
-        super(config.gameTps,id,PacketManager,[
+    constructor(clients:OfflineClientsManager,id:ID,config:GameConfig){
+        super(config.gameTps,id,clients,PacketManager,[
             Player,
             Loot,
             Bullet,
@@ -114,7 +114,7 @@ export class Game extends GameBase<ServerGameObject>{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(30,30))
+        this.map=new GameMap(this,v2.new(3000,3000))
         this.gamemode=DefaultGamemode
         this.modeManager=new GamemodeManager(this)
     }

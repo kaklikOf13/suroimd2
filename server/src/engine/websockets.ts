@@ -1,46 +1,7 @@
 
-import { ConnectPacket, DisconnectPacket, PacketsManager,Packet, ID, random, NetStream } from "common/scripts/engine/mod.ts"
-import { Client } from "../../../client/src/scripts/engine/client.ts"
-import { DefaultSignals } from "./mod.ts";
-export * from "../../../client/src/scripts/engine/client.ts"
-export class ClientsManager{
-    clients:Map<ID,Client>
-    packets_manager:PacketsManager
-    onconnection:(client:Client)=>void
-
-    constructor(onconnection:(client:Client)=>void){
-        this.clients=new Map()
-        this.packets_manager=new PacketsManager()
-        this.onconnection=onconnection
-    }
-
-
-    private activate_ws(ws:WebSocket,id:number,ip:string):ID{
-        const client=new Client(ws,this.packets_manager,ip)
-        client.ID=id
-        client.on(DefaultSignals.DISCONNECT,(packet:DisconnectPacket)=>{
-            this.clients.delete(packet.client_id)
-        })
-        client.emit(new ConnectPacket(client.ID))
-        this.clients.set(client.ID,client)
-        this.onconnection(client)
-        return client.ID
-    }
-
-    emit(packet: Packet) {
-        for (const client of this.clients.values()) {
-            try {
-                client.emit(packet);
-            } catch (error) {
-                console.error("Error emitting packet to client:", error);
-            }
-        }
-    }
-    sendStream(stream:NetStream){
-        for (const client of this.clients.values()) {
-            client.sendStream(stream)
-        }
-    }
+import { random } from "common/scripts/engine/mod.ts"
+import { OfflineClientsManager } from "common/scripts/engine/server_offline/offline_server.ts";
+export class ClientsManager extends OfflineClientsManager{
     
     handler(IDGen?:()=>number):(req:Request,url:string[],info:Deno.ServeHandlerInfo)=>Response|null{
         if(!IDGen){
@@ -63,6 +24,8 @@ export class ClientsManager{
             }
             
             const { socket, response } = Deno.upgradeWebSocket(req)
+            // deno-lint-ignore ban-ts-comment
+            //@ts-ignore
             socket.onopen = () => {this.activate_ws(socket,IDGen(),info.remoteAddr.hostname)}
             return response
         }
