@@ -1,9 +1,10 @@
-import { NullVec2, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { LootData } from "common/scripts/others/objectsEncode.ts";
 import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -11,6 +12,7 @@ export class Loot extends ServerGameObject{
     numberType: number=2
     count:number=1
     item!:GameItem
+
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -21,25 +23,39 @@ export class Loot extends ServerGameObject{
         user.give_item(this.item,this.count)
         return
     }
-    update(_dt:number): void {
-        this.position=v2.add(this.position,this.velocity)
+    update(dt:number): void {
+        this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         if(!v2.greater(this.velocity,NullVec2)){
             this.dirtyPart=true
         }
-        const others:ServerGameObject[]=this.game.scene.cells.get_objects2(this.hb,CATEGORYS.LOOTS)
+        const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
         for(const other of others){
-            if(other.id===this.id)continue
-            const col=this.hb.overlapCollision(other.hb)
-            if(col.collided){
-                this.velocity=v2.sub(this.velocity,v2.scale(col.overlap,0.0012));
-                (other as Loot).velocity=v2.add((other as Loot).velocity,v2.scale(col.overlap,0.0012))
+            switch(other.stringType){
+                case "loot":{
+                    if(other.id===this.id)continue
+                    const col=this.hb.overlapCollision(other.hb)
+                    if(col){
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.05))
+                    }
+                    break
+                }
+                case "obstacle":{
+                    if(!(other as Obstacle).dead||(other as Obstacle).def.noCollision)break
+                    const col=this.hb.overlapCollision(other.hb)
+                    if(col){
+                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
+                        this.velocity=v2.sub(this.velocity,v2.scale(col.dir,0.1))
+                    }
+                    break
+                }
             }
+            
         }
         this.velocity=v2.scale(this.velocity,GameConstants.loot.velocityDecay)
     }
     create(args: {position:Vec2,item:GameItem,count:number}): void {
-        this.hb=new RectHitbox2D(v2.new(0,0),v2.new(GameConstants.loot.radius.ammo,GameConstants.loot.radius.ammo))
-        this.hb.position=args.position
+        this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.loot.radius.ammo)
+        this.hb.translate(args.position)
         this.item=args.item
         this.count=args.count
     }

@@ -1,0 +1,7 @@
+{
+    "files":{
+        "skin_default_body":"default/body.svg",
+        "skin_default_arm":"default/arm.svg"
+    },
+    "dir":"img/game/common/loadout/skins"
+}

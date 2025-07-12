@@ -1,4 +1,3 @@
-export * from "./client.ts"
 export * from "./renderer.ts"
 export * from "./keys.ts"
 export * from "./utils.ts"

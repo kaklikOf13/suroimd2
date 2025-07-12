@@ -1,9 +1,10 @@
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
-import { type Camera2D, type Sprite, type Renderer, ClientGameObject2D } from "../engine/mod.ts";
+import { type Camera2D, type Sprite, type Renderer } from "../engine/mod.ts";
 import { Debug } from "../others/config.ts";
 import { ProjectileDef, Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { Angle, CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
-export class Projectile extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class Projectile extends GameObject{
     stringType:string="projectile"
     numberType: number=6
     name:string=""

@@ -466,15 +466,20 @@ export type LootTableItem={
     count?:number
     separate?:boolean
 }&WeightDefinition
-export type LootTable={
+interface LootTableObject{
     min:number
     max:number
     content:LootTableItem[]
-}|LootTableItem[]
+}
+export type LootTable=LootTableObject|LootTableItem[]|LootTableItem[][]
+export type LootTableItemRet<Item>={
+    count:number
+    item:Item
+}
 export class LootTablesDefs<TP,Aditional>{
     tables:Record<string,LootTable>={}
-    get_item:(id:string,count:number,aditional:Aditional)=>TP[]
-    constructor(get_item:(id:string,count:number,aditional:Aditional)=>TP[]){
+    get_item:(id:string,count:number,aditional:Aditional)=>LootTableItemRet<TP>[]
+    constructor(get_item:(id:string,count:number,aditional:Aditional)=>LootTableItemRet<TP>[]){
         this.get_item=get_item
     }
     add_loot_table(name:string,table:LootTable){
@@ -485,14 +490,15 @@ export class LootTablesDefs<TP,Aditional>{
             this.tables[t]=tables[t]
         }
     }
-    get_loot(table:string,aditional:Aditional):TP[]{
-        const ret:TP[]=[]
+    get_loot(table:string,aditional:Aditional):LootTableItemRet<TP>[]{
+        const ret:LootTableItemRet<TP>[]=[]
         const lt=this.tables[table]
         if(!lt){
             return []
         }
-        if(Array.isArray(lt)){
-            const obj=random.weight2(lt)
+        const multiLoot=Array.isArray(lt)&&lt.length>0&&Array.isArray(lt[0])
+        if(Array.isArray(lt)&&!multiLoot){
+            const obj=random.weight2(lt as LootTableItem[])
             if(obj){
                 if(obj.item){
                     ret.push(...this.get_item(obj.item,obj.count??1,aditional))
@@ -504,10 +510,25 @@ export class LootTablesDefs<TP,Aditional>{
                     }
                 }
             }
+        }else if(multiLoot){
+            for(const slt of (lt as LootTableItem[][])){
+                const obj=random.weight2(slt)
+                if(obj){
+                    if(obj.item){
+                        ret.push(...this.get_item(obj.item,obj.count??1,aditional))
+                    }
+                    if(obj.table&&obj.table!==table){
+                        const c=obj.count??1
+                        for(let i=0;i<c;i++){
+                            ret.push(...this.get_loot(obj.table,aditional))
+                        }
+                    }
+                }
+            }
         }else{
-            const count=random.int(lt.min,lt.max)
+            const count=random.int((lt as LootTableObject).min,(lt as LootTableObject).max)
             for(let i=0;i<count;i++){
-                const obj=random.weight2(lt.content)
+                const obj=random.weight2((lt as LootTableObject).content)
                 if(obj){
                     if(obj.item){
                         ret.push(...this.get_item(obj.item,obj.count??1,aditional))

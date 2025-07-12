@@ -1,4 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts"
+import { ItemQuality } from "../others/constants.ts";
 import { BoostType, GameItem, InventoryItemType } from "./utils.ts";
 
 export enum HealingCondition{
@@ -10,12 +11,12 @@ export interface HealingDef extends Definition{
     health?:number
     boost?:number
     boost_type?:BoostType
+    quality:ItemQuality
     use_delay:number
     condition?:HealingCondition[]
 }
 export const Healings=new Definitions<HealingDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.healing
-    i.count=1
 })
 Healings.insert(
     {
@@ -23,6 +24,7 @@ Healings.insert(
         size:0.02,
         health:3,
         use_delay:0.65,
+        quality:ItemQuality.Common,
         condition:[HealingCondition.UnfullHealth]
     },
     {
@@ -30,6 +32,7 @@ Healings.insert(
         size:0.09,
         health:15,
         use_delay:2,
+        quality:ItemQuality.Uncommon,
         condition:[HealingCondition.UnfullHealth]
     },
     {
@@ -37,6 +40,7 @@ Healings.insert(
         size:0.9,
         health:100,
         use_delay:5.5,
+        quality:ItemQuality.Uncommon,
         condition:[HealingCondition.UnfullHealth]
     },
 
@@ -47,6 +51,7 @@ Healings.insert(
         boost:25,
         use_delay:2.5,
         boost_type:BoostType.Adrenaline,
+        quality:ItemQuality.Uncommon,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -55,6 +60,7 @@ Healings.insert(
         boost:50,
         use_delay:4.5,
         boost_type:BoostType.Adrenaline,
+        quality:ItemQuality.Uncommon,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -63,6 +69,7 @@ Healings.insert(
         boost:100,
         use_delay:4.5,
         boost_type:BoostType.Adrenaline,
+        quality:ItemQuality.Rare,
         condition:[HealingCondition.UnfullExtra]
     },
 
@@ -73,6 +80,7 @@ Healings.insert(
         boost:25,
         use_delay:2.5,
         boost_type:BoostType.Shield,
+        quality:ItemQuality.Uncommon,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -81,6 +89,7 @@ Healings.insert(
         boost:50,
         use_delay:4.5,
         boost_type:BoostType.Shield,
+        quality:ItemQuality.Rare,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -89,6 +98,7 @@ Healings.insert(
         boost:100,
         use_delay:4.5,
         boost_type:BoostType.Shield,
+        quality:ItemQuality.Epic,
         condition:[HealingCondition.UnfullExtra]
     },
     //Mana
@@ -98,6 +108,7 @@ Healings.insert(
         boost:15,
         use_delay:1.1,
         boost_type:BoostType.Mana,
+        quality:ItemQuality.Rare,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -106,6 +117,7 @@ Healings.insert(
         boost:40,
         use_delay:2.4,
         boost_type:BoostType.Mana,
+        quality:ItemQuality.Epic,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -114,6 +126,7 @@ Healings.insert(
         boost:100,
         use_delay:4.5,
         boost_type:BoostType.Mana,
+        quality:ItemQuality.Legendary,
         condition:[HealingCondition.UnfullExtra]
     },
     //Addiction
@@ -123,6 +136,7 @@ Healings.insert(
         boost:25,
         use_delay:1.5,
         boost_type:BoostType.Addiction,
+        quality:ItemQuality.Epic,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -131,6 +145,7 @@ Healings.insert(
         boost:50,
         use_delay:2.2,
         boost_type:BoostType.Addiction,
+        quality:ItemQuality.Epic,
         condition:[HealingCondition.UnfullExtra]
     },
     {
@@ -139,6 +154,7 @@ Healings.insert(
         boost:100,
         use_delay:4.5,
         boost_type:BoostType.Addiction,
+        quality:ItemQuality.Legendary,
         condition:[HealingCondition.UnfullExtra]
     },
 )

@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Hitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
@@ -40,7 +40,7 @@ export class GameMap{
         while(!pos){
             if(attempt>=maxAttempts)break
             pos=gp!(hc,this)
-            hb.position=pos
+            hb.translate(pos)
             if(!valid!(hb,k,this)){
                 pos=undefined
             }
@@ -56,19 +56,16 @@ export class GameMap{
     }
     generate_obstacle(def:ObstacleDef):Obstacle|undefined{
         const o=this.add_obstacle(def)
-        const p=this.getRandomPosition(o.spawnHitbox,o.get_key())
+        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.get_key())
         if(!p){
             o.destroy()
             return undefined
         }
-        o.position=p
+        o.set_position(p)
         o.manager.cells.updateObject(o)
         return o
     }
     generate(){
-        for(let i=0;i<10;i++){
-            this.generate_obstacle(Obstacles.getFromString("barrel"))
-        }
         for(let i=0;i<15;i++){
             this.generate_obstacle(Obstacles.getFromString("stone"))
         }
@@ -78,9 +75,48 @@ export class GameMap{
         for(let i=0;i<15;i++){
             this.generate_obstacle(Obstacles.getFromString("oak_tree"))
         }
+        //Feast
+        /*const crate=Obstacles.getFromString("wood_crate")
+        let obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(2,4))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(3,4))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(2,5))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(3,5))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(2,6))
+        obs=this.add_obstacle(crate)
+        obs.set_position(v2.new(3,6))
+        // Map
+        for(let i=0;i<10;i++){
+            this.generate_obstacle(Obstacles.getFromString("barrel"))
+        }
+        for(let i=0;i<15;i++){
+            this.generate_obstacle(Obstacles.getFromString("stone"))
+        }
+        for(let i=0;i<5;i++){
+            this.generate_obstacle(crate)
+        }
+        for(let i=0;i<3;i++){
+            this.generate_obstacle(Obstacles.getFromString("copper_crate"))
+        }
+        for(let i=0;i<1;i++){
+            this.generate_obstacle(Obstacles.getFromString("iron_crate"))
+        }
+        for(let i=0;i<1;i++){
+            this.generate_obstacle(Obstacles.getFromString("gold_crate"))
+        }
+        for(let i=0;i<10;i++){
+            this.generate_obstacle(Obstacles.getFromString("bush"))
+        }
+        for(let i=0;i<15;i++){
+            this.generate_obstacle(Obstacles.getFromString("oak_tree"))
+        }
         this.game.add_loot(v2.new(3,3),Guns.getFromNumber(0) as unknown as GameItem,1)
 
-        this.game.add_loot(v2.new(2,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
-        this.game.add_loot(v2.new(4,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
+        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
+        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)*/
     }
 }

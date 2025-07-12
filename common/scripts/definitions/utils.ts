@@ -1,5 +1,6 @@
 import { type NetStream } from "../engine/stream.ts";
 import { Definition } from "../engine/definitions.ts";
+import { type ItemQuality } from "../others/constants.ts";
 export interface BulletDef{
     damage:number
     range:number
@@ -13,44 +14,18 @@ export interface BulletDef{
     obstacleMult?:number
     criticalMult?:number
 }
-export const tracers={
-    tiny:{
-        width:0.4,
-        height:0.4, // 0.4H = 0.01 radius
-    },
-    small:{
-        width:1,
-        height:0.6, // 0.6H = 0.012 radius
-    },
-    medium:{
-        width:1.5,
-        height:0.7, // 0.7H = 0.014 radius
-    },
-    large:{
-        width:2,
-        height:1, // 1H = 0.02 radius
-    },
-    xl:{
-        width:3,
-        height:1.4, // 1.2H = 0.025 radius
-    },
-    mirv:{
-        height:0.4,
-        width:1,
-        color:0x0044aa
-    }
-}
 export enum InventoryItemType{
     gun,
     ammo,
     healing,
     equipament,
     other,
+    melee,
     accessorie
 }
 export interface GameItem extends Definition{
     item_type:InventoryItemType
-    count:number
+    quality:ItemQuality
 }
 export enum DamageReason{
     Player,

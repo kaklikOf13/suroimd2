@@ -14,6 +14,8 @@ export type HandData=
 }|{
     type:InventoryItemType.other
 }|{
+    type:InventoryItemType.melee
+}|{
     type:InventoryItemType.equipament
 })&{location:number})|undefined
 export interface DamageSplash{

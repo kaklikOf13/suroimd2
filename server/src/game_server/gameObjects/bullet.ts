@@ -5,7 +5,6 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "common/scripts/definitions/ammo.ts";
-import { Game } from "../others/game.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 
 export class Bullet extends ServerGameObject{
@@ -27,6 +26,10 @@ export class Bullet extends ServerGameObject{
 
     critical:boolean=false
     source?:GameItem
+
+    damage:number=0
+
+    reflectionCount:number=0
     constructor(){
         super()
         this.velocity=v2.new(0,0)
@@ -41,26 +44,41 @@ export class Bullet extends ServerGameObject{
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         this.manager.cells.updateObject(this)
-        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+        const objs:BaseGameObject2D[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         for(const obj of objs){
-            switch((obj as BaseGameObject2D).stringType){
+            switch(obj.stringType){
                 case "player":
-                    if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.defs.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                    if((obj as Player).hb&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)){
+                        (obj as Player).damage({amount:this.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         break
                     }
                     break
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
-                    if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).damage({amount:this.defs.damage*(this.defs.obstacleMult??1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
+                        const col=this.hb.overlapCollision((obj as Obstacle).hb)
+                        if(!col)continue
+                        const od=(obj as Obstacle).health;
+                        (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3){
+                            const angle = 2 * Math.atan2(col.dir.y, -col.dir.x) - this.angle
+                            this.position = v2.add(this.position, v2.new(Math.cos(angle), -Math.sin(angle)))
+                            this.reflect(angle)
+                        }
                         this.destroy()
+                        if((obj as Obstacle).dead){
+                            this.damage-=od*(this.defs.obstacleMult??1)
+                            if(this.damage>0&&!(obj as Obstacle).def.reflectBullets){
+                                this.game.add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
+                            }
+                        }
                     }
                     break
             }
         }
     }
+    ammo:string=""
     create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:GameItem}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
@@ -71,6 +89,9 @@ export class Bullet extends ServerGameObject{
         this.owner=args.owner
         this.critical=args.critical??(Math.random()<=0.15)
         this.source=args.source
+        this.ammo=args.ammo
+
+        this.damage=args.defs.damage
     }
     set_direction(angle:number){
         this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(angle),this.defs.speed*this.modifiers.speed),4)
@@ -79,8 +100,13 @@ export class Bullet extends ServerGameObject{
 
         (this.hb as CircleHitbox2D).radius=this.defs.radius*this.modifiers.size
     }
+    reflect(angle:number){
+        const b=this.game.add_bullet(this.position,angle,this.defs,this.owner,this.ammo,this.source)
+        b.damage=this.damage/2
+        b.reflectionCount=this.reflectionCount+1
+    }
     onDestroy(): void {
-        delete (this.game as Game).bullets[this.id]
+        delete this.game.bullets[this.id]
     }
     tracerColor:number=0
     getData(): BulletData {

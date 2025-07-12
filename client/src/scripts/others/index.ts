@@ -1,34 +1,66 @@
-import { WebglRenderer, MousePosListener, KeyListener, ResourcesManager } from "../engine/mod.ts"
+import { MousePosListener, KeyListener, ResourcesManager } from "../engine/mod.ts"
 import { Game, getGame } from "./game.ts"
 import { server } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
+import * as PIXI from "pixi.js";
+import { OfflineGameServer } from "./offline.ts";
+import { OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
+import { PacketManager } from "common/scripts/others/constants.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
     document.body.appendChild(canvas)
-    const renderer=new WebglRenderer(canvas,100)
     const sounds=new SoundManager()
-    const resources=new ResourcesManager(renderer.gl,sounds)
+    const pixi=new PIXI.Application()
+    pixi.init({
+        canvas:canvas,
+        eventFeatures: {
+            move: false,
+            globalMove: false,
+            wheel: false,
+            click: true,
+        },
+        resizeTo: window,
+        autoDensity: true,
+        preferWebGLVersion: 1,
+        preference: "webgl",
+        resolution: 1,
+    })
+
+    const resources=new ResourcesManager(pixi,sounds)
+
+    const offline=true
 
     let loaded=false
+    let gs:OfflineGameServer|undefined
+    if(offline){
+        gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
+            deenable_feast:true,
+            gameTps:60,
+            maxPlayers:10,
+            netTps:30
+        })
+        gs.request_animation_frame=true
+        gs.mainloop()
+    }
 
     resources.load_folder("/common.src").then(()=>{
-        loaded=true
         const lister=()=>{
             setTimeout(()=>{
                 if(app.game)return
                 sounds.set_music(resources.get_audio("menu_music"))
             },1000)
+            loaded=true
             document.removeEventListener("mousedown",lister)
         }
         document.addEventListener("mousedown",lister)
     })
-    const mouseML=new MousePosListener(renderer.meter_size)
+    const mouseML=new MousePosListener(1)
     const KeyL=new KeyListener()
-    mouseML.bind(canvas,canvas)
+    mouseML.bind(document.body,canvas)
     KeyL.bind(document.body)
 
     await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
@@ -52,15 +84,33 @@ import { SoundManager } from "../engine/sounds.ts";
             if(this.game&&!loaded)return
             this.gameD.style.display="unset"
             this.menuD.style.display="none"
-            const g=new Game(`ws${server.toString()}/${await getGame("http"+server.toString())}`,KeyL,mouseML,renderer,sounds,resources)
-            sounds.set_music(null)
-            g.guiManager=new GuiManager(g)
-            g.connect("")
-            this.game=g
-            g.mainloop()
-            g.onstop=this.closeGame.bind(this)
+            const ip=`ws${server.toString()}/${await getGame("http"+server.toString())}`
+            if(offline){
+                const sockets=new OfflineSocket(undefined)
+                const socketl:OfflineSocket=new OfflineSocket(sockets)
+                sockets.output=socketl
+                const g=new Game(KeyL,mouseML,sounds,resources,socketl,pixi)
+                sounds.set_music(null)
+                g.guiManager=new GuiManager(g)
+                sockets.open()
+                socketl.open()
+                gs?.clients.activate_ws(sockets,0,"localhost")
+                g.connect("")
+                this.game=g
+            }else{
+                const socket=new WebSocket(ip)
+                // deno-lint-ignore ban-ts-comment
+                //@ts-ignore
+                const g=new Game(KeyL,mouseML,sounds,resources,socket,pixi)
+                sounds.set_music(null)
+                g.guiManager=new GuiManager(g)
+                g.connect("")
+                this.game=g
+            }
+            this.game.mainloop()
+            this.game.onstop=this.closeGame.bind(this)
         }
-        closeGame(_g:Game){
+        closeGame(){
             this.game=undefined
             this.gameD.style.display="none"
             this.menuD.style.display="unset"

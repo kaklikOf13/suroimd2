@@ -1,11 +1,13 @@
-import { v2 } from "common/scripts/engine/geometry.ts";
-import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode } from "../engine/mod.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { v2 } from "../engine/geometry.ts";
+import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2 } from "../engine/mod.ts";
+import { zIndexes } from "../others/constants.ts";
+import { RectHitbox2D } from "../engine/hitbox.ts";
 
 export interface ObstacleDef extends Definition{
     health:number
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
+    hotspot?:Vec2
     noCollision?:boolean
     noBulletCollision?:boolean
     scale?:{
@@ -16,12 +18,18 @@ export interface ObstacleDef extends Definition{
     frame?:{
         base:string
     }
+    particle?:string
     variations?:number
     zIndex?:number
     rotationMode?:number
 
     onDestroyExplosion?:string
     material?:string
+
+    lootTable?:string
+
+    interactDestroy?:boolean
+    reflectBullets?:boolean
 
     sounds?:{
         hit:string
@@ -64,6 +72,7 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
         material:"stone",
+        particle:"stone_particle"
     },
     {
         idString:"barrel",
@@ -76,6 +85,7 @@ Obstacles.insert(
         zIndex:zIndexes.Obstacles1,
         onDestroyExplosion:"barrel_explosion",
         material:"metal",
+        reflectBullets:true
     },
     {
         idString:"oak_tree",
@@ -89,6 +99,69 @@ Obstacles.insert(
         material:"tree",
     },
     {
+        idString:"wood_crate",
+        health:130,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+
+        interactDestroy:true,
+        lootTable:"wood_crate"
+    },
+    {
+        idString:"copper_crate",
+        health:160,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+        reflectBullets:true,
+
+        interactDestroy:true,
+        lootTable:"copper_crate"
+    },
+    {
+        idString:"iron_crate", //Airdrop
+        health:170,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+        reflectBullets:true,
+
+        interactDestroy:true,
+        lootTable:"iron_crate"
+    },
+    {
+        idString:"gold_crate", //Gold Airdrop
+        health:180,
+        hotspot:v2.new(0,0),
+        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        scale:{
+            destroy:0.8
+        },
+        rotationMode:RotationMode.null,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+        reflectBullets:true,
+
+        interactDestroy:true,
+        lootTable:"gold_crate"
+    },
+    {
         idString:"bush",
         health:70,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.42),
@@ -96,6 +169,7 @@ Obstacles.insert(
         scale:{
             destroy:1
         },
+        particle:"leaf_green_particle",
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles2,
         material:"bush",

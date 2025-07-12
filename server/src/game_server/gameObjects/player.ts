@@ -1,10 +1,9 @@
-import { BaseGameObject2D, CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
-import { AmmoItem, GunItem, HealingItem, LItem, OtherItem} from "../inventory/inventory.ts";
+import { AmmoItem, GunItem, HealingItem, LItem, MeleeItem, OtherItem} from "../inventory/inventory.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
-import { Client } from "../../engine/mod.ts";
 import { GuiPacket,DamageSplash } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -13,13 +12,13 @@ import { BoostType, DamageReason, type GameItem, InventoryItemType } from "commo
 import { AmmoDef, AmmoType } from "common/scripts/definitions/ammo.ts";
 import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { type Game } from "../others/game.ts"
 import { type OtherDef } from "common/scripts/definitions/others.ts";
 import { type HealingDef } from "common/scripts/definitions/healings.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
+import { MeleeDef, Melees } from "common/scripts/definitions/melees.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -46,7 +45,7 @@ export class Player extends ServerGameObject{
 
     inventory:InventoryCap<LItem>
 
-    melee:LItem|null=null
+    default_melee:MeleeDef=Melees.getFromString("survival_knife")
 
     using_healing_speed:number=0.4
 
@@ -58,19 +57,23 @@ export class Player extends ServerGameObject{
         damage:0,
         kills:0
     }
+
+    pvpEnabled:boolean=false
+    interactionsEnabled:boolean=false
     constructor(){
         super()
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
         this.inventory=new InventoryCap<LItem>(undefined,100)
 
+        this.give_item(this.default_melee as unknown as GameItem,1,false)
+
         this.give_item(GameItems.valueString["cellphone"],1)
 
         this.actions=new ActionsManager(this)
-        this.load_hand(1)
 
         this.vest=Armors.getFromString("soldier_vest")
-        this.helmet=Armors.getFromString("soldier_helmet")
+        this.helmet=Armors.getFromString("regular_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -78,41 +81,52 @@ export class Player extends ServerGameObject{
     interact(_user: Player): void {
         return
     }
-    give_item(def:GameItem,count:number){
+    give_item(def:GameItem,count:number,droppable:boolean=true){
         switch(def.item_type){
-            case InventoryItemType.gun:
-                this.inventory.add(new GunItem(def as unknown as GunDef),count)
+            case InventoryItemType.gun:{
+                const i=new GunItem(def as unknown as GunDef,droppable)
+                i.ammo=0
+                this.inventory.add(i,count)
+                break
+            }
+            case InventoryItemType.melee: 
+                this.inventory.add(new MeleeItem(def as unknown as MeleeDef,droppable),count)
                 break
             case InventoryItemType.ammo:
-                this.inventory.add(new AmmoItem(def as unknown as AmmoDef),count)
+                this.inventory.add(new AmmoItem(def as unknown as AmmoDef,droppable),count)
                 break
             case InventoryItemType.healing:
-                this.inventory.add(new HealingItem(def as unknown as HealingDef),count)
+                this.inventory.add(new HealingItem(def as unknown as HealingDef,droppable),count)
                 break
             case InventoryItemType.equipament:
                 break
             case InventoryItemType.other:
-                this.inventory.add(new OtherItem(def as unknown as OtherDef),count)
+                this.inventory.add(new OtherItem(def as unknown as OtherDef,droppable),count)
                 break
         }
         this.privateDirtys.inventory=true
     }
 
-    load_hand(h:number){
-        if(this.hand==h)return
-        if(this.handItem&&this.handItem.itemType===InventoryItemType.gun){
-            (this.handItem as GunItem).reloading=false
+    load_hand(h:number,force:boolean=false){
+        if(this.hand==h&&!force)return
+        if(this.handItem){
+            switch(this.handItem.itemType){
+                case InventoryItemType.gun:
+                    (this.handItem as GunItem).reloading=false
+                    break
+                case InventoryItemType.melee:
+                    (this.handItem as MeleeItem).use_delay=(this.handItem as MeleeItem).def.attack_delay
+                    break
+            }
         }
-        if(h<1||h>this.inventory.slots.length){
+        if(h<0||h>this.inventory.slots.length){
             h=0
             this.hand=0
         }else{
             this.hand=h
         }
-        if(this.hand>0&&this.hand<=this.inventory.slots.length){ 
-            this.handItem=this.inventory.slots[this.hand-1].item
-        }else{
-            this.handItem=this.melee
+        if(this.hand<=this.inventory.slots.length&&this.inventory.slots[this.hand]){ 
+            this.handItem=this.inventory.slots[this.hand].item
         }
         this.recoil=undefined
         this.privateDirtys.hand=true
@@ -122,8 +136,9 @@ export class Player extends ServerGameObject{
         this.dirty=true
     }
     update_hand(){
-        if(this.handItem&&(!this.inventory.slots[this.hand-1]||this.inventory.slots[this.hand-1].quantity<=0)){
-            this.load_hand(this.hand)
+        if(this.handItem&&(!this.inventory.slots[this.hand]||this.inventory.slots[this.hand].quantity<=0)){
+            this.inventory.update_infinity()
+            this.load_hand(this.hand,true)
         }
     }
     dead=false
@@ -136,7 +151,9 @@ export class Player extends ServerGameObject{
         damage:1,
         health:1,
         speed:1,
-        critical_mult:1
+        critical_mult:1,
+        luck:1,
+        mana_consume:1,
     }
 
     privateDirtys={
@@ -146,8 +163,8 @@ export class Player extends ServerGameObject{
     }
 
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
-        const gamemode=(this.game as Game).gamemode
+        this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
+        const gamemode=this.game.gamemode
         if(this.BoostType===BoostType.Addiction){
             this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
         }
@@ -172,7 +189,7 @@ export class Player extends ServerGameObject{
 
     update(dt:number): void {
         //Movement
-        const gamemode=(this.game as Game).gamemode
+        const gamemode=this.game.gamemode
         let speed=1*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing?this.using_healing_speed:1)
                   * (this.handItem?.tags.includes("gun")?(this.handItem as GunItem).def.speedMult??1:1)
@@ -204,16 +221,16 @@ export class Player extends ServerGameObject{
                 break
             }
         }
-        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,(this.game as Game).map.size),3)
+        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,this.game.map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
-            this.dirtyPart=true
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
         }
+        this.dirtyPart=true
 
         //Hand Use
-        if(this.using_item&&this.handItem){
-            this.handItem.on_use(this,this.inventory.slots[this.hand-1])
+        if(this.using_item&&this.handItem&&this.pvpEnabled){
+            this.handItem.on_use(this,this.inventory.slots[this.hand])
         }
         //Update Inventory
         for(const s of this.inventory.slots){
@@ -224,15 +241,26 @@ export class Player extends ServerGameObject{
 
         //Collision
         const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-        let can_interact=true
+        let can_interact=this.interactionsEnabled
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
             switch((obj as BaseGameObject2D).stringType){
                 case "obstacle":
                     if((obj as Obstacle).def.noCollision)break
-                    if((obj as Obstacle).hb){
+                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
+                        if(can_interact&&this.interaction_input&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
+                            (obj as Obstacle).kill({
+                                amount:(obj as Obstacle).health,
+                                position:this.position,
+                                reason:DamageReason.Player,
+                                owner:this,
+                                critical:false
+                            })
+                        }
                         const ov=this.hb.overlapCollision((obj as Obstacle).hb)
-                        if(ov.collided)this.position=v2.sub(this.position,v2.scale(ov.overlap,0.9))
+                        if(ov){
+                            this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                        }
                     }
                     break
                 case "loot":
@@ -248,7 +276,7 @@ export class Player extends ServerGameObject{
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,4)
+        this.movement=v2.scale(action.Movement,500)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }
@@ -267,6 +295,7 @@ export class Player extends ServerGameObject{
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
+        this.load_hand(0)
     }
     getData(): PlayerData {
         return {
@@ -282,7 +311,6 @@ export class Player extends ServerGameObject{
             }
         }
     }
-    handL=0
     ammoCount:Partial<Record<AmmoType,number>>={}
 
     damageSplash?:DamageSplash
@@ -303,7 +331,6 @@ export class Player extends ServerGameObject{
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
                 if(!s.item)continue
-                if(i===this.hand-1)this.handL=ii+1
                 guiPacket.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
                 ii++
             }
@@ -314,13 +341,14 @@ export class Player extends ServerGameObject{
                             this.ammoCount[(this.handItem as GunItem).def.ammoType]=this.inventory.getCountTag(`ammo_${(this.handItem as GunItem).def.ammoType}`)
                             this.privateDirtys.hand=true
                         }
-                        guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.handL,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
+                        guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.hand,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
                         break
+                    case InventoryItemType.melee:
                     case InventoryItemType.ammo:
                     case InventoryItemType.other:
                     case InventoryItemType.equipament:
                     case InventoryItemType.healing:
-                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.handL}:undefined
+                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.hand}:undefined
                         break
                 }
             }
@@ -341,7 +369,7 @@ export class Player extends ServerGameObject{
         }
     }
     damage(params:DamageParams){
-        if(this.dead)return
+        if(this.dead||!this.pvpEnabled)return
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
@@ -398,8 +426,8 @@ export class Player extends ServerGameObject{
     }
     dropAll(){
         for(const s of this.inventory.slots){
-            if(s.quantity>0&&s.item){
-                (this.game as Game).add_loot(this.position,s.item.def as GameItem,s.quantity)
+            if(s.quantity>0&&s.item&&s.item.droppable){
+                this.game.add_loot(this.position,s.item.def as GameItem,s.quantity)
                 s.quantity=0
                 s.item=null
             }
@@ -413,8 +441,8 @@ export class Player extends ServerGameObject{
             this.destroy()
         }
         this.dropAll();
-        (this.game as Game).livingPlayers.splice((this.game as Game).livingPlayers.indexOf(this),1);
-        (this.game as Game).modeManager.on_player_die(this);
+        this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
+        this.game.modeManager.on_player_die(this);
 
         if(params.owner&&params.owner instanceof Player){
             params.owner.status.kills++
@@ -433,9 +461,9 @@ export class Player extends ServerGameObject{
         this.client!.emit(p)
     }
     onDestroy(): void {
-        const idx=(this.game as Game).livingPlayers.indexOf(this)
+        const idx=this.game.livingPlayers.indexOf(this)
         if(idx!==-1){
-            (this.game as Game).livingPlayers.splice(idx,1);
+            this.game.livingPlayers.splice(idx,1);
         }
     }
 }

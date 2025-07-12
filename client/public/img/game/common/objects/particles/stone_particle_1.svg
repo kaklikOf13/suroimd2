@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="2.5474877mm"
+   height="3.0988472mm"
+   viewBox="0 0 2.5474877 3.0988473"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="stone_particle_1.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.599907"
+     inkscape:cx="46.732441"
+     inkscape:cy="133.274"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="matrix(0.77142856,0,0,0.77142856,-17.873489,-12.277359)">
+    <g
+       id="g18"
+       transform="matrix(0,0.10985918,-0.09671963,0,27.798788,13.364061)">
+      <path
+         sodipodi:type="star"
+         style="fill:#b0b0b0;fill-opacity:1;stroke:#3e3e3e;stroke-width:7.93549;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
+         id="path17"
+         inkscape:flatsided="true"
+         sodipodi:sides="7"
+         sodipodi:cx="52.100086"
+         sodipodi:cy="31.705463"
+         sodipodi:r1="65.524017"
+         sodipodi:r2="59.304585"
+         sodipodi:arg1="-0.22612224"
+         sodipodi:arg2="0.22267671"
+         inkscape:rounded="0.3"
+         inkscape:randomized="0.132"
+         d="m 118.80338,13.424568 c 2.29153,16.732427 3.22,42.172028 -10.17694,53.413384 C 95.229513,78.079307 76.115503,97.142338 59.221803,96.3318 42.328103,95.521263 12.025328,78.697665 0.24021939,67.575765 -11.544889,56.453866 -19.63367,30.910259 -18.381737,14.635061 c 1.251933,-16.2751989 25.1415706,-31.151215 40.279899,-38.811814 15.138328,-7.660599 41.287191,-17.82964 56.019403,-7.952976 14.732212,9.876663 38.594285,28.821871 40.885815,45.554297 z"
+         transform="matrix(0.24939694,0,0,0.24294445,28.827716,23.49098)"
+         inkscape:transform-center-x="1.310614"
+         inkscape:transform-center-y="0.55342648" />
+      <path
+         sodipodi:type="star"
+         style="fill:#d6d6d6;fill-opacity:1;stroke:none;stroke-width:0;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
+         id="path18"
+         inkscape:flatsided="true"
+         sodipodi:sides="7"
+         sodipodi:cx="52.100086"
+         sodipodi:cy="31.705463"
+         sodipodi:r1="50.828991"
+         sodipodi:r2="59.304585"
+         sodipodi:arg1="-1.5205927"
+         sodipodi:arg2="-1.0717937"
+         inkscape:rounded="0.3"
+         inkscape:randomized="0.132"
+         transform="matrix(0.02564122,-0.12805897,0.06922716,0.02307236,34.146988,39.244195)"
+         inkscape:transform-center-x="0.11785397"
+         inkscape:transform-center-y="0.62025507"
+         d="m 51.659848,-15.791977 c 13.357589,-0.587051 31.55792,4.329697 40.448981,15.27762637 C 100.99989,10.433579 104.88666,24.148121 103.64449,37.880415 102.40233,51.612709 88.760538,72.142008 76.197473,77.560142 63.634409,82.978276 31.100436,84.699566 20.079499,77.541218 9.058562,70.38287 -2.065177,58.726703 -2.226354,45.563835 -2.3875309,32.400967 4.3419784,7.5706342 10.880104,-3.6970655 17.41823,-14.964765 38.302258,-15.204926 51.659848,-15.791977 Z" />
+    </g>
+  </g>
+</svg>

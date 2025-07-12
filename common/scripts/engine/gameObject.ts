@@ -21,8 +21,7 @@ export abstract class BaseObject2D{
         return this.hb.position
     }
     set position(val:Vec2){
-        this.hb.position.x=val.x
-        this.hb.position.y=val.y
+        this.hb.translate(val)
     }
     constructor(){
         this.hb=new NullHitbox2D(v2.new(0,0))
@@ -124,7 +123,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         //Objects
         const rect=obj.hb.toRect()
         let min = this.cellPos(rect.position)
-        let max = this.cellPos(v2.add(rect.position,rect.size))
+        let max = this.cellPos(rect.max)
         if(v2.less(max,min)){
             const m=min
             min=max

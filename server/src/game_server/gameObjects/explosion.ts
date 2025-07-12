@@ -2,7 +2,6 @@ import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { Player } from "./player.ts";
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
-import { type Game } from "../others/game.ts";
 import { Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
@@ -30,12 +29,12 @@ export class Explosion extends ServerGameObject{
             this.manager.cells.updateObject(this)
             if(this.defs.bullet){
                 for(let i=0;i<this.defs.bullet.count;i++){
-                    (this.game as Game).add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner)
+                    this.game.add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner)
                 }
             }
             if(this.defs.projectiles){
                 for(let i=0;i<this.defs.projectiles.count;i++){
-                    const p=(this.game as Game).add_projectile(this.position,Projectiles.getFromString(this.defs.projectiles.def),this.owner)
+                    const p=this.game.add_projectile(this.position,Projectiles.getFromString(this.defs.projectiles.def),this.owner)
                     p.velocity=v2.random(-this.defs.projectiles.speed,this.defs.projectiles.speed)
                     p.angularVelocity=this.defs.projectiles.angSpeed+(Math.random()*this.defs.projectiles.randomAng)
                 }

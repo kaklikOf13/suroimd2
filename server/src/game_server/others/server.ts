@@ -1,7 +1,7 @@
 import { CATEGORYS } from "common/scripts/others/constants.ts";
-import { Server,Cors} from "../../engine/mod.ts"
+import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
 import { Game, GameConfig } from "./game.ts"
-import { ID, random } from "common/scripts/engine/mod.ts";
+import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
 export interface GameServerConfig{
     game:GameConfig
     max_games:number
@@ -43,9 +43,9 @@ export class GameServer{
     }
     addGame(config?:GameConfig):Game{
         const id=this.games.length
-        this.games.push(new Game(id,config ?? this.config.game))
+        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? this.config.game))
         this.games[id].mainloop()
-        const handler=this.games[id].clients.handler(()=>{
+        const handler=(this.games[id].clients as ClientsManager).handler(()=>{
             let idC=random.id()
             while(this.games[id].scene.objects.exist({
                 id:idC,

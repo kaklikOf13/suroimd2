@@ -11,6 +11,7 @@ import { Player } from "../gameObjects/player.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { OtherDef } from "common/scripts/definitions/others.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
+import { MeleeDef } from "common/scripts/definitions/melees.ts";
 
 export class GuiManager{
     game:Game
@@ -121,29 +122,35 @@ export class GuiManager{
             this.content.current_item_image.style.backgroundImage="none"
             return
         }
-        if(this.hand.location>0){
+        if(this.hand.location>=0){
             if(!this.hand){
                 return
             }
             switch(this.hand.type){
                 case InventoryItemType.gun:{
-                    const def=(this.inventory[this.hand.location-1].def as GunDef)
+                    const def=(this.inventory[this.hand.location].def as GunDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
                     break
                 }
+                case InventoryItemType.melee:{
+                    const def=(this.inventory[this.hand.location].def as MeleeDef)
+                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
+                    this.content.hand_info_count.innerText=``
+                    break
+                }
                 case InventoryItemType.ammo:{
-                    const def=(this.inventory[this.hand.location-1].def as AmmoDef)
+                    const def=(this.inventory[this.hand.location].def as AmmoDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     break
                 }
                 case InventoryItemType.healing:{
-                    const def=(this.inventory[this.hand.location-1].def as HealingDef)
+                    const def=(this.inventory[this.hand.location].def as HealingDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     break
                 }
                 case InventoryItemType.other:{
-                    const def=(this.inventory[this.hand.location-1].def as OtherDef)
+                    const def=(this.inventory[this.hand.location].def as OtherDef)
                     this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
                     if(def.idString==="cellphone"){
                         this.content.cellphone_actions.style.display="unset"
@@ -151,7 +158,7 @@ export class GuiManager{
                     break
                 }
             }
-            if(this.hand.type===InventoryItemType.gun||this.hand.type===InventoryItemType.other){
+            if(this.hand.type===InventoryItemType.gun||this.hand.type===InventoryItemType.other||this.hand.type===InventoryItemType.melee){
                 this.content.current_item_image.style.width="70px"
                 this.content.current_item_image.style.height="70px"
                 this.content.current_item_image.style.transform="rotate(-30deg)"
@@ -159,10 +166,10 @@ export class GuiManager{
                 this.content.current_item_image.style.width="40px"
                 this.content.current_item_image.style.height="40px"
                 this.content.current_item_image.style.transform="unset"
-                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location-1].count}`
+                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location].count}`
             }
             this.content.current_item_image.style.opacity="100%"
-            this.handSelection=this.inventory_cache[this.hand.location-1]
+            this.handSelection=this.inventory_cache[this.hand.location]
             this.handSelection.classList.add("inventory-slot-selected")
 
         }else{
@@ -209,7 +216,7 @@ export class GuiManager{
         const sMM=(slot:HTMLDivElement,i:number)=>{
             slot.addEventListener("mousedown",(e)=>{
                 if(e.button!==0)return
-                this.game.action.hand=i+1
+                this.game.action.hand=i
                 this.game.action.UsingItem=false
             })
         }
@@ -224,6 +231,11 @@ export class GuiManager{
             const img = document.createElement("img")
             switch(s.type){
                 case InventoryItemType.gun:
+                    img.src=this.game.resources.get_sprite(s.def.idString).path
+                    img.style.width = "40px"
+                    img.style.height = "40px"
+                    break
+                case InventoryItemType.melee:
                     img.src=this.game.resources.get_sprite(s.def.idString).path
                     img.style.width = "40px"
                     img.style.height = "40px"

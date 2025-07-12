@@ -1,0 +1,8 @@
+{
+    "files":{
+        "survival_knife":"survival_knife.svg",
+        "axe":"axe.svg",
+        "hammer":"hammer.svg"
+    },
+    "dir":"img/game/common/items/melees"
+}
