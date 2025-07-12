@@ -1,11 +1,10 @@
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { Color } from "../engine/mod.ts";
-import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D } from "common/scripts/engine/mod.ts";
 import { ExplosionDef, Explosions } from "common/scripts/definitions/explosions.ts";
-import { Camera2D, ColorM } from "../engine/renderer.ts";
+import {  ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Sprite } from "../engine/resources.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
 export class Explosion extends GameObject{
     stringType:string="explosion"
     numberType: number=5
@@ -32,7 +31,7 @@ export class Explosion extends GameObject{
     constructor(){
         super()
     }
-    updateData(data:ExplosionData){
+    override updateData(data:ExplosionData){
         if(this.def)return
         this.position=data.position
         this.def=Explosions.getFromNumber(data.def)

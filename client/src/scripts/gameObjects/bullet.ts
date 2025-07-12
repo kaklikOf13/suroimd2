@@ -86,7 +86,7 @@ export class Bullet extends GameObject{
     constructor(){
         super()
     }
-    updateData(data:BulletData){
+    override updateData(data:BulletData){
         this.position=data.position
         this.initialPosition=data.initialPos
         this.maxDistance=data.maxDistance

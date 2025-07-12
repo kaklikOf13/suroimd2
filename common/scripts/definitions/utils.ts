@@ -1,6 +1,6 @@
 import { type NetStream } from "../engine/stream.ts";
 import { Definition } from "../engine/definitions.ts";
-import { type ItemQuality } from "../others/constants.ts";
+import { ItemQuality } from "../others/item.ts";
 export interface BulletDef{
     damage:number
     range:number

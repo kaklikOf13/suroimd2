@@ -14,7 +14,7 @@ export abstract class ClientGameObject2D extends BaseGameObject2D{
 
 export class ClientParticle2D<GameObject extends BaseGameObject2D=BaseGameObject2D> extends Particle2D<GameObject>{
     sprite?:Sprite
-    process_sprite(game:Game2D,sprite: string): void {
+    override process_sprite(game:Game2D,sprite: string): void {
         this.sprite=(game as unknown as ClientGame2D).resources.get_sprite(sprite)
     }
 }
@@ -94,8 +94,8 @@ export class Camera<GameObject extends ClientGameObject2D=ClientGameObject2D,Eve
         }*/
 
         const cameraPos = v2.add(
-            v2.scale(position, this.container.scale.x),
-            v2.new(-this.width / 2, -this.height / 2)
+            v2.scale(position, this._zoom),
+            v2.new(-(this.width*this._zoom)/2, -(this.height*this._zoom)/2)
         );
 
         this.container.position.set(-cameraPos.x, -cameraPos.y);
@@ -141,7 +141,7 @@ export class ClientGame2D<GameObject extends ClientGameObject2D=ClientGameObject
 
         this.app.stage.addChild(this.camera.container)
     }
-    on_update(dt:number){
+    override on_update(dt:number){
         this.camera.update()
         this.particles.update(dt)
         this.sounds.update(dt)

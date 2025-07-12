@@ -1,7 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts";
-import { AmmoType } from "./ammo.ts";
-import { BulletDef, GameItem, InventoryItemType } from "./utils.ts";
-import { ItemQuality, tracers } from "../others/constants.ts";
+import { ItemQuality, tracers } from "../others/item.ts";
+import { type BulletDef, GameItem, InventoryItemType } from "./utils.ts";
 export enum FireMode{
     Auto,
     Single
@@ -35,9 +34,9 @@ export interface GunDef extends Definition{
     lenght:number
     jitterRadius?:number
     fireMode?:FireMode
-    speedMult?:number
+    speed_mod?:number
     size:number
-    ammoType:AmmoType
+    ammoType:string
     class:GunClasses
     quality:ItemQuality
     reload?:{
@@ -72,7 +71,7 @@ Guns.insert(
         spread:5,
         lenght:0.7,
         size:4,
-        ammoType:AmmoType["762mm"],
+        ammoType:"762mm",
         ammoSpawnAmount:90,
         class:GunClasses.Automatic,
         quality:ItemQuality.Uncommon,
@@ -93,7 +92,7 @@ Guns.insert(
             duration:0.12,
             speed:0.75
         },
-        speedMult:0.97,
+        speed_mod:0.97,
         gasParticles:GasParticles.automatic
     },
     {
@@ -102,7 +101,7 @@ Guns.insert(
         spread:2,
         lenght:0.7,
         size:4,
-        ammoType:AmmoType["556mm"],
+        ammoType:"556mm",
         ammoSpawnAmount:90,
         class:GunClasses.Automatic,
         quality:ItemQuality.Uncommon,
@@ -123,7 +122,7 @@ Guns.insert(
             duration:0.14,
             speed:0.75
         },
-        speedMult:0.95,
+        speed_mod:0.95,
         gasParticles:GasParticles.automatic
     },
     {
@@ -132,7 +131,7 @@ Guns.insert(
         spread:3,
         lenght:0.7,
         size:4,
-        ammoType:AmmoType["9mm"],
+        ammoType:"9mm",
         ammoSpawnAmount:96,
         class:GunClasses.Automatic,
         quality:ItemQuality.Uncommon,
@@ -153,7 +152,7 @@ Guns.insert(
             duration:0.11,
             speed:0.8
         },
-        speedMult:1,
+        speed_mod:1,
         gasParticles:GasParticles.automatic
     },
     {
@@ -162,7 +161,7 @@ Guns.insert(
         spread:1,
         lenght:0.68,
         size:4,
-        ammoType:AmmoType["9mm"],
+        ammoType:"9mm",
         ammoSpawnAmount:96,
         class:GunClasses.Automatic,
         quality:ItemQuality.Epic,
@@ -183,7 +182,7 @@ Guns.insert(
             duration:0.07,
             speed:0.77
         },
-        speedMult:1,
+        speed_mod:1,
         gasParticles:GasParticles.automatic
     },
     {
@@ -192,7 +191,7 @@ Guns.insert(
         spread:1,
         lenght:0.8,
         size:4.5,
-        ammoType:AmmoType["762mm"],
+        ammoType:"762mm",
         ammoSpawnAmount:20,
         class:GunClasses.Sniper,
         quality:ItemQuality.Epic,
@@ -214,7 +213,7 @@ Guns.insert(
             duration:1.25,
             speed:0.4
         },
-        speedMult:0.95,
+        speed_mod:0.95,
     },
     {
         idString:"awp",
@@ -222,7 +221,7 @@ Guns.insert(
         spread:1.1,
         lenght:0.9,
         size:6,
-        ammoType:AmmoType["762mm"],
+        ammoType:"762mm",
         class:GunClasses.Sniper,
         quality:ItemQuality.Epic,
         ammoSpawnAmount:30,
@@ -245,7 +244,7 @@ Guns.insert(
             duration:1.37,
             speed:0.6
         },
-        speedMult:0.9,
+        speed_mod:0.9,
     },
     {
         idString:"awms",
@@ -253,7 +252,7 @@ Guns.insert(
         spread:1.2,
         lenght:1,
         size:6,
-        ammoType:AmmoType["308sub"],
+        ammoType:"308sub",
         class:GunClasses.Sniper,
         quality:ItemQuality.Legendary,
         ammoSpawnAmount:25,
@@ -276,14 +275,14 @@ Guns.insert(
             duration:1.45,
             speed:0.25
         },
-        speedMult:0.9,
+        speed_mod:0.9,
     },
     {
         idString:"m870",
         fireDelay:1,
         spread:3,
         lenght:0.7,
-        ammoType:AmmoType["12g"],
+        ammoType:"12g",
         ammoSpawnAmount:10,
         jitterRadius:0.25,
         size:4.3,
@@ -309,7 +308,7 @@ Guns.insert(
             duration:1.1,
             speed:0.55
         },
-        speedMult:1,
+        speed_mod:1,
         gasParticles:GasParticles.shotgun
     },
     {
@@ -317,7 +316,7 @@ Guns.insert(
         fireDelay:0.9,
         spread:3,
         lenght:0.6,
-        ammoType:AmmoType["12g"],
+        ammoType:"12g",
         ammoSpawnAmount:18,
         jitterRadius:0.05,
         class:GunClasses.Shotgun,
@@ -343,7 +342,7 @@ Guns.insert(
             duration:1,
             speed:0.6
         },
-        speedMult:0.95,
+        speed_mod:0.95,
         gasParticles:GasParticles.shotgun
     },
     {
@@ -351,7 +350,7 @@ Guns.insert(
         fireDelay:0.2,
         spread:9,
         lenght:0.65,
-        ammoType:AmmoType["12g"],
+        ammoType:"12g",
         ammoSpawnAmount:15,
         jitterRadius:0.15,
         class:GunClasses.Shotgun,
@@ -377,7 +376,7 @@ Guns.insert(
             duration:0.4,
             speed:0.75
         },
-        speedMult:1,
+        speed_mod:1,
         gasParticles:GasParticles.shotgun
     },
     {
@@ -386,7 +385,7 @@ Guns.insert(
         spread:3,
         lenght:0.7,
         size:3.8,
-        ammoType:AmmoType["mana"],
+        ammoType:"mana",
         ammoSpawnAmount:2,
         ammoSpawn:"purple_pills",
         mana_consume:20,
@@ -402,7 +401,7 @@ Guns.insert(
             duration:1,
             speed:0.6
         },
-        speedMult:0.97,
+        speed_mod:0.97,
     },
     {
         idString:"fireball_staff",
@@ -410,7 +409,7 @@ Guns.insert(
         spread:4,
         lenght:0.7,
         size:3.7,
-        ammoType:AmmoType["mana"],
+        ammoType:"mana",
         ammoSpawnAmount:2,
         ammoSpawn:"purple_pills",
         mana_consume:5,
@@ -426,6 +425,6 @@ Guns.insert(
             duration:0.6,
             speed:0.8
         },
-        speedMult:0.97,
+        speed_mod:0.97,
     },
 )

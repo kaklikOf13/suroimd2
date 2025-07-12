@@ -15,7 +15,7 @@ export class Loot extends GameObject{
     constructor(){
         super()
     }
-    updateData(data:LootData){
+    override updateData(data:LootData){
         this.position=data.position
     }
 }

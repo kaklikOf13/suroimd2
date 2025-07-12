@@ -1,6 +1,5 @@
 import { Action, type SlotCap } from "common/scripts/engine/inventory.ts";
-import { Player } from "../gameObjects/player.ts";
-import { GunDef } from "common/scripts/definitions/guns.ts";
+import { type Player } from "../gameObjects/player.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
@@ -8,19 +7,22 @@ import { HealingDef } from "common/scripts/definitions/healings.ts";
 
 export class ReloadAction extends Action<Player>{
     delay:number
-    def:GunDef
-    reload_count:number
-    constructor(reload_count:number,def:GunDef){
+    item:GunItem
+    constructor(item:GunItem){
         super()
-        this.reload_count=reload_count
-        this.delay=def.reload.delay
-        this.def=def
+        this.delay=item.def.reload?.delay??1
+        this.item=item
     }
     on_execute(user:Player){
-        if(!user.handItem||user.handItem.itemType!=InventoryItemType.gun)return
-        const consumed=user.inventory.consumeTagRemains(`ammo_${this.def.ammoType}`,this.reload_count);
-        (user.handItem as GunItem).ammo+=consumed
-        user.privateDirtys.hand=true
+        if(this.item.itemType!=InventoryItemType.gun)return
+        let consumed=0
+        if(this.item.def.reload!.shotsPerReload){
+            consumed=this.item.def.reload!.shotsPerReload//user.inventory.consumeTagRemains(`ammo_${this.def.ammoType}`,this.reload_count);
+        }else{
+            consumed=this.item.def.reload!.capacity//user.inventory.consumeTagRemains(`ammo_${this.def.ammoType}`,this.reload_count);
+        }
+        this.item.ammo+=consumed
+        user.privateDirtys.current_weapon=true
         user.privateDirtys.inventory=true
     }
     type: number=ActionsType.Reload

@@ -1,6 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts";
+import { ItemQuality } from "../others/item.ts";
 import { GameItem, InventoryItemType } from "./utils.ts";
-import { ItemQuality } from "../others/constants.ts";
 export interface MeleeDef extends Definition{
     quality:ItemQuality
     damage:number
@@ -10,6 +10,8 @@ export interface MeleeDef extends Definition{
     size:number
     attack_delay:number
     damage_delays:number[]
+
+    speed_mod?:number
 }
 
 export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{

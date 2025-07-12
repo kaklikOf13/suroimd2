@@ -209,8 +209,8 @@
 #inventory{
     position: absolute;
     background-color: #0002;
-    bottom: 5px;
-    right: 5px;
+    top: 5px;
+    left: 5px;
     height: 300px;
     width: max-content;
     overflow-y: auto;
@@ -257,5 +257,59 @@
             transform: unset;
             rotate: unset;
         }
+    }
+}
+#gui-weapons{
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: max-content;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    width: 12%;
+
+    .weapon-slot{
+        margin: 0%;
+        width: 100%;
+        height: 90px;
+        background-color: #0003;
+
+        border-radius: 10px;
+        display: block;
+        position: relative;
+
+        .weapon-slot-number{
+            position: relative;
+            top:5px;
+            left:93%;
+
+            font-family: "Russo-One", serif;
+            font-size: 20px;
+        }
+        .weapon-slot-name{
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-family: "Russo-One", serif;
+            font-size: 20px;
+        }
+        .weapon-slot-image{
+            position: absolute;
+            top:50%;
+            left:5px;
+            width: 100px;
+
+            transform: translateY(-50%);
+            rotate: -30deg;
+
+            font-family: "Russo-One", serif;
+            font-size: 20px;
+        }
+    }
+    .weapon-slot-selected{
+        border: 3px solid #eee;
     }
 }

@@ -1,39 +1,13 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { ItemQuality } from "../others/constants.ts";
+import { ItemQuality } from "../others/item.ts";
 import { GameItem, InventoryItemType } from "./utils.ts";
 
-export enum AmmoType{
-    //Simples
-    "12g"=0,
-    "762mm",
-    "556mm",
-    "9mm",
-    "22lr",
-    //Anothers
-    "50cal",
-    "308sub",
-    "40mm",
-    "mana",
-}
-export const defaultAmmos:Record<AmmoType,string>={
-    //Simples
-    [AmmoType["12g"]]:"12g",
-    [AmmoType["762mm"]]:"762mm",
-    [AmmoType["556mm"]]:"556mm",
-    [AmmoType["9mm"]]:"9mm",
-    [AmmoType["22lr"]]:"22lr",
-    //Anothers
-    [AmmoType["50cal"]]:"50cal",
-    [AmmoType["308sub"]]:"308sub",
-    [AmmoType["40mm"]]:"40mm",
-    [AmmoType["mana"]]:"mana_mm",
-}
 export interface AmmoDef extends Definition{
     size:number
     tint:number
     defaultTrail:number
     strongTrail:number
-    ammoType:AmmoType
+    ammoType:string
 }
 export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.ammo
@@ -43,7 +17,7 @@ Ammos.insert(
     //Normals
     {
         idString:"12g",
-        ammoType:AmmoType["12g"],
+        ammoType:"12g",
         defaultTrail:0xcfada0,
         strongTrail:0xdb2218,
         tint:0xff0000,
@@ -51,7 +25,7 @@ Ammos.insert(
     },
     {
         idString:"762mm",
-        ammoType:AmmoType["762mm"],
+        ammoType:"762mm",
         defaultTrail:0x6688ff,
         strongTrail:0x0034f2,
         tint:0x0000ff,
@@ -59,7 +33,7 @@ Ammos.insert(
     },
     {
         idString:"556mm",
-        ammoType:AmmoType["556mm"],
+        ammoType:"556mm",
         defaultTrail:0x66ff88,
         strongTrail:0x00a41c,
         tint:0x00ff00,
@@ -67,7 +41,7 @@ Ammos.insert(
     },
     {
         idString:"9mm",
-        ammoType:AmmoType["9mm"],
+        ammoType:"9mm",
         defaultTrail:0xefef9f,
         strongTrail:0xefef33,
         tint:0xffff00,
@@ -75,7 +49,7 @@ Ammos.insert(
     },
     {
         idString:"22lr",
-        ammoType:AmmoType["22lr"],
+        ammoType:"22lr",
         defaultTrail:0xefefef,
         strongTrail:0xefefff,
         tint:0xffffff,
@@ -84,7 +58,7 @@ Ammos.insert(
     //Anothers
     {
         idString:"50cal",
-        ammoType:AmmoType["50cal"],
+        ammoType:"50cal",
         defaultTrail:0x555555,
         strongTrail:0x000000,
         tint:0x000000,
@@ -92,7 +66,7 @@ Ammos.insert(
     },
     {
         idString:"308sub",
-        ammoType:AmmoType["308sub"],
+        ammoType:"308sub",
         defaultTrail:0x222835,
         strongTrail:0x0c1420,
         tint:0x001330,
@@ -100,7 +74,7 @@ Ammos.insert(
     },
     {
         idString:"40mm",
-        ammoType:AmmoType["40mm"],
+        ammoType:"40mm",
         defaultTrail:0x889fcb,
         strongTrail:0x009fcb,
         tint:0x001330,
@@ -108,7 +82,7 @@ Ammos.insert(
     },
     {
         idString:"mana_mm",
-        ammoType:AmmoType["mana"],
+        ammoType:"mana",
         defaultTrail:0x889fcb,
         strongTrail:0x009fcb,
         tint:0x001330,

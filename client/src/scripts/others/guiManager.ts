@@ -1,17 +1,13 @@
-import { GuiPacket, HandData } from "common/scripts/packets/gui_packet.ts";
+import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { Game } from "./game.ts";
-import { Definition } from "common/scripts/engine/definitions.ts";
-import { BoostType, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GunDef } from "common/scripts/definitions/guns.ts";
+import { BoostType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, CATEGORYS, GameOverPacket } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
-import { AmmoDef } from "common/scripts/definitions/ammo.ts";
-import { HealingDef} from "common/scripts/definitions/healings.ts";
 import { Player } from "../gameObjects/player.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { OtherDef } from "common/scripts/definitions/others.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/melees.ts";
+import { GunDef } from "common/scripts/definitions/guns.ts";
 
 export class GuiManager{
     game:Game
@@ -46,11 +42,25 @@ export class GuiManager{
         gameOver_damaged:document.querySelector("#gameover-damaged") as HTMLDivElement,
         gameOver_score:document.querySelector("#gameover-score") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
+
+        weapon1:document.querySelector("#game-weapon-slot-00") as HTMLDivElement,
+        weapon2:document.querySelector("#game-weapon-slot-01") as HTMLDivElement,
+        weapon3:document.querySelector("#game-weapon-slot-02") as HTMLDivElement,
     }
-    inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
-    hand:HandData
-    handSelection?:HTMLDivElement
+
+    weapons:{
+        0?:MeleeDef,
+        1?:GunDef,
+        2?:GunDef
+    }={
+        0:undefined,
+        1:undefined,
+        2:undefined
+    }
+    //inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     action?:{delay:number,start:number,type:ActionsType}
+
+    currentWeapon?:HTMLDivElement
     constructor(game:Game){
         this.game=game
         this.game.client.on("gameover",this.show_game_over.bind(this))
@@ -61,20 +71,60 @@ export class GuiManager{
             if(p.damages){
                 this.game.add_damageSplash(p.damages.position,p.damages.count,p.damages.critical,p.damages.shield)
             }
-            if(p.inventory){
+
+            if(p.weapons.melee){
+                const name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
+                name.innerText=p.weapons.melee.idString
+                this.weapons[0]=p.weapons.melee
+            }
+            if(p.weapons.gun1){
+                const name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
+                name.innerText=p.weapons.gun1.idString
+                const img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
+                img.src=this.game.resources.get_sprite(p.weapons.gun1.idString).path
+                this.weapons[1]=p.weapons.gun1
+            }
+            if(p.weapons.gun2){
+                const name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
+                name.innerText=p.weapons.gun2.idString
+                this.weapons[2]=p.weapons.gun2
+            }
+            if(p.current_weapon){
+                if(this.currentWeapon)this.currentWeapon.classList.remove("weapon-slot-selected")
+                const wp=this.weapons[p.current_weapon.slot as keyof typeof this.weapons]
+                switch(p.current_weapon.slot){
+                    case 1:
+                        this.currentWeapon=this.content.weapon2
+                        break
+                    case 2:
+                        this.currentWeapon=this.content.weapon3
+                        break
+                    default:
+                        this.currentWeapon=this.content.weapon1
+                }
+                
+                if(p.current_weapon.slot===0){
+                    //
+                }else{
+                    this.content.hand_info_count.innerText=`${p.current_weapon.ammo}/${(wp as GunDef).reload?.capacity}`
+                }
+                this.currentWeapon.classList.add("weapon-slot-selected")
+            }
+
+            /*if(p.inventory){
                 this.inventory.length=0
                 for(const s of p.inventory){
                     this.inventory.push({count:s.count,def:GameItems.valueNumber[s.idNumber],type:s.type})
                 }
                 this.inventory_cache=this.inventory_reset()
-            }
-            if(p.dirty.hand){
+            }*/
+            /*if(p.dirty.hand){
                 if(this.handSelection){
                     this.handSelection.classList.remove("inventory-slot-selected")
                 }
                 this.hand=p.hand
                 this.set_hand_item()
-            }
+            }*/
             if(p.dirty.action){
                 if(p.action){
                     this.action={
@@ -116,7 +166,7 @@ export class GuiManager{
             }
         }
     }
-    set_hand_item(){
+    /*set_hand_item(){
         this.content.cellphone_actions.style.display="none"
         if(!this.hand){
             this.content.current_item_image.style.backgroundImage="none"
@@ -176,7 +226,7 @@ export class GuiManager{
             this.handSelection=undefined
             this.content.current_item_image.style.opacity="0%"
         }
-    }
+    }*/
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return
         this.game.gameOver=true
@@ -208,7 +258,7 @@ export class GuiManager{
             this.content.vest_slot.src="img/game/common/icons/vest.svg"
         }
     }
-    inventory_cache:HTMLDivElement[]=[]
+    /*inventory_cache:HTMLDivElement[]=[]
     inventory_reset():HTMLDivElement[]{
         const cache:HTMLDivElement[]=[]
         this.content.inventory.innerHTML=""
@@ -276,7 +326,7 @@ export class GuiManager{
 
         }
         return cache
-    }
+    }*/
     update(){
         if(this.action){
             const w=(Date.now()-this.action.start)/1000

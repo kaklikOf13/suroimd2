@@ -20,7 +20,7 @@ export class DamageSplash extends GameObject{
     }
 
     lifetime:number=1.2
-    onDestroy(): void {
+    override onDestroy(): void {
     }
     dying:boolean=false
     angle=0

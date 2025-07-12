@@ -1,5 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { ItemQuality } from "../others/constants.ts";
+import { ItemQuality } from "../others/item.ts";
 import { GameItem, InventoryItemType } from "./utils.ts";
 
 export interface OtherDef extends Definition{

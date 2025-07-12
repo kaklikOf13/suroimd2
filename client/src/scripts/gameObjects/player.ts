@@ -75,7 +75,7 @@ export class Player extends GameObject{
     constructor(){
         super()
     }
-    updateData(data:PlayerData){
+    override updateData(data:PlayerData){
         if(data.full){
             this.name=data.full.name
             if(data.full.helmet>0){
@@ -106,7 +106,7 @@ export class Player extends GameObject{
         this.manager.cells.updateObject(this)
 
         if(this.id===this.game.activePlayer){
-            this.game.camera.position=v2.duplicate(this.position)
+            this.game.camera.position=v2.lerp(this.game.camera.position,this.position,0.15)
             if(data.full){
                 this.game.guiManager.update_equipaments()
             }

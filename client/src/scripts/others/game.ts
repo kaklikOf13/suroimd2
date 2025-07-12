@@ -46,7 +46,7 @@ export class Game extends ClientGame2D<GameObject>{
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
   }
-  on_stop(): void {
+  override on_stop(): void {
     super.on_stop()
     if(!this.gameOver){
       this.scene.objects.clear()
@@ -55,7 +55,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   onstop?:(g:Game)=>void
   old_hand=0
-  on_run(): void {
+  override on_run(): void {
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
       if(!this.can_act)return
       switch(k){
@@ -94,7 +94,7 @@ export class Game extends ClientGame2D<GameObject>{
       }
     })
   }
-  on_update(dt:number): void {
+  override on_update(dt:number): void {
     super.on_update(dt)
     if(this.client.opened){
       if(this.can_act){
@@ -121,15 +121,15 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.cellphoneAction=undefined
       this.old_hand=this.action.hand
 
-      this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),this.mouse.position)
+      this.action.angle=v2.lookTo(v2.new((this.camera.width/2)*this.camera.zoom,(this.camera.height/2)*this.camera.zoom),this.mouse.position)
     }
-    //3.40=64x
-    //2.80=32x
-    //2.30=16x
-    //1.70=8x
-    //1.30=4x
-    //1.00=2x
-    //0.85=1x
+    this.camera.zoom=0.7
+    //0.09=l6 32x
+    //0.15=l5 16x
+    //0.28=l4 8x
+    //0.44=l3 4x
+    //0.58=l2 2x
+    //0.70=l1 1x
   }
   connect(playerName:string){
     if(!this.client.opened){

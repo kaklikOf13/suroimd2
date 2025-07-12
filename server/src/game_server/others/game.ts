@@ -119,7 +119,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.modeManager=new GamemodeManager(this)
     }
 
-    on_update(): void {
+    override on_update(): void {
         super.on_update()
         if(this.killing_game){
             this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
@@ -130,13 +130,13 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
     }
     privatesDirtysInter=0
-    on_stop():void{
+    override on_stop():void{
         super.on_stop()
         clearInterval(this.privatesDirtysInter)
         console.log(`Game ${this.id} Stopped`)
     }
     killing_game:boolean=false
-    on_run(): void {
+    override on_run(): void {
         this.map.generate()
         this.privatesDirtysInter=setInterval(()=>{
             for(const p of Object.values(this.connectedPlayers)){

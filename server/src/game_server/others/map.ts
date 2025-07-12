@@ -2,12 +2,9 @@ import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/sc
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
-import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
+import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 
 import {} from "common/scripts/definitions/maps/base.ts"
-import { Guns } from "common/scripts/definitions/guns.ts";
-import { GameItem } from "common/scripts/definitions/utils.ts";
-import { Ammos } from "common/scripts/definitions/ammo.ts";
 
 export class GameMap{
     readonly size:Vec2

@@ -2,7 +2,6 @@ import { LootTableItemRet, LootTablesDefs } from "../../engine/inventory.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 import { GameItems } from "../alldefs.ts";
 import { GunDef } from "../guns.ts";
-import { defaultAmmos } from "../ammo.ts";
 
 export interface Aditional{
     withammo:boolean
@@ -20,10 +19,10 @@ export function get_item(item:string,count:number,_aditional:Aditional):LootTabl
             }
         ]
         if((itemD as unknown as GunDef).ammoSpawnAmount){
-            ret.push({
+            /*ret.push({
                 item:GameItems.valueString[(itemD as unknown as GunDef).ammoSpawn??defaultAmmos[(itemD as unknown as GunDef).ammoType]],
                 count:(itemD as unknown as GunDef).ammoSpawnAmount!
-            })
+            })*/
         }
         return ret
     }else{

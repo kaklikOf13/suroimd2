@@ -1,6 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts"
+import { tracers } from "../others/item.ts";
 import { BulletDef } from "./utils.ts";
-import { tracers } from "../others/constants.ts";
 
 export type ExplosionDef={
     size:{
