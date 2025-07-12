@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="50"
-   height="14.462371"
-   viewBox="0 0 13.229168 3.8265023"
+   width="60"
+   height="17.354845"
+   viewBox="0 0 15.875002 4.5918028"
    version="1.1"
    id="svg5"
    sodipodi:docname="arm.svg"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -24,8 +24,8 @@
      inkscape:pagecheckerboard="1"
      showgrid="false"
      inkscape:zoom="3.1107132"
-     inkscape:cx="34.236522"
-     inkscape:cy="96.923111"
+     inkscape:cx="39.540772"
+     inkscape:cy="98.20899"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -100,7 +100,7 @@
   <g
      id="g35"
      inkscape:label="Right"
-     transform="matrix(0,-0.28542335,0.28542335,0,-50.060852,75.148537)">
+     transform="matrix(0,-0.34250802,0.34250802,0,-60.073023,90.178245)">
     <path
        d="m 251.60743,217.49058 c -0.93143,-2.70145 0.49355,-5.64994 3.18276,-6.58561 2.68922,-0.93568 5.62436,0.49579 6.5558,3.19723 0.93145,2.70147 -0.49354,5.64996 -3.18275,6.58563 -2.68924,0.93568 -5.62437,-0.49579 -6.55582,-3.19725 z"
        fill="#312817"

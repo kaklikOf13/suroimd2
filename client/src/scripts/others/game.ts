@@ -132,6 +132,10 @@ export class Game extends ClientGame2D<GameObject>{
     //0.85=1x
   }
   connect(playerName:string){
+    if(!this.client.opened){
+      console.log("not connected")
+      return
+    }
     this.client.emit(new JoinPacket(playerName))
     this.activePlayer=this.client.ID
   }

@@ -5,7 +5,6 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Color, ColorM } from "../engine/renderer.ts";
-import { Debug } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
 export class Bullet extends GameObject{
     stringType:string="bullet"

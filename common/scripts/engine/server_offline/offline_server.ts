@@ -94,6 +94,7 @@ export class Client{
     ID:ID=0 // Client ID Sysed With Server And Client
     IP:string // Clinet IP
     protected signals:SignalManager
+    onopen?:()=>void
     constructor(websocket:BasicSocket,packet_manager:PacketsManager,ip:string=""){
         this.ws=websocket
         this.opened=false
@@ -124,6 +125,7 @@ export class Client{
             this.on(DefaultSignals.CONNECT,(packet:ConnectPacket)=>{
                 this.opened=true
                 this.ID=packet.client_id
+                if(this.onopen)this.onopen()
             })
         }
     }

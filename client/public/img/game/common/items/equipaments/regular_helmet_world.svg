@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="50"
-   height="81.966095"
-   viewBox="0 0 13.229167 21.686864"
+   width="60"
+   height="98.359314"
+   viewBox="0 0 15.875 26.024237"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="regular_helmet_world.svg"
    xml:space="preserve"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -25,8 +25,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="2.1946698"
-     inkscape:cx="-36.451953"
-     inkscape:cy="111.40628"
+     inkscape:cx="-31.211985"
+     inkscape:cy="119.60797"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -113,9 +113,10 @@
          id="stop8" /></linearGradient></defs><g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1"><g
+     id="layer1"
+     transform="translate(1.3229173,2.1686867)"><g
        id="g11"
-       transform="matrix(0,-0.31287372,0.31287372,0,-45.948203,85.933122)"
+       transform="matrix(0,-0.37544846,0.37544846,0,-56.46076,100.95106)"
        style="stroke:#312817;stroke-width:0;stroke-miterlimit:10"><path
          d="m 213.69296,171.22437 c 0,-13.79603 13.02638,-24.36575 26.82241,-24.36575 13.79603,0 26.82241,10.56972 26.82241,24.36575 0,1.74215 7.31975,6.92672 7.31975,6.92672 0,0 -12.26165,10.9903 -34.14217,10.9903 -21.4644,0 -35.1729,-11.55239 -35.1729,-11.55239 0,0 8.35049,-4.82052 8.35049,-6.36462 z"
          fill="url(#color-1)"

@@ -7,7 +7,7 @@ import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import * as PIXI from "pixi.js";
 import { OfflineGameServer } from "./offline.ts";
-import { OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
+import { BasicSocket, OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
@@ -32,7 +32,7 @@ import { PacketManager } from "common/scripts/others/constants.ts";
 
     const resources=new ResourcesManager(pixi,sounds)
 
-    const offline=true
+    const offline=false
 
     let loaded=false
     let gs:OfflineGameServer|undefined
@@ -99,12 +99,10 @@ import { PacketManager } from "common/scripts/others/constants.ts";
                 this.game=g
             }else{
                 const socket=new WebSocket(ip)
-                // deno-lint-ignore ban-ts-comment
-                //@ts-ignore
-                const g=new Game(KeyL,mouseML,sounds,resources,socket,pixi)
+                const g=new Game(KeyL,mouseML,sounds,resources,socket as BasicSocket,pixi)
+                g.client.onopen=g.connect.bind(g,"kaklik")
                 sounds.set_music(null)
                 g.guiManager=new GuiManager(g)
-                g.connect("")
                 this.game=g
             }
             this.game.mainloop()
