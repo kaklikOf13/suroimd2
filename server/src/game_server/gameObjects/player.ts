@@ -213,7 +213,7 @@ export class Player extends ServerGameObject{
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,500)
+        this.movement=v2.scale(action.Movement,5)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }
@@ -233,8 +233,8 @@ export class Player extends ServerGameObject{
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
 
-        //this.inventory.set_weapon(1,"ak47")
-        this.inventory.set_weapon(1,"m870")
+        this.inventory.set_weapon(1,"ak47")
+        //this.inventory.set_weapon(1,"m870")
         this.inventory.set_current_weapon_index(1)
     }
     override getData(): PlayerData {

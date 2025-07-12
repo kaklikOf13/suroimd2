@@ -105,11 +105,11 @@ export class Bullet extends ServerGameObject{
         b.damage=this.damage/2
         b.reflectionCount=this.reflectionCount+1
     }
-    onDestroy(): void {
+    override onDestroy(): void {
         delete this.game.bullets[this.id]
     }
     tracerColor:number=0
-    getData(): BulletData {
+    override getData(): BulletData {
         return {
             position:this.position,
             initialPos:this.initialPosition,

@@ -1,6 +1,6 @@
-import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents} from "../engine/mod.ts"
-import { ActionPacket, CATEGORYSL, PacketManager } from "common/scripts/others/constants.ts";
-import { BasicSocket, Client, DefaultSignals, ObjectsPacket, OfflineSocket, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, GridMaterialArgs, Material2D, WebglRenderer} from "../engine/mod.ts"
+import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
+import { BasicSocket, Client, DefaultSignals, NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -13,7 +13,7 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplash } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import * as PIXI from "pixi.js";
+import { Debug } from "./config.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayer=0
@@ -25,8 +25,10 @@ export class Game extends ClientGame2D<GameObject>{
 
   gameOver:boolean=false
 
-  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,resources:ResourcesManager,socket:BasicSocket,app:PIXI.Application,objects:Array<new ()=>GameObject>=[]){
-    super(keyl,mp,resources,sounds,app,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
+  grid:Material2D<GridMaterialArgs>
+
+  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
@@ -37,7 +39,20 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.scene.objects.encoders=ObjectsE;
 
-    this.app.renderer.background.color="#68ad49";
+    this.renderer.background=ColorM.hex("#68ad49");
+
+    this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
+      color:ColorM.rgba(0,0,0,90),
+      gridSize:this.scene.objects.cells.cellSize,
+      width:0.034
+    })
+
+    if(Debug.hitbox){
+      this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+    }
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false
@@ -55,6 +70,16 @@ export class Game extends ClientGame2D<GameObject>{
   }
   onstop?:(g:Game)=>void
   old_hand=0
+  override on_render(_dt:number):void{
+    (this.renderer as WebglRenderer)._draw_vertices([
+      -1000, -1000, 
+      1000, -1000,
+      -1000,  1000,
+      -1000,  1000,
+      1000, -1000,
+      1000,  1000
+    ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:zIndexes.Grid})
+  }
   override on_run(): void {
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
       if(!this.can_act)return
@@ -121,15 +146,24 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.cellphoneAction=undefined
       this.old_hand=this.action.hand
 
-      this.action.angle=v2.lookTo(v2.new((this.camera.width/2)*this.camera.zoom,(this.camera.height/2)*this.camera.zoom),this.mouse.position)
+      const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
+      if(activePlayer){
+        this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
+      }
     }
-    this.camera.zoom=0.7
+    this.camera.zoom=1
+    this.renderer.fullCanvas(this.camera)
     //0.09=l6 32x
     //0.15=l5 16x
     //0.28=l4 8x
     //0.44=l3 4x
     //0.58=l2 2x
     //0.70=l1 1x
+  }
+  update_camera(){
+    const p=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
+    const cc=(this.renderer as WebglRenderer).cam2Dsize
+    this.camera.position=v2.sub(p.position,v2.new(cc.x/2,cc.y/2))
   }
   connect(playerName:string){
     if(!this.client.opened){

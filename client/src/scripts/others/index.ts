@@ -1,11 +1,10 @@
-import { MousePosListener, KeyListener, ResourcesManager } from "../engine/mod.ts"
+import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
 import { Game, getGame } from "./game.ts"
 import { server } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
-import * as PIXI from "pixi.js";
 import { OfflineGameServer } from "./offline.ts";
 import { BasicSocket, OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
@@ -14,23 +13,10 @@ import { PacketManager } from "common/scripts/others/constants.ts";
 
     document.body.appendChild(canvas)
     const sounds=new SoundManager()
-    const pixi=new PIXI.Application()
-    pixi.init({
-        canvas:canvas,
-        eventFeatures: {
-            move: false,
-            globalMove: false,
-            wheel: false,
-            click: true,
-        },
-        resizeTo: window,
-        autoDensity: true,
-        preferWebGLVersion: 1,
-        preference: "webgl",
-        resolution: 1,
-    })
 
-    const resources=new ResourcesManager(pixi,sounds)
+    const renderer=new WebglRenderer(canvas,100)
+
+    const resources=new ResourcesManager(renderer.gl,sounds)
 
     const offline=false
 
@@ -58,7 +44,7 @@ import { PacketManager } from "common/scripts/others/constants.ts";
         }
         document.addEventListener("mousedown",lister)
     })
-    const mouseML=new MousePosListener(1)
+    const mouseML=new MousePosListener(100)
     const KeyL=new KeyListener()
     mouseML.bind(document.body,canvas)
     KeyL.bind(document.body)
@@ -89,7 +75,7 @@ import { PacketManager } from "common/scripts/others/constants.ts";
                 const sockets=new OfflineSocket(undefined)
                 const socketl:OfflineSocket=new OfflineSocket(sockets)
                 sockets.output=socketl
-                const g=new Game(KeyL,mouseML,sounds,resources,socketl,pixi)
+                const g=new Game(KeyL,mouseML,sounds,resources,socketl,renderer)
                 sounds.set_music(null)
                 g.guiManager=new GuiManager(g)
                 sockets.open()
@@ -99,7 +85,7 @@ import { PacketManager } from "common/scripts/others/constants.ts";
                 this.game=g
             }else{
                 const socket=new WebSocket(ip)
-                const g=new Game(KeyL,mouseML,sounds,resources,socket as BasicSocket,pixi)
+                const g=new Game(KeyL,mouseML,sounds,resources,socket as BasicSocket,renderer)
                 g.client.onopen=g.connect.bind(g,"kaklik")
                 sounds.set_music(null)
                 g.guiManager=new GuiManager(g)

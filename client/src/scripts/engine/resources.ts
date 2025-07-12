@@ -1,20 +1,26 @@
 import { EaseFunction, ease, v2 } from "common/scripts/engine/mod.ts";
+import { Material2D } from "./renderer.ts";
 import { type SoundManager } from "./sounds.ts";
-import * as PIXI from "pixi.js";
+
 export interface SoundDef{
     volume:number
     src:string
 }
 export class Sprite{
-    texture!:PIXI.Texture
+    source:HTMLImageElement
+    texture!:WebGLTexture
     src:string
     path:string
     readonly resourceType:SourceType.Sprite=SourceType.Sprite
-    constructor(src:string,path:string){
+    gl:WebGLRenderingContext
+    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string,path:string){
+        this.source=source
         this.path=path
         this.src=src
+        this.gl=gl
     }
     free(){
+        this.gl.deleteTexture(this.texture)
     }
 }
 export interface KeyFrame{
@@ -39,13 +45,26 @@ export enum SourceType{
     Sound,
     Material
 }
-export type Source=Sprite|Animation|Sound
+export type Source=Sprite|Animation|Sound|Material2D
 function getSvgUrl(svg:string) {
     return  URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
 }
 
-function loadTexture(source:HTMLImageElement):PIXI.Texture{
-    return PIXI.Texture.from(source)
+function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source
+    );
+    //gl.generateMipmap(gl.TEXTURE_2D);
+  
+    return texture;
 }
 export interface SpriteDef{
     path:string
@@ -60,15 +79,15 @@ export class ResourcesManager{
     ctx:CanvasRenderingContext2D
     domp=new DOMParser()
     dome=new XMLSerializer()
-    pixi:PIXI.Application
+    gl:WebGLRenderingContext
     audioCtx:AudioContext
     soundsManager:SoundManager
     default_sprite:Sprite
-    constructor(pixi:PIXI.Application,soundsManager:SoundManager){ 
+    constructor(gl:WebGLRenderingContext,soundsManager:SoundManager){ 
         this.sources={}
         this.canvas=document.createElement("canvas")
         this.ctx=this.canvas.getContext("2d")!
-        this.pixi=pixi
+        this.gl=gl
         this.audioCtx=soundsManager.ctx
         this.soundsManager=soundsManager
 
@@ -76,9 +95,9 @@ export class ResourcesManager{
         img.src=default_sprite_src
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
-        this.default_sprite=new Sprite(default_sprite_src,default_sprite_src);
-        img.addEventListener("load",()=>{
-            this.default_sprite.texture=loadTexture(img)
+        this.default_sprite=new Sprite(img,null,default_sprite_src,default_sprite_src);
+        this.default_sprite.source.addEventListener("load",()=>{
+            this.default_sprite.texture=loadTexture(this.gl,this.default_sprite.source)!
         })
     }
     async load_source(id:string,src:string,scale:number=1,volume:number=1):Promise<Source|undefined>{
@@ -91,6 +110,33 @@ export class ResourcesManager{
         }
 
         return undefined
+    }
+    render_text(text:string, fontSize = 32,color="white",font:string="Arial"):Promise<Sprite>{
+        return new Promise<Sprite>((resolve, _reject) => {
+            this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
+            this.ctx.save()
+            this.ctx.font = `${fontSize}px ${font}`
+            const textMetrics = this.ctx.measureText(text)
+            this.canvas.width = textMetrics.width
+            this.canvas.height = fontSize * 1.5
+
+
+            this.ctx.font=`${fontSize}px ${font}`
+            this.ctx.font = `${fontSize}px ${font}`
+            this.ctx.fillStyle = color
+            this.ctx.fillText(text, 0, fontSize)
+
+            const src=this.canvas.toDataURL()
+
+            this.ctx.restore()
+            const ret=new Sprite(new Image(),this.gl,src,"");
+            ret.source.addEventListener("load",()=>{
+                const sp=ret as Sprite
+                sp.texture=loadTexture(this.gl,sp.source)!
+                resolve(ret)
+            });
+            ret.source.src=src
+        })
     }
     get_sprite(id:string):Sprite{
         if(!this.sources[id]){
@@ -109,14 +155,13 @@ export class ResourcesManager{
                     resolve(this.load_svg(id,svg.querySelector("svg"),src,scale))
                 })
             }else{
-                const img=new Image()
-                this.sources[id]=new Sprite(src,src);
-                img.addEventListener("load",()=>{
+                this.sources[id]=new Sprite(new Image(),this.gl,src,src);
+                (this.sources[id] as Sprite).source.addEventListener("load",()=>{
                     const sp=this.sources[id] as Sprite
-                    sp.texture=loadTexture(img)
+                    sp.texture=loadTexture(this.gl,sp.source)!
                     resolve(sp)
                 });
-                img.src=src
+                (this.sources[id] as Sprite).source.src=src;
             }
         })
     }
@@ -137,17 +182,22 @@ export class ResourcesManager{
                 this.ctx.drawImage(img, 0, 0,size.x,size.y)
                 this.ctx.restore()
                 const src=this.canvas.toDataURL()
-                const imgr=new Image()
-                this.sources[id]=new Sprite(src,svg_path);
-                imgr.addEventListener("load",()=>{
+                this.sources[id]=new Sprite(new Image(),this.gl,src,svg_path);
+                (this.sources[id] as Sprite).source.addEventListener("load",()=>{
                     const sp=this.sources[id] as Sprite
-                    sp.texture=loadTexture(imgr)
+                    sp.texture=loadTexture(this.gl,sp.source)!
                     resolve(sp)
                 });
-                imgr.src=src
+                (this.sources[id] as Sprite).source.src=src
             }
             img.src=getSvgUrl(this.dome.serializeToString(svg))
         })
+    }
+    load_material2D(id:string,mat:Material2D){
+        this.sources[id]=mat
+    }
+    get_material2D(id:string):Material2D{
+        return this.sources[id] as Material2D
     }
     get_audio(id:string):Sound{
         return this.sources[id] as Sound

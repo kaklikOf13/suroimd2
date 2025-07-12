@@ -1,56 +1,51 @@
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
+import { ClientGameObject2D, Sprite } from "../engine/mod.ts";
 import { Materials, ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
+import { Camera2D, Renderer } from "../engine/renderer.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Debug } from "../others/config.ts";
+import { Particles2DBase } from "common/scripts/engine/particles.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
-import { Particles } from "../defs/particles.ts";
-import { GameObject } from "../others/gameObject.ts";
-import * as PIXI from "pixi.js"
-export class Obstacle extends GameObject{
+export class Obstacle extends ClientGameObject2D{
     stringType:string="obstacle"
     numberType: number=4
     name:string=""
     def!:ObstacleDef
 
+    sprite!:Sprite
+
     rotation:number=0
     variation:number=1
-    create(_args: Record<string, void>): void {
-        this.sprite=new PIXI.Sprite()
-        this.sprite.anchor.set(0.5)
-        this.container=new PIXI.Container()
-        this.container.addChild(this.sprite)
-        this.game.camera.addObject(this.container!)
-    }
 
-    dead:boolean=false
+    zIndex=0
+    create(_args: Record<string, void>): void {
+        
+    }
 
     sounds?:{
         break?:Sound
         hit?:Sound[]
     }
-    hotspot=v2.new(0.5,0.5)
-    sprite!:PIXI.Sprite
-    onDie(): void {
+    render(camera: Camera2D, renderer: Renderer): void {
+        if(this.sprite){
+            renderer.draw_image2D(this.sprite,v2.sub(this.position,camera.position),v2.new(this.scale,this.scale),Angle.rad2deg(this.rotation),v2.new(0.5,0.5),this.zIndex)
+            if(Debug.hitbox){
+                renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
+            }
+        }
+    }
+    onDestroy(): void {
         for(let i=0;i<5;i++){
             this._add_own_particle(this.hb.randomPoint())
         }
-        this.container!.zIndex=zIndexes.DeadObstacles
-
         if(this.sounds&&this.sounds.break){
             this.game.sounds.play(this.sounds.break,{})
         }
-        const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            this.sprite.texture=this.game.resources.get_sprite(spr_id+"_dead").texture
-    }
-    onDestroy(): void {
-        this.sprite.destroy()
-        this.container?.destroy()
     }
     _add_own_particle(position:Vec2){
-        if(this.def.particle&&Particles.exist(this.def.particle))this.game.particles.add_particle_with_def(position,this.rotation,Particles.getFromString(this.def.particle))
+        this.game.particles.add_particle(position,random.rad(),{lifetime:random.float(0.6,0.7),speed:0.05,angular_speed:Angle.deg2rad(random.int(-1,1))},Particles2DBase.life_timed1)
     }
     update(_dt:number): void {
         
@@ -68,15 +63,13 @@ export class Obstacle extends GameObject{
     updateData(data:ObstacleData){
         let position=this.position
         this.scale=data.scale
-        if(!this.dead&&data.dead){
-            this.onDie()
-        }
-        this.dead=data.dead
         if(data.full){
             this.def=Obstacles.getFromNumber(data.full.definition)
             position=data.full.position
             this.rotation=data.full.rotation
             this.variation=data.full.variation
+
+            this.zIndex=this.def.zIndex??0
 
             if(this.def.sounds){
                 this.sounds={
@@ -104,22 +97,14 @@ export class Obstacle extends GameObject{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
             }
-            if(this.def.hotspot){
-                this.hotspot=this.def.hotspot
+            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
+            if(this.def.variations){
+                this.sprite=this.game.resources.get_sprite(spr_id+`_${this.variation}`)
+            }else{
+                this.sprite=this.game.resources.get_sprite(spr_id)
             }
-            if(!this.dead){
-                const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-                if(this.def.variations){
-                    this.sprite.texture=this.game.resources.get_sprite(spr_id+`_${this.variation}`).texture
-                }else{
-                    this.sprite.texture=this.game.resources.get_sprite(spr_id).texture
-                }
-            }
-            this.container?.position.set(position.x,position.y)
-            this.sprite.anchor.set(this.hotspot.x,this.hotspot.y)
-            this.container!.zIndex=this.def.zIndex??zIndexes.Obstacles1
         }
-        if(this.def&&this.def.hitbox){
+        if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(position,data.scale)
             this.manager.cells.updateObject(this)
         }
