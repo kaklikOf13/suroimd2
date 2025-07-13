@@ -1,5 +1,5 @@
-import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, v2 } from "common/scripts/engine/mod.ts";
-import { Camera2D,  ColorM,  Material2D, Renderer, WebglRenderer } from "./renderer.ts";
+import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D } from "common/scripts/engine/mod.ts";
+import { Camera2D,  Material2D, Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
@@ -10,22 +10,10 @@ export abstract class ClientGameObject2D extends BaseGameObject2D{
     constructor(){
         super()
     }
-    abstract render(camera:Camera2D,renderer:Renderer,dt:number):void
-}
-export abstract class FormGameObject2D extends ClientGameObject2D{
-    // deno-lint-ignore no-explicit-any
-    declare game:ClientGame2D<any,any>
-    abstract material:Material2D
-    zIndex:number=0
-    constructor(){
-        super()
-    }
-    render(camera:Camera2D,renderer:Renderer,_dt:number){
-        renderer.draw_hitbox2D(this.hb,this.material,camera.position,this.zIndex)
-    }
+    render(_camera:Camera2D,_renderer:Renderer,_dt:number){}
 }
 export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{
-    camera:Camera2D={position:v2.new(0,0),zoom:1}
+    camera:Camera2D
     renderer:Renderer
     key:KeyListener
     mouse:MousePosListener
@@ -41,6 +29,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.key=keyl
         this.renderer=renderer
         this.resources=resources
+        this.camera=new Camera2D(renderer)
         //this.particles=new ParticlesManager2D(this.scene.objects)
     }
     draw(renderer:Renderer,dt:number){
@@ -51,7 +40,9 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
                 this.scene.objects.objects[c].objects[o].render(this.camera,renderer,dt)
             }
         }
-        const pm=(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black)
+        this.camera.update()
+        this.camera.container.draw(renderer)
+        //const pm=(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black)
         /*for(const p of this.particles.particles){
             this.renderer.draw_circle2D(new CircleHitbox2D(p.position,0.04),pm,this.camera.position)
         }*/

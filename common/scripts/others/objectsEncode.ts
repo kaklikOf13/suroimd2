@@ -130,8 +130,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 radius:stream.readFloat(0,2,2),
                 speed:stream.readFloat32(),
                 angle:stream.readRad(),
-                tracerWidth:stream.readFloat(0,3,2),
-                tracerHeight:stream.readFloat(0,3,2),
+                tracerWidth:stream.readFloat(0,100,3),
+                tracerHeight:stream.readFloat(0,6,2),
                 tracerColor:stream.readUint32()
             }
             if(full){
@@ -148,8 +148,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeFloat(data.radius,0,2,2)
             .writeFloat32(data.speed)
             .writeRad(data.angle)
-            .writeFloat(data.tracerWidth,0,3,2)
-            .writeFloat(data.tracerHeight,0,3,2)
+            .writeFloat(data.tracerWidth,0,100,3)
+            .writeFloat(data.tracerHeight,0,6,2)
             .writeUint32(data.tracerColor)
         }
     },

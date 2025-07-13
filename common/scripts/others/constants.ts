@@ -10,7 +10,7 @@ import { GameOverPacket } from "../packets/gameOver.ts"
 export const GameConstants={
     player:{
         defaultName:"Player",
-        playerRadius:0.3,
+        playerRadius:0.4,
         max_name_size:25,
     },
     loot:{
@@ -49,14 +49,15 @@ PacketManager.add_packet(GuiPacket)
 PacketManager.add_packet(GameOverPacket)
 
 export enum zIndexes{
-    Explosions,
-    Obstacles3=1,
+    Terrain,
+    Grid,
+    DeadObstacles,
+    Bullets,
+    Obstacles1,
     Obstacles2,
     Players,
-    Obstacles1,
-    DeadObstacles,
-    Grid,
-    Terrain,
+    Obstacles3,
+    Explosions,
 }
 export enum ActionsType{
     Reload,

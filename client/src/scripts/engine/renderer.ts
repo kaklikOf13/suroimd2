@@ -1,9 +1,5 @@
 import { Angle, CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
 import { SourceType, type Sprite } from "./resources.ts";
-export interface Camera2D{
-    position:Vec2
-    zoom:number
-}
 export interface Transform2D{
     position:Vec2
     scale:Vec2
@@ -167,11 +163,11 @@ export abstract class Renderer {
 
     abstract clear(): void
 
-    abstract resize(camera?:Camera2D,depth?:number):void
+    abstract resize(depth?:number):void
 
-    fullCanvas(camera?:Camera2D,depth:number=500){
+    fullCanvas(depth:number=500){
         fullCanvas(this.canvas)
-        this.resize(camera,depth)
+        this.resize(depth)
     }
 }
 
@@ -246,7 +242,6 @@ export class WebglRenderer extends Renderer {
         simple:Material2DFactory<Color>,
         grid:Material2DFactory<GridMaterialArgs>
     }
-    cam2Dsize!:Vec2
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white,depth:number=500) {
         super(canvas, meter_size);
         const gl = this.canvas.getContext("webgl", { antialias: true });
@@ -370,19 +365,12 @@ void main() {
             }));
         });
 
-        
-
-        this.resize(undefined,depth)
+        this.resize(depth)
     }
-    resize(camera?:Camera2D,depth:number=500){
+    resize(depth:number=500){
         const scaleX = this.canvas.width / this.meter_size
         const scaleY = this.canvas.height / this.meter_size
-        let zoom=1
-        if(camera){
-            zoom=camera.zoom
-        }
-        this.cam2Dsize=v2.new(scaleX*zoom,scaleY*zoom)
-        this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX*zoom,scaleY*zoom),depth))
+        this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX,scaleY),depth))
     }
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
@@ -420,7 +408,7 @@ void main() {
             x1, y2,
             x2, y1,
             x2, y2
-        ], material,{position:v2.sub(rect.position,offset),scale:v2.new(1,1),rotation:0,zIndex});
+        ], material,{position:v2.add(rect.position,offset),scale:v2.new(1,1),rotation:0,zIndex});
     }
 
     draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2,zIndex:number=0, precision: number = 50): void {
@@ -473,7 +461,7 @@ void main() {
             { x: x1, y: y2 },
             { x: x2, y: y2 }
         ];
-        const verticesR = verticesB.map(vertex => rotatePoint(vertex.x, vertex.y, Angle.deg2rad(angle)))
+        const verticesR = verticesB.map(vertex => rotatePoint(vertex.x, vertex.y, angle))
 
         const vertices=[
             verticesR[0].x, verticesR[0].y,
@@ -546,7 +534,166 @@ void main() {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
     }
 }
+export abstract class Container2DObject {
+    abstract object_type: string;
 
+    parent?: Container2D;
+    zIndex: number = 0;
+
+    id_on_parent:number=0
+
+    position: Vec2 = v2.new(0, 0);
+    scale: Vec2 = v2.new(1, 1);
+    rotation: number = 0;
+    tint: Color = ColorM.default.white;
+
+    _real_position: Vec2 = v2.new(0, 0);
+    _real_scale: Vec2 = v2.new(1, 1);
+    _real_rotation: number = 0;
+    _real_tint: Color = ColorM.default.white;
+
+    visible:boolean=true
+
+    destroyed:boolean=false
+    destroy(){
+        this.destroyed=true
+        if(this.parent)this.parent.updateDestroy()
+    }
+
+    update(): void {
+        if (this.parent) {
+            this._real_position = v2.add(
+                v2.rotate_RadAngle(
+                    v2.mult(this.parent._real_scale, this.position),
+                    this.parent._real_rotation
+                ),
+                this.parent._real_position
+            );
+
+            this._real_scale = v2.mult(this.parent._real_scale, this.scale);
+            this._real_rotation = this.parent._real_rotation + this.rotation;
+
+            this._real_tint = {
+                r: this.parent._real_tint.r * this.tint.r,
+                g: this.parent._real_tint.g * this.tint.g,
+                b: this.parent._real_tint.b * this.tint.b,
+                a: this.parent._real_tint.a * this.tint.a
+            };
+        } else {
+            this._real_position = this.position;
+            this._real_scale = this.scale;
+            this._real_rotation = this.rotation;
+            this._real_tint = this.tint;
+        }
+    }
+
+    abstract draw(renderer: Renderer): void;
+}
+
+export class Sprite2D extends Container2DObject{
+    object_type:string="sprite2d"
+    sprite?:Sprite
+    hotspot:Vec2=v2.new(0,0)
+    size?:Vec2
+    constructor(){
+        super()
+    }
+    override draw(renderer: Renderer): void {
+        if(this.sprite)renderer.draw_image2D(this.sprite,this._real_position,this._real_scale,this._real_rotation,this.hotspot,0,this._real_tint,this.size)
+    }
+}
+export class Container2D extends Container2DObject{
+    object_type:string="container2d"
+    children:Container2DObject[]=[]
+
+    override update(){
+        super.update()
+        for(const c of this.children){
+            c.update()
+        }
+    }
+    updateDestroy(){
+        for(let i=0;i<this.children.length;i++){
+            if(this.children[i].destroyed){
+                this.children.splice(i,1)
+                i--
+                continue
+            }
+        }
+    }
+    updateZIndex(){
+        this.children = this.children.sort((a, b) => {
+            if (a.zIndex === b.zIndex) {
+                return a.id_on_parent - b.id_on_parent;
+            }
+            return a.zIndex - b.zIndex;
+        });
+    }
+    draw(renderer:Renderer):void{
+        for(const c of this.children){
+            if(c.visible)c.draw(renderer)
+        }
+    }
+    add_child(c:Container2DObject){
+        c.id_on_parent=this.children.length+1
+        c.parent=this
+        this.children.push(c)
+    }
+    constructor(){
+        super()
+    }
+}
+export class Camera2D{
+    renderer:Renderer
+    container:Container2D=new Container2D()
+    private _zoom = 1;
+    get zoom(): number { return this._zoom; }
+    set zoom(zoom: number) {
+        this._zoom = zoom;
+        this.resize();
+    }
+
+    width = 1;
+    height = 1;
+
+    position = v2.new(0, 0);
+    visual_position=v2.new(0,0)
+
+    constructor(renderer:Renderer){
+        this.renderer=renderer
+        this.zoom=1
+    }
+
+    addObject(...objects: Container2DObject[]): void {
+        for(const o of objects){
+            this.container.add_child(o);
+        }
+    }
+
+    resize(): void {
+        const scale=this.renderer.meter_size/this._zoom
+
+        this.width = this.renderer.canvas.width/scale;
+        this.height = this.renderer.canvas.height/scale;
+    
+        this.container.scale=v2.new(this._zoom,this._zoom);
+    }
+
+    update(): void {
+        const scale = this._zoom;
+        const halfViewSize = v2.new(this.width / 2, this.height / 2);
+
+        const cameraPos = v2.sub(this.position, halfViewSize);
+
+        this.container.position = v2.neg(cameraPos);
+        this.container.scale = v2.new(scale, scale);
+        this.visual_position=v2.scale(cameraPos,this._zoom)
+
+        this.container.update();
+        this.container.updateZIndex();
+    }
+
+}
 export function createCanvas(size: Vec2, pixelated: boolean = true, center: boolean = true): HTMLCanvasElement {
     const canvas = document.createElement("canvas");
     canvas.width = size.x;

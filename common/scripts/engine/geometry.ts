@@ -216,6 +216,27 @@ export const v2 = Object.freeze({
         return this.new(Math.cos(a),Math.sin(a))
     },
     /**
+     * 
+     * @param angle `Radians Angle`
+     * @returns A new `Vec2` With angle pos
+     */
+    rotate_RadAngle(vec:Vec2,angle:RadAngle):Vec2 {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        return this.new(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos)
+    },
+    /**
+     * 
+     * @param angle `Degrese Angle`
+     * @returns A new `Vec2` With angle pos
+     */
+    rotate_DegAngle(vec:Vec2,angle:DegAngle):Vec2 {
+        const a=Angle.deg2rad(angle)
+        const cos = Math.cos(a);
+        const sin = Math.sin(a);
+        return this.new(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos)
+    },
+    /**
      * @param x `Vec21`
      * @param y `Vec22`
      * @returns A new `Vec2` With distance of `Vec21` and `Vec22`
@@ -277,8 +298,8 @@ export const v2 = Object.freeze({
     ceil(Vec2:Vec2):Vec2{
         return this.new(Math.ceil(Vec2.x),Math.ceil(Vec2.y))
     },
-    neg(Vec2:Vec2):Vec2{
-        return this.new(-Vec2.x,-Vec2.y)
+    neg(vec:Vec2):Vec2{
+        return this.new(-vec.x,-vec.y)
     },
     /**
      * 

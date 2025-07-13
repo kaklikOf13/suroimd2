@@ -39,7 +39,7 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.scene.objects.encoders=ObjectsE;
 
-    this.renderer.background=ColorM.hex("#68ad49");
+    this.renderer.background=ColorM.hex("#5d8a33");
 
     this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
       color:ColorM.rgba(0,0,0,90),
@@ -148,11 +148,12 @@ export class Game extends ClientGame2D<GameObject>{
 
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
       if(activePlayer){
-        this.action.angle=v2.lookTo(activePlayer.position,this.mouse.camera_pos(this.camera))
+        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),this.mouse.position)
       }
     }
-    this.camera.zoom=1
-    this.renderer.fullCanvas(this.camera)
+    //this.camera.zoom=1
+    this.renderer.fullCanvas()
+    this.camera.resize()
     //0.09=l6 32x
     //0.15=l5 16x
     //0.28=l4 8x
@@ -162,8 +163,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   update_camera(){
     const p=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
-    const cc=(this.renderer as WebglRenderer).cam2Dsize
-    this.camera.position=v2.sub(p.position,v2.new(cc.x/2,cc.y/2))
+    this.camera.position=p.position
   }
   connect(playerName:string){
     if(!this.client.opened){

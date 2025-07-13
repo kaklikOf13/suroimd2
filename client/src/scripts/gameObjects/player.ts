@@ -1,12 +1,11 @@
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { Angle, CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Camera2D, Renderer } from "../engine/renderer.ts";
-import { Debug } from "../others/config.ts";
+import { Container2D, Sprite2D } from "../engine/mod.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -19,66 +18,60 @@ export class Player extends GameObject{
     rotation:number=0
     handDef?:GameItem
 
-    /*sprites?:{
-        body:PIXI.Sprite,
-        left_arm:PIXI.Sprite,
-        right_arm:PIXI.Sprite,
-        helmet:PIXI.Sprite,
-    }*/
     skin!:string
+    container:Container2D=new Container2D()
+    sprites={
+        body:new Sprite2D(),
+        helmet:new Sprite2D(),
+        left_arm:new Sprite2D(),
+        right_arm:new Sprite2D(),
+    }
 
     set_skin(skin:string){
-        /*if(this.sprites){
-            this.sprites.body.destroy()
-            this.sprites.left_arm.destroy()
-            this.sprites.right_arm.destroy()
-            this.sprites.helmet.destroy()
-        }*/
         this.skin=skin
-        /*this.sprites={
-            body:new PIXI.Sprite(this.game.resources.get_sprite(skin+"_body").texture),
-            left_arm:new PIXI.Sprite(this.game.resources.get_sprite(skin+"_arm").texture),
-            right_arm:new PIXI.Sprite(this.game.resources.get_sprite(skin+"_arm").texture),
-            helmet:new PIXI.Sprite()
-        }*/
-        /*this.container?.addChild(this.sprites.body)
-        this.container?.addChild(this.sprites.left_arm)
-        this.container?.addChild(this.sprites.right_arm)
-        this.container?.addChild(this.sprites.helmet)*/
 
-        /*this.sprites.body.anchor.set(0.5,0.5)
-        this.sprites.helmet.anchor.set(0.5,0.5)
+        this.sprites.body.sprite=this.game.resources.get_sprite(skin+"_body")
 
-        this.sprites.left_arm.position._x=-23
-        this.sprites.left_arm.position._y=-44
-        this.sprites.right_arm.position._x=-23
-        this.sprites.right_arm.position._y=44
+        this.sprites.body.hotspot=v2.new(0.5,0.5)
+        this.sprites.helmet.hotspot=v2.new(0.5,0.5)
 
-        this.sprites.right_arm.anchor.set(0,0.5)
-        this.sprites.left_arm.anchor.set(0,0.5)
+        this.sprites.left_arm.position.x=-0.23
+        this.sprites.left_arm.position.y=-0.44
+        this.sprites.right_arm.position.x=-0.23
+        this.sprites.right_arm.position.y=0.44
+
+        this.sprites.left_arm.hotspot=v2.new(-0.5,-0.5)
+        this.sprites.right_arm.hotspot=v2.new(-0.5,-0.5)
+
+        this.sprites.body.zIndex=1
+        this.sprites.helmet.zIndex=2
+
+        /*
+
 
         this.sprites.right_arm.rotation=Angle.deg2rad(-5)
         this.sprites.left_arm.rotation=Angle.deg2rad(5)
-        this.sprites.body.zIndex=1
-
-        this.sprites.helmet.zIndex=2*/
+        */
     }
 
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
-        /*this.container=new PIXI.Container()
-        this.game.camera.addObject(this.container)*/
         this.set_skin("skin_default")
-        console.log("a")
+        this.game.camera.addObject(this.container)
     }
     update(_dt:number): void {
-        //this.container!.position.set(this.position.x,this.position.y)
+        this.container.position=this.position
     }
-    override render(camera: Camera2D, renderer: Renderer, dt: number): void {
-        if(Debug.hitbox)renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_player"),camera.position)
+    override onDestroy(): void {
+      this.container.destroy()
     }
     constructor(){
         super()
+        this.container.add_child(this.sprites.body)
+        this.container.zIndex=zIndexes.Players
+        this.container.add_child(this.sprites.left_arm)
+        this.container.add_child(this.sprites.right_arm)
+        this.container.add_child(this.sprites.helmet)
     }
     override updateData(data:PlayerData){
         if(data.full){
@@ -86,13 +79,15 @@ export class Player extends GameObject{
             if(data.full.helmet>0){
                 this.helmet=Armors.getFromNumber(data.full.helmet-1)
                 const h=this.helmet
-                /*if(h.position){
-                    this.sprites?.helmet.position.set(h.position.x,h.position.y)
+
+                if(h.position){
+                    this.sprites.helmet.position=v2.new(h.position.x,h.position.y)
                 }else{
-                    this.sprites?.helmet.position.set(0,0)
+                    this.sprites.helmet.position=v2.new(0,0)
                 }
-                this.sprites!.helmet.visible=true
-                this.sprites!.helmet.texture=this.game.resources.get_sprite(h.idString+"_world").texture*/
+                this.sprites!.helmet.sprite=this.game.resources.get_sprite(h.idString+"_world")
+            }else{
+                this.sprites.helmet.sprite=undefined
             }
             if(data.full.vest>0){
                 this.vest=Armors.getFromNumber(data.full.vest-1)
@@ -106,7 +101,7 @@ export class Player extends GameObject{
         this.position=data.position
         this.rotation=data.rotation
 
-        //this.container!.rotation=this.rotation
+        this.container.rotation=this.rotation
 
         this.manager.cells.updateObject(this)
 
