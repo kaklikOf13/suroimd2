@@ -72,22 +72,37 @@ export class GuiManager{
                 this.game.add_damageSplash(p.damages.position,p.damages.count,p.damages.critical,p.damages.shield)
             }
 
-            if(p.weapons.melee){
-                const name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
-                name.innerText=p.weapons.melee.idString
+            if(p.dirty.weapons){
+                let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
+                if(p.weapons.melee){
+                    name.innerText=p.weapons.melee.idString
+                }else{
+                    name.innerText=""
+                }
                 this.weapons[0]=p.weapons.melee
-            }
-            if(p.weapons.gun1){
-                const name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
-                name.innerText=p.weapons.gun1.idString
-                const img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
-                img.src=this.game.resources.get_sprite(p.weapons.gun1.idString).path
-                this.weapons[1]=p.weapons.gun1
-            }
-            if(p.weapons.gun2){
-                const name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
-                name.innerText=p.weapons.gun2.idString
-                this.weapons[2]=p.weapons.gun2
+                name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
+                let img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
+                if(p.weapons.gun1){
+                    name.innerText=p.weapons.gun1.idString
+                    img.src=this.game.resources.get_sprite(p.weapons.gun1.idString).path
+                    this.weapons[1]=p.weapons.gun1
+                    img.style.display="block"
+                }else{
+                    name.innerText=""
+                    img.style.display="none"
+                
+                }
+                name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
+                img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
+                if(p.weapons.gun2){
+                    name.innerText=p.weapons.gun2.idString
+                    img.src=this.game.resources.get_sprite(p.weapons.gun2.idString).path
+                    this.weapons[2]=p.weapons.gun2
+                    img.style.display="block"
+                }else{
+                    name.innerText=""
+                    img.style.display="none"
+                }
             }
             if(p.current_weapon){
                 if(this.currentWeapon)this.currentWeapon.classList.remove("weapon-slot-selected")

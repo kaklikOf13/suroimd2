@@ -11,6 +11,7 @@ export interface MeleeDef extends Definition{
     attack_delay:number
     damage_delays:number[]
 
+    switchDelay?:number
     speed_mod?:number
 }
 

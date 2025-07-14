@@ -10,7 +10,7 @@ import { GameOverPacket } from "../packets/gameOver.ts"
 export const GameConstants={
     player:{
         defaultName:"Player",
-        playerRadius:0.4,
+        playerRadius:0.44,
         max_name_size:25,
     },
     loot:{
@@ -22,7 +22,7 @@ export const GameConstants={
     tps:100,
     collision:{
         threads:2,
-        chunckSize:32
+        chunckSize:8
     }
 }
 export enum CATEGORYS{

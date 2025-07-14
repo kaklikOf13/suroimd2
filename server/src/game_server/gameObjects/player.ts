@@ -7,7 +7,7 @@ import { GuiPacket,DamageSplash } from "common/scripts/packets/gui_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, type GameItem } from "common/scripts/definitions/utils.ts";
+import { BoostType, DamageReason, InventoryItemType, type GameItem } from "common/scripts/definitions/utils.ts";
 import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
@@ -220,10 +220,13 @@ export class Player extends ServerGameObject{
         this.using_item=action.UsingItem
         this.rotation=action.angle
         this.interaction_input=action.interact
-        //his.inventory.set_current_weapon_index(action.hand)
-        /*if(action.Reloading&&this.inventory.currentWeapon&&this.handItem.itemType===InventoryItemType.gun){
-            (this.handItem as GunItem).reloading=true
+        if(action.hand>=0&&action.hand<3){
+            this.inventory.set_current_weapon_index(action.hand)
         }
+        if(action.Reloading&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
+            (this.inventory.currentWeapon as GunItem).reloading=true
+        }
+        /*
         if(action.cellphoneAction){
             if(this.handItem&&this.handItem instanceof OtherItem){
                 this.handItem.cellphone_action(this,action.cellphoneAction)
@@ -233,8 +236,8 @@ export class Player extends ServerGameObject{
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
 
-        this.inventory.set_weapon(1,"ak47")
-        //this.inventory.set_weapon(1,"m870")
+        this.inventory.set_weapon(1,"spas12")
+        this.inventory.set_weapon(2,"kar98k")
         this.inventory.set_current_weapon_index(1)
     }
     override getData(): PlayerData {

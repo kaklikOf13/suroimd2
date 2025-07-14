@@ -163,11 +163,11 @@ export abstract class Renderer {
 
     abstract clear(): void
 
-    abstract resize(depth?:number):void
+    abstract resize(camera:Camera2D,depth?:number):void
 
-    fullCanvas(depth:number=500){
+    fullCanvas(camera:Camera2D,depth:number=500){
         fullCanvas(this.canvas)
-        this.resize(depth)
+        this.resize(camera,depth)
     }
 }
 
@@ -364,12 +364,13 @@ void main() {
                 screenX: e.screenX
             }));
         });
-
-        this.resize(depth)
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        this.resize({zoom:1},500)
     }
-    resize(depth:number=500){
-        const scaleX = this.canvas.width / this.meter_size
-        const scaleY = this.canvas.height / this.meter_size
+    resize(camera:Camera2D,depth:number=500){
+        const scaleX = this.canvas.width / (this.meter_size*camera.zoom)
+        const scaleY = this.canvas.height / (this.meter_size*camera.zoom)
         this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX,scaleY),depth))
     }
     createShader(src: string, type: number): WebGLShader {
@@ -589,7 +590,31 @@ export abstract class Container2DObject {
 
     abstract draw(renderer: Renderer): void;
 }
+export class Grid2D extends Container2DObject{
+    object_type:string="sprite2d"
 
+    color:Color=ColorM.rgba(0,0,0,90)
+    grid_size:number=16
+    width:number=0.034
+    constructor(){
+        super()
+    }
+    override draw(renderer: Renderer): void {
+        const mat=(renderer as WebglRenderer).factorys2D.grid.create_material({
+            color:this.color,
+            gridSize:this.grid_size,
+            width:this.width,
+        });
+        (renderer as WebglRenderer)._draw_vertices([
+          -1000, -1000, 
+          1000, -1000,
+          -1000,  1000,
+          -1000,  1000,
+          1000, -1000,
+          1000,  1000
+        ],mat,{position:v2.neg(this._real_position),scale:this._real_scale,rotation:this._real_rotation,zIndex:0})
+    }
+}
 export class Sprite2D extends Container2DObject{
     object_type:string="sprite2d"
     sprite?:Sprite
@@ -671,22 +696,19 @@ export class Camera2D{
     }
 
     resize(): void {
-        const scale=this.renderer.meter_size/this._zoom
+        const scale=this.renderer.meter_size*this._zoom
 
         this.width = this.renderer.canvas.width/scale;
         this.height = this.renderer.canvas.height/scale;
-    
-        this.container.scale=v2.new(this._zoom,this._zoom);
     }
 
     update(): void {
-        const scale = this._zoom;
+        //const scale = this._zoom;
         const halfViewSize = v2.new(this.width / 2, this.height / 2);
 
         const cameraPos = v2.sub(this.position, halfViewSize);
 
         this.container.position = v2.neg(cameraPos);
-        this.container.scale = v2.new(scale, scale);
         this.visual_position=v2.scale(cameraPos,this._zoom)
 
         this.container.update();

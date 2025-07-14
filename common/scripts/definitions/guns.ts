@@ -30,6 +30,7 @@ export interface GunDef extends Definition{
     ammoSpawnAmount?:number
     ammoSpawn?:string
     fireDelay:number
+    switchDelay?:number
     spread?:number
     lenght:number
     jitterRadius?:number
@@ -43,6 +44,10 @@ export interface GunDef extends Definition{
         capacity:number
         delay:number
         shotsPerReload?:number
+        reload_alt?:{
+            delay:number
+            shotsPerReload?:number
+        }
     }
     recoil?:{
         duration:number
@@ -68,6 +73,7 @@ Guns.insert(
     {
         idString:"ak47",
         fireDelay:0.1,
+        switchDelay:0.6,
         spread:5,
         lenght:0.7,
         size:4,
@@ -80,7 +86,7 @@ Guns.insert(
                 damage:10,
                 radius:0.014,
                 range:85,
-                speed:21,
+                speed:36,
                 tracer:tracers.medium
             }
         },
@@ -187,20 +193,21 @@ Guns.insert(
     },
     {
         idString:"kar98k",
-        fireDelay:1.2,
+        fireDelay:1.1,
         spread:1,
         lenght:0.8,
         size:4.5,
         ammoType:"762mm",
         ammoSpawnAmount:20,
+        fireMode:FireMode.Single,
         class:GunClasses.Sniper,
         quality:ItemQuality.Epic,
         bullet:{
             def:{
                 damage:44,
                 radius:0.02,
-                range:85,
-                speed:32,
+                range:177,
+                speed:45,
                 tracer:tracers.large
             }
         },
@@ -208,6 +215,9 @@ Guns.insert(
             delay:0.9,
             capacity:5,
             shotsPerReload:1,
+            reload_alt:{
+                delay:2.7,
+            }
         },
         recoil:{
             duration:1.25,
@@ -217,11 +227,12 @@ Guns.insert(
     },
     {
         idString:"awp",
-        fireDelay:1.3,
+        fireDelay:1.1,
         spread:1.1,
         lenght:0.9,
         size:6,
         ammoType:"762mm",
+        fireMode:FireMode.Single,
         class:GunClasses.Sniper,
         quality:ItemQuality.Epic,
         ammoSpawnAmount:30,
@@ -229,8 +240,8 @@ Guns.insert(
             def:{
                 damage:50,
                 radius:0.025,
-                range:88,
-                speed:35,
+                range:180,
+                speed:46,
                 tracer:tracers.xl,
                 obstacleMult:1.5,
             }
@@ -242,7 +253,7 @@ Guns.insert(
         },
         recoil:{
             duration:1.37,
-            speed:0.6
+            speed:0.65
         },
         speed_mod:0.9,
     },
@@ -253,6 +264,7 @@ Guns.insert(
         lenght:1,
         size:6,
         ammoType:"308sub",
+        fireMode:FireMode.Single,
         class:GunClasses.Sniper,
         quality:ItemQuality.Legendary,
         ammoSpawnAmount:25,
@@ -260,8 +272,8 @@ Guns.insert(
             def:{
                 damage:70,
                 radius:0.02,
-                range:90,
-                speed:33,
+                range:190,
+                speed:35,
                 obstacleMult:1.7,
                 tracer:tracers.large
             }
@@ -279,12 +291,12 @@ Guns.insert(
     },
     {
         idString:"m870",
-        fireDelay:1,
-        spread:3,
+        fireDelay:0.8,
+        spread:5,
         lenght:0.7,
         ammoType:"12g",
         ammoSpawnAmount:10,
-        jitterRadius:0.25,
+        jitterRadius:0.26,
         size:4.3,
         fireMode:FireMode.Single,
         class:GunClasses.Shotgun,
@@ -293,9 +305,9 @@ Guns.insert(
             def:{
                 damage:7,
                 radius:0.014,
-                speed:16,
-                range:17,
-                tracer:tracers.medium
+                speed:24,
+                range:20,
+                tracer:tracers.small
             },
             count:10
         },
@@ -305,7 +317,7 @@ Guns.insert(
             shotsPerReload:1,
         },
         recoil:{
-            duration:1.1,
+            duration:1,
             speed:0.55
         },
         speed_mod:1,
@@ -313,12 +325,12 @@ Guns.insert(
     },
     {
         idString:"spas12",
-        fireDelay:0.9,
+        fireDelay:0.7,
         spread:3,
         lenght:0.6,
         ammoType:"12g",
         ammoSpawnAmount:18,
-        jitterRadius:0.05,
+        jitterRadius:0.1,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Rare,
         size:4.5,
@@ -327,8 +339,8 @@ Guns.insert(
             def:{
                 damage:6.3,
                 radius:0.012,
-                speed:19,
-                range:35,
+                speed:28,
+                range:60,
                 tracer:tracers.small
             },
             count:10

@@ -300,6 +300,7 @@ export class GInventory extends Inventory<LItem>{
     const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
     this.weaponIdx=idx
 
+
     this.currentWeapon=val
     this.currentWeaponDef=val?.def
 
@@ -308,6 +309,11 @@ export class GInventory extends Inventory<LItem>{
     this.owner.privateDirtys.current_weapon=true
     this.owner.privateDirtys.action=true
     this.owner.actions.cancel()
+    if(this.currentWeapon){
+      if(this.currentWeaponDef!.switchDelay&&this.currentWeapon.use_delay<=this.currentWeaponDef!.switchDelay){
+        this.currentWeapon!.use_delay=this.currentWeaponDef!.switchDelay
+      }
+    }
 
     this.owner.dirty=true
   }

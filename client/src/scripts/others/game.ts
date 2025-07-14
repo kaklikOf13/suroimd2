@@ -1,5 +1,5 @@
-import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, GridMaterialArgs, Material2D, WebglRenderer} from "../engine/mod.ts"
-import { ActionPacket, CATEGORYS, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
+import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, GridMaterialArgs, Material2D, WebglRenderer, Grid2D} from "../engine/mod.ts"
+import { ActionPacket, CATEGORYS, CATEGORYSL, GameConstants, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
 import { BasicSocket, Client, DefaultSignals, NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
@@ -25,7 +25,7 @@ export class Game extends ClientGame2D<GameObject>{
 
   gameOver:boolean=false
 
-  grid:Material2D<GridMaterialArgs>
+  grid:Grid2D
 
   constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash])
@@ -41,12 +41,6 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.renderer.background=ColorM.hex("#5d8a33");
 
-    this.grid=(this.renderer as WebglRenderer).factorys2D.grid.create_material({
-      color:ColorM.rgba(0,0,0,90),
-      gridSize:this.scene.objects.cells.cellSize,
-      width:0.034
-    })
-
     if(Debug.hitbox){
       this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
       this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
@@ -57,6 +51,12 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false
     })
+
+    this.grid=new Grid2D()
+    this.grid.width=0.04
+    this.grid.grid_size=GameConstants.collision.chunckSize
+    this.camera.addObject(this.grid)
+    this.grid.zIndex=zIndexes.Grid
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -69,16 +69,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   onstop?:(g:Game)=>void
-  old_hand=0
   override on_render(_dt:number):void{
-    (this.renderer as WebglRenderer)._draw_vertices([
-      -1000, -1000, 
-      1000, -1000,
-      -1000,  1000,
-      -1000,  1000,
-      1000, -1000,
-      1000,  1000
-    ],this.grid,{position:this.camera.position,scale:NullVec2,rotation:0,zIndex:zIndexes.Grid})
   }
   override on_run(): void {
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
@@ -92,27 +83,6 @@ export class Game extends ClientGame2D<GameObject>{
           break
         case Key.Number_3:
           this.action.hand=2
-          break
-        case Key.Number_4:
-          this.action.hand=3
-          break
-        case Key.Number_5:
-          this.action.hand=4
-          break
-        case Key.Number_6:
-          this.action.hand=5
-          break
-        case Key.Number_7:
-          this.action.hand=6
-          break
-        case Key.Number_8:
-          this.action.hand=7
-          break
-        case Key.Number_9:
-          this.action.hand=8
-          break
-        case Key.Number_0:
-          this.action.hand=9
           break
         case Key.E:
           this.action.interact=true
@@ -138,28 +108,28 @@ export class Game extends ClientGame2D<GameObject>{
         }else{
           this.action.Movement.y=0
         }
-        this.action.UsingItem=this.action.hand===this.old_hand&&this.key.keyPress(Key.Mouse_Left)
+        this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)
         this.action.Reloading=this.key.keyPress(Key.R)
       }
       this.client.emit(this.action)
       this.action.interact=false
       this.action.cellphoneAction=undefined
-      this.old_hand=this.action.hand
+      this.action.hand=-1
 
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
       if(activePlayer){
-        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),this.mouse.position)
+        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom))
       }
     }
-    //this.camera.zoom=1
-    this.renderer.fullCanvas()
+    this.camera.zoom=0.27
+    this.renderer.fullCanvas(this.camera)
     this.camera.resize()
-    //0.09=l6 32x
-    //0.15=l5 16x
-    //0.28=l4 8x
-    //0.44=l3 4x
-    //0.58=l2 2x
-    //0.70=l1 1x
+    //0.12=l6 32x
+    //0.17=l5 16x
+    //0.27=l4 8x
+    //0.57=l3 4x
+    //0.65=l2 2x
+    //0.8=l1 1x
   }
   update_camera(){
     const p=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})

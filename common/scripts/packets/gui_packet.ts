@@ -104,6 +104,12 @@ export class GuiPacket extends Packet{
             dirtyAction,
             hasAction,
             hasDamages]=stream.readBooleanGroup()
+        this.dirty={
+            inventory:dirtyInventory,
+            weapons:dirtyWeapons,
+            current_weapon:dirtyCurrentWeapon,
+            action:dirtyAction
+        }
         if(dirtyInventory){
             this.dirty.inventory=true
             this.inventory=stream.readArray<InventoryItemData>(()=>{
