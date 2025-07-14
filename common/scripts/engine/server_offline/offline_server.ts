@@ -173,6 +173,7 @@ export class OfflineClientsManager{
             this.clients.delete(packet.client_id)
         })
         this.clients.set(client.ID,client)
+        client.opened=true
         if(this.onconnection)this.onconnection(client)
         client.emit(new ConnectPacket(client.ID))
         return client.ID
@@ -198,7 +199,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     public allowJoin:boolean
     public id:ID=1
     fps:number=0
-    destroy_queue: boolean=false;
+    override destroy_queue: boolean=false;
     constructor(tps:number,id:ID,client:OfflineClientsManager,packetManager:PacketsManager,objects:Array<new()=>DefaultGameObject>){
         super(tps,objects)
         this.id=id
@@ -222,7 +223,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     }
     abstract handleConnections(client:Client):void
     update_delay:number=3
-    on_update(): void {
+    override on_update(): void {
         this.scene.objects.apply_destroy_queue()
         this.fps++
     }

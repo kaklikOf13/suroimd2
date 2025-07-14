@@ -5,6 +5,7 @@ import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
+import { GameItems } from "common/scripts/definitions/alldefs.ts"
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -20,7 +21,7 @@ export class Loot extends ServerGameObject{
     }
     interact(user: Player): void {
         this.destroy()
-        user.give_item(this.item,this.count)
+        //user.give_item(this.item,this.count)
         return
     }
     update(dt:number): void {
@@ -59,10 +60,11 @@ export class Loot extends ServerGameObject{
         this.item=args.item
         this.count=args.count
     }
-    getData(): LootData {
+    override getData(): LootData {
         return {
             position:this.position,
             full:{
+                item:GameItems.keysString[this.item.idString]
             }
         }
     }

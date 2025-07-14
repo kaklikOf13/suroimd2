@@ -15,24 +15,27 @@ export interface PlayerData extends EncodedData{
 export interface LootData extends EncodedData{
     // deno-lint-ignore ban-types
     full?:{
+        item:number
     }
     position:Vec2
 }
 
 export interface BulletData extends EncodedData{
     // deno-lint-ignore ban-types
-    full?:{}
-    speed:number
-    angle:number
+    full?:{
+        speed:number
+        angle:number
 
-    tracerWidth:number
-    tracerHeight:number
-    tracerColor:number
+        tracerWidth:number
+        tracerHeight:number
+        tracerColor:number
 
-    radius:number
+        radius:number
+        initialPos:Vec2
+        maxDistance:number
+    }
+    tticks:number
     position:Vec2
-    initialPos:Vec2
-    maxDistance:number
 }
 export interface ExplosionData extends EncodedData{
     // deno-lint-ignore ban-types
@@ -107,7 +110,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             }
             if(full){
                 ret.full={
-
+                    item:stream.readUint16()
                 }
             }
             return ret
@@ -117,7 +120,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:LootData,stream:NetStream){
             stream.writePosition(data.position)
             if(full){
-                //
+                stream.writeUint16(data.full!.item)
             }
         }
     },
@@ -125,32 +128,37 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         decode:(full:boolean,stream:NetStream)=>{
             const ret:BulletData={
                 position:stream.readPosition(),
-                initialPos:stream.readPosition(),
-                maxDistance:stream.readFloat32(),
-                radius:stream.readFloat(0,2,2),
-                speed:stream.readFloat32(),
-                angle:stream.readRad(),
-                tracerWidth:stream.readFloat(0,100,3),
-                tracerHeight:stream.readFloat(0,6,2),
-                tracerColor:stream.readUint32()
+                tticks:stream.readFloat(0,60,2)
             }
             if(full){
-                //
+                ret.full={
+                    initialPos:stream.readPosition(),
+                    maxDistance:stream.readFloat32(),
+                    radius:stream.readFloat(0,2,2),
+                    speed:stream.readFloat32(),
+                    angle:stream.readRad(),
+                    tracerWidth:stream.readFloat(0,100,3),
+                    tracerHeight:stream.readFloat(0,6,2),
+                    tracerColor:stream.readUint32()
+                }
             }
             return ret
         },
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
-        encode(_full:boolean,data:BulletData,stream:NetStream){
+        encode(full:boolean,data:BulletData,stream:NetStream){
             stream.writePosition(data.position)
-            .writePosition(data.initialPos)
-            .writeFloat32(data.maxDistance)
-            .writeFloat(data.radius,0,2,2)
-            .writeFloat32(data.speed)
-            .writeRad(data.angle)
-            .writeFloat(data.tracerWidth,0,100,3)
-            .writeFloat(data.tracerHeight,0,6,2)
-            .writeUint32(data.tracerColor)
+            .writeFloat(data.tticks,0,100,2)
+            if(full){
+                stream.writePosition(data.full!.initialPos)
+                .writeFloat32(data.full!.maxDistance)
+                .writeFloat(data.full!.radius,0,2,2)
+                .writeFloat32(data.full!.speed)
+                .writeRad(data.full!.angle)
+                .writeFloat(data.full!.tracerWidth,0,100,3)
+                .writeFloat(data.full!.tracerHeight,0,6,2)
+                .writeUint32(data.full!.tracerColor)
+            }
         }
     },
     obstacle:{

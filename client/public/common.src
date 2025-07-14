@@ -7,6 +7,8 @@
         "equipaments-images":"img/game/common/items/equipaments.src",
         "others-images":"img/game/common/items/others.src",
 
+        "outlines-images":"img/game/common/loot/outlines.src",
+
         "skins":"img/game/common/loadout/skins.src",
 
         "obstacles-images":"img/game/common/objects/obstacles.src",

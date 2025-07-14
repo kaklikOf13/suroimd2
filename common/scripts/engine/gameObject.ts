@@ -374,7 +374,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             l[i].encodeObject(!last_list.includes(l[i]),stream)
         }
         const deletions=last_list.filter(obj =>
-           !l.includes(obj)
+           !l.includes(obj)&&obj.netSync.deletion
         );
         stream.writeUint16(deletions.length)
         for(let i=0;i<deletions.length;i++){

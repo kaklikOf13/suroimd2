@@ -28,6 +28,7 @@ export class Bullet extends ServerGameObject{
     source?:GameItem
 
     damage:number=0
+    tticks:number=0
 
     reflectionCount:number=0
     constructor(){
@@ -42,9 +43,11 @@ export class Bullet extends ServerGameObject{
         if(v2.distance(this.initialPosition,this.position)>this.maxDistance){
             this.destroy()
         }
+        this.tticks+=dt
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         this.manager.cells.updateObject(this)
-        const objs:BaseGameObject2D[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+        //const objs:BaseGameObject2D[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+        const objs=[...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
         for(const obj of objs){
             switch(obj.stringType){
                 case "player":
@@ -101,9 +104,9 @@ export class Bullet extends ServerGameObject{
         (this.hb as CircleHitbox2D).radius=this.defs.radius*this.modifiers.size
     }
     reflect(angle:number){
-        const b=this.game.add_bullet(this.position,angle,this.defs,this.owner,this.ammo,this.source)
+        /*const b=this.game.add_bullet(this.position,angle,this.defs,this.owner,this.ammo,this.source)
         b.damage=this.damage/2
-        b.reflectionCount=this.reflectionCount+1
+        b.reflectionCount=this.reflectionCount+1*/
     }
     override onDestroy(): void {
         delete this.game.bullets[this.id]
@@ -112,14 +115,17 @@ export class Bullet extends ServerGameObject{
     override getData(): BulletData {
         return {
             position:this.position,
-            initialPos:this.initialPosition,
-            maxDistance:this.maxDistance,
-            radius:(this.hb as CircleHitbox2D).radius,
-            speed:this.defs.speed*this.modifiers.speed,
-            angle:this.angle,
-            tracerWidth:this.defs.tracer.width,
-            tracerHeight:this.defs.tracer.height*this.modifiers.size,
-            tracerColor:this.tracerColor
+            tticks:this.tticks,
+            full:{
+                initialPos:this.initialPosition,
+                maxDistance:this.maxDistance,
+                radius:(this.hb as CircleHitbox2D).radius,
+                speed:this.defs.speed*this.modifiers.speed,
+                angle:this.angle,
+                tracerWidth:this.defs.tracer.width,
+                tracerHeight:this.defs.tracer.height*this.modifiers.size,
+                tracerColor:this.tracerColor
+            }
         }
     }
 }

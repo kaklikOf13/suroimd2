@@ -7,6 +7,7 @@ import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { LootTables } from "common/scripts/definitions/maps/base.ts";
+import { Explosions } from "common/scripts/definitions/explosions.ts";
 
 export class Obstacle extends ServerGameObject{
     stringType:string="obstacle"
@@ -100,9 +101,10 @@ export class Obstacle extends ServerGameObject{
     }
     kill(params:DamageParams){
         if(this.dead)return
-        /*if(this.def.onDestroyExplosion){
+        if(this.def.onDestroyExplosion){
             this.game.add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
         }
+        /*
 
         for(const l of this.loot){
             this.game.add_loot(this.position,l.item,l.count)

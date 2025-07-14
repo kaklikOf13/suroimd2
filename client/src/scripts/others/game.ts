@@ -120,7 +120,8 @@ export class Game extends ClientGame2D<GameObject>{
 
       const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
       if(activePlayer){
-        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom))
+        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));
+        (activePlayer as Player).container.rotation=this.action.angle
       }
     }
     this.camera.zoom=0.8

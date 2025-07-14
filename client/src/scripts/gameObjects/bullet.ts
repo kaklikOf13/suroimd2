@@ -46,8 +46,9 @@ export class Bullet extends GameObject{
             if(this.sprite.scale.x<this.maxLength)this.tticks+=dt
             this.manager.cells.updateObject(this)
             this.position=v2.add(this.hb.position,this.dts)
-            
-            const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+
+            //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
+            const objs=[...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
             for(const obj of objs){
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){
@@ -91,18 +92,21 @@ export class Bullet extends GameObject{
     }
     override updateData(data:BulletData){
         this.position=data.position
-        this.initialPosition=data.initialPos
-        this.maxDistance=data.maxDistance
-        this.hb=new CircleHitbox2D(data.position,data.radius)
-        this.speed=data.speed
-        this.sprite.rotation=data.angle
-        this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(data.angle),this.speed),4)
-        this.sprite.scale!.y=data.tracerHeight
-        this.maxLength=data.tracerWidth
-        this.sprite.tint=ColorM.number(data.tracerColor)
+        this.tticks=data.tticks
+        if(data.full){
+            this.initialPosition=data.full.initialPos
+            this.maxDistance=data.full.maxDistance
+            this.hb=new CircleHitbox2D(data.position,data.full.radius)
+            this.speed=data.full.speed
+            this.sprite.rotation=data.full.angle
+            this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(data.full.angle),this.speed),4)
+            this.sprite.scale!.y=data.full.tracerHeight
+            this.maxLength=data.full.tracerWidth
+            this.sprite.tint=ColorM.number(data.full.tracerColor)
 
-        this.sprite.position=this.position
-        this.sprite.scale.x=0
-        this.sprite.visible=true
+            this.sprite.position=this.position
+            this.sprite.scale.x=0
+            this.sprite.visible=true
+        }
     }
 }

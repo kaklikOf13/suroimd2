@@ -213,7 +213,7 @@ export class Player extends ServerGameObject{
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,5)
+        this.movement=v2.scale(action.Movement,4.5)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }
@@ -264,7 +264,7 @@ export class Player extends ServerGameObject{
     camera_hb:RectHitbox2D=new RectHitbox2D(v2.new(0,0),v2.new(0,0))
     update2(){
         this.update_modifiers()
-        if(this.client){
+        if(this.client&&this.client.opened){
             const up=new UpdatePacket()
             up.gui.health=this.health
             up.gui.max_health=this.maxHealth
@@ -305,10 +305,10 @@ export class Player extends ServerGameObject{
             if(this.actions.current_action){
                 up.gui.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
-            this.camera_hb.min.x=this.position.x-(4/2)
-            this.camera_hb.min.y=this.position.y-(4/2)
-            this.camera_hb.max.x=this.position.x+(4/2)
-            this.camera_hb.max.y=this.position.y+(4/2)
+            this.camera_hb.min.x=this.position.x-(25/2)
+            this.camera_hb.min.y=this.position.y-(13/2)
+            this.camera_hb.max.x=this.position.x+(25/2)
+            this.camera_hb.max.y=this.position.y+(13/2)
             const o=this.game.scene.objects.encode_hb(this.camera_hb,undefined,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm

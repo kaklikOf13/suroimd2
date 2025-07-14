@@ -79,7 +79,7 @@ export class Explosion extends ServerGameObject{
         this.owner=args.owner
         this.hb=new CircleHitbox2D(args.position,random.float(this.defs.size.min,this.defs.size.max))
     }
-    getData(): ExplosionData {
+    override getData(): ExplosionData {
         return {
             position:this.position,
             def:this.defs.idNumber!,
