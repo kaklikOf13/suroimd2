@@ -16,7 +16,8 @@ export interface ObstacleDef extends Definition{
         destroy?:number
     }
     frame?:{
-        base:string
+        base?:string
+        dead?:string
     }
     particle?:string
     variations?:number
@@ -95,7 +96,7 @@ Obstacles.insert(
             destroy:0.8
         },
         rotationMode:RotationMode.full,
-        zIndex:zIndexes.Obstacles3,
+        zIndex:zIndexes.Obstacles4,
         material:"tree",
     },
     {
@@ -171,7 +172,7 @@ Obstacles.insert(
         },
         particle:"leaf_green_particle",
         rotationMode:RotationMode.full,
-        zIndex:zIndexes.Obstacles2,
+        zIndex:zIndexes.Obstacles3,
         material:"bush",
     }
 )

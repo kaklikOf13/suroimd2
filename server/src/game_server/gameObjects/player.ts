@@ -1,9 +1,9 @@
-import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { GInventory,GunItem,LItem} from "../inventory/inventory.ts";
-import { GuiPacket,DamageSplash } from "common/scripts/packets/gui_packet.ts";
+import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/update_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
@@ -162,7 +162,6 @@ export class Player extends ServerGameObject{
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
         }
-        this.dirtyPart=true
 
         //Hand Use
         if(this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
@@ -210,6 +209,7 @@ export class Player extends ServerGameObject{
 
         this.actions.update(dt)
         this.inventory.update()
+        this.dirtyPart=true
     }
     process_action(action:ActionPacket){
         action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
@@ -258,13 +258,22 @@ export class Player extends ServerGameObject{
     damageSplash?:DamageSplash
 
     splashDelay:number=0
+
+    view_objects:ServerGameObject[]=[]
+
+    camera_hb:RectHitbox2D=new RectHitbox2D(v2.new(0,0),v2.new(0,0))
     update2(){
         this.update_modifiers()
         if(this.client){
-            const guiPacket=new GuiPacket(this.health,this.maxHealth,this.boost,this.maxBoost,this.BoostType)
-            guiPacket.inventory=[]
+            const up=new UpdatePacket()
+            up.gui.health=this.health
+            up.gui.max_health=this.maxHealth
+            up.gui.boost=this.boost
+            up.gui.max_boost=this.maxBoost
+            up.gui.boost_type=this.BoostType
+            up.gui.inventory=[]
             if(this.splashDelay<=0){
-                guiPacket.damages=this.damageSplash
+                up.gui.damages=this.damageSplash
                 this.damageSplash=undefined
             }else{
                 this.splashDelay--
@@ -273,40 +282,19 @@ export class Player extends ServerGameObject{
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
                 if(!s.item)continue
-                guiPacket.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
+                up.gui.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
                 ii++
             }
-            /*if(this.handItem){
-                switch(this.handItem!.itemType){
-                    case InventoryItemType.gun:
-                        if(!this.ammoCount[(this.handItem as GunItem).def.ammoType]){
-                            this.ammoCount[(this.handItem as GunItem).def.ammoType]=this.inventory.getCountTag(`ammo_${(this.handItem as GunItem).def.ammoType}`)
-                            this.privateDirtys.hand=true
-                        }
-                        guiPacket.hand=this.handItem?{ammo:(this.handItem as GunItem).ammo,type:this.handItem.itemType,location:this.hand,disponibility:this.ammoCount[(this.handItem as GunItem).def.ammoType]!}:undefined
-                        break
-                    case InventoryItemType.melee:
-                    case InventoryItemType.ammo:
-                    case InventoryItemType.other:
-                    case InventoryItemType.equipament:
-                    case InventoryItemType.healing:
-                        guiPacket.hand=this.handItem?{type:this.handItem.itemType,location:this.hand}:undefined
-                        break
-                }
-            }*/
-            guiPacket.dirty=this.privateDirtys
-            guiPacket.weapons={
+            up.gui.dirty=this.privateDirtys
+            up.gui.weapons={
                 melee:this.inventory.weapons[0]?.def,
                 gun1:this.inventory.weapons[1]?.def,
                 gun2:this.inventory.weapons[2]?.def,
             }
-            guiPacket.current_weapon={
+            up.gui.current_weapon={
                 slot:this.inventory.weaponIdx,
                 ammo:(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun")?(this.inventory.currentWeapon as GunItem).ammo:0
             }
-            /*if(this.privateDirtys.inventory){
-                this.ammoCount={}
-            }*/
             this.privateDirtys={
                 inventory:false,
                 weapons:false,
@@ -315,9 +303,16 @@ export class Player extends ServerGameObject{
             }
 
             if(this.actions.current_action){
-                guiPacket.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
+                up.gui.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
-            this.client.emit(guiPacket)
+            this.camera_hb.min.x=this.position.x-(4/2)
+            this.camera_hb.min.y=this.position.y-(4/2)
+            this.camera_hb.max.x=this.position.x+(4/2)
+            this.camera_hb.max.y=this.position.y+(4/2)
+            const o=this.game.scene.objects.encode_hb(this.camera_hb,undefined,this.view_objects)
+            this.view_objects=o.last
+            up.objects=o.strm
+            this.client.emit(up)
         }
     }
     damage(params:DamageParams){

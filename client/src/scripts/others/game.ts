@@ -1,6 +1,6 @@
-import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, GridMaterialArgs, Material2D, WebglRenderer, Grid2D} from "../engine/mod.ts"
+import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, GameConstants, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { BasicSocket, Client, DefaultSignals, NullVec2, ObjectsPacket, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { BasicSocket, Client, DefaultSignals, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -14,6 +14,7 @@ import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplash } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
 import { Debug } from "./config.ts";
+import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayer=0
@@ -34,8 +35,9 @@ export class Game extends ClientGame2D<GameObject>{
     }
     this.scene.objects.add_category(7)
     this.client=new Client(socket,PacketManager)
-    this.client.on(DefaultSignals.OBJECTS,(obj:ObjectsPacket)=>{
-      this.scene.objects.proccess(obj)
+    this.client.on("update",(up:UpdatePacket)=>{
+      this.guiManager.update_gui(up.gui)
+      this.scene.objects.proccess_hb(up.objects!,true)
     })
     this.scene.objects.encoders=ObjectsE;
 
@@ -121,7 +123,7 @@ export class Game extends ClientGame2D<GameObject>{
         this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom))
       }
     }
-    this.camera.zoom=0.27
+    this.camera.zoom=0.8
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
     //0.12=l6 32x

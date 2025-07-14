@@ -4,8 +4,8 @@ export { ActionPacket } from "../packets/action_packet.ts"
 export { GameOverPacket } from "../packets/gameOver.ts"
 import { JoinPacket } from "../packets/join_packet.ts"
 import { ActionPacket } from "../packets/action_packet.ts"
-import { GuiPacket } from "common/scripts/packets/gui_packet.ts"
 import { GameOverPacket } from "../packets/gameOver.ts"
+import { UpdatePacket } from "../packets/update_packet.ts";
 
 export const GameConstants={
     player:{
@@ -45,7 +45,7 @@ export const CATEGORYSL=[
 export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)
-PacketManager.add_packet(GuiPacket)
+PacketManager.add_packet(UpdatePacket)
 PacketManager.add_packet(GameOverPacket)
 
 export enum zIndexes{
@@ -57,6 +57,7 @@ export enum zIndexes{
     Obstacles2,
     Players,
     Obstacles3,
+    Obstacles4,
     Explosions,
 }
 export enum ActionsType{

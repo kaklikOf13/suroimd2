@@ -73,12 +73,12 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             ret.using_item=bg1[0]
             ret.using_item_down=bg1[1]
             if(full){
-                const bgf1=stream.readBooleanGroup()
+                //const bgf1=stream.readBooleanGroup()
                 ret.full={
-                    name:stream.readString(),
+                    name:stream.readStringSized(28),
                     vest:stream.readUint8(),
                     helmet:stream.readUint8(),
-                    handItem:bgf1[0]?stream.readUint24():undefined
+                    //handItem:bgf1[0]?stream.readUint24():undefined
                 }
             }
             return ret
@@ -90,11 +90,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeRad(data.rotation)
             .writeBooleanGroup(data.using_item,data.using_item_down)
             if(full){
-                stream.writeBooleanGroup(data.full!.handItem!==undefined)
-                .writeString(data.full!.name)
+                //stream.writeBooleanGroup(data.full!.handItem!==undefined)
+                stream.writeStringSized(28,data.full!.name)
                 .writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
-                if(data.full!.handItem)stream.writeUint24(data.full!.handItem)
+                //if(data.full!.handItem)stream.writeUint24(data.full!.handItem)
                 
             }
         }
@@ -154,19 +154,20 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         }
     },
     obstacle:{
+        //19 Full Alloc
         decode:(full:boolean,stream:NetStream)=>{
-            const bools=stream.readBooleanGroup()
+            const bools=stream.readBooleanGroup()//1
             const ret:ObstacleData={
-                scale:stream.readFloat(0,3,3),
+                scale:stream.readFloat(0,3,3),//3
                 dead:bools[0],
                 full:undefined
             }
             if(full){
                 ret.full={
-                    definition:stream.readUint24(),
-                    position:stream.readPosition(),
-                    rotation:stream.readRad(),
-                    variation:stream.readUint8()+1,
+                    definition:stream.readUint24(),//3
+                    position:stream.readPosition(),//8
+                    rotation:stream.readRad(),//3
+                    variation:stream.readUint8()+1,//1
                 }
             }
             return ret

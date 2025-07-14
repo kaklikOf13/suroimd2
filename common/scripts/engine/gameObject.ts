@@ -3,7 +3,6 @@ import { type Hitbox2D, NullHitbox2D } from "./hitbox.ts"
 import { type ID } from "./utils.ts"
 import { NetStream } from "./stream.ts";
 import { random } from "./random.ts";
-import { ObjectsPacket } from "./packets.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     public hb:Hitbox2D
@@ -56,7 +55,7 @@ export abstract class BaseObject2D{
         stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3])
         if(bools[0]||bools[1]||bools[2]){
             stream.writeID(this.id)
-            stream.writeUint16(this.numberType)
+            stream.writeUint8(this.numberType)
             if(bools[0]||bools[1]){
                 const data=this.getData()
                 const e=this.manager.encoders[this.stringType]
@@ -78,7 +77,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     categorys:number[]=[]
     cellSize:number
     cells:Record<number,Record<number,Record<number,Record<number,GameObject>>>>
-    objectCells:Record<number,Record<number,Vec2[]>>={}
+    objectCells:Record<number,Record<number,Vec2>>={}
     constructor(cellSize:number=5){
         this.cellSize=cellSize
         this.cells={}
@@ -102,16 +101,18 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         delete this.objects[obj.category][obj.id]
     }
     private removeObjectFromCells(key:ObjectKey){
-        if(!this.objectCells[key.category][key.id])return
-        for(const c of this.objectCells[key.category][key.id]){
-            delete this.cells[key.category][c.y][c.x][key.id]
-        }
+        if(!this.objectCells[key.category] || !this.objectCells[key.category][key.id]) return
+        const c=this.objectCells[key.category][key.id]
+        delete this.cells[key.category][c.y][c.x][key.id]
         delete this.objectCells[key.category][key.id]
     }
     updateObject(obj:GameObject){
         const k=obj.get_key()
         this.removeObjectFromCells(k)
         const cp=this.cellPos(obj.position)
+        if (!this.cells[k.category]) {
+            this.cells[k.category] = {};
+        }
         if(!this.cells[k.category][cp.y]){
             this.cells[k.category][cp.y]={}
         }
@@ -119,9 +120,9 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
             this.cells[k.category][cp.y][cp.x]={}
         }
         this.cells[k.category][cp.y][cp.x][obj.id]=obj
-
-        //Objects
-        const rect=obj.hb.toRect()
+        if(!this.objectCells[k.category])this.objectCells[k.category]={}
+        if(!this.objectCells[k.category][k.id])this.objectCells[k.category][k.id]=cp
+        /*const rect=obj.hb.toRect()
         let min = this.cellPos(rect.position)
         let max = this.cellPos(rect.max)
         if(v2.less(max,min)){
@@ -137,12 +138,12 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
                 this.cells[k.category][y][x][k.id]=obj
                 this.objectCells[k.category][k.id].push(v2.new(x,y))
             }
-        }
+        }*/
     }
     get_objects(hitbox:Hitbox2D,categorys:number[]):GameObject[]{
-        /*const rect=hitbox.toRect()
-        let min = this.cellPos(rect.position)
-        let max = this.cellPos(v2.add(rect.position,rect.size))
+        const rect=hitbox.toRect()
+        let min = this.cellPos(rect.min)
+        let max = this.cellPos(rect.max)
         if(v2.less(max,min)){
             const m=min
             min=max
@@ -157,19 +158,19 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
                         if(!this.cells[c][y][x]){
                             continue
                         }
-                        objects.push(...this.cells[c][y][x])
+                        objects.push(...Object.values(this.cells[c][y][x]))
                     }
                 }
         }
-        return objects*/
+        return objects
 
-        const cp=this.cellPos(hitbox.position)
+        /*const cp=this.cellPos(hitbox.position)
         const objects:GameObject[] = []
         for (const c of categorys) {
             if(!(this.cells[c]&&this.cells[c][cp.y]&&this.cells[c][cp.y][cp.x]))continue
             objects.push(...Object.values(this.cells[c][cp.y][cp.x]))
         }
-        return objects
+        return objects*/
     }
     get_objects2(hitbox:Hitbox2D,category:number):GameObject[]{
         const objects:GameObject[] = []
@@ -261,7 +262,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.cells.cells[category]={}
         this.cells.objectCells[category]={}
     }
-    proccess(packet:ObjectsPacket){
+    /*proccess(stream){
         const csize=packet.stream.readUint16()
         for(let i=0;i<csize;i++){
             const category=packet.stream.readUint8()
@@ -294,8 +295,48 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 }
             }
         }
+    }*/
+   process_object(category:number,stream:NetStream){
+        const b=stream.readBooleanGroup()
+        if(b[0]||b[1]||b[2]){
+            const oid=stream.readID()
+            const tp=stream.readUint8()
+            let obj=this.objects[category].objects[oid]
+            if(b[3]&&!obj&&!b[2]){
+                const obb=this.oncreate({category:category,id:oid},tp)
+                if(!obb)return
+                obj=obb
+                this.add_object(obj,category,oid)
+            }
+            if(obj){
+                if(b[0]||b[1]){
+                    const enc=this.encoders[obj.stringType]
+                    const data=enc.decode(b[1],stream)
+                    obj.updateData(data)
+                }
+                if(b[2]){
+                    obj.destroy()
+                }
+            }
+        }
+   }
+   proccess_hb(stream:NetStream,process_deletion:boolean=false){
+        let os=stream.readUint16()
+        for(let i=0;i<os;i++){
+            const category=stream.readUint8()
+            if(!this.objects[category]){
+                this.add_category(category)
+            }
+            this.process_object(category,stream)
+        }
+        os=stream.readUint16()
+        for(let i=0;i<os;i++){
+            const c=stream.readUint8()
+            const id=stream.readID()
+            if(process_deletion&&this.objects[c]&&this.objects[c].objects[id])this.objects[c].objects[id].destroy()
+        }
     }
-    encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):ObjectsPacket{
+    encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):NetStream{
         const stream=new NetStream(new ArrayBuffer(size))
         if(encodeList){
             stream.writeUint16(Object.keys(encodeList).length)
@@ -322,10 +363,25 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 }
             }
         }
-        const op=new ObjectsPacket()
-        op.stream=stream
-        op.size=stream.index
-        return op
+        return stream
+    }
+    encode_hb(hb:Hitbox2D,size:number=1024*1024,last_list:GameObject[]=[]):{last:GameObject[],strm:NetStream}{
+        const stream=new NetStream(new ArrayBuffer(size))
+        const l=this.cells.get_objects(hb,this.categorys)
+        stream.writeUint16(l.length)
+        for(let i=0;i<l.length;i++){
+            stream.writeUint8(l[i].category)
+            l[i].encodeObject(!last_list.includes(l[i]),stream)
+        }
+        const deletions=last_list.filter(obj =>
+           !l.includes(obj)
+        );
+        stream.writeUint16(deletions.length)
+        for(let i=0;i<deletions.length;i++){
+            stream.writeUint8(deletions[i].category)
+            stream.writeID(deletions[i].id)
+        }
+        return {strm:stream,last:l}
     }
     update(dt:number){
         for(const c in this.objects){

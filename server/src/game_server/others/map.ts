@@ -2,7 +2,7 @@ import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/sc
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
-import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
+import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
 
 import {} from "common/scripts/definitions/maps/base.ts"
 
@@ -63,7 +63,7 @@ export class GameMap{
         return o
     }
     generate(){
-        /*for(let i=0;i<15;i++){
+        for(let i=0;i<5;i++){
             this.generate_obstacle(Obstacles.getFromString("stone"))
         }
         for(let i=0;i<10;i++){
@@ -71,7 +71,7 @@ export class GameMap{
         }
         for(let i=0;i<15;i++){
             this.generate_obstacle(Obstacles.getFromString("oak_tree"))
-        }*/
+        }
         //Feast
         /*const crate=Obstacles.getFromString("wood_crate")
         let obs=this.add_obstacle(crate)

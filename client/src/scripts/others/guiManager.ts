@@ -1,4 +1,3 @@
-import { GuiPacket } from "common/scripts/packets/gui_packet.ts";
 import { Game } from "./game.ts";
 import { BoostType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, CATEGORYS, GameOverPacket } from "common/scripts/others/constants.ts";
@@ -8,6 +7,7 @@ import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/melees.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
+import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 
 export class GuiManager{
     game:Game
@@ -64,94 +64,6 @@ export class GuiManager{
     constructor(game:Game){
         this.game=game
         this.game.client.on("gameover",this.show_game_over.bind(this))
-        this.game.client.on("gui",(p:GuiPacket)=>{
-            this.set_health(p.Health,p.MaxHealth)
-            this.set_boost(p.Boost,p.MaxBoost,p.BoostType)
-
-            if(p.damages){
-                this.game.add_damageSplash(p.damages.position,p.damages.count,p.damages.critical,p.damages.shield)
-            }
-
-            if(p.dirty.weapons){
-                let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
-                if(p.weapons.melee){
-                    name.innerText=p.weapons.melee.idString
-                }else{
-                    name.innerText=""
-                }
-                this.weapons[0]=p.weapons.melee
-                name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
-                let img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
-                if(p.weapons.gun1){
-                    name.innerText=p.weapons.gun1.idString
-                    img.src=this.game.resources.get_sprite(p.weapons.gun1.idString).path
-                    this.weapons[1]=p.weapons.gun1
-                    img.style.display="block"
-                }else{
-                    name.innerText=""
-                    img.style.display="none"
-                
-                }
-                name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
-                img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
-                if(p.weapons.gun2){
-                    name.innerText=p.weapons.gun2.idString
-                    img.src=this.game.resources.get_sprite(p.weapons.gun2.idString).path
-                    this.weapons[2]=p.weapons.gun2
-                    img.style.display="block"
-                }else{
-                    name.innerText=""
-                    img.style.display="none"
-                }
-            }
-            if(p.current_weapon){
-                if(this.currentWeapon)this.currentWeapon.classList.remove("weapon-slot-selected")
-                const wp=this.weapons[p.current_weapon.slot as keyof typeof this.weapons]
-                switch(p.current_weapon.slot){
-                    case 1:
-                        this.currentWeapon=this.content.weapon2
-                        break
-                    case 2:
-                        this.currentWeapon=this.content.weapon3
-                        break
-                    default:
-                        this.currentWeapon=this.content.weapon1
-                }
-                
-                if(p.current_weapon.slot===0){
-                    //
-                }else{
-                    this.content.hand_info_count.innerText=`${p.current_weapon.ammo}/${(wp as GunDef).reload?.capacity}`
-                }
-                this.currentWeapon.classList.add("weapon-slot-selected")
-            }
-
-            /*if(p.inventory){
-                this.inventory.length=0
-                for(const s of p.inventory){
-                    this.inventory.push({count:s.count,def:GameItems.valueNumber[s.idNumber],type:s.type})
-                }
-                this.inventory_cache=this.inventory_reset()
-            }*/
-            /*if(p.dirty.hand){
-                if(this.handSelection){
-                    this.handSelection.classList.remove("inventory-slot-selected")
-                }
-                this.hand=p.hand
-                this.set_hand_item()
-            }*/
-            if(p.dirty.action){
-                if(p.action){
-                    this.action={
-                        delay:p.action.delay,
-                        start:Date.now(),
-                        type:p.action.type
-                    }
-                }else{
-                    this.action=undefined
-                }
-            }
-        })
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
         this.set_health(100,100)
 
@@ -181,67 +93,87 @@ export class GuiManager{
             }
         }
     }
-    /*set_hand_item(){
-        this.content.cellphone_actions.style.display="none"
-        if(!this.hand){
-            this.content.current_item_image.style.backgroundImage="none"
-            return
-        }
-        if(this.hand.location>=0){
-            if(!this.hand){
-                return
-            }
-            switch(this.hand.type){
-                case InventoryItemType.gun:{
-                    const def=(this.inventory[this.hand.location].def as GunDef)
-                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    this.content.hand_info_count.innerText=`${this.hand.ammo}/${this.hand.disponibility}`
-                    break
-                }
-                case InventoryItemType.melee:{
-                    const def=(this.inventory[this.hand.location].def as MeleeDef)
-                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    this.content.hand_info_count.innerText=``
-                    break
-                }
-                case InventoryItemType.ammo:{
-                    const def=(this.inventory[this.hand.location].def as AmmoDef)
-                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    break
-                }
-                case InventoryItemType.healing:{
-                    const def=(this.inventory[this.hand.location].def as HealingDef)
-                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    break
-                }
-                case InventoryItemType.other:{
-                    const def=(this.inventory[this.hand.location].def as OtherDef)
-                    this.content.current_item_image.src=this.game.resources.get_sprite(def.idString).path
-                    if(def.idString==="cellphone"){
-                        this.content.cellphone_actions.style.display="unset"
-                    }
-                    break
-                }
-            }
-            if(this.hand.type===InventoryItemType.gun||this.hand.type===InventoryItemType.other||this.hand.type===InventoryItemType.melee){
-                this.content.current_item_image.style.width="70px"
-                this.content.current_item_image.style.height="70px"
-                this.content.current_item_image.style.transform="rotate(-30deg)"
-            }else{
-                this.content.current_item_image.style.width="40px"
-                this.content.current_item_image.style.height="40px"
-                this.content.current_item_image.style.transform="unset"
-                this.content.hand_info_count.innerText=`${this.inventory[this.hand.location].count}`
-            }
-            this.content.current_item_image.style.opacity="100%"
-            this.handSelection=this.inventory_cache[this.hand.location]
-            this.handSelection.classList.add("inventory-slot-selected")
+    update_gui(gui:GuiUpdate){
+        this.set_health(gui.health,gui.max_health)
+        this.set_boost(gui.boost,gui.max_boost,gui.boost_type)
 
-        }else{
-            this.handSelection=undefined
-            this.content.current_item_image.style.opacity="0%"
+        if(gui.damages){
+            this.game.add_damageSplash(gui.damages.position,gui.damages.count,gui.damages.critical,gui.damages.shield)
         }
-    }*/
+
+        if(gui.dirty.weapons){
+            let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
+            if(gui.weapons.melee){
+                name.innerText=gui.weapons.melee.idString
+            }else{
+                name.innerText=""
+            }
+            this.weapons[0]=gui.weapons.melee
+            name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
+            let img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
+            if(gui.weapons.gun1){
+                name.innerText=gui.weapons.gun1.idString
+                img.src=this.game.resources.get_sprite(gui.weapons.gun1.idString).path
+                this.weapons[1]=gui.weapons.gun1
+                img.style.display="block"
+            }else{
+                name.innerText=""
+                img.style.display="none"
+            
+            }
+            name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
+            img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
+            if(gui.weapons.gun2){
+                name.innerText=gui.weapons.gun2.idString
+                img.src=this.game.resources.get_sprite(gui.weapons.gun2.idString).path
+                this.weapons[2]=gui.weapons.gun2
+                img.style.display="block"
+            }else{
+                name.innerText=""
+                img.style.display="none"
+            }
+        }
+        if(gui.dirty.current_weapon&&gui.current_weapon){
+            if(this.currentWeapon)this.currentWeapon.classList.remove("weapon-slot-selected")
+            const wp=this.weapons[gui.current_weapon.slot as keyof typeof this.weapons]
+            switch(gui.current_weapon.slot){
+                case 1:
+                    this.currentWeapon=this.content.weapon2
+                    break
+                case 2:
+                    this.currentWeapon=this.content.weapon3
+                    break
+                default:
+                    this.currentWeapon=this.content.weapon1
+            }
+
+            if(gui.current_weapon.slot===0){
+                //
+            }else{
+                this.content.hand_info_count.innerText=`${gui.current_weapon.ammo}/${(wp as GunDef).reload?.capacity}`
+            }
+            this.currentWeapon.classList.add("weapon-slot-selected")
+        }
+
+        /*if(p.inventory){
+            this.inventory.length=0
+            for(const s of p.inventory){
+                this.inventory.push({count:s.count,def:GameItems.valueNumber[s.idNumber],type:s.type})
+            }
+            this.inventory_cache=this.inventory_reset()
+        }*/
+        if(gui.dirty.action){
+            if(gui.action){
+                this.action={
+                    delay:gui.action.delay,
+                    start:Date.now(),
+                    type:gui.action.type
+                }
+            }else{
+                this.action=undefined
+            }
+        }
+    }
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return
         this.game.gameOver=true

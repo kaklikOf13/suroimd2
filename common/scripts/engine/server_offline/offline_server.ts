@@ -135,7 +135,7 @@ export class Client{
      */
     emit(packet:Packet):void{
         if (this.ws.readyState !== WebSocket.OPEN) return;
-        if(this.ws.send)this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*10))).buffer)
+        if(this.ws.send)this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*10))).buffer as ArrayBuffer)
     }
     /**
      * On Recev A `Packet` From `Server/Client`
@@ -148,7 +148,7 @@ export class Client{
     }
     sendStream(stream:NetStream){
         if (this.ws.readyState !== WebSocket.OPEN) return;
-        if(this.ws.send)this.ws.send(stream.buffer)
+        if(this.ws.send)this.ws.send(stream.buffer as ArrayBuffer)
     }
     /**
      * Disconnect Websocket
@@ -214,7 +214,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
         this.fps=0
         setTimeout(this.fpsShow.bind(this),1000)
     }
-    on_stop(): void {
+    override on_stop(): void {
       super.on_stop()
       for(const c of this.clients.clients.values()){
         c.disconnect()
@@ -223,7 +223,6 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     abstract handleConnections(client:Client):void
     update_delay:number=3
     on_update(): void {
-        this.clients.emit(this.scene.objects.encode())
         this.scene.objects.apply_destroy_queue()
         this.fps++
     }

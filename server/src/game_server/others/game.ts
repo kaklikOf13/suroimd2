@@ -114,7 +114,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(100,100))
+        this.map=new GameMap(this,v2.new(16,16))
         this.gamemode=DefaultGamemode
         this.modeManager=new GamemodeManager(this)
     }
@@ -206,7 +206,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
             if (this.allowJoin&&!this.scene.objects.exist(objId)){
                 const p=this.add_player(client,objId.id,packet)
                 this.connectedPlayers[p.id]=p
-                this.addTimeout(client.emit.bind(client,this.scene.objects.encode(undefined,true)),0.3)
                 console.log(`${p.name} Connected`)
             }
         })

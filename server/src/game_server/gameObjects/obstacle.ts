@@ -3,7 +3,6 @@ import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
-import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItem } from "common/scripts/definitions/utils.ts";
@@ -71,7 +70,7 @@ export class Obstacle extends ServerGameObject{
             this.spawnHitbox=this.hb.clone()
         }
     }
-    getData(): ObstacleData {
+    override getData(): ObstacleData {
         return {
             full:{
                 definition:this.def.idNumber!,
@@ -101,13 +100,13 @@ export class Obstacle extends ServerGameObject{
     }
     kill(params:DamageParams){
         if(this.dead)return
-        if(this.def.onDestroyExplosion){
+        /*if(this.def.onDestroyExplosion){
             this.game.add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
         }
 
         for(const l of this.loot){
             this.game.add_loot(this.position,l.item,l.count)
-        }
+        }*/
 
         this.dirtyPart=true
         this.dead=true
