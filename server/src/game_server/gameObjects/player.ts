@@ -372,13 +372,16 @@ export class Player extends ServerGameObject{
         }
     }
     dropAll(){
-        for(const s of this.inventory.slots){
+        this.inventory.drop_weapon(0)
+        this.inventory.drop_weapon(1)
+        this.inventory.drop_weapon(2)
+        /*for(const s of this.inventory.slots){
             if(s.quantity>0&&s.item&&s.item.droppable){
                 this.game.add_loot(this.position,s.item.def as GameItem,s.quantity)
                 s.quantity=0
                 s.item=null
             }
-        }
+        }*/
         //this.inventory.update_infinity()
     }
     kill(params:DamageParams){

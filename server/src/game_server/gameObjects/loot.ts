@@ -3,7 +3,7 @@ import { LootData } from "common/scripts/others/objectsEncode.ts";
 import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
-import { GameItem } from "common/scripts/definitions/utils.ts";
+import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
 
@@ -20,7 +20,19 @@ export class Loot extends ServerGameObject{
         
     }
     interact(user: Player): void {
-        this.destroy()
+        switch(this.item.item_type){
+            case InventoryItemType.gun:{
+                const r=user.inventory.give_gun(this.item.idString)
+                if(r)this.destroy()
+                break
+            }
+            case InventoryItemType.ammo:
+            case InventoryItemType.healing:
+            case InventoryItemType.equipament:
+            case InventoryItemType.other:
+            case InventoryItemType.melee:
+            case InventoryItemType.accessorie:
+        }
         //user.give_item(this.item,this.count)
         return
     }

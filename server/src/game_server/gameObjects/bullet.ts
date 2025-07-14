@@ -89,6 +89,7 @@ export class Bullet extends ServerGameObject{
         this.maxDistance=this.defs.range/2.5
         const ad=Ammos.getFromString(args.ammo)
         this.tracerColor=this.defs.tracer.color??(ad?ad.defaultTrail:0xffffff)
+        this.projColor=this.defs.tracer.proj.color??(ad?ad.defaultProj:0xffffff)
         this.owner=args.owner
         this.critical=args.critical??(Math.random()<=0.15)
         this.source=args.source
@@ -112,6 +113,7 @@ export class Bullet extends ServerGameObject{
         delete this.game.bullets[this.id]
     }
     tracerColor:number=0
+    projColor:number=0
     override getData(): BulletData {
         return {
             position:this.position,
@@ -124,7 +126,11 @@ export class Bullet extends ServerGameObject{
                 angle:this.angle,
                 tracerWidth:this.defs.tracer.width,
                 tracerHeight:this.defs.tracer.height*this.modifiers.size,
-                tracerColor:this.tracerColor
+                tracerColor:this.tracerColor,
+                projWidth:this.defs.tracer.proj.width,
+                projHeight:this.defs.tracer.proj.height*this.modifiers.size,
+                projColor:this.projColor,
+                projIMG:this.defs.tracer.proj.img
             }
         }
     }
