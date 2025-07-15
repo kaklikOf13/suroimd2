@@ -1,4 +1,4 @@
-import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";

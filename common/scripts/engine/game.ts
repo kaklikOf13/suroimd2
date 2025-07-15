@@ -113,6 +113,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 }
+
 export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D,Events extends DefaultEvents=DefaultEvents,Map extends DefaultEventsMap2D=DefaultEventsMap2D>{
     readonly tps:number
 
@@ -121,6 +122,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     readonly events:EventsManager<Events,Map>
     scene:Scene2DInstance<DefaultGameObject,Events,Map>
     destroy_queue:boolean=true
+    new_list:boolean=true
     objects:DefinitionsSimple<new()=>DefaultGameObject>=new DefinitionsSimple()
 
     timeouts:{c:()=>void,delay:number}[]=[]
@@ -167,6 +169,9 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(!this.running){
             this.clock.stop()
             this.on_stop()
+        }
+        if(this.new_list){
+            this.scene.objects.apply_new_list()
         }
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()

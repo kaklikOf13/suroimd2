@@ -7,6 +7,7 @@ import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "common/scripts/definitions/guns.ts";
 import { Debug } from "../others/config.ts";
+import { ease } from "common/scripts/engine/utils.ts";
 export class Loot extends GameObject{
     stringType:string="loot"
     numberType: number=2
@@ -75,6 +76,18 @@ export class Loot extends GameObject{
                     break
                 case InventoryItemType.accessorie:
                     break
+            }
+            if(this.is_new){
+                this.container.scale=v2.new(0.1,0.1)
+                this.game.addTween({
+                    duration:3,
+                    target:this.container.scale,
+                    ease:ease.elasticOut,
+                    to:{
+                        x:1,
+                        y:1
+                    },
+                })
             }
             this.container.visible=true
         }

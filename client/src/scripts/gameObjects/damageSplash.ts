@@ -14,6 +14,26 @@ export class DamageSplash extends ClientGameObject2D{
         this.position=v2.duplicate(args.position)
         this.lifetime+=Math.random()
         this.sprite.position=this.position
+        this.sprite.scale.x=0
+        this.sprite.scale.y=0
+        this.game.addTween({
+            duration:0.4,
+            target:this.sprite.scale,
+            to:{x:1,y:1}
+        })
+        this.game.addTween({
+            duration:1,
+            target:this.sprite.position,
+            to:v2.add(this.sprite.position,v2.new(0,-1)),
+        })
+        this.sprite.rotation=-.4
+        this.game.addTween({
+            duration:0.8,
+            target:this.sprite,
+            to:{rotation:.4},
+            infinite:true,
+            yoyo:true
+        })
         this.game.camera.addObject(this.sprite)
     }
 
@@ -22,31 +42,30 @@ export class DamageSplash extends ClientGameObject2D{
         hit?:Sound[]
     }
 
-    lifetime:number=1.2
+    lifetime:number=2
 
     override onDestroy(): void {
         this.sprite.destroy()
     }
     dying:boolean=false
+    can_die:boolean=true
     update(dt:number): void {
         this.lifetime-=dt
         if(this.lifetime<=0){
             this.dying=true
         }
-        if(this.dying){
-            this.sprite.scale.x-=3*dt
-            this.sprite.scale.y-=3*dt
-            if(this.sprite.scale.x<=0){
-                this.destroy()
-            }
-        }else if(this.sprite.scale.x<=1){
-            this.sprite.scale.x+=3*dt
-            this.sprite.scale.y+=3*dt
-            this.position.y-=1.5*dt
-        }else{
-            this.sprite.scale.x=1
-            this.sprite.scale.y=1
-            this.position.y-=0.025*dt
+        if(this.dying&&this.can_die){
+            this.can_die=false
+            // deno-lint-ignore no-this-alias
+            const This=this
+            this.game.addTween({
+                duration:1,
+                target:this.sprite.scale,
+                to:{x:0,y:0},
+                onComplete(){
+                    This.destroy()
+                }
+            })
         }
     }
     constructor(){

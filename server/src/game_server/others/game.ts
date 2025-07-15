@@ -117,6 +117,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.map=new GameMap(this,v2.new(32,32))
         this.gamemode=DefaultGamemode
         this.modeManager=new GamemodeManager(this)
+        this.new_list=false
     }
 
     override on_update(): void {
@@ -142,6 +143,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             for(const p of Object.values(this.connectedPlayers)){
                 p.update2()
             }
+            this.scene.objects.apply_new_list()
         },1/this.config.netTps)
     }
     add_player(client:Client,id:number,packet:JoinPacket):Player{

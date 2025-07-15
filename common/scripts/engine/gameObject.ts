@@ -12,6 +12,7 @@ export abstract class BaseObject2D{
     public calldestroy:boolean=true
     public dirty:boolean=false
     public dirtyPart:boolean=false
+    public is_new:boolean=true
     abstract numberType:number
     abstract stringType:string
     // deno-lint-ignore no-explicit-any
@@ -50,9 +51,10 @@ export abstract class BaseObject2D{
             (full||this.dirtyPart)&&this.netSync.dirty,//Dirty Part
             (full||this.dirty)&&this.netSync.dirty,//Dirty Full
             this.destroyed&&this.netSync.deletion,//Dirty Deletion
-            this.netSync.creation//Dirty Creation
+            this.netSync.creation,//Dirty Creation
+            this.is_new
         ]
-        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3])
+        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3],bools[4])
         if(bools[0]||bools[1]||bools[2]){
             stream.writeID(this.id)
             stream.writeUint8(this.numberType)
@@ -226,6 +228,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     ondestroy:(obj:GameObject)=>void=(_)=>{}
     oncreate:(_key:ObjectKey,_type:number)=>GameObject|undefined
     destroy_queue:GameObject[]=[]
+    new_objects:GameObject[]=[]
     constructor(cellsSize?:number,oncreate?:((_key:ObjectKey,_type:number)=>GameObject|undefined)){
         this.cells=new CellsManager2D(cellsSize)
         this.oncreate=oncreate??((_k,_t)=>{return undefined})
@@ -267,6 +270,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             //@ts-expect-error
             obj[i]=sv[i]
         }
+        this.new_objects.push(obj)
         obj.create(args??{})
         this.cells.registry(obj)
         return obj
@@ -333,6 +337,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 obj=obb
                 this.add_object(obj,category,oid)
             }
+            obj.is_new=b[4]
             if(obj){
                 if(b[0]||b[1]){
                     const enc=this.encoders[obj.stringType]
@@ -416,6 +421,12 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 obj.update(dt)
             }
         }
+    }
+    apply_new_list(){
+        for(const o of this.new_objects){
+            o.is_new=false
+        }
+        this.new_objects.length=0
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){

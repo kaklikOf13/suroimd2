@@ -3,6 +3,7 @@ import { Camera2D, Container2D, Sprite2D, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
+import { Tween, TweenOptions } from "./utils.ts";
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>
@@ -127,6 +128,17 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.camera=new Camera2D(renderer)
         this.particles=new ParticlesManager2D(this as unknown as Game2D)
     }
+    readonly tweens = new Set<Tween<unknown>>();
+    addTween<T>(config: TweenOptions<T>): Tween<T> {
+        const tween = new Tween<T>(this, config);
+
+        this.tweens.add(tween);
+        return tween;
+    }
+    
+    removeTween(tween: Tween<unknown>): void {
+        this.tweens.delete(tween);
+    }
     draw(renderer:Renderer,dt:number){
         renderer.clear()
         this.camera.update()
@@ -142,6 +154,9 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
 
     }
     override on_update(dt:number){
+        for(const t of this.tweens){
+            t.update(dt)
+        }
         this.draw(this.renderer,dt)
         this.particles.update(dt)
         this.sounds.update(dt)
