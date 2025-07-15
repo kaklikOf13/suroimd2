@@ -17,6 +17,7 @@ export const GameConstants={
         velocityDecay:0.96,
         radius:{
             ammo:0.3,
+            gun:0.54
         }
     },
     tps:100,
@@ -61,6 +62,7 @@ export enum zIndexes{
     Obstacles3,
     Obstacles4,
     Explosions,
+    DamageSplashs
 }
 export enum ActionsType{
     Reload,

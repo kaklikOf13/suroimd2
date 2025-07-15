@@ -104,6 +104,7 @@ Guns.insert(
     {
         idString:"ar15",
         fireDelay:0.12,
+        switchDelay:0.7,
         spread:2,
         lenght:0.7,
         size:4,
@@ -134,6 +135,7 @@ Guns.insert(
     {
         idString:"mp5",
         fireDelay:0.09,
+        switchDelay:0.7,
         spread:3,
         lenght:0.7,
         size:4,
@@ -164,6 +166,7 @@ Guns.insert(
     {
         idString:"vector",
         fireDelay:0.03,
+        switchDelay:0.7,
         spread:1,
         lenght:0.68,
         size:4,
@@ -308,6 +311,7 @@ Guns.insert(
                 radius:0.014,
                 speed:24,
                 range:20,
+                falloff:0.8,
                 criticalMult:1.2,
                 tracer:tracers.small
             },
@@ -364,6 +368,7 @@ Guns.insert(
     {
         idString:"hp18",
         fireDelay:0.2,
+        switchDelay:0.7,
         spread:9,
         lenght:0.65,
         ammoType:"12g",
@@ -396,7 +401,7 @@ Guns.insert(
         speed_mod:1,
         gasParticles:GasParticles.shotgun
     },
-    {
+    /*{
         idString:"bomb_staff",
         fireDelay:0.9,
         spread:3,
@@ -443,5 +448,5 @@ Guns.insert(
             speed:0.8
         },
         speed_mod:0.97,
-    },
+    },*/
 )

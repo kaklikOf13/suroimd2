@@ -34,7 +34,6 @@ export class GunItem extends LItem{
       this.def=def!
       this.tags.push("gun")
       this.cap=this.def.size
-      //this.ammo=this.def.reload?this.def.reload.capacity:Infinity
       this.droppable=droppable
     }
     reloading=false

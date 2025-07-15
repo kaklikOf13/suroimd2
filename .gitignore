@@ -32,3 +32,6 @@ package-lock.json
 package.json
 
 vite.config.ts.timestamp-*
+
+.spritesheet-cache
+.spritesheet-cache/*

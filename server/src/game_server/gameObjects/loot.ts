@@ -68,10 +68,23 @@ export class Loot extends ServerGameObject{
         this.velocity=v2.scale(this.velocity,GameConstants.loot.velocityDecay)
     }
     create(args: {position:Vec2,item:GameItem,count:number}): void {
-        this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.loot.radius.ammo)
+        this.hb=new CircleHitbox2D(v2.new(0,0),0.3)
         this.hb.translate(args.position)
         this.item=args.item
         this.count=args.count
+        switch(this.item.item_type){
+            case InventoryItemType.gun:
+                this.hb.radius=GameConstants.loot.radius.gun
+                break
+            case InventoryItemType.ammo:
+                this.hb.radius=GameConstants.loot.radius.ammo
+                break
+            case InventoryItemType.healing:
+            case InventoryItemType.equipament:
+            case InventoryItemType.other:
+            case InventoryItemType.melee:
+            case InventoryItemType.accessorie:
+        }
     }
     override getData(): LootData {
         return {

@@ -1,6 +1,7 @@
 import { ClientGameObject2D, Sprite2D } from "../engine/mod.ts";
 import {Vec2, v2 } from "common/scripts/engine/geometry.ts";
 import { Sound } from "../engine/resources.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 export class DamageSplash extends ClientGameObject2D{
     stringType:string="damage_splash"
     numberType: number=7
@@ -54,5 +55,6 @@ export class DamageSplash extends ClientGameObject2D{
         this.sprite.hotspot=v2.new(0.5,0.5)
         this.sprite.scale.x=0
         this.sprite.scale.y=0
+        this.sprite.zIndex=zIndexes.DamageSplashs
     }
 }

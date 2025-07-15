@@ -235,11 +235,13 @@ export class Player extends ServerGameObject{
         }*/
     }
     create(_args: Record<string, void>): void {
-        this.hb=new CircleHitbox2D(v2.new(3,3),GameConstants.player.playerRadius)
+        this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
 
         this.inventory.set_weapon(1,"spas12")
         this.inventory.set_weapon(2,"kar98k")
         this.inventory.set_current_weapon_index(1)
+        this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
+        this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
     }
     override getData(): PlayerData {
         return {

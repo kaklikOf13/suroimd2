@@ -114,7 +114,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(16,16))
+        this.map=new GameMap(this,v2.new(32,32))
         this.gamemode=DefaultGamemode
         this.modeManager=new GamemodeManager(this)
     }

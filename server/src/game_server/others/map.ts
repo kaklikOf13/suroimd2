@@ -1,4 +1,4 @@
-import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, NullHitbox2D, NullVec2, ObjectKey, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
@@ -7,7 +7,6 @@ import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts"
 import {} from "common/scripts/definitions/maps/base.ts"
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { Guns } from "common/scripts/definitions/guns.ts";
-import { Ammos } from "common/scripts/definitions/ammo.ts";
 
 export class GameMap{
     readonly size:Vec2
@@ -66,22 +65,21 @@ export class GameMap{
         return o
     }
     generate(){
-        for(let i=0;i<5;i++){
+        for(let i=0;i<15;i++){
             this.generate_obstacle(Obstacles.getFromString("stone"))
         }
-        for(let i=0;i<10;i++){
+        for(let i=0;i<15;i++){
             this.generate_obstacle(Obstacles.getFromString("bush"))
         }
-        for(let i=0;i<15;i++){
+        for(let i=0;i<25;i++){
             this.generate_obstacle(Obstacles.getFromString("oak_tree"))
         }
-        for(let i=0;i<10;i++){
+        for(let i=0;i<5;i++){
             this.generate_obstacle(Obstacles.getFromString("barrel"))
         }
-        this.game.add_loot(v2.new(3,3),Guns.getFromNumber(0) as unknown as GameItem,1)
-
-        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
-        this.game.add_loot(v2.new(3,3),Ammos.getFromString("762mm") as unknown as GameItem,30)
+        for(let i=0;i<Object.values(Guns.valueNumber).length;i++){
+            this.game.add_loot(v2.random2(NullVec2,this.size),Guns.getFromNumber(i) as unknown as GameItem,1)
+        }
         //Feast
         /*const crate=Obstacles.getFromString("wood_crate")
         let obs=this.add_obstacle(crate)

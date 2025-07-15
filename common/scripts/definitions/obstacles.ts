@@ -79,7 +79,7 @@ Obstacles.insert(
     {
         idString:"barrel",
         health:100,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.41),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.57),
         scale:{
             destroy:0.68
         },
