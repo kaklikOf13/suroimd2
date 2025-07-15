@@ -1,5 +1,5 @@
 import { LootData } from "common/scripts/others/objectsEncode.ts";
-import { Angle, CircleHitbox2D, RectHitbox2D, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
