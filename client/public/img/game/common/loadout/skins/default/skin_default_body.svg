@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="78.000015"
-   height="78"
-   viewBox="0 0 20.637505 20.6375"
+   width="156.00003"
+   height="156"
+   viewBox="0 0 41.27501 41.275"
    version="1.1"
    id="svg5"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
-   sodipodi:docname="body.svg"
+   sodipodi:docname="skin_default_body.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -26,8 +26,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="3.1037318"
-     inkscape:cx="48.328918"
-     inkscape:cy="73.298859"
+     inkscape:cx="87.475342"
+     inkscape:cy="112.28419"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -87,11 +87,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(0.80016323,0,0,0.79999903,-0.00218612,-0.00173147)">
+     transform="matrix(0.80016323,0,0,0.79999903,10.316564,10.317025)">
     <g
        id="g2"
        inkscape:label="body"
-       transform="matrix(0,-0.51593814,0.50243326,0,-75.347822,135.24749)">
+       transform="matrix(0,-1.0318763,1.0048665,0,-163.59418,257.59436)">
       <path
          style="fill:#ffc266"
          d="m 212.83947,176.30376 c 0,-13.41811 10.8774,-24.29551 24.29551,-24.29551 13.41811,0 24.29551,10.8774 24.29551,24.29551 0,13.41811 -10.8774,24.29551 -24.29551,24.29551 -13.41811,0 -24.29551,-10.8774 -24.29551,-24.29551 z"

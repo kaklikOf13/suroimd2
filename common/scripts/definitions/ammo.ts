@@ -7,6 +7,8 @@ export interface AmmoDef extends Definition{
     tint:number
     defaultTrail:number
     strongTrail:number
+    defaultProj:number
+    strongProj:number
     ammoType:string
 }
 export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
@@ -20,6 +22,8 @@ Ammos.insert(
         ammoType:"12g",
         defaultTrail:0xcfada0,
         strongTrail:0xdb2218,
+        defaultProj:0xcfada0,
+        strongProj:0xdb2218,
         tint:0xff0000,
         size:0.01,
     },
@@ -28,6 +32,8 @@ Ammos.insert(
         ammoType:"762mm",
         defaultTrail:0x6688ff,
         strongTrail:0x0034f2,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0x0000ff,
         size:0.0029,
     },
@@ -36,6 +42,8 @@ Ammos.insert(
         ammoType:"556mm",
         defaultTrail:0x66ff88,
         strongTrail:0x00a41c,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0x00ff00,
         size:0.0029,
     },
@@ -44,6 +52,8 @@ Ammos.insert(
         ammoType:"9mm",
         defaultTrail:0xefef9f,
         strongTrail:0xefef33,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0xffff00,
         size:0.0015,
     },
@@ -52,6 +62,8 @@ Ammos.insert(
         ammoType:"22lr",
         defaultTrail:0xefefef,
         strongTrail:0xefefff,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0xffffff,
         size:0.001,
     },
@@ -61,6 +73,8 @@ Ammos.insert(
         ammoType:"50cal",
         defaultTrail:0x555555,
         strongTrail:0x000000,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0x000000,
         size:0.013,
     },
@@ -69,6 +83,8 @@ Ammos.insert(
         ammoType:"308sub",
         defaultTrail:0x222835,
         strongTrail:0x0c1420,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0x001330,
         size:0.08,
     },
@@ -77,6 +93,8 @@ Ammos.insert(
         ammoType:"40mm",
         defaultTrail:0x889fcb,
         strongTrail:0x009fcb,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0x001330,
         size:0.09,
     },
@@ -85,6 +103,8 @@ Ammos.insert(
         ammoType:"mana",
         defaultTrail:0x889fcb,
         strongTrail:0x009fcb,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
         tint:0x001330,
         size:0.09,
     }

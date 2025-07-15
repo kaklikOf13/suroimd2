@@ -709,7 +709,7 @@ export class Camera2D{
         const cameraPos = v2.sub(this.position, halfViewSize);
 
         this.container.position = v2.neg(cameraPos);
-        this.visual_position=v2.scale(cameraPos,this._zoom)
+        this.visual_position=cameraPos
 
         this.container.update();
         this.container.updateZIndex();

@@ -5,7 +5,8 @@ import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Container2D, Sprite2D } from "../engine/mod.ts";
+import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
+import { Debug } from "../others/config.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -64,6 +65,11 @@ export class Player extends GameObject{
     }
     override onDestroy(): void {
       this.container.destroy()
+    }
+    override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
+        if(Debug.hitbox){
+            renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_player"),camera.visual_position)
+        }
     }
     constructor(){
         super()

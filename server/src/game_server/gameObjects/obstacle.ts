@@ -1,4 +1,4 @@
-import { Angle, Hitbox2D, LootTableItemRet, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, Hitbox2D, LootTableItemRet, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
@@ -87,6 +87,8 @@ export class Obstacle extends ServerGameObject{
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0)
+            const pos=v2.duplicate(this.position)
+            this.hb=this.def.hitbox.transform(pos,this.scale)
         }
     }
     damage(params:DamageParams){

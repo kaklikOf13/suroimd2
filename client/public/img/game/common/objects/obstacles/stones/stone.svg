@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="27mm"
-   height="24.585648mm"
-   viewBox="0 0 27 24.585649"
+   width="54mm"
+   height="49.171295mm"
+   viewBox="0 0 54 49.171298"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="stone.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,8 +24,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.599907"
-     inkscape:cx="80.579805"
-     inkscape:cy="65.19464"
+     inkscape:cx="131.73548"
+     inkscape:cy="111.73477"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -44,7 +44,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(0.77142856,0,0,0.77142856,-17.873489,-12.277359)">
+     transform="matrix(1.5428571,0,0,1.5428571,-35.746977,-24.554718)">
     <path
        sodipodi:type="star"
        style="fill:#b0b0b0;fill-opacity:1;stroke:#3e3e3e;stroke-width:7.93549;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"

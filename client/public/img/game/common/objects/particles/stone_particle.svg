@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="2.5474877mm"
-   height="3.0988472mm"
-   viewBox="0 0 2.5474877 3.0988473"
+   width="15.43109mm"
+   height="18.770882mm"
+   viewBox="0 0 15.43109 18.770883"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="stone_particle_1.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="stone_particle.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -24,8 +24,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.599907"
-     inkscape:cx="46.732441"
-     inkscape:cy="133.274"
+     inkscape:cx="46.924755"
+     inkscape:cy="10.192672"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -47,7 +47,7 @@
      transform="matrix(0.77142856,0,0,0.77142856,-17.873489,-12.277359)">
     <g
        id="g18"
-       transform="matrix(0,0.10985918,-0.09671963,0,27.798788,13.364061)">
+       transform="matrix(0,0.66545834,-0.58586715,0,51.211657,0.46252157)">
       <path
          sodipodi:type="star"
          style="fill:#b0b0b0;fill-opacity:1;stroke:#3e3e3e;stroke-width:7.93549;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"

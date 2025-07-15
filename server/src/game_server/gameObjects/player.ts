@@ -7,7 +7,7 @@ import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/u
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, InventoryItemType, type GameItem } from "common/scripts/definitions/utils.ts";
+import { BoostType, DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
@@ -68,7 +68,7 @@ export class Player extends ServerGameObject{
         this.actions=new ActionsManager(this)
 
         this.vest=Armors.getFromString("soldier_vest")
-        this.helmet=Armors.getFromString("basic_helmet")
+        this.helmet=Armors.getFromString("soldier_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -175,7 +175,8 @@ export class Player extends ServerGameObject{
         this.using_item_down=false
 
         //Collision
-        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
+        //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
+        const objs=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
         let can_interact=this.interactionsEnabled
         for(const obj of objs){
             if((obj as BaseGameObject2D).id===this.id)continue
@@ -309,7 +310,15 @@ export class Player extends ServerGameObject{
             this.camera_hb.min.y=this.position.y-(13/2)
             this.camera_hb.max.x=this.position.x+(25/2)
             this.camera_hb.max.y=this.position.y+(13/2)
-            const o=this.game.scene.objects.encode_hb(this.camera_hb,undefined,this.view_objects)
+            const objs=[
+                ...Object.values(this.manager.objects[CATEGORYS.BULLETS].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.EXPLOSIONS].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.PROJECTILES].objects),
+            ]
+            const o=this.game.scene.objects.encode_list(objs,undefined,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm
             this.client.emit(up)

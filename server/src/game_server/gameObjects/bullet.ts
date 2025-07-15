@@ -1,4 +1,4 @@
-import { BaseGameObject2D, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { BaseGameObject2D, CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
@@ -44,19 +44,24 @@ export class Bullet extends ServerGameObject{
             this.destroy()
         }
         this.tticks+=dt
+        const disT=v2.distance(this.initialPosition,this.position)/this.maxDistance
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         this.manager.cells.updateObject(this)
         //const objs:BaseGameObject2D[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
         const objs=[...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
         for(const obj of objs){
             switch(obj.stringType){
-                case "player":
+                case "player":{
                     if((obj as Player).hb&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)){
-                        (obj as Player).damage({amount:this.damage*(this.critical?this.defs.criticalMult??1.5:1),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        const dmg:number=this.damage
+                        *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
+                        *(this.critical?(this.defs.criticalMult??1.5):1);
+                        (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
                         this.destroy()
                         break
                     }
                     break
+                }
                 case "obstacle":
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&!(obj as Obstacle).dead){

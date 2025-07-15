@@ -10,7 +10,7 @@ import { UpdatePacket } from "../packets/update_packet.ts";
 export const GameConstants={
     player:{
         defaultName:"Player",
-        playerRadius:0.44,
+        playerRadius:0.4,
         max_name_size:25,
     },
     loot:{
@@ -57,6 +57,7 @@ export enum zIndexes{
     Obstacles1,
     Obstacles2,
     Players,
+    Particles,
     Obstacles3,
     Obstacles4,
     Explosions,

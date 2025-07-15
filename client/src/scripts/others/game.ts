@@ -37,17 +37,18 @@ export class Game extends ClientGame2D<GameObject>{
     this.client=new Client(socket,PacketManager)
     this.client.on("update",(up:UpdatePacket)=>{
       this.guiManager.update_gui(up.gui)
-      this.scene.objects.proccess_hb(up.objects!,true)
+      this.scene.objects.proccess_l(up.objects!,true)
     })
     this.scene.objects.encoders=ObjectsE;
 
     this.renderer.background=ColorM.hex("#5d8a33");
 
     if(Debug.hitbox){
-      this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
-      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
-      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
-      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(ColorM.default.black))
+      const hc=ColorM.hex("#ee000099")
+      this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
     }
 
     this.client.on(DefaultSignals.DISCONNECT,()=>{

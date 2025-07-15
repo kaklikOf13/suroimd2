@@ -37,6 +37,9 @@ export class Loot extends GameObject{
         this.container.add_child(this.sprite_main)
         this.container.updateZIndex()
     }
+    override onDestroy(): void {
+      this.container.destroy()
+    }
     override updateData(data:LootData){
         this.position=data.position
         this.container.position=this.position

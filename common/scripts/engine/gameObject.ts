@@ -77,7 +77,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     categorys:number[]=[]
     cellSize:number
     cells:Record<number,Record<number,Record<number,Record<number,GameObject>>>>
-    objectCells:Record<number,Record<number,Vec2>>={}
+    objectCells:Record<number,Record<number,Vec2[]>>={}
     constructor(cellSize:number=5){
         this.cellSize=cellSize
         this.cells={}
@@ -102,8 +102,9 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
     }
     private removeObjectFromCells(key:ObjectKey){
         if(!this.objectCells[key.category] || !this.objectCells[key.category][key.id]) return
-        const c=this.objectCells[key.category][key.id]
-        delete this.cells[key.category][c.y][c.x][key.id]
+        for(const c of this.objectCells[key.category][key.id]){
+            delete this.cells[key.category][c.y][c.x][key.id]
+        }
         delete this.objectCells[key.category][key.id]
     }
     updateObject(obj:GameObject){
@@ -121,8 +122,7 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         }
         this.cells[k.category][cp.y][cp.x][obj.id]=obj
         if(!this.objectCells[k.category])this.objectCells[k.category]={}
-        if(!this.objectCells[k.category][k.id])this.objectCells[k.category][k.id]=cp
-        /*const rect=obj.hb.toRect()
+        const rect=obj.hb.toRect()
         let min = this.cellPos(rect.position)
         let max = this.cellPos(rect.max)
         if(v2.less(max,min)){
@@ -138,48 +138,73 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
                 this.cells[k.category][y][x][k.id]=obj
                 this.objectCells[k.category][k.id].push(v2.new(x,y))
             }
-        }*/
-    }
-    get_objects(hitbox:Hitbox2D,categorys:number[]):GameObject[]{
-        const rect=hitbox.toRect()
-        let min = this.cellPos(rect.min)
-        let max = this.cellPos(rect.max)
-        if(v2.less(max,min)){
-            const m=min
-            min=max
-            max=m
         }
-        const objects:GameObject[] = []
+    }
+    get_objects(hitbox: Hitbox2D, categorys: number[]): GameObject[] {
+        const rect = hitbox.toRect();
+        let min = this.cellPos(rect.min);
+        let max = this.cellPos(rect.max);
+
+        if (v2.less(max, min)) {
+            const m = min;
+            min = max;
+            max = m;
+        }
+
+        const objects: GameObject[] = [];
+        const seen = new Set<GameObjectID>();
+
         for (const c of categorys) {
-            if(!this.cells[c])continue
-            for(let y=min.y;y<=max.y;y++){  
-                if(!this.cells[c][y])continue
-                    for(let x=min.x;x<=max.x;x++){
-                        if(!this.cells[c][y][x]){
-                            continue
+            if (!this.cells[c]) continue;
+            for (let y = min.y; y <= max.y; y++) {
+                if (!this.cells[c][y]) continue;
+                for (let x = min.x; x <= max.x; x++) {
+                    const cell = this.cells[c][y][x];
+                    if (!cell) continue;
+
+                    for (const objID in cell) {
+                        if (!seen.has(objID as unknown as GameObjectID)) {
+                            objects.push(cell[objID]);
+                            seen.add(objID as unknown as GameObjectID);
                         }
-                        objects.push(...Object.values(this.cells[c][y][x]))
                     }
                 }
+            }
         }
-        return objects
 
-        /*const cp=this.cellPos(hitbox.position)
-        const objects:GameObject[] = []
-        for (const c of categorys) {
-            if(!(this.cells[c]&&this.cells[c][cp.y]&&this.cells[c][cp.y][cp.x]))continue
-            objects.push(...Object.values(this.cells[c][cp.y][cp.x]))
-        }
-        return objects*/
+        return objects;
     }
-    get_objects2(hitbox:Hitbox2D,category:number):GameObject[]{
-        const objects:GameObject[] = []
-        const cp=this.cellPos(hitbox.position)
-        if(!(this.cells[category]&&this.cells[category][cp.y]&&this.cells[category][cp.y][cp.x])){
-            return []
+
+    get_objects2(hitbox: Hitbox2D, category: number): GameObject[] {
+        const rect = hitbox.toRect();
+        let min = this.cellPos(rect.min);
+        let max = this.cellPos(rect.max);
+
+        if (v2.less(max, min)) {
+            const m = min;
+            min = max;
+            max = m;
         }
-        objects.push(...Object.values(this.cells[category][cp.y][cp.x]))
-        return objects
+
+        const objects: GameObject[] = [];
+        const seen = new Set<GameObjectID>();
+
+        for (let y = min.y; y <= max.y; y++) {
+            if (!this.cells[category][y]) continue;
+            for (let x = min.x; x <= max.x; x++) {
+                const cell = this.cells[category][y][x];
+                if (!cell) continue;
+
+                for (const objID in cell) {
+                    if (!seen.has(objID as unknown as GameObjectID)) {
+                        objects.push(cell[objID]);
+                        seen.add(objID as unknown as GameObjectID);
+                    }
+                }
+            }
+        }
+
+        return objects;
     }
     cellPos(pos:Vec2):Vec2{
         return v2.floor(v2.dscale(pos,this.cellSize))
@@ -320,7 +345,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             }
         }
    }
-   proccess_hb(stream:NetStream,process_deletion:boolean=false){
+   proccess_l(stream:NetStream,process_deletion:boolean=false){
         let os=stream.readUint16()
         for(let i=0;i<os;i++){
             const category=stream.readUint8()
@@ -365,9 +390,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         return stream
     }
-    encode_hb(hb:Hitbox2D,size:number=1024*1024,last_list:GameObject[]=[]):{last:GameObject[],strm:NetStream}{
+    encode_list(l:GameObject[],size:number=1024*1024,last_list:GameObject[]=[]):{last:GameObject[],strm:NetStream}{
         const stream=new NetStream(new ArrayBuffer(size))
-        const l=this.cells.get_objects(hb,this.categorys)
         stream.writeUint16(l.length)
         for(let i=0;i<l.length;i++){
             stream.writeUint8(l[i].category)

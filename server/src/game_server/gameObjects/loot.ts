@@ -41,7 +41,8 @@ export class Loot extends ServerGameObject{
         if(!v2.greater(this.velocity,NullVec2)){
             this.dirtyPart=true
         }
-        const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
+        //const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
+        const others=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
         for(const other of others){
             switch(other.stringType){
                 case "loot":{

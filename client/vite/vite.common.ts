@@ -1,7 +1,7 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path, { resolve } from "node:path";
 import { type UserConfig } from "vite";
-
+import { spritesheet } from "./plugins/image-spritesheet-plugin";
 const config: UserConfig = {
     build: {
         rollupOptions: {
@@ -13,6 +13,7 @@ const config: UserConfig = {
 
     plugins: [
         svelte(),
+        spritesheet({"common":"common"}),
     ],
 
     css: {

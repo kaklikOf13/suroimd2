@@ -3,12 +3,19 @@ import { Definition } from "../engine/definitions.ts";
 import { ItemQuality } from "../others/item.ts";
 export interface BulletDef{
     damage:number
+    falloff?:number
     range:number
     speed:number
     radius:number
     tracer:{
         width:number
         height:number
+        proj:{
+            img:number
+            width:number
+            height:number
+            color?:number
+        }
         color?:number
     }
     obstacleMult?:number

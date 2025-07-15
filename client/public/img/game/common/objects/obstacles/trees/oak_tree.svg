@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="69.022003mm"
-   height="69.022003mm"
-   viewBox="0 0 69.022005 69.022005"
+   width="180.6535mm"
+   height="180.65349mm"
+   viewBox="0 0 180.65351 180.65349"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="oak_tree.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.887686"
-     inkscape:cx="89.262725"
-     inkscape:cy="186.73656"
+     inkscape:zoom="0.4719215"
+     inkscape:cx="275.46954"
+     inkscape:cy="204.48316"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -37,24 +37,25 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:showpageshadow="2"
-     inkscape:deskcolor="#d1d1d1" />
+     inkscape:deskcolor="#d1d1d1"
+     showguides="false" />
   <defs
      id="defs2" />
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-9.1197671,-2.3674012)">
+     transform="matrix(2,0,0,2,-18.239535,-4.7348024)">
     <circle
        style="fill:#896111;fill-opacity:1;stroke:#443300;stroke-width:1.43887;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0;stroke-opacity:1"
        id="path846"
-       cx="43.630768"
-       cy="36.878403"
+       cx="54.283142"
+       cy="47.530773"
        r="9.7837963" />
     <g
        id="g1"
        style="fill:#1a8e11;fill-opacity:0.788749"
-       transform="matrix(1.0000039,0,0,1.1201061,-3.4662683e-5,-0.2843392)">
+       transform="matrix(1.3086711,0,0,1.4658447,-2.8150072,-1.1028412)">
       <ellipse
          style="fill:#1a8e11;fill-opacity:0.788749;stroke:#000000;stroke-width:0;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none"
          id="path1290"

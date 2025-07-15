@@ -32,8 +32,12 @@ import { PacketManager } from "common/scripts/others/constants.ts";
         gs.request_animation_frame=true
         gs.mainloop()
     }
-
-    resources.load_folder("/common.src").then(()=>{
+    
+    const spg=await(await fetch("atlases/atlas-common-data.json")).json()
+    for(const s of spg.high){
+        await resources.load_spritesheet("",s)
+    }
+    resources.load_folder("/common.src").then(async()=>{
         const lister=()=>{
             setTimeout(()=>{
                 if(app.game)return

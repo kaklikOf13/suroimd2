@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="21mm"
-   height="21mm"
-   viewBox="0 0 21 21"
+   width="46.298855mm"
+   height="49.394405mm"
+   viewBox="0 0 46.298855 49.394405"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="bush_dead.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,8 +24,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.6695911"
-     inkscape:cx="41.204812"
-     inkscape:cy="91.961649"
+     inkscape:cx="89.15223"
+     inkscape:cy="145.52791"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -44,7 +44,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(0.40828627,0,0,0.40828627,-6.3008423,-2.4695409)">
+     transform="matrix(1.0207157,0,0,1.0207157,-18.852679,-7.7266507)">
     <path
        style="fill:#1a8e11;fill-opacity:0.788235;stroke:none;stroke-width:2.00855;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        d="m 60.655647,21.576139 c -3.985682,-1.55557 -7.481802,-3.995843 -6.981261,-8.454263 1.17338,-1.067386 3.642286,-2.45903 6.052766,-2.956002 2.530458,3.20345 2.478923,7.285323 0.928495,11.410265 z"

@@ -30,6 +30,11 @@ export interface BulletData extends EncodedData{
         tracerHeight:number
         tracerColor:number
 
+        projWidth:number
+        projHeight:number
+        projColor:number
+        projIMG:number
+
         radius:number
         initialPos:Vec2
         maxDistance:number
@@ -139,7 +144,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     angle:stream.readRad(),
                     tracerWidth:stream.readFloat(0,100,3),
                     tracerHeight:stream.readFloat(0,6,2),
-                    tracerColor:stream.readUint32()
+                    tracerColor:stream.readUint32(),
+                    projWidth:stream.readFloat(0,6,2),
+                    projHeight:stream.readFloat(0,6,2),
+                    projColor:stream.readUint32(),
+                    projIMG:stream.readUint8()
                 }
             }
             return ret
@@ -158,6 +167,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 .writeFloat(data.full!.tracerWidth,0,100,3)
                 .writeFloat(data.full!.tracerHeight,0,6,2)
                 .writeUint32(data.full!.tracerColor)
+                .writeFloat(data.full!.projWidth,0,6,2)
+                .writeFloat(data.full!.projHeight,0,6,2)
+                .writeUint32(data.full!.projColor)
+                .writeUint8(data.full!.projIMG)
             }
         }
     },

@@ -18,6 +18,7 @@ export interface ObstacleDef extends Definition{
     frame?:{
         base?:string
         dead?:string
+        particle?:string
     }
     particle?:string
     variations?:number
@@ -78,7 +79,7 @@ Obstacles.insert(
     {
         idString:"barrel",
         health:100,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.41),
         scale:{
             destroy:0.68
         },
@@ -98,6 +99,9 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles4,
         material:"tree",
+        frame:{
+            particle:"leaf_01_particle_1"
+        }
     },
     {
         idString:"wood_crate",
@@ -165,7 +169,7 @@ Obstacles.insert(
     {
         idString:"bush",
         health:70,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.42),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
         noCollision:true,
         scale:{
             destroy:1
@@ -174,5 +178,8 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles3,
         material:"bush",
+        frame:{
+            particle:"leaf_01_particle_1"
+        }
     }
 )

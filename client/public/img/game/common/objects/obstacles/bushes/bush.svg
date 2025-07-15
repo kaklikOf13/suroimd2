@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="25mm"
-   height="25mm"
-   viewBox="0 0 25 25"
+   width="75.394974mm"
+   height="75.394974mm"
+   viewBox="0 0 75.394974 75.394974"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="bush.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,8 +24,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.887686"
-     inkscape:cx="105.68495"
-     inkscape:cy="145.41613"
+     inkscape:cx="177.20108"
+     inkscape:cy="216.40252"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -44,7 +44,8 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(0.49787144,0,0,0.49787144,-8.4626574,-3.6855602)">
+     transform="matrix(1.5014802,0,0,1.5014802,-25.521674,-11.114909)"
+     style="opacity:0.910816">
     <path
        sodipodi:type="star"
        style="fill:#0b590d;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0"

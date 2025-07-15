@@ -1,7 +1,17 @@
 import { EaseFunction, ease, v2 } from "common/scripts/engine/mod.ts";
 import { Material2D } from "./renderer.ts";
 import { type SoundManager } from "./sounds.ts";
-
+interface FrameData {
+    x: number
+    y: number
+    w: number
+    h: number
+    file?:string
+}
+export interface SpritesheetJSON {
+    meta: { image: string,scale:number,size:{w:number,h:number} }
+    frames: Record<string, FrameData>
+}
 export interface SoundDef{
     volume:number
     src:string
@@ -143,6 +153,48 @@ export class ResourcesManager{
             return this.default_sprite
         }
         return this.sources[id] as Sprite
+    }
+    async load_spritesheet(idPrefix: string, json: SpritesheetJSON, imagePathOverride?: string) {
+        const imagePath = imagePathOverride ?? json.meta.image;
+        const image = await this.load_image(imagePath);
+
+        const sheetCanvas = document.createElement("canvas");
+        const sheetCtx = sheetCanvas.getContext("2d")!;
+        sheetCanvas.width = image.naturalWidth;
+        sheetCanvas.height = image.naturalHeight;
+        sheetCtx.drawImage(image, 0, 0);
+
+        for (const [id, frame] of Object.entries(json.frames)) {
+            const frameCanvas = document.createElement("canvas");
+            const frameCtx = frameCanvas.getContext("2d")!;
+            frameCanvas.width = frame.w/json.meta.scale;
+            frameCanvas.height = frame.h/json.meta.scale;
+
+            frameCtx.drawImage(
+                sheetCanvas,
+                frame.x, frame.y, frame.w, frame.h,
+                0, 0, frame.w/json.meta.scale, frame.h/json.meta.scale
+            );
+
+            const spriteImage = new Image();
+            const src = frameCanvas.toDataURL();
+            spriteImage.src = src;
+
+            const sprite = new Sprite(spriteImage, this.gl, src, frame.file??imagePath);
+            spriteImage.onload = () => {
+                sprite.texture = loadTexture(this.gl, spriteImage)!;
+            };
+
+            this.sources[`${idPrefix}${id}`] = sprite;
+        }
+    }
+    private load_image(src: string): Promise<HTMLImageElement> {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
     }
     load_sprite(id:string,src:string,scale=1):Promise<Sprite>{
         return new Promise<Sprite>((resolve, _reject) => {

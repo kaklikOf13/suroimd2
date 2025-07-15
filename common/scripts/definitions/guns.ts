@@ -207,6 +207,7 @@ Guns.insert(
                 damage:44,
                 radius:0.02,
                 range:177,
+                criticalMult:1.1,
                 speed:45,
                 tracer:tracers.large
             }
@@ -307,6 +308,7 @@ Guns.insert(
                 radius:0.014,
                 speed:24,
                 range:20,
+                criticalMult:1.2,
                 tracer:tracers.small
             },
             count:10
@@ -337,10 +339,12 @@ Guns.insert(
         fireMode:FireMode.Single,
         bullet:{
             def:{
-                damage:6.3,
+                damage:5,
                 radius:0.012,
                 speed:28,
                 range:60,
+                criticalMult:1.15,
+                falloff:0.8,
                 tracer:tracers.small
             },
             count:10
@@ -375,6 +379,7 @@ Guns.insert(
                 radius:0.01,
                 speed:15,
                 range:18,
+                criticalMult:1.2,
                 tracer:tracers.tiny
             },
             count:16

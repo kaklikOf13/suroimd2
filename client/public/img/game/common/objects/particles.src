@@ -1,8 +1,0 @@
-{
-    "files":{
-        "leaf_green_particle":"leaf_green_particle_1.svg",
-
-        "stone_particle":"stone_particle_1.svg"
-    },
-    "dir":"img/game/common/objects/particles"
-}
