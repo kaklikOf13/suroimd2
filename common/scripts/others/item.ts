@@ -8,7 +8,7 @@ export enum ItemQuality{
 }
 export const tracers={
     tiny:{
-        width:5,
+        width:7.5,
         height:0.8, // 0.4H = 0.01 radius
         proj:{
             img:1,
@@ -17,7 +17,7 @@ export const tracers={
         }
     },
     small:{
-        width:6,
+        width:8,
         height:1, // 0.6H = 0.012 radius
         proj:{
             img:1,
@@ -26,7 +26,7 @@ export const tracers={
         }
     },
     medium:{
-        width:7,
+        width:8.5,
         height:1.3, // 0.7H = 0.014 radius
         proj:{
             img:1,
@@ -35,17 +35,17 @@ export const tracers={
         }
     },
     large:{
-        width:6,
-        height:1.7, // 1H = 0.02 radius
+        width:12,
+        height:2.3, // 1H = 0.02 radius
         proj:{
             img:1,
-            width:1,
-            height:1
+            width:1.5,
+            height:1.5
         }
     },
     xl:{
-        width:7,
-        height:2, // 1.2H = 0.025 radius
+        width:12,
+        height:2.7, // 1.2H = 0.025 radius
         proj:{
             img:1,
             width:1,

@@ -72,7 +72,7 @@ Armors.insert(
         reduction:0.2,
         size:1.7,
         type:EquipamentType.Helmet,
-        position:v2.new(-23,0)
+        position:v2.new(-0.2,0)
     },
     {
         idString:"warrior_vest",

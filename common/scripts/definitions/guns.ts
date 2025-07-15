@@ -85,8 +85,8 @@ Guns.insert(
             def:{
                 damage:10,
                 radius:0.014,
-                range:85,
-                speed:36,
+                range:170,
+                speed:40,
                 tracer:tracers.medium
             }
         },
@@ -116,8 +116,9 @@ Guns.insert(
             def:{
                 damage:9.8,
                 radius:0.014,
-                range:85,
-                speed:24,
+                range:190,
+                falloff:0.7,
+                speed:42,
                 tracer:tracers.medium
             }
         },
@@ -147,8 +148,9 @@ Guns.insert(
             def:{
                 damage:8,
                 radius:0.014,
-                range:85,
-                speed:24,
+                range:160,
+                falloff:0.9,
+                speed:37,
                 tracer:tracers.medium
             }
         },
@@ -165,9 +167,41 @@ Guns.insert(
     },
     {
         idString:"vector",
-        fireDelay:0.03,
+        fireDelay:0.04,
         switchDelay:0.7,
         spread:1,
+        lenght:0.68,
+        size:4,
+        ammoType:"9mm",
+        ammoSpawnAmount:99,
+        class:GunClasses.Automatic,
+        quality:ItemQuality.Epic,
+        bullet:{
+            def:{
+                damage:5,
+                radius:0.014,
+                range:60,
+                speed:34,
+                tracer:tracers.medium
+            }
+        },
+        reload:{
+            delay:1.7,
+            capacity:33
+        },
+        recoil:{
+            duration:0.07,
+            speed:0.77
+        },
+        speed_mod:1,
+        gasParticles:GasParticles.automatic
+    },
+    
+    {
+        idString:"uzi",
+        fireDelay:0.04,
+        switchDelay:0.7,
+        spread:9,
         lenght:0.68,
         size:4,
         ammoType:"9mm",
@@ -176,16 +210,16 @@ Guns.insert(
         quality:ItemQuality.Epic,
         bullet:{
             def:{
-                damage:4,
+                damage:5,
                 radius:0.014,
                 range:35,
-                speed:21,
+                speed:34,
                 tracer:tracers.medium
             }
         },
         reload:{
             delay:1.7,
-            capacity:33
+            capacity:32
         },
         recoil:{
             duration:0.07,
@@ -209,9 +243,10 @@ Guns.insert(
             def:{
                 damage:44,
                 radius:0.02,
-                range:177,
+                range:210,
+                falloff:0.8,
                 criticalMult:1.1,
-                speed:45,
+                speed:50,
                 tracer:tracers.large
             }
         },
@@ -244,8 +279,9 @@ Guns.insert(
             def:{
                 damage:50,
                 radius:0.025,
-                range:180,
-                speed:46,
+                range:220,
+                falloff:0.7,
+                speed:55,
                 tracer:tracers.xl,
                 obstacleMult:1.5,
             }
@@ -276,8 +312,9 @@ Guns.insert(
             def:{
                 damage:70,
                 radius:0.02,
-                range:190,
-                speed:35,
+                range:230,
+                falloff:0.7,
+                speed:38,
                 obstacleMult:1.7,
                 tracer:tracers.large
             }
@@ -345,7 +382,7 @@ Guns.insert(
             def:{
                 damage:5,
                 radius:0.012,
-                speed:28,
+                speed:32,
                 range:60,
                 criticalMult:1.15,
                 falloff:0.8,
@@ -369,11 +406,11 @@ Guns.insert(
         idString:"hp18",
         fireDelay:0.2,
         switchDelay:0.7,
-        spread:9,
+        spread:11,
         lenght:0.65,
         ammoType:"12g",
         ammoSpawnAmount:15,
-        jitterRadius:0.15,
+        jitterRadius:0.2,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Uncommon,
         size:3.8,
@@ -382,8 +419,9 @@ Guns.insert(
             def:{
                 damage:1.4,
                 radius:0.01,
-                speed:15,
-                range:18,
+                speed:25,
+                falloff:0.7,
+                range:23,
                 criticalMult:1.2,
                 tracer:tracers.tiny
             },
