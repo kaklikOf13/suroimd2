@@ -1,5 +1,6 @@
 import { Angle, CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
 import { SourceType, type Sprite } from "./resources.ts";
+import { Numeric } from "common/scripts/engine/utils.ts";
 export interface Transform2D{
     position:Vec2
     scale:Vec2
@@ -144,7 +145,13 @@ export const ColorM={
             b:0,
             a:1
         }
-    }
+    },
+    lerp(a:Color, b: Color,i:number): Color {
+        return { r: Numeric.lerp(a.r,b.r,i), g: Numeric.lerp(a.g,b.g,i), b: Numeric.lerp(a.b,b.b,i), a: Numeric.lerp(a.a,b.a,i) };
+    },
+    clone(a:Color): Color {
+        return { r: a.r,g: a.g,b: a.b,a: a.a};
+    },
 }
 export type RGBAT={r: number, g: number, b: number, a?: number}
 export abstract class Renderer {

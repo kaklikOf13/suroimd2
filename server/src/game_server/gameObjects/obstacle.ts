@@ -79,6 +79,7 @@ export class Obstacle extends ServerGameObject{
                 variation:this.variation,
                 rotation:this.rotation
             },
+            health:this.health/this.def.health,
             dead:this.dead,
             scale:this.scale
         }

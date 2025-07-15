@@ -1,8 +1,8 @@
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
-import { ABParticle2D, type Camera2D, ClientGameObject2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
+import { ABParticle2D, type Camera2D, ClientGameObject2D, type ClientParticle2D, ColorM, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
 import { Materials, ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
 import { random } from "common/scripts/engine/random.ts";
-import { Vec2 } from "common/scripts/engine/mod.ts";
+import { ParticlesEmitter2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -25,6 +25,7 @@ export class Obstacle extends ClientGameObject2D{
         base:""
     }
 
+    emitter_1?:ParticlesEmitter2D<ClientParticle2D>
     create(_args: Record<string, void>): void {
         this.game.camera.addObject(this.container)
     }
@@ -35,6 +36,7 @@ export class Obstacle extends ClientGameObject2D{
     }
     override onDestroy(): void {
         this.container.destroy()
+        if(this.emitter_1)this.emitter_1.destroyed=true
     }
     update_frame(){
         if(this.dead){
@@ -51,6 +53,7 @@ export class Obstacle extends ClientGameObject2D{
         this.dead=true
         this.update_frame()
         const ac=random.int(8,13)
+        if(this.emitter_1)this.emitter_1.enabled=false
         for(let i=0;i<ac;i++){
             this._add_own_particle(this.hb.randomPoint(),2)
         }
@@ -59,20 +62,20 @@ export class Obstacle extends ClientGameObject2D{
         }
     }
     _add_own_particle(position:Vec2,force:number=1){
-        const p=new ABParticle2D(
-            this.frame.particle,
+        const p=new ABParticle2D({
+            sprite:this.frame.particle,
             position,
-            random.float(1,2)*force,
-            random.float(-3.1415,3.1415),
-            random.float(-3.1415,3.1415),
-            random.float(1,2),
-            zIndexes.Particles,
-            random.float(0.5,1),
-            {
+            speed:random.float(1,2)*force,
+            angle:random.float(-3.1415,3.1415),
+            direction:random.float(-3.1415,3.1415),
+            life_time:random.float(1,2),
+            zIndex:zIndexes.Particles,
+            scale:random.float(0.5,1),
+            to:{
                 speed:random.float(0.1,1),
                 angle:random.float(-3.1415,3.1415),
             }
-        )
+        })
         this.game.particles.add_particle(p)
     }
     update(_dt:number): void {
@@ -141,11 +144,34 @@ export class Obstacle extends ClientGameObject2D{
             }
             this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
             this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
+
+            if(this.def.onDestroyExplosion){
+                this.emitter_1=this.game.particles.add_emiter({
+                    delay:0.3,
+                    particle:()=>new ABParticle2D({
+                        sprite:"gas_smoke_particle",
+                        position:this.position,
+                        speed:random.float(0.7,1),
+                        angle:0,
+                        direction:random.float(-1.45,-1.65),
+                        life_time:random.float(1.7,3),
+                        zIndex:zIndexes.Particles,
+                        scale:0,
+                        tint:ColorM.hex("#ffffffdd"),
+                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#ffffff00")}
+                    }),
+                    enabled:data.health<=0.35,
+                })
+            }
         }
         if(data.dead){
             this.die()
         }else if(this.dead){
             this.dead=false
+        }else{
+            if(this.emitter_1&&data.health<=0.35){
+                this.emitter_1.enabled=true
+            }
         }
         if(!this.container.visible){
             this.update_frame()

@@ -1,9 +1,10 @@
 import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
-import { Camera2D, Container2D, Sprite2D, type Renderer } from "./renderer.ts";
+import { Camera2D, Color, Container2D, Sprite2D, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
+import { ColorM } from "./mod.ts";
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>
@@ -28,82 +29,76 @@ export abstract class ClientParticle2D extends Particle2D{
         this.container.destroy()
     }
 }
-export class ABParticle2D extends ClientParticle2D{
+export interface ABParticle2Config{
+    sprite:string
+    position:Vec2
     speed:number
-    initial_speed:number
-    speed_to?:number
-
-    angle:number
-    initial_angle:number
-    angle_to?:number
-
-    dire:number
-    initial_dire:number
-    dire_to?:number
-
-    sprite:Sprite2D=new Sprite2D()
-    
-    initial_scale:number
-    scale_to?:number
-
+    direction:number
     life_time:number
+    zIndex?:number
+    angle?:number
+    scale?:number
+    tint?:Color
+    to?:{
+        position?:Vec2
+        speed?:number
+        direction?:number
+        angle?:number
+        scale?:number
+        tint?:Color
+    }
+}
+export class ABParticle2D extends ClientParticle2D{
     ticks=0
-    private sprite_id:string
-    constructor(sprite:string,position:Vec2,speed:number,angle:number,direction:number,life_time:number=10,zIndex:number=0,scale:number=1,to?:{dire?:number,scale?:number,speed?:number,angle?:number}){
+    config:ABParticle2Config
+    sprite:Sprite2D=new Sprite2D()
+
+    constructor(config:ABParticle2Config){
         super()
-        this.sprite_id=sprite
-        this.container.position=v2.duplicate(position)
-        this.speed=speed
-        this.initial_speed=speed
-        this.angle=angle
-        this.initial_angle=angle
-        this.container.rotation=this.angle
-        this.dire=direction
-        this.initial_dire=direction
-        this.container.zIndex=zIndex
-        this.life_time=life_time
-        this.container.scale=v2.new(scale,scale)
-        this.scale=scale
-        this.initial_scale=scale
-        if(to){
-            this.speed_to=to.speed
-            this.angle_to=to.angle
-            this.dire_to=to.dire
-            this.scale_to=to.scale
+        this.config=config
+        this.position=v2.duplicate(config.position)
+        this.container.position=this.position
+        this.container.scale=v2.new(config.scale??1,config.scale??1)
+        this.container.rotation=config.angle??0
+        this.container.zIndex=config.zIndex??0
+        if(config.tint){
+            this.container.tint=ColorM.clone(config.tint)
         }
     }
     override update(dt: number): void {
         this.ticks+=dt
-        if(this.ticks>=this.life_time){
+        if(this.ticks>=this.config.life_time){
             this.destroyed=true
         }
 
-        const tt=this.ticks/this.life_time
-        if(this.speed_to){
-            this.speed=Numeric.lerp(this.initial_speed,this.speed_to,tt)
+        const tt=this.ticks/this.config.life_time
+        let speed=this.config.speed
+        if(this.config.to?.speed){
+            speed=Numeric.lerp(this.config.speed,this.config.to.speed,tt)
         }
-        if(this.angle_to){
-            this.angle=Numeric.lerp(this.initial_angle,this.angle_to,tt)
-            this.container.rotation=this.angle
+        if(this.config.to?.angle){
+            this.container.rotation=Numeric.lerp(this.config.angle??0,this.config.to.angle,tt)
         }
-        if(this.dire_to){
-            this.dire=Numeric.lerp(this.initial_dire,this.dire_to,tt)
+        let dire=this.config.direction
+        if(this.config.to?.direction){
+            dire=Numeric.lerp(this.config.direction,this.config.to.direction,tt)
         }
-        if(this.scale_to){
-            this.scale=Numeric.lerp(this.initial_scale,this.scale_to,tt)
-            this.container.scale.x+=this.scale
-            this.container.scale.y+=this.scale
+        if(this.config.to?.scale){
+            this.scale=Numeric.lerp(this.config.scale??1,this.config.to.scale,tt)
+            this.container.scale.x=this.scale
+            this.container.scale.y=this.scale
         }
-
-        const vel=v2.scale(v2.from_RadAngle(this.dire),this.speed*dt)
-        this.container.rotation=this.angle
+        if(this.config.to?.tint){
+            this.container.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
+        }
+        const vel=v2.scale(v2.from_RadAngle(dire),speed*dt)
         this.container.position.x+=vel.x
         this.container.position.y+=vel.y
 
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.sprite=(this.manager.game as unknown as ClientGame2D).resources.get_sprite(this.sprite_id)
+        this.sprite.sprite=(this.manager.game as unknown as ClientGame2D).resources.get_sprite(this.config.sprite)
         this.container.add_child(this.sprite)
         this.container.visible=true
     }

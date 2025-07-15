@@ -13,7 +13,6 @@ export interface PlayerData extends EncodedData{
 }
 
 export interface LootData extends EncodedData{
-    // deno-lint-ignore ban-types
     full?:{
         item:number
     }
@@ -21,7 +20,6 @@ export interface LootData extends EncodedData{
 }
 
 export interface BulletData extends EncodedData{
-    // deno-lint-ignore ban-types
     full?:{
         speed:number
         angle:number
@@ -57,6 +55,7 @@ export interface ObstacleData extends EncodedData{
         variation:number
     }
     dead:boolean
+    health:number
     scale:number
 }
 export interface ProjectileData extends EncodedData{
@@ -181,6 +180,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             const ret:ObstacleData={
                 scale:stream.readFloat(0,3,3),//3
                 dead:bools[0],
+                health:stream.readFloat(0,1,1),
                 full:undefined
             }
             if(full){
@@ -198,6 +198,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:ObstacleData,stream:NetStream){
             stream.writeBooleanGroup(data.dead)
             .writeFloat(data.scale,0,3,3)
+            .writeFloat(data.health,0,1,1)
             if(full){
                 stream.writeUint24(data.full!.definition)
                 .writePosition(data.full!.position)
