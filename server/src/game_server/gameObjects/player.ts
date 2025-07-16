@@ -9,7 +9,7 @@ import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
@@ -69,7 +69,7 @@ export class Player extends ServerGameObject{
         this.actions=new ActionsManager(this)
 
         this.vest=Armors.getFromString("soldier_vest")
-        this.helmet=Armors.getFromString("soldier_helmet")
+        //this.helmet=Armors.getFromString("soldier_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -258,7 +258,8 @@ export class Player extends ServerGameObject{
                 name:this.name,
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
-                handItem:0
+                handItem:0,
+                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1
             }
         }
     }

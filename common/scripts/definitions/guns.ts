@@ -1,5 +1,6 @@
+import { v2 } from "../engine/geometry.ts";
 import { Definitions,Definition } from "../engine/mod.ts";
-import { ItemQuality, tracers } from "../others/item.ts";
+import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../others/item.ts";
 import { type BulletDef, GameItem, InventoryItemType } from "./utils.ts";
 export enum FireMode{
     Auto,
@@ -53,6 +54,9 @@ export interface GunDef extends Definition{
         duration:number
         speed:number
     }
+    arms?:FistRig
+    image?:WeaponRig
+    
     gasParticles?:GasParticle
 }
 
@@ -75,7 +79,7 @@ Guns.insert(
         fireDelay:0.1,
         switchDelay:0.6,
         spread:5,
-        lenght:0.7,
+        lenght:1.3,
         size:4,
         ammoType:"762mm",
         ammoSpawnAmount:90,
@@ -99,7 +103,9 @@ Guns.insert(
             speed:0.75
         },
         speed_mod:0.97,
-        gasParticles:GasParticles.automatic
+        gasParticles:GasParticles.automatic,
+        arms:WeaponsArmRig[0],
+        image:WeaponsRig[0]
     },
     {
         idString:"ar15",
@@ -232,7 +238,7 @@ Guns.insert(
         idString:"kar98k",
         fireDelay:1.1,
         spread:1,
-        lenght:0.8,
+        lenght:1.35,
         size:4.5,
         ammoType:"762mm",
         ammoSpawnAmount:20,
@@ -263,6 +269,8 @@ Guns.insert(
             speed:0.4
         },
         speed_mod:0.95,
+        arms:WeaponsArmRig[1],
+        image:WeaponsRig[0]
     },
     {
         idString:"awp",
@@ -370,7 +378,7 @@ Guns.insert(
         idString:"spas12",
         fireDelay:0.7,
         spread:3,
-        lenght:0.6,
+        lenght:1.25,
         ammoType:"12g",
         ammoSpawnAmount:18,
         jitterRadius:0.1,
@@ -400,7 +408,9 @@ Guns.insert(
             speed:0.6
         },
         speed_mod:0.95,
-        gasParticles:GasParticles.shotgun
+        gasParticles:GasParticles.shotgun,
+        arms:WeaponsArmRig[0],
+        image:WeaponsRig[0]
     },
     {
         idString:"hp18",

@@ -1,3 +1,5 @@
+import { v2, Vec2 } from "../engine/geometry.ts";
+
 export enum ItemQuality{
     Common,
     Uncommon,
@@ -5,6 +7,62 @@ export enum ItemQuality{
     Epic,
     Legendary,
     Developer
+}
+export interface FistRig{
+    left?:{
+        position:Vec2
+        rotation:number
+        zIndex?:number
+    }
+    right?:{
+        position:Vec2
+        rotation:number
+        zIndex?:number
+    }
+}
+
+export interface WeaponRig{
+    position:Vec2
+    rotation:number
+    zIndex?:number
+}
+export const DefaultFistRig:FistRig={
+    left:{
+        position:v2.new(0.4,-0.2),
+        rotation:0.1,
+    },
+    right:{
+        position:v2.new(0.4,0.2),
+        rotation:-0.1,
+    }
+}
+export const WeaponsArmRig={
+    0:{
+        left:{
+            position:v2.new(0.7,-0.05),
+            rotation:0.35,
+        },
+        right:{
+            position:v2.new(0.5,0),
+            rotation:-0.2,
+        }
+    },
+    1:{
+        left:{
+            position:v2.new(0.8,-0.045),
+            rotation:0.32,
+        },
+        right:{
+            position:v2.new(0.5,0),
+            rotation:-0.2,
+        }
+    },
+}
+export const WeaponsRig={
+    0:{
+        position:v2.new(0.6,0),
+        rotation:0
+    },
 }
 export const tracers={
     tiny:{

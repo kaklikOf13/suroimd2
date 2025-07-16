@@ -4,7 +4,7 @@ export interface PlayerData extends EncodedData{
         name:string
         vest:number
         helmet:number
-        handItem?:number
+        current_weapon:number
     }
     position:Vec2
     rotation:number
@@ -80,12 +80,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             ret.using_item=bg1[0]
             ret.using_item_down=bg1[1]
             if(full){
-                //const bgf1=stream.readBooleanGroup()
                 ret.full={
                     name:stream.readStringSized(28),
                     vest:stream.readUint8(),
                     helmet:stream.readUint8(),
-                    //handItem:bgf1[0]?stream.readUint24():undefined
+                    current_weapon:stream.readInt16(),
                 }
             }
             return ret
@@ -97,11 +96,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeRad(data.rotation)
             .writeBooleanGroup(data.using_item,data.using_item_down)
             if(full){
-                //stream.writeBooleanGroup(data.full!.handItem!==undefined)
                 stream.writeStringSized(28,data.full!.name)
                 .writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
-                //if(data.full!.handItem)stream.writeUint24(data.full!.handItem)
+                .writeInt16(data.full!.current_weapon)
                 
             }
         }

@@ -1,5 +1,5 @@
 import { Definitions,Definition } from "../engine/mod.ts";
-import { ItemQuality } from "../others/item.ts";
+import { FistRig, ItemQuality, WeaponRig } from "../others/item.ts";
 import { GameItem, InventoryItemType } from "./utils.ts";
 export interface MeleeDef extends Definition{
     quality:ItemQuality
@@ -13,6 +13,8 @@ export interface MeleeDef extends Definition{
 
     switchDelay?:number
     speed_mod?:number
+    arms?:FistRig
+    image?:WeaponRig
 }
 
 export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{
