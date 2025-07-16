@@ -143,7 +143,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             for(const p of Object.values(this.connectedPlayers)){
                 p.update2()
             }
-            this.scene.objects.apply_new_list()
+            this.scene.objects.update_to_net()
         },1/this.config.netTps)
     }
     add_player(client:Client,id:number,packet:JoinPacket):Player{
@@ -213,7 +213,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         })
         client.on("action",(p:ActionPacket)=>{
             if(this.scene.objects.exist(objId)){
-                (this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:client.ID}) as Player).process_action(p)
+                (this.scene.objects.get_object(objId) as Player).process_action(p)
             }
         })
         client.on(DefaultSignals.DISCONNECT,()=>{

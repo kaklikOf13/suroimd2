@@ -63,10 +63,6 @@ export abstract class BaseObject2D{
                 const e=this.manager.encoders[this.stringType]
                 if(!e)return
                 e.encode(bools[1],data,stream)
-                if(!full){
-                    this.dirty=false
-                    this.dirtyPart=false
-                }
             }
         }
     }
@@ -422,9 +418,16 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             }
         }
     }
-    apply_new_list(){
+    update_to_net(){
         for(const o of this.new_objects){
             o.is_new=false
+        }
+        for(const c of this.categorys){
+            for(let j=0;j<this.objects[c].orden.length;j++){
+                const idx=this.objects[c].orden[j]
+                this.objects[c].objects[idx].dirty=false
+                this.objects[c].objects[idx].dirtyPart=false
+            }
         }
         this.new_objects.length=0
     }

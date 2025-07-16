@@ -258,7 +258,6 @@ export class Player extends ServerGameObject{
                 name:this.name,
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
-                handItem:0,
                 current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1
             }
         }

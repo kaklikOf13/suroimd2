@@ -171,7 +171,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
             this.on_stop()
         }
         if(this.new_list){
-            this.scene.objects.apply_new_list()
+            this.scene.objects.update_to_net()
         }
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()

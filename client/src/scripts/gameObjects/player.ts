@@ -1,11 +1,12 @@
 import { PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
-import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
+import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CATEGORYS, GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
 import { Debug } from "../others/config.ts";
+import { Decal } from "./decal.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -28,6 +29,16 @@ export class Player extends GameObject{
     }
 
     current_weapon?:WeaponDef
+
+    on_hitted(position:Vec2){
+        if(Math.random()<=0.2){
+            const d=new Decal()
+            d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
+            d.sprite.rotation=random.rad()
+            d.sprite.position=v2.duplicate(position)
+            this.game.scene.objects.add_object(d,CATEGORYS.DECALS)
+        }
+    }
 
     set_current_weapon(def:WeaponDef){
         if(this.current_weapon===def)return
@@ -85,7 +96,7 @@ export class Player extends GameObject{
         this.sprites.helmet.zIndex=4
         this.sprites.weapon.zIndex=2
 
-        this.sprites.body.frames=[{delay:3.5,image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
+        this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
 
         this.container.updateZIndex()
     }

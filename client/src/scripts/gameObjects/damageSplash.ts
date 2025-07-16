@@ -4,7 +4,7 @@ import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 export class DamageSplash extends ClientGameObject2D{
     stringType:string="damage_splash"
-    numberType: number=7
+    numberType: number=8
 
     sprite:Sprite2D
 
