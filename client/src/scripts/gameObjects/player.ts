@@ -31,9 +31,10 @@ export class Player extends GameObject{
     current_weapon?:WeaponDef
 
     on_hitted(position:Vec2){
-        if(Math.random()<=0.2){
+        if(Math.random()<=0.1){
             const d=new Decal()
             d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
+            d.sprite.scale=v2.random(0.7,1.4)
             d.sprite.rotation=random.rad()
             d.sprite.position=v2.duplicate(position)
             this.game.scene.objects.add_object(d,CATEGORYS.DECALS)
