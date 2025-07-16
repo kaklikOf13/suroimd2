@@ -54,15 +54,15 @@ export class Loot extends GameObject{
             this.item=GameItems.valueNumber[data.full.item]
             switch(this.item.item_type){
                 case InventoryItemType.gun:
-                    this.sprite_main.sprite=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
-                    this.sprite_outline.sprite=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
                     this.sprite_outline.visible=true;
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.gun
                     break
                 case InventoryItemType.ammo:
-                    this.sprite_main.sprite=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true;
                     this.sprite_main.scale=v2.new(.9,.9);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.ammo
@@ -71,9 +71,9 @@ export class Loot extends GameObject{
                     break
                 case InventoryItemType.backpack:
                 case InventoryItemType.equipament:
-                    this.sprite_main.sprite=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true
-                    this.sprite_outline.sprite=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_main.scale=v2.new(0.7,0.7);
                     this.sprite_outline.scale=v2.new(0.7,0.7);

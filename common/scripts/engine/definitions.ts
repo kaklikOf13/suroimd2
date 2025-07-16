@@ -203,3 +203,7 @@ export class LocalizatorDefs{
         return this._get(val.split("."),this.language.value,val)
     }
 }
+export interface KeyFrameSpriteDef{
+    delay:number
+    image:string
+}

@@ -416,6 +416,10 @@ export const Numeric={
     },
     min(val1:number,val2:number):number{
         return val1>val2?val1:val2
+    },
+    loop(value: number, min: number, max: number): number {
+        const range = max - min;
+        return ((value - min) % range + range) % range + min;
     }
 }
 

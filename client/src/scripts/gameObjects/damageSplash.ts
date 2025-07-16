@@ -10,7 +10,7 @@ export class DamageSplash extends ClientGameObject2D{
 
     async create(args: {position:Vec2,count:number,critical:boolean,shield:boolean}): Promise<void> {
         const color=args.shield?(args.critical?"#0f9":"#114"):(args.critical?"#f00":"#ff0")
-        this.sprite.sprite=await this.game.resources.render_text(`${args.count}`,50,color)
+        this.sprite.frame=await this.game.resources.render_text(`${args.count}`,50,color)
         this.position=v2.duplicate(args.position)
         this.lifetime+=Math.random()
         this.sprite.position=this.position

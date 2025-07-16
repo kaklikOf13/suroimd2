@@ -1,9 +1,9 @@
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
-import { Color } from "../engine/mod.ts";
 import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { ExplosionDef, Explosions } from "common/scripts/definitions/explosions.ts";
-import { ColorM, Sprite2D } from "../engine/renderer.ts";
+import { ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
+import { Sprite2D } from "../engine/container.ts";
 export class Explosion extends GameObject{
     stringType:string="explosion"
     numberType: number=5
@@ -15,7 +15,7 @@ export class Explosion extends GameObject{
     sprite:Sprite2D=new Sprite2D()
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(this.position,0)
-        this.sprite.sprite=this.game.resources.get_sprite("base_explosion")
+        this.sprite.frame=this.game.resources.get_sprite("base_explosion")
         this.game.camera.addObject(this.sprite)
     }
     update(dt:number): void {

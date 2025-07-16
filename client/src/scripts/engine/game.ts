@@ -1,10 +1,10 @@
 import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
-import { Camera2D, Color, Container2D, Sprite2D, type Renderer } from "./renderer.ts";
+import { Color, ColorM, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
-import { ColorM } from "./mod.ts";
+import { Camera2D, Container2D, Sprite2D } from "./container.ts";
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>
@@ -136,7 +136,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     }
     draw(renderer:Renderer,dt:number){
         renderer.clear()
-        this.camera.update()
+        this.camera.update(dt,this.resources)
         this.camera.container.draw(renderer)
         this.on_render(dt)
         for(const c in this.scene.objects.objects){

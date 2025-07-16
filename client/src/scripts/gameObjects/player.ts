@@ -52,7 +52,7 @@ export class Player extends GameObject{
             this.sprites.right_arm.visible=false
         }
         if(def?.image){
-            this.sprites.weapon.sprite=this.game.resources.get_sprite(`${def.idString}_world`)
+            this.sprites.weapon.frame=this.game.resources.get_sprite(`${def.idString}_world`)
             this.sprites.weapon.visible=true
             this.sprites.weapon.position=v2.duplicate(def.image.position)
             this.sprites.weapon.rotation=def.image.rotation
@@ -64,9 +64,9 @@ export class Player extends GameObject{
     set_skin(skin:string){
         this.skin=skin
 
-        this.sprites.body.sprite=this.game.resources.get_sprite(skin+"_body")
-        this.sprites.left_arm.sprite=this.game.resources.get_sprite(skin+"_arm")
-        this.sprites.right_arm.sprite=this.game.resources.get_sprite(skin+"_arm")
+        this.sprites.body.frame=this.game.resources.get_sprite(skin+"_body")
+        this.sprites.left_arm.frame=this.game.resources.get_sprite(skin+"_arm")
+        this.sprites.right_arm.frame=this.game.resources.get_sprite(skin+"_arm")
 
         this.sprites.left_arm.zIndex=1
         this.sprites.right_arm.zIndex=1
@@ -85,8 +85,9 @@ export class Player extends GameObject{
         this.sprites.helmet.zIndex=4
         this.sprites.weapon.zIndex=2
 
-        this.container.updateZIndex()
+        this.sprites.body.frames=[{delay:3.5,image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
 
+        this.container.updateZIndex()
     }
 
     create(_args: Record<string, void>): void {
@@ -126,9 +127,9 @@ export class Player extends GameObject{
                 }else{
                     this.sprites.helmet.position=v2.new(0,0)
                 }
-                this.sprites!.helmet.sprite=this.game.resources.get_sprite(h.idString+"_world")
+                this.sprites!.helmet.frame=this.game.resources.get_sprite(h.idString+"_world")
             }else{
-                this.sprites.helmet.sprite=undefined
+                this.sprites.helmet.frame=undefined
             }
             if(data.full.vest>0){
                 this.vest=Armors.getFromNumber(data.full.vest-1)

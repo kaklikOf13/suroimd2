@@ -40,10 +40,10 @@ export class Obstacle extends ClientGameObject2D{
     }
     update_frame(){
         if(this.dead){
-            this.sprite.sprite=this.game.resources.get_sprite(this.frame.dead)
+            this.sprite.frame=this.game.resources.get_sprite(this.frame.dead)
             this.container.zIndex=zIndexes.DeadObstacles
         }else{
-            this.sprite.sprite=this.game.resources.get_sprite(this.frame.base)
+            this.sprite.frame=this.game.resources.get_sprite(this.frame.base)
             this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
         }
         this.container.visible=true

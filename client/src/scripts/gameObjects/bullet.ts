@@ -1,10 +1,10 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { Container2D, Sprite2D } from "../engine/mod.ts";
+import { Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
 import { BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS, zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
-import { Camera2D, ColorM, Renderer } from "../engine/renderer.ts";
+import { ColorM, Renderer } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Debug } from "../others/config.ts";
 const images=[
@@ -26,7 +26,7 @@ export class Bullet extends GameObject{
     container:Container2D=new Container2D()
 
     create(_args: Record<string, void>) {
-        this.sprite_trail.sprite=this.game.resources.get_sprite("base_trail")
+        this.sprite_trail.frame=this.game.resources.get_sprite("base_trail")
         this.game.camera.addObject(this.container)
     }
     override onDestroy(): void {
@@ -130,7 +130,7 @@ export class Bullet extends GameObject{
     
             this.sprite_projectile.tint=ColorM.number(data.full.projColor)
             if(data.full.projIMG){
-                this.sprite_projectile.sprite=this.game.resources.get_sprite(images[data.full.projIMG-1])
+                this.sprite_projectile.frame=this.game.resources.get_sprite(images[data.full.projIMG-1])
                 this.sprite_projectile.visible=true
             }
             this.container.visible=true
