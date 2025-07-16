@@ -7,6 +7,7 @@ import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts"
 import {} from "common/scripts/definitions/maps/base.ts"
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { Guns } from "common/scripts/definitions/guns.ts";
+import { Ammos } from "../../../../common/scripts/definitions/items/ammo.ts";
 
 export class GameMap{
     readonly size:Vec2
@@ -77,6 +78,7 @@ export class GameMap{
         for(let i=0;i<5;i++){
             this.generate_obstacle(Obstacles.getFromString("barrel"))
         }
+        this.game.add_loot(NullVec2,Ammos.getFromNumber(1) as unknown as GameItem,10)
         for(let i=0;i<Object.values(Guns.valueNumber).length;i++){
             this.game.add_loot(v2.random2(NullVec2,this.size),Guns.getFromNumber(i) as unknown as GameItem,1)
         }

@@ -38,6 +38,8 @@ export class ReloadAction extends Action<Player>{
                 consumed=cap
             }
         }
+        consumed=Math.min(user.inventory.ammos[this.item.def.ammoType],consumed)
+        user.inventory.ammos[this.item.def.ammoType]-=consumed
         this.item.ammo+=consumed
         user.privateDirtys.current_weapon=true
         user.privateDirtys.inventory=true

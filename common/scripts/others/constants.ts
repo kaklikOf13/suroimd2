@@ -14,10 +14,11 @@ export const GameConstants={
         max_name_size:25,
     },
     loot:{
-        velocityDecay:0.96,
+        velocityDecay:0.97,
         radius:{
-            ammo:0.3,
-            gun:0.54
+            ammo:0.38,
+            gun:0.54,
+            equipament:0.4,
         }
     },
     tps:100,

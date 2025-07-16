@@ -4,7 +4,7 @@ import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/ut
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
-import { Ammos } from "common/scripts/definitions/ammo.ts";
+import { Ammos } from "../../../../common/scripts/definitions/items/ammo.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 
 export class Bullet extends ServerGameObject{

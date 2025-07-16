@@ -126,7 +126,7 @@ export class Game extends ClientGame2D<GameObject>{
         (activePlayer as Player).container.rotation=this.action.angle
       }
     }
-    this.camera.zoom=0.57
+    this.camera.zoom=0.8
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
     //0.12=l6 32x

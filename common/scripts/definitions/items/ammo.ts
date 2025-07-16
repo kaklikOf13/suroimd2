@@ -1,6 +1,6 @@
-import { Definitions,Definition } from "../engine/mod.ts"
-import { ItemQuality } from "../others/item.ts";
-import { GameItem, InventoryItemType } from "./utils.ts";
+import { Definitions,Definition } from "../../engine/mod.ts"
+import { ItemQuality } from "../../others/item.ts";
+import { GameItem, InventoryItemType } from "../utils.ts";
 
 export interface AmmoDef extends Definition{
     size:number

@@ -64,11 +64,20 @@ export class Loot extends GameObject{
                 case InventoryItemType.ammo:
                     this.sprite_main.sprite=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true;
+                    this.sprite_main.scale=v2.new(.9,.9);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.ammo
                     break
                 case InventoryItemType.healing:
                     break
+                case InventoryItemType.backpack:
                 case InventoryItemType.equipament:
+                    this.sprite_main.sprite=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.sprite=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_main.scale=v2.new(0.7,0.7);
+                    this.sprite_outline.scale=v2.new(0.7,0.7);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
                     break
                 case InventoryItemType.other:
                     break
@@ -77,7 +86,7 @@ export class Loot extends GameObject{
                 case InventoryItemType.accessorie:
                     break
             }
-            if(this.is_new){
+            //if(this.is_new){
                 this.container.scale=v2.new(0.1,0.1)
                 this.game.addTween({
                     duration:3,
@@ -88,7 +97,7 @@ export class Loot extends GameObject{
                         y:1
                     },
                 })
-            }
+            //}
             this.container.visible=true
         }
     }

@@ -28,7 +28,8 @@ export enum InventoryItemType{
     equipament,
     other,
     melee,
-    accessorie
+    accessorie,
+    backpack
 }
 export interface GameItem extends Definition{
     item_type:InventoryItemType

@@ -13,6 +13,7 @@ export class Loot extends ServerGameObject{
     numberType: number=2
     count:number=1
     item!:GameItem
+    real_radius=0
 
     constructor(){
         super()
@@ -27,7 +28,11 @@ export class Loot extends ServerGameObject{
                 break
             }
             case InventoryItemType.ammo:
-            case InventoryItemType.healing:
+            case InventoryItemType.healing:{
+                user.inventory.give_item(this.item,this.count)
+                this.destroy()
+                break
+            }
             case InventoryItemType.equipament:
             case InventoryItemType.other:
             case InventoryItemType.melee:
@@ -36,10 +41,12 @@ export class Loot extends ServerGameObject{
         //user.give_item(this.item,this.count)
         return
     }
+    oldPos:Vec2=v2.new(-1,-1)
     update(dt:number): void {
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
-        if(!v2.greater(this.velocity,NullVec2)){
+        if(!v2.is(this.position,this.oldPos)){
             this.dirtyPart=true
+            this.oldPos=v2.duplicate(this.position)
         }
         //const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
         const others=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
@@ -49,7 +56,7 @@ export class Loot extends ServerGameObject{
                     if(other.id===this.id)continue
                     const col=this.hb.overlapCollision(other.hb)
                     if(col){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.1))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
                     }
                     break
                 }
@@ -67,6 +74,9 @@ export class Loot extends ServerGameObject{
         }
         this.velocity=v2.scale(this.velocity,GameConstants.loot.velocityDecay)
     }
+    push(speed:number,angle:number){
+        this.velocity=v2.add(this.velocity,v2.scale(v2.from_RadAngle(angle),speed))
+    }
     create(args: {position:Vec2,item:GameItem,count:number}): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),0.3)
         this.hb.translate(args.position)
@@ -80,11 +90,15 @@ export class Loot extends ServerGameObject{
                 this.hb.radius=GameConstants.loot.radius.ammo
                 break
             case InventoryItemType.healing:
+            case InventoryItemType.backpack:
             case InventoryItemType.equipament:
+                this.hb.radius=GameConstants.loot.radius.equipament
+                break
             case InventoryItemType.other:
             case InventoryItemType.melee:
             case InventoryItemType.accessorie:
         }
+        this.real_radius=this.hb.radius
     }
     override getData(): LootData {
         return {

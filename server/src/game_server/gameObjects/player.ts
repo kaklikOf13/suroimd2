@@ -7,7 +7,7 @@ import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/u
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
@@ -15,6 +15,7 @@ import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
 import { MeleeDef, Melees } from "common/scripts/definitions/melees.ts";
+import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -242,6 +243,10 @@ export class Player extends ServerGameObject{
         this.inventory.set_current_weapon_index(1)
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
+        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,320)
+        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,320)
+        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
+        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
     }
     override getData(): PlayerData {
         return {
@@ -382,26 +387,13 @@ export class Player extends ServerGameObject{
             this.kill(params)
         }
     }
-    dropAll(){
-        this.inventory.drop_weapon(0)
-        this.inventory.drop_weapon(1)
-        this.inventory.drop_weapon(2)
-        /*for(const s of this.inventory.slots){
-            if(s.quantity>0&&s.item&&s.item.droppable){
-                this.game.add_loot(this.position,s.item.def as GameItem,s.quantity)
-                s.quantity=0
-                s.item=null
-            }
-        }*/
-        //this.inventory.update_infinity()
-    }
     kill(params:DamageParams){
         this.dead=true
         this.update2()
         if(this.client){
             this.destroy()
         }
-        this.dropAll();
+        this.inventory.drop_all();
         this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
         this.game.modeManager.on_player_die(this);
 
