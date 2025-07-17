@@ -184,11 +184,19 @@ export class GuiManager{
         }else{
             this.content.gameOver_status.innerText=`You Lose!`
             this.content.gameOver_status.style.color="#e05"
+            if(Math.random()<=0.01){
+                const ge=document.createElement("span")
+                ge.id="gameover-you-dead"
+                ge.innerText="You Die!"
+                document.body.appendChild(ge)
+                setTimeout(()=>{
+                    ge.remove()
+                },2900)
+            }
         }
         this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
         this.content.gameOver_damaged.innerText=`Damage Dealth: ${g.DamageDealth}`
         this.content.gameOver_score.innerText=`Score: 0`
-
         this.content.gameOver_menu_btn.onclick=this.game.onstop!.bind(this.game,this.game)
     }
     update_equipaments(){

@@ -27,8 +27,8 @@ Explosions.insert(
         idString:"barrel_explosion",
         tint:"#445",
         size:{
-            min:1.6,
-            max:2
+            min:2,
+            max:3
         },
         damage:80,
         bullet:{
@@ -36,10 +36,10 @@ Explosions.insert(
                 damage:7,
                 radius:0.02,
                 speed:20,
-                range:10,
+                range:25,
                 tracer:tracers.black_projectile
             },
-            count:5
+            count:6
         }
     },
     {

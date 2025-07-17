@@ -24,5 +24,56 @@
         left: 50%;
         bottom: 5px;
         transform: translateX(-50%);
+        transition: -50%,-50%;
+    }
+}
+#gameover-you-dead {
+    position: absolute;
+    display: block;
+    font-family: "Russo-One", sans-serif;
+    font-size: 300px;
+    color: red;
+    animation: YouDieAnim 3s ease-in-out infinite;
+    left: 50%;
+    top: 50%;
+    transform: translate(0%, -50%);
+    white-space: nowrap;
+    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+}
+@keyframes YouDieAnim {
+    0% {
+        transform: translate(-50%, -52%) rotate(20deg) scale(1.2);
+    }
+    10% {
+        transform: translate(-48%, -48%) rotate(-20deg) scale(0.9);
+    }
+    20% {
+        transform: translate(-52%, -54%) rotate(25deg) scale(1.3);
+    }
+    30% {
+        transform: translate(-50%, -50%) rotate(-25deg) scale(0.8);
+    }
+    40% {
+        transform: translate(-49%, -51%) rotate(15deg) scale(1.2);
+    }
+    50% {
+        transform: translate(-51%, -49%) rotate(-15deg) scale(0.9);
+    }
+    60% {
+        transform: translate(-50%, -50%) rotate(10deg) scale(1.1);
+    }
+    70% {
+        transform: translate(-50%, -50%) rotate(-10deg) scale(0.95);
+    }
+    80% {
+        transform: translate(-50%, -50%) rotate(5deg) scale(1.05);
+    }
+    90% {
+        opacity: 100%;
+        transform: translate(-50%, -50%) rotate(-5deg) scale(1);
+    }
+    100% {
+        opacity: 0%;
+        transform: translate(-50%, -50%) rotate(0deg) scale(1);
     }
 }
