@@ -1,13 +1,14 @@
 import { Game } from "./game.ts";
 import { BoostType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, CATEGORYS, GameOverPacket } from "common/scripts/others/constants.ts";
-import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
+import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
 import { Player } from "../gameObjects/player.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/melees.ts";
 import { GunDef } from "common/scripts/definitions/guns.ts";
 import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
+import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 
 export class GuiManager{
     game:Game
@@ -46,6 +47,8 @@ export class GuiManager{
         weapon1:document.querySelector("#game-weapon-slot-00") as HTMLDivElement,
         weapon2:document.querySelector("#game-weapon-slot-01") as HTMLDivElement,
         weapon3:document.querySelector("#game-weapon-slot-02") as HTMLDivElement,
+
+        ammos:document.querySelector("#ammos-inventory") as HTMLDivElement,
     }
 
     weapons:{
@@ -90,6 +93,31 @@ export class GuiManager{
                 type:CellphoneActionType.GiveItem,
                 item_id:GameItems.keysString[this.content.cellphone_input_item_id.value],
                 count:parseInt(this.content.cellphone_input_item_count.value),
+            }
+        }
+
+        this.update_ammos({})
+    }
+    ammos_cache:Record<string,HTMLDivElement>={}
+    update_ammos(ammos:Record<string,number>){
+        const ak=Object.keys(ammos)
+        const ack=Object.keys(this.ammos_cache)
+        if(ack.length===ak.length){
+            for(const a of ak){
+                const c=this.ammos_cache[a].querySelector(".count") as HTMLSpanElement
+                c.innerText=`${ammos[a]}`
+            }
+        }else{
+            this.content.ammos.innerHTML=""
+            this.ammos_cache={}
+            for(const a of ak){
+                const htm=`<div class="ammo-slot" id="ammo-${a}">
+                    <image class="icon" src="img/game/common/items/ammos/${a}.svg"></image>
+                    <span class="count">${ammos[a]}</span>
+                </div>`
+
+                this.content.ammos.insertAdjacentHTML("beforeend", htm);
+                this.ammos_cache[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
             }
         }
     }
@@ -172,6 +200,14 @@ export class GuiManager{
             }else{
                 this.action=undefined
             }
+        }
+        if(gui.dirty.ammos){
+            const aa:Record<string,number>={}
+            for(const a of Object.keys(gui.ammos)){
+                const def=Ammos.getFromNumber(a as unknown as number)
+                aa[def.idString]=gui.ammos[a as unknown as number]
+            }
+            this.update_ammos(aa)
         }
     }
     show_game_over(g:GameOverPacket){

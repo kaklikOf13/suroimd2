@@ -186,52 +186,37 @@
     }
 }
 
-.inventory-slot{
-    background-color: #0002;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    img{
-        position: absolute;
-        -webkit-transform: translate(-50%,-50%) rotate(-30deg);
-        transform: rotate(-30deg);
-        width: 50px;
-        height: 50px;
-    }
-}
-.inventory-slot-selected{
-    border: 2px solid #0004;
-}
-
-#inventory{
-    position: absolute;
-    background-color: #0002;
-    top: 5px;
-    left: 5px;
-    height: 300px;
-    width: max-content;
-    overflow-y: auto;
-    overflow-x: hidden;
-
+#ammos-inventory{
     display: grid;
-    grid-template-columns: repeat(3, 60px);
-    grid-template-rows: repeat(22, 60px);
-    grid-gap: 5px;
-    padding: 10px;
-    padding-top: 10px;
-    .inventory-slot{
-        margin: 0%;
-        span{
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            font-family: "Russo-One";
-            z-index: 1;
+    grid-template-columns: repeat(auto, 5);
+    gap: 5px;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translate(0%, -50%);
+    justify-items: end;
+    .ammo-slot{
+        background-color: #0003;
+        display: flex;
+        flex-direction: column;
+        border-radius: 5px;
+        .count {
+            font-family: "Russo-One", sans-serif;
+            text-align: center;
             font-size: 15px;
+            text-anchor: middle;
         }
+        .icon{
+            width: 30px;
+            height: 30px;
+            margin: auto;
+            padding-top: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
+    .ammo-slot:hover{
+        border: 2px solid #ccc;
     }
 }
 #equipaments{

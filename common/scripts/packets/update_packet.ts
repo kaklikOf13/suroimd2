@@ -1,6 +1,6 @@
 import { type GunDef, Guns } from "../definitions/guns.ts";
 import { type MeleeDef, Melees } from "../definitions/melees.ts";
-import { BoostType, InventoryItemData, InventoryItemDataDecode, InventoryItemDataEncode } from "../definitions/utils.ts";
+import { BoostType, InventoryItemData } from "../definitions/utils.ts";
 import { Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
@@ -12,10 +12,11 @@ export interface DamageSplash{
 }
 export interface GuiUpdate{
     dirty:{
-        inventory:boolean,
-        weapons:boolean,
-        current_weapon:boolean,
+        inventory:boolean
+        weapons:boolean
+        current_weapon:boolean
         action:boolean
+        ammos:boolean
     }
 
     health:number
@@ -38,6 +39,8 @@ export interface GuiUpdate{
         ammo:number
     }
 
+    ammos:Record<number,number>
+
     damages?:DamageSplash
 }
 function encode_gui_packet(gui:GuiUpdate,stream:NetStream){
@@ -51,6 +54,7 @@ function encode_gui_packet(gui:GuiUpdate,stream:NetStream){
         gui.dirty.weapons,
         gui.dirty.current_weapon,
         gui.dirty.action,
+        gui.dirty.ammos,
         gui.action!==undefined,
         gui.damages!==undefined)
     /*if(gui.dirty.inventory){
@@ -76,6 +80,13 @@ function encode_gui_packet(gui:GuiUpdate,stream:NetStream){
         stream.writeUint16(gui.damages.count)
         stream.writePosition(gui.damages.position)
     }
+
+    if(gui.dirty.ammos){
+        stream.writeArray(Object.entries(gui.ammos),(i)=>{
+            stream.writeUint8(i[0] as unknown as number)
+            stream.writeUint16(i[1] as unknown as number)
+        },1)
+    }
 }
 function decode_gui_packet(gui:GuiUpdate,stream:NetStream){
     gui.health=stream.readUint8()
@@ -88,13 +99,15 @@ function decode_gui_packet(gui:GuiUpdate,stream:NetStream){
         dirtyWeapons,
         dirtyCurrentWeapon,
         dirtyAction,
+        dirtyAmmos,
         hasAction,
         hasDamages]=stream.readBooleanGroup()
     gui.dirty={
         inventory:dirtyInventory,
         weapons:dirtyWeapons,
         current_weapon:dirtyCurrentWeapon,
-        action:dirtyAction
+        action:dirtyAction,
+        ammos:dirtyAmmos
     }
     /*if(dirtyInventory){
         gui.dirty.inventory=true
@@ -131,6 +144,13 @@ function decode_gui_packet(gui:GuiUpdate,stream:NetStream){
             position:stream.readPosition()
         }
     }
+    if(dirtyAmmos){
+        const len=stream.readUint8()
+        gui.ammos={}
+        for(let i=0;i<len;i++){
+            gui.ammos[stream.readUint8()]=stream.readUint16()
+        }
+    }
 }
 export class UpdatePacket extends Packet{
     ID=2
@@ -143,8 +163,10 @@ export class UpdatePacket extends Packet{
             action:false,
             current_weapon:false,
             inventory:false,
-            weapons:false
+            weapons:false,
+            ammos:false
         },
+        ammos:{},
         health:0,
         max_boost:0,
         max_health:0,

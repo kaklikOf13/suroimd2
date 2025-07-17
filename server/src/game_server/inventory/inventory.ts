@@ -356,6 +356,7 @@ export class GInventory extends Inventory<LItem>{
   give_item(def:GameItem,count:number,drop_n:boolean=true):number{
       switch(def.item_type){
           case InventoryItemType.ammo:{
+              this.owner.privateDirtys.ammos=true
               const max=this.backpack.ammos_max[def.idString]??0
               const ac=this.ammos[def.idString]??0
               const dp=Math.max((ac+count)-max,0)
@@ -377,7 +378,18 @@ export class GInventory extends Inventory<LItem>{
       this.owner.privateDirtys.inventory=true
       return count
   }
-  
+  consume_ammo(a:string,val:number):number{
+    this.owner.privateDirtys.ammos=true
+    if(this.ammos[a]){
+      const con=Numeric.max(val,this.ammos[a])
+      this.ammos[a]=Numeric.max(this.ammos[a],this.ammos[a]-val)
+      if(this.ammos[a]===0){
+        delete this.ammos[a]
+      }
+      return con
+    }
+    return 0
+  }
   drop_all(){
       this.drop_weapon(0)
       this.drop_weapon(1)

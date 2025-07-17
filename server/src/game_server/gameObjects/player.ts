@@ -97,6 +97,7 @@ export class Player extends ServerGameObject{
         weapons:true,
         current_weapon:true,
         action:true,
+        ammos:true,
     }
 
     update_modifiers(){
@@ -303,11 +304,17 @@ export class Player extends ServerGameObject{
                 slot:this.inventory.weaponIdx,
                 ammo:(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun")?(this.inventory.currentWeapon as GunItem).ammo:0
             }
+            if(this.privateDirtys.ammos){
+                for(const a of Object.keys(this.inventory.ammos)){
+                    up.gui.ammos[Ammos.getFromString(a).idNumber!]=this.inventory.ammos[a]
+                }
+            }
             this.privateDirtys={
                 inventory:false,
                 weapons:false,
                 current_weapon:false,
-                action:false
+                action:false,
+                ammos:false
             }
 
             if(this.actions.current_action){
