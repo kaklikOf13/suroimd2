@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="60.000004mm"
-   height="60.000004mm"
-   viewBox="0 0 60.000004 60.000004"
+   width="45.000008mm"
+   height="45.000008mm"
+   viewBox="0 0 45.000008 45.000008"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
@@ -24,9 +24,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.0334082"
-     inkscape:cx="107.70095"
-     inkscape:cy="167.45285"
+     inkscape:zoom="1.4378367"
+     inkscape:cx="39.990632"
+     inkscape:cy="160.31027"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -57,18 +57,18 @@
        fy="10.857"
        r="10.964113"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(2.6696406,0,0,2.669641,-13.984292,-13.984293)" />
+       gradientTransform="matrix(2.0022305,0,0,2.0022307,-6.738219,-6.7382195)" />
   </defs>
   <g
      inkscape:label="Camada 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(15.000001,15)">
+     transform="translate(7.5000033,7.5000023)">
     <circle
-       style="fill:url(#radialGradient2);stroke:#3f4242;stroke-width:2.03142;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#radialGradient2);stroke:#3f4242;stroke-width:1.52357;stroke-dasharray:none;stroke-opacity:1"
        id="path1"
        cx="15"
        cy="15.000001"
-       r="28.984291" />
+       r="21.738218" />
   </g>
 </svg>

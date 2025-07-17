@@ -5,7 +5,7 @@ import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
-import { GunDef } from "common/scripts/definitions/guns.ts";
+import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
 import { Debug } from "../others/config.ts";
 import { ease } from "common/scripts/engine/utils.ts";
 export class Loot extends GameObject{
@@ -59,12 +59,14 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
                     this.sprite_outline.visible=true;
+                    this.sprite_outline.scale=v2.new(1.5,1.5);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.gun
                     break
                 case InventoryItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true;
                     this.sprite_main.scale=v2.new(.9,.9);
+                    this.sprite_outline.scale=v2.new(1.5,1.5);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.ammo
                     break
                 case InventoryItemType.healing:
@@ -76,7 +78,7 @@ export class Loot extends GameObject{
                     this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_main.scale=v2.new(0.7,0.7);
-                    this.sprite_outline.scale=v2.new(0.7,0.7);
+                    this.sprite_outline.scale=v2.new(0.8,0.8);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
                     break
                 case InventoryItemType.other:
@@ -87,7 +89,7 @@ export class Loot extends GameObject{
                     break
             }
             //if(this.is_new){
-                this.container.scale=v2.new(0.1,0.1)
+                this.container.scale=v2.new(0.05,0.05)
                 this.game.addTween({
                     duration:3,
                     target:this.container.scale,

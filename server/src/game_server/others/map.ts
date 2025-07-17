@@ -6,7 +6,7 @@ import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts"
 
 import {} from "common/scripts/definitions/maps/base.ts"
 import { GameItem } from "common/scripts/definitions/utils.ts";
-import { Guns } from "common/scripts/definitions/guns.ts";
+import { Guns } from "../../../../common/scripts/definitions/items/guns.ts";
 import { Ammos } from "../../../../common/scripts/definitions/items/ammo.ts";
 
 export class GameMap{

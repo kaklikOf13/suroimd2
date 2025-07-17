@@ -14,7 +14,7 @@ import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
-import { MeleeDef, Melees } from "common/scripts/definitions/melees.ts";
+import { MeleeDef, Melees } from "../../../../common/scripts/definitions/items/melees.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 
 export class Player extends ServerGameObject{
@@ -40,8 +40,6 @@ export class Player extends ServerGameObject{
     client?:Client
 
     inventory:GInventory
-
-    default_melee:MeleeDef=Melees.getFromString("survival_knife")
 
     using_healing_speed:number=0.4
 

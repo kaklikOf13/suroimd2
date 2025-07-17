@@ -1,6 +1,6 @@
 import { type Player } from "../gameObjects/player.ts";
 import { Angle, CircleHitbox2D, Definition, getPatterningShape, Numeric, random, v2 } from "common/scripts/engine/mod.ts";
-import { FireMode, GunDef, Guns } from "common/scripts/definitions/guns.ts";
+import { FireMode, GunDef, Guns } from "../../../../common/scripts/definitions/items/guns.ts";
 import { Inventory, Item, SlotCap } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { HealingAction, ReloadAction } from "./actions.ts";
@@ -9,7 +9,7 @@ import { HealingCondition, HealingDef } from "common/scripts/definitions/healing
 import { OtherDef } from "common/scripts/definitions/others.ts";
 import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
-import { MeleeDef, Melees } from "common/scripts/definitions/melees.ts";
+import { MeleeDef, Melees } from "../../../../common/scripts/definitions/items/melees.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
@@ -224,7 +224,7 @@ export class MeleeItem extends LItem{
     return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
   }
   attack(user:Player):void{
-    if(!(user.handItem&&user.handItem.is(this)))return
+    if(user.inventory.weaponIdx!==0)return
     const position=v2.add(
       user.position,
       v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.offset,this.def.offset))
@@ -242,8 +242,8 @@ export class MeleeItem extends LItem{
           owner:user,
           source:this.def as unknown as GameItem
         })
-      }else if(c instanceof Player&&c.id!==user.id){
-        c.damage({
+      }else if(c.stringType==="player"&&c.id!==user.id){
+        (c as Player).damage({
           amount:this.def.damage,
           critical:false,
           position:hb.position,
@@ -267,7 +267,6 @@ export class MeleeItem extends LItem{
   }
 }
 export class GInventory extends Inventory<LItem>{
-
   weapons:{
     0?:MeleeItem,
     1?:GunItem,
@@ -281,10 +280,13 @@ export class GInventory extends Inventory<LItem>{
 
   ammos:Record<string,number>={}
   backpack:BackpackDef=Backpacks.getFromString("tactical_pack")
+  default_melee:string="survival_knife"
 
-  constructor(owner:Player){
+  constructor(owner:Player,default_melee:string="survival_knife"){
     super(7)
     this.owner=owner
+    this.default_melee=default_melee
+    this.set_weapon(0,default_melee)
   }
 
   set_current_weapon_index(idx:number){
@@ -345,13 +347,16 @@ export class GInventory extends Inventory<LItem>{
     if(!this.weapons[slot])return
     this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
     //l.velocity.x=-3
-    if(this.weapons[slot].itemType===InventoryItemType.gun){
+    if(this.weapons[slot].itemType===InventoryItemType.gun&&this.weapons[slot].ammo>0){
       this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
     }
     this.weapons[slot]=undefined
     this.owner.actions.cancel()
     this.owner.privateDirtys.weapons=true
     if(slot===this.weaponIdx)this.set_current_weapon_index(slot)
+      if(slot===0){
+        this.set_weapon(slot,this.default_melee)
+      }
   }
   give_item(def:GameItem,count:number,drop_n:boolean=true):number{
       switch(def.item_type){
@@ -425,7 +430,7 @@ export class GInventory extends Inventory<LItem>{
       }
   }
   update(){
-    //this.weapons[0]?.update(this.owner)
+    this.weapons[0]?.update(this.owner)
     this.weapons[1]?.update(this.owner)
     this.weapons[2]?.update(this.owner)
   }

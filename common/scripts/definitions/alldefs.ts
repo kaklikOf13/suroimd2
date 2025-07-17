@@ -1,11 +1,11 @@
 import { GameItem } from "./utils.ts";
-import { GunDef,Guns } from "./guns.ts";
+import { GunDef,Guns } from "./items/guns.ts";
 import { Ammos } from "./items/ammo.ts";
 import { Healings } from "./healings.ts";
 import { DefinitionsMerge } from "../engine/definitions.ts";
 import { Others } from "./others.ts";
 import { Accessories, Armors } from "./equipaments.ts";
-import { MeleeDef, Melees } from "./melees.ts";
+import { MeleeDef, Melees } from "./items/melees.ts";
 import { Backpacks } from "./items/backpacks.ts";
 
 export const GameItems=new DefinitionsMerge<GameItem>()

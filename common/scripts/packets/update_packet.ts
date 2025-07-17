@@ -1,5 +1,5 @@
-import { type GunDef, Guns } from "../definitions/guns.ts";
-import { type MeleeDef, Melees } from "../definitions/melees.ts";
+import { type GunDef, Guns } from "../definitions/items/guns.ts";
+import { type MeleeDef, Melees } from "../definitions/items/melees.ts";
 import { BoostType, InventoryItemData } from "../definitions/utils.ts";
 import { Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"

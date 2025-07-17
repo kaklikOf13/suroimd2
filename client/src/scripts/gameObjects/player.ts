@@ -7,6 +7,7 @@ import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
 import { Debug } from "../others/config.ts";
 import { Decal } from "./decal.ts";
+import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -49,6 +50,7 @@ export class Player extends GameObject{
                 this.sprites.left_arm.visible=true
                 this.sprites.left_arm.position=v2.duplicate(def.arms.left.position)
                 this.sprites.left_arm.rotation=def.arms.left.rotation
+                this.sprites.left_arm.zIndex=def.arms.left.zIndex??1
             }else{
                 this.sprites.left_arm.visible=false
             }
@@ -56,6 +58,7 @@ export class Player extends GameObject{
                 this.sprites.right_arm.visible=true
                 this.sprites.right_arm.position=v2.duplicate(def.arms.right.position)
                 this.sprites.right_arm.rotation=def.arms.right.rotation
+                this.sprites.right_arm.zIndex=def.arms.right.zIndex??1
             }else{
                 this.sprites.right_arm.visible=false
             }
@@ -64,13 +67,16 @@ export class Player extends GameObject{
             this.sprites.right_arm.visible=false
         }
         if(def?.image){
-            this.sprites.weapon.frame=this.game.resources.get_sprite(`${def.idString}_world`)
+            this.sprites.weapon.frame=this.game.resources.get_sprite((def as unknown as GameItem).item_type===InventoryItemType.melee?def.idString:`${def.idString}_world`)
             this.sprites.weapon.visible=true
             this.sprites.weapon.position=v2.duplicate(def.image.position)
             this.sprites.weapon.rotation=def.image.rotation
+            this.sprites.weapon.zIndex=def.image.zIndex??2
+            this.sprites.weapon.hotspot=def.image.hotspot??v2.new(.5,.5)
         }else{
             this.sprites.weapon.visible=false
         }
+        this.container.updateZIndex()
     }
 
     set_skin(skin:string){

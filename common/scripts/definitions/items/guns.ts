@@ -1,7 +1,7 @@
-import { v2 } from "../engine/geometry.ts";
-import { Definitions,Definition } from "../engine/mod.ts";
-import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../others/item.ts";
-import { type BulletDef, GameItem, InventoryItemType } from "./utils.ts";
+import { v2 } from "../../engine/geometry.ts";
+import { Definitions,Definition } from "../../engine/mod.ts";
+import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../../others/item.ts";
+import { type BulletDef, GameItem, InventoryItemType } from "../utils.ts";
 export enum FireMode{
     Auto,
     Single

@@ -5,8 +5,8 @@ import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
 import { Player } from "../gameObjects/player.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
-import { MeleeDef } from "common/scripts/definitions/melees.ts";
-import { GunDef } from "common/scripts/definitions/guns.ts";
+import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts";
+import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
 import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 
@@ -131,14 +131,17 @@ export class GuiManager{
 
         if(gui.dirty.weapons){
             let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
+            let img=this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.melee){
                 name.innerText=gui.weapons.melee.idString
+                img.src=this.game.resources.get_sprite(gui.weapons.melee.idString).path
+                this.weapons[0]=gui.weapons.melee
+                img.style.display="block"
             }else{
                 name.innerText=""
             }
-            this.weapons[0]=gui.weapons.melee
             name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
-            let img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
+            img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.gun1){
                 name.innerText=gui.weapons.gun1.idString
                 img.src=this.game.resources.get_sprite(gui.weapons.gun1.idString).path

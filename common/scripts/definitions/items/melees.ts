@@ -1,6 +1,7 @@
-import { Definitions,Definition } from "../engine/mod.ts";
-import { FistRig, ItemQuality, WeaponRig } from "../others/item.ts";
-import { GameItem, InventoryItemType } from "./utils.ts";
+import { v2 } from "../../engine/geometry.ts";
+import { Definitions,Definition } from "../../engine/mod.ts";
+import { DefaultFistRig, FistRig, ItemQuality, WeaponRig } from "../../others/item.ts";
+import { GameItem, InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
     quality:ItemQuality
     damage:number
@@ -29,7 +30,25 @@ Melees.insert(
         radius:0.5,
         size:0,
         attack_delay:0.55,
-        damage_delays:[0.1]
+        damage_delays:[0.1],
+        arms:{
+            right:{
+                position:DefaultFistRig.right!.position,
+                rotation:DefaultFistRig.right!.rotation,
+                zIndex:2,
+            },
+            left:{
+                position:DefaultFistRig.left!.position,
+                rotation:DefaultFistRig.left!.rotation,
+                zIndex:2,
+            }
+        },
+        image:{
+            position:DefaultFistRig.right!.position,
+            rotation:-0.5,
+            zIndex:1,
+            hotspot:v2.new(0.25,0.5)
+        }
     },
     {
         idString:"axe",

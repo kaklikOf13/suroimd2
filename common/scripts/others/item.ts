@@ -25,14 +25,15 @@ export interface WeaponRig{
     position:Vec2
     rotation:number
     zIndex?:number
+    hotspot?:Vec2
 }
 export const DefaultFistRig:FistRig={
     left:{
-        position:v2.new(0.4,-0.2),
+        position:v2.new(0.5,-0.18),
         rotation:0.1,
     },
     right:{
-        position:v2.new(0.4,0.2),
+        position:v2.new(0.5,0.18),
         rotation:-0.1,
     }
 }
