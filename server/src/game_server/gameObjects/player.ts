@@ -69,7 +69,7 @@ export class Player extends ServerGameObject{
         this.actions=new ActionsManager(this)
 
         this.vest=Armors.getFromString("soldier_vest")
-        //this.helmet=Armors.getFromString("soldier_helmet")
+        this.helmet=Armors.getFromString("basic_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -324,6 +324,7 @@ export class Player extends ServerGameObject{
                 ...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects),
                 ...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),
                 ...Object.values(this.manager.objects[CATEGORYS.PROJECTILES].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.PLAYERS_BODY].objects),
             ]
             const o=this.game.scene.objects.encode_list(objs,undefined,this.view_objects)
             this.view_objects=o.last
@@ -400,7 +401,7 @@ export class Player extends ServerGameObject{
         if(params.owner&&params.owner instanceof Player){
             params.owner.status.kills++
         }
-
+        this.game.add_player_body(this)
         this.game.addTimeout(()=>{
             this.send_game_over(false)
         },2)

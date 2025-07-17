@@ -1,4 +1,4 @@
-import { CircleHitbox2D, NullVec2, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { LootData } from "common/scripts/others/objectsEncode.ts";
 import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";

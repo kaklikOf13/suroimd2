@@ -29,8 +29,8 @@ export class DamageSplash extends ClientGameObject2D{
         })
 
         const basePosition = v2.duplicate(this.sprite.position)
-        const oscillation = () => {
-            if(this.dying||this.destroyed)return
+        const oscillation = (i=0) => {
+            if(this.dying||this.destroyed||i>10)return
             const offset = v2.new(
                 (Math.random() - 0.5) * 0.15,
                 (Math.random() - 0.5) * 0.15-1
@@ -47,7 +47,7 @@ export class DamageSplash extends ClientGameObject2D{
                 duration: 0.2,
                 target: this.sprite,
                 to: { rotation },
-                onComplete: oscillation,
+                onComplete: oscillation.bind(this,i+1),
             })
         }
         oscillation()
@@ -64,6 +64,7 @@ export class DamageSplash extends ClientGameObject2D{
     lifetime:number=3
 
     override onDestroy(): void {
+        this.sprite.frame?.free()
         this.sprite.destroy()
     }
     dying:boolean=false

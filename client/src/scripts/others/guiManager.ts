@@ -182,7 +182,7 @@ export class GuiManager{
             this.content.gameOver_status.innerText=`Winner Winner Chicken Dinner!`
             this.content.gameOver_status.style.color="#fe3"
         }else{
-            this.content.gameOver_status.innerText=`You Lose!`
+            this.content.gameOver_status.innerText=`You Die!`
             this.content.gameOver_status.style.color="#e05"
             if(Math.random()<=0.01){
                 const ge=document.createElement("span")

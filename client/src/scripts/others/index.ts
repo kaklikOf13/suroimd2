@@ -29,7 +29,6 @@ import { PacketManager } from "common/scripts/others/constants.ts";
             maxPlayers:10,
             netTps:30
         })
-        gs.request_animation_frame=true
         gs.mainloop()
     }
     
@@ -71,7 +70,7 @@ import { PacketManager } from "common/scripts/others/constants.ts";
             this.elements.play_button.onclick=(_e)=>{this.playGame()}
         }
         async playGame(){
-            if(this.game&&!loaded)return
+            if(this.game||!loaded)return
             this.gameD.style.display="unset"
             this.menuD.style.display="none"
             const ip=`ws${server.toString()}/${await getGame("http"+server.toString())}`
@@ -90,11 +89,12 @@ import { PacketManager } from "common/scripts/others/constants.ts";
             }else{
                 const socket=new WebSocket(ip)
                 const g=new Game(KeyL,mouseML,sounds,resources,socket as BasicSocket,renderer)
-                g.client.onopen=g.connect.bind(g,"kaklik")
+                g.client.onopen=g.connect.bind(g,"")
                 sounds.set_music(null)
                 g.guiManager=new GuiManager(g)
                 this.game=g
             }
+            this.game.request_animation_frame=false
             this.game.mainloop()
             this.game.onstop=this.closeGame.bind(this)
         }

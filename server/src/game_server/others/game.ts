@@ -16,6 +16,7 @@ import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
+import { PlayerBody } from "../gameObjects/player_body.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -106,7 +107,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             Bullet,
             Obstacle,
             Explosion,
-            Projectile
+            Projectile,
+            PlayerBody
         ])
         for(const i of CATEGORYSL){
             this.scene.objects.add_category(i)
@@ -122,6 +124,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
     override on_update(): void {
         super.on_update()
+        this.netUpdate()
         if(this.killing_game){
             this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
             if(this.clock.timeScale<=0.05){
@@ -137,14 +140,20 @@ export class Game extends ServerGame2D<ServerGameObject>{
         console.log(`Game ${this.id} Stopped`)
     }
     killing_game:boolean=false
+    nd:number=0
+    netUpdate(){
+        for(const p of Object.values(this.connectedPlayers)){
+            p.update2()
+        }
+        if(this.nd<=0){
+            this.scene.objects.update_to_net()
+            this.nd=1/this.config.netTps
+        }else{
+            this.nd-=this.dt
+        }
+    }
     override on_run(): void {
         this.map.generate()
-        this.privatesDirtysInter=setInterval(()=>{
-            for(const p of Object.values(this.connectedPlayers)){
-                p.update2()
-            }
-            this.scene.objects.update_to_net()
-        },1/this.config.netTps)
     }
     add_player(client:Client,id:number,packet:JoinPacket):Player{
         const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,id) as Player
@@ -193,6 +202,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Player):Explosion{
         const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position}) as Explosion
         return e
+    }
+    add_player_body(owner:Player):PlayerBody{
+        const b=this.scene.objects.add_object(new PlayerBody(),CATEGORYS.PLAYERS_BODY,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+        return b
     }
     add_projectile(position:Vec2,def:ProjectileDef,owner?:Player):Projectile{
         const p=this.scene.objects.add_object(new Projectile(),CATEGORYS.PROJECTILES,undefined,{defs:def,owner,position:position}) as Projectile

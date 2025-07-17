@@ -66,6 +66,12 @@ export interface ProjectileData extends EncodedData{
     position:Vec2
     rotation:number
 }
+export interface PlayerBodyData extends EncodedData{
+    full?:{
+        name:string
+    }
+    position:Vec2
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -247,6 +253,27 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeFloat(data.z,0,1,1)
             if(full){
                 stream.writeID(data.full!.definition)
+            }
+        }
+    },
+    player_body:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:PlayerBodyData={
+                position:stream.readPosition(),
+            }
+            if(full){
+                ret.full={
+                    name:stream.readStringSized(30)
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:PlayerBodyData,stream:NetStream){
+            stream.writePosition(data.position)
+            if(full){
+                stream.writeStringSized(30,data.full!.name)
             }
         }
     },

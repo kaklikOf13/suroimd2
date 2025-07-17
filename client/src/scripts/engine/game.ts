@@ -98,7 +98,7 @@ export class ABParticle2D extends ClientParticle2D{
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.sprite=(this.manager.game as unknown as ClientGame2D).resources.get_sprite(this.config.sprite)
+        this.sprite.frame=(this.manager.game as unknown as ClientGame2D).resources.get_sprite(this.config.sprite)
         this.container.add_child(this.sprite)
         this.container.visible=true
     }
