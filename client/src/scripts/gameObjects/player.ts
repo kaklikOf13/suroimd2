@@ -1,17 +1,18 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS, GameConstants, zIndexes } from "common/scripts/others/constants.ts";
-import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
+import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { Debug, Graphics } from "../others/config.ts";
+import { Debug, Graphics, GraphicsConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ABParticle2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
+import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -20,6 +21,7 @@ export class Player extends GameObject{
 
     vest?:EquipamentDef
     helmet?:EquipamentDef
+    backpack?:BackpackDef
 
     rotation:number=0
 
@@ -28,6 +30,7 @@ export class Player extends GameObject{
     sprites={
         body:new Sprite2D(),
         helmet:new Sprite2D(),
+        backpack:new Sprite2D(),
         left_arm:new Sprite2D(),
         right_arm:new Sprite2D(),
         weapon:new Sprite2D(),
@@ -97,14 +100,16 @@ export class Player extends GameObject{
         }else{
             this.sprites.weapon.visible=false
         }
-        const sound=this.game.resources.get_audio(`${def.idString}_switch`)
-        if(sound){
-            if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.disconnect()
-            this.sound_animation.weapon.switch=this.game.sounds.play(sound,{
-               on_complete:()=>{
-                this.sound_animation.weapon.switch=undefined
-               }
-            },"players")
+        if(Math.random()<=0.5){
+            const sound=this.game.resources.get_audio(`${def.idString}_switch`)
+            if(sound){
+                if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.disconnect()
+                this.sound_animation.weapon.switch=this.game.sounds.play(sound,{
+                on_complete:()=>{
+                    this.sound_animation.weapon.switch=undefined
+                }
+                },"players")
+            }
         }
         this.current_animation=undefined
         this.container.updateZIndex()
@@ -125,13 +130,15 @@ export class Player extends GameObject{
 
         this.sprites.body.hotspot=v2.new(0.5,0.5)
         this.sprites.helmet.hotspot=v2.new(0.5,0.5)
+        this.sprites.backpack.hotspot=v2.new(1,0.5)
         this.sprites.weapon.hotspot=v2.new(0.5,0.5)
 
         this.sprites.left_arm.hotspot=v2.new(0.9,0.5)
         this.sprites.right_arm.hotspot=v2.new(0.9,0.5)
 
-        this.sprites.body.zIndex=3
-        this.sprites.helmet.zIndex=4
+        this.sprites.backpack.zIndex=3
+        this.sprites.body.zIndex=4
+        this.sprites.helmet.zIndex=5
         this.sprites.weapon.zIndex=2
 
         this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
@@ -158,6 +165,7 @@ export class Player extends GameObject{
     constructor(){
         super()
         this.container.add_child(this.sprites.body)
+        this.container.add_child(this.sprites.backpack)
         this.container.zIndex=zIndexes.Players
         this.container.add_child(this.sprites.left_arm)
         this.container.add_child(this.sprites.right_arm)
@@ -165,7 +173,9 @@ export class Player extends GameObject{
         this.container.add_child(this.sprites.weapon)
         this.sprites.muzzle_flash.visible=false
         this.sprites.muzzle_flash.hotspot=v2.new(0,.5)
-        this.sprites.muzzle_flash.zIndex=10
+        this.sprites.muzzle_flash.zIndex=6
+        this.sprites.backpack.position=v2.new(-0.23,0)
+        this.sprites.backpack.scale=v2.new(1.45,1.45)
         this.container.add_child(this.sprites.muzzle_flash)
     }
     play_animation(animation:PlayerAnimation){
@@ -242,7 +252,7 @@ export class Player extends GameObject{
                         }
                     },"players")
                 }
-                if(Graphics>=1&&d.gasParticles){
+                if(Graphics>=GraphicsConfig.Medium&&d.gasParticles){
                     for(let i=0;i<d.gasParticles.count;i++){
                         const p=new ABParticle2D({
                             direction:this.rotation+random.float(-d.gasParticles.direction_variation,d.gasParticles.direction_variation),
@@ -282,25 +292,40 @@ export class Player extends GameObject{
             case PlayerAnimationType.Healing:
         }
     }
+    set_helmet(helmet:number){
+        if(this.helmet&&helmet-1===this.helmet.idNumber!)return
+        if(helmet>0){
+            this.helmet=Armors.getFromNumber(helmet-1)
+            const h=this.helmet
+
+            if(h.position){
+                this.sprites.helmet.position=v2.new(h.position.x,h.position.y)
+            }else{
+                this.sprites.helmet.position=v2.new(0,0)
+            }
+            this.sprites!.helmet.frame=this.game.resources.get_sprite(h.idString+"_world")
+        }else{
+            this.sprites.helmet.frame=undefined
+        }
+    }
+    set_backpack(backpack:number){
+        if(this.backpack&&backpack===this.backpack.idNumber!)return
+        this.backpack=Backpacks.getFromNumber(backpack)
+        if(this.backpack.no_world_image){
+            this.sprites.backpack.frame=undefined
+        }else{
+            this.sprites!.backpack.frame=this.game.resources.get_sprite(this.backpack.idString+"_world")
+        }
+    }
     override updateData(data:PlayerData){
         if(data.full){
             this.name=data.full.name
-            if(data.full.helmet>0){
-                this.helmet=Armors.getFromNumber(data.full.helmet-1)
-                const h=this.helmet
-
-                if(h.position){
-                    this.sprites.helmet.position=v2.new(h.position.x,h.position.y)
-                }else{
-                    this.sprites.helmet.position=v2.new(0,0)
-                }
-                this.sprites!.helmet.frame=this.game.resources.get_sprite(h.idString+"_world")
-            }else{
-                this.sprites.helmet.frame=undefined
-            }
+            this.set_helmet(data.full.helmet)
+            this.set_backpack(data.full.backpack)
             if(data.full.vest>0){
                 this.vest=Armors.getFromNumber(data.full.vest-1)
             }
+
             this.set_current_weapon(Weapons.valueNumber[data.full.current_weapon])
             if(data.full.animation){
                 this.play_animation(data.full.animation!)

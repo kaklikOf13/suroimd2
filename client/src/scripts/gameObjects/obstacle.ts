@@ -84,7 +84,7 @@ export class Obstacle extends ClientGameObject2D{
     on_hitted(position:Vec2){
         this._add_own_particle(position)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
-            this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{})
+            this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{},"obstacles")
         }
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {

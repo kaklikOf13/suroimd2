@@ -19,6 +19,7 @@ export interface PlayerData extends EncodedData{
         name:string
         vest:number
         helmet:number
+        backpack:number
         current_weapon:number
         animation?:PlayerAnimation
     }
@@ -106,6 +107,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     name:stream.readStringSized(28),
                     vest:stream.readUint8(),
                     helmet:stream.readUint8(),
+                    backpack:stream.readUint8(),
                     current_weapon:stream.readInt16(),
                 }
                 if(bg1[2]){
@@ -139,6 +141,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 stream.writeStringSized(28,data.full!.name)
                 .writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
+                .writeUint8(data.full!.backpack)
                 .writeInt16(data.full!.current_weapon)
                 if(data.full!.animation!==undefined){
                     stream.writeUint8(data.full!.animation.type)

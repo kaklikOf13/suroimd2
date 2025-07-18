@@ -289,14 +289,19 @@ export class GInventory extends Inventory<LItem>{
   currentWeaponDef:GunDef|MeleeDef|undefined
 
   ammos:Record<string,number>={}
-  backpack:BackpackDef=Backpacks.getFromString("tactical_pack")
+  backpack!:BackpackDef
   default_melee:string="survival_knife"
+
+  set_backpack(backpack:BackpackDef){
+    this.backpack=backpack
+  }
 
   constructor(owner:Player,default_melee:string="survival_knife"){
     super(7)
     this.owner=owner
     this.default_melee=default_melee
     this.set_weapon(0,default_melee)
+    this.set_backpack(Backpacks.getFromString("null_pack"))
   }
 
   set_current_weapon_index(idx:number){

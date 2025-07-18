@@ -6,6 +6,8 @@ import { type Player } from "./player.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
+import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/equipaments.ts";
+import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -33,7 +35,45 @@ export class Loot extends ServerGameObject{
                 this.destroy()
                 break
             }
-            case InventoryItemType.equipament:
+            case InventoryItemType.equipament:{
+                const d=this.item as unknown as EquipamentDef
+                switch(d.type){
+                    case EquipamentType.Helmet:
+                        if(!user.helmet){
+                            user.helmet=d
+                            user.dirty=true
+                            this.destroy()
+                        }else if(user.helmet.level<d.level){
+                            user.game.add_loot(user.position,user.helmet as unknown as GameItem,1)
+                            user.helmet=d
+                            user.dirty=true
+                            this.destroy()
+                        }
+                        break
+                    case EquipamentType.Vest:
+                        if(!user.vest){
+                            user.vest=d
+                            user.dirty=true
+                            this.destroy()
+                        }else if(user.vest.level<d.level){
+                            user.game.add_loot(user.position,user.vest as unknown as GameItem,1)
+                            user.vest=d
+                            user.dirty=true
+                            this.destroy()
+                        }
+                        break
+                }
+                break
+            }
+            case InventoryItemType.backpack:{
+                const d=this.item as unknown as BackpackDef
+                if(user.inventory.backpack.level<d.level){
+                    user.dirty=true
+                    user.inventory.set_backpack(d)
+                    this.destroy()
+                }
+                break
+            }
             case InventoryItemType.other:
             case InventoryItemType.melee:
             case InventoryItemType.accessorie:

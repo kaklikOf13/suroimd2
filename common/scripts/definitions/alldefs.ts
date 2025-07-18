@@ -4,7 +4,7 @@ import { Ammos } from "./items/ammo.ts";
 import { Healings } from "./healings.ts";
 import { DefinitionsMerge } from "../engine/definitions.ts";
 import { Others } from "./others.ts";
-import { Accessories, Armors } from "./equipaments.ts";
+import { Accessories, Armors } from "./items/equipaments.ts";
 import { MeleeDef, Melees } from "./items/melees.ts";
 import { Backpacks } from "./items/backpacks.ts";
 

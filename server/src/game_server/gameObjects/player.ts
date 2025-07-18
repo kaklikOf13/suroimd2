@@ -8,7 +8,7 @@ import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Armors, type EquipamentDef } from "common/scripts/definitions/equipaments.ts";
+import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
@@ -66,9 +66,6 @@ export class Player extends ServerGameObject{
         //this.inventory.give_item(GameItems.valueString["cellphone"],1)
 
         this.actions=new ActionsManager(this)
-
-        this.vest=Armors.getFromString("soldier_vest")
-        this.helmet=Armors.getFromString("basic_helmet")
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -248,6 +245,7 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,320)
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
+        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
     }
     override getData(): PlayerData {
         return {
@@ -260,7 +258,8 @@ export class Player extends ServerGameObject{
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
                 current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
-                animation:this.current_animation
+                animation:this.current_animation,
+                backpack:this.inventory.backpack.idNumber!
             }
         }
     }

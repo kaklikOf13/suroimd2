@@ -64,7 +64,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.grid)
     this.grid.zIndex=zIndexes.Grid
     this.sounds.volumes={
-      "players":0.7
+      "players":0.45,
+      "obstacles":0.7,
     }
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){

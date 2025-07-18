@@ -1,9 +1,9 @@
-import { Definitions,Definition, Vec2 } from "../engine/mod.ts"
-import { GameItem } from "./utils.ts";
-import { InventoryItemType } from "./utils.ts";
-import { PlayerModifiers } from "../others/constants.ts";
+import { Definitions,Definition, Vec2 } from "../../engine/mod.ts"
+import { GameItem } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
+import { PlayerModifiers } from "../../others/constants.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
-import { ItemQuality } from "../others/item.ts";
+import { ItemQuality } from "../../others/item.ts";
 
 export enum EquipamentType{
     Helmet,
