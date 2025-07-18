@@ -62,6 +62,10 @@ export class GunItem extends LItem{
         return
       }
       user.privateDirtys.action=true
+      user.current_animation={
+        type:PlayerAnimationType.Reloading
+      }
+      user.dirty=true
       user.actions.play(new ReloadAction(this))
     }
     shot(user:Player){

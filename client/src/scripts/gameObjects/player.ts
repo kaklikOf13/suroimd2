@@ -81,6 +81,7 @@ export class Player extends GameObject{
         }else{
             this.sprites.weapon.visible=false
         }
+        this.current_animation=undefined
         this.container.updateZIndex()
     }
 
@@ -147,8 +148,7 @@ export class Player extends GameObject{
         this.sprites.muzzle_flash.visible=false
         switch(this.current_animation.type){
             case PlayerAnimationType.Shooting:{
-                if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun)break
-                this.current_animation=animation
+                if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined}
                 const d=this.current_weapon as GunDef
                 if(d.recoil){
                     const w=0.05
@@ -203,9 +203,26 @@ export class Player extends GameObject{
                     })
                     this.game.particles.add_particle(p)
                 }
+                const sound=this.game.resources.get_audio(`${d.idString}_fire`)
+                if(sound){
+                    this.game.sounds.play(sound,{
+                        
+                    })
+                }
                 break
             }
-            case PlayerAnimationType.Reloading:
+            case PlayerAnimationType.Reloading:{
+                if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined}
+                const d=this.current_weapon as GunDef
+                
+                const sound=this.game.resources.get_audio(`${d.idString}_reload`)
+                if(sound){
+                    this.game.sounds.play(sound,{on_complete:()=>{
+                        this.current_animation=undefined
+                    }})
+                }
+                break
+            }
             case PlayerAnimationType.Healing:
         }
     }
@@ -231,6 +248,8 @@ export class Player extends GameObject{
             this.set_current_weapon(Weapons.valueNumber[data.full.current_weapon])
             if(data.full.animation){
                 this.play_animation(data.full.animation!)
+            }else{
+                this.current_animation=undefined
             }
         }
         this.position=data.position

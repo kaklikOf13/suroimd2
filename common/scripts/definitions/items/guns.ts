@@ -420,7 +420,7 @@ Guns.insert(
             count:10
         },
         reload:{
-            delay:0.8,
+            delay:0.6,
             capacity:9,
             shotsPerReload:1,
         },

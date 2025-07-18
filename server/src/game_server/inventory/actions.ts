@@ -41,6 +41,7 @@ export class ReloadAction extends Action<Player>{
         this.item.ammo+=user.inventory.consume_ammo(def.ammoType,consumed)
         user.privateDirtys.current_weapon=true
         user.privateDirtys.inventory=true
+        user.current_animation=undefined
     }
     type: number=ActionsType.Reload
 }

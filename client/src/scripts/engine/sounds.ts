@@ -5,6 +5,7 @@ export interface SoundOptions {
     loop:boolean
     delay:number
     offset:number
+    on_complete?:()=>void
 }
 export enum SoundPlayState{
     playFinished,
@@ -23,6 +24,8 @@ export class SoundInstance{
     panOld!: number
 
     sourceNode: AudioBufferSourceNode | null = null
+
+    on_complete?:()=>void
 
     playState:SoundPlayState=SoundPlayState.playFinished
     stopping:boolean=false
@@ -83,6 +86,7 @@ export class SoundInstance{
         this.playState=SoundPlayState.playInterrupted
     }
     disconnect(){
+        if(this.on_complete)this.on_complete()
         this.manager.soundInstances.splice(this.manager.soundInstances.indexOf(this),1)
 
         this.sourceNode?.stop(0)
@@ -156,6 +160,7 @@ export class SoundManager{
             this.soundInstances[this.instanceId%SoundsMaxInstances]=new SoundInstance(this,this.ctx)
         }
         const instance=this.soundInstances[this.instanceId % SoundsMaxInstances]
+        instance.on_complete=params.on_complete
         instance.start(this.masterGainNode,sound.buffer,volume,loop,delay,offset)
         if (!this.playingInstances.includes(instance)) {
             this.playingInstances.push(instance)

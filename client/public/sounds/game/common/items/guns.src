@@ -1,0 +1,7 @@
+{
+    "files":{
+        "spas12_fire":"spas12/spas12_fire.mp3",
+        "spas12_reload":"spas12/spas12_reload.mp3"
+    },
+    "dir":"sounds/game/common/items/guns"
+}
