@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="20.000002mm"
-   height="20mm"
-   viewBox="0 0 20.000002 20"
+   width="40.000004mm"
+   height="40.008217mm"
+   viewBox="0 0 40.000004 40.008217"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="crate.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="wood_crate.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="3.7753719"
-     inkscape:cx="11.786918"
-     inkscape:cy="81.184054"
+     inkscape:zoom="1.3347955"
+     inkscape:cx="-54.315435"
+     inkscape:cy="160.69877"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -45,7 +45,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(0.40828627,0,0,0.40828627,-6.3008428,-2.4695407)">
+     transform="matrix(0.81657254,0,0,0.81657254,-12.601684,-4.938885)">
     <rect
        style="fill:#7f590c;fill-opacity:1;stroke:#4f2f04;stroke-width:1.68019;stroke-dasharray:none;stroke-opacity:1"
        id="rect1"
@@ -89,7 +89,7 @@
     </g>
     <path
        id="rect13"
-       style="fill:#6e4a0a;fill-opacity:1;stroke-width:1.98601;stroke-dasharray:none;stroke:#4f2f04"
+       style="fill:#6e4a0a;fill-opacity:1;stroke:#4f2f04;stroke-width:1.98601;stroke-dasharray:none"
        d="M 9.3863349,54.890147 63.009894,1.2441646 70.998764,9.2363765 17.375207,62.882357 Z"
        transform="matrix(0.76023679,0,0,0.76023679,9.3642103,6.1702916)" />
     <g
@@ -113,7 +113,7 @@
          y="-71.441811"
          transform="rotate(90)" />
       <rect
-         style="fill:#6e4a0a;fill-opacity:1;stroke:#4f2f04;stroke-width:1.96846432;stroke-dasharray:none;stroke-opacity:1"
+         style="fill:#6e4a0a;fill-opacity:1;stroke:#4f2f04;stroke-width:1.96846;stroke-dasharray:none;stroke-opacity:1"
          id="rect2"
          width="62.464157"
          height="9.3059492"

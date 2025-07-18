@@ -19,10 +19,10 @@ export function get_item(item:string,count:number,_aditional:Aditional):LootTabl
             }
         ]
         if((itemD as unknown as GunDef).ammoSpawnAmount){
-            /*ret.push({
-                item:GameItems.valueString[(itemD as unknown as GunDef).ammoSpawn??defaultAmmos[(itemD as unknown as GunDef).ammoType]],
+            ret.push({
+                item:GameItems.valueString[(itemD as unknown as GunDef).ammoSpawn??(itemD as unknown as GunDef).ammoType],
                 count:(itemD as unknown as GunDef).ammoSpawnAmount!
-            })*/
+            })
         }
         return ret
     }else{
@@ -40,15 +40,17 @@ LootTables.add_tables({
     //Guns
     "uncommon_guns":[
         {item:"mp5",weight:1.4},
-        {item:"ak47",weight:1},
         {item:"hp18",weight:1},
-        {item:"ar15",weight:0.6},
-        {item:"m870",weight:0.6},
     ],
     "rare_guns":[
-        {item:"spas12",weight:3},
+        {item:"ak47",weight:3},
+        {item:"ar15",weight:2},
+        {item:"m870",weight:2},
     ],
     "epic_guns":[
+        {item:"spas12",weight:3},
+    ],
+    "mythic_guns":[
         {item:"vector",weight:3},
         {item:"kar98k",weight:1},
         {item:"awp",weight:0.5},
@@ -57,10 +59,11 @@ LootTables.add_tables({
         {item:"awms",weight:1},
     ],
     "guns":[
-        {table:"uncommon_guns",weight:29},
+        {table:"uncommon_guns",weight:25},
         {table:"rare_guns",weight:9},
         {table:"epic_guns",weight:1},
-        {table:"legendary_guns",weight:0.1}
+        {table:"mythic_guns",weight:0.1},
+        {table:"legendary_guns",weight:0.01}
     ],
     "special_guns":[
         {table:"uncommon_guns",weight:29},
@@ -112,16 +115,36 @@ LootTables.add_tables({
         {item:"9mm",count:60,weight:1},
         {item:"762mm",count:60,weight:1},
         {item:"556mm",count:60,weight:1},
+        {item:"308sub",count:5,weight:0.05},
+    ],
+    //Equipments And Backpacks
+    "armors":[
+        {item:"basic_vest",weight:10},
+        {item:"regular_vest",weight:1},
+        {item:"tactical_vest",weight:0.05},
+
+        {item:"basic_helmet",weight:10},
+        {item:"regular_helmet",weight:1},
+        {item:"soldier_helmet",weight:0.05},
+    ],
+    "backpacks":[
+        {item:"basic_pack",weight:10},
+        {item:"regular_pack",weight:1},
+        {item:"tactical_pack",weight:0.05},
+    ],
+    "equipments":[
+        {table:"armors",weight:1},
+        {table:"backpacks",weight:1},
     ],
     //Loot Tables
     "wood_crate":{
         content:[
-            {weight:1.5,table:"consumibles"},
-            {weight:1.3,table:"ammos"},
+            {weight:2,table:"ammos"},
+            {weight:1,table:"equipments"},
             {weight:0.5,table:"guns"},
         ],
         min:1,
-        max:4
+        max:2
     },
     "copper_crate":{
         content:[

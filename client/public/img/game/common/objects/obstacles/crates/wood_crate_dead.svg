@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="20.000002mm"
-   height="20mm"
-   viewBox="0 0 20.000002 20"
+   width="39.597027mm"
+   height="39.187012mm"
+   viewBox="0 0 39.597027 39.187012"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="normal_crate_dead.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="wood_crate_dead.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -24,8 +24,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.6695911"
-     inkscape:cx="-27.157717"
-     inkscape:cy="106.19604"
+     inkscape:cx="9.9266139"
+     inkscape:cy="142.1566"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -45,7 +45,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(0.40828627,0,0,0.40828627,-6.3008428,-2.4695407)">
+     transform="matrix(0.81657254,0,0,0.81657254,-13.053063,-5.5306592)">
     <path
        style="fill:#6e4a0a;fill-opacity:1;stroke:#4f2f04;stroke-width:1.46956;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        d="m 19.363924,23.346391 12.488897,-15.8388336 -1.15015,4.6495846 4.27536,-2.7483212 -2.32141,5.0563392 5.597714,-2.474075 -3.139097,4.140232 4.691148,-2.344361 -13.114383,15.205357 -3.770139,3.40416 1.503723,-4.566556 -4.480893,3.243695 2.743307,-5.651515 -4.306191,3.155075 2.266416,-3.902328 -3.928454,2.407819 z"

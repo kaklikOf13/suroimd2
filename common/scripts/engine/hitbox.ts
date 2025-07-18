@@ -272,10 +272,12 @@ export class RectHitbox2D extends BaseHitbox2D{
     override center(): Vec2 {
         return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))
     }
-    override scale(scale:number){
-        const s=v2.scale(v2.sub(this.max,this.min),scale)
-        this.max.x=this.min.x+s.x
-        this.max.y=this.min.y+s.y
+    override scale(scale: number): void {
+        const centerX = (this.min.x + this.max.x) / 2;
+        const centerY = (this.min.y + this.max.y) / 2;
+
+        this.min = v2.new((this.min.x - centerX) * scale + centerX, (this.min.y - centerY) * scale + centerY);
+        this.max = v2.new((this.max.x - centerX) * scale + centerX, (this.max.y - centerY) * scale + centerY);
     }
     override randomPoint(): Vec2 {
         return v2.random2(this.min,this.max)

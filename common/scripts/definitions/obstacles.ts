@@ -12,7 +12,7 @@ export interface ObstacleDef extends Definition{
     noBulletCollision?:boolean
     scale?:{
         min?:number
-        man?:number
+        max?:number
         destroy?:number
     }
     frame?:{
@@ -105,11 +105,12 @@ Obstacles.insert(
     },
     {
         idString:"wood_crate",
-        health:130,
-        hotspot:v2.new(0,0),
+        health:70,
         hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
         scale:{
-            destroy:0.8
+            destroy:1,
+            min:1.6,
+            max:2,
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,

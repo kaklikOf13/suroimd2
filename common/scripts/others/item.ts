@@ -5,6 +5,7 @@ export enum ItemQuality{
     Uncommon,
     Rare,
     Epic,
+    Mythic,
     Legendary,
     Developer
 }

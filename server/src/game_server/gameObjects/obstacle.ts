@@ -57,6 +57,11 @@ export class Obstacle extends ServerGameObject{
         if(this.def.lootTable){
             this.loot=LootTables.get_loot(this.def.lootTable,{withammo:true})
         }
+
+        if(this.def.scale?.min&&this.def.scale.max){
+            this.maxScale=random.float(this.def.scale.min,this.def.scale.max)
+            this.scale=this.maxScale
+        }
     }
     set_position(position:Vec2){
         if(this.def.hitbox){
@@ -107,11 +112,9 @@ export class Obstacle extends ServerGameObject{
         if(this.def.onDestroyExplosion){
             this.game.add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner)
         }
-        /*
-
         for(const l of this.loot){
             this.game.add_loot(this.position,l.item,l.count)
-        }*/
+        }
 
         this.dirtyPart=true
         this.dead=true

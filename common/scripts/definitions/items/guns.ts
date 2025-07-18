@@ -135,12 +135,12 @@ Guns.insert(
         fireDelay:0.1,
         switchDelay:0.6,
         spread:5,
-        lenght:1.3,
+        lenght:1.2,
         size:4,
         ammoType:"762mm",
         ammoSpawnAmount:90,
         class:GunClasses.Automatic,
-        quality:ItemQuality.Uncommon,
+        quality:ItemQuality.Rare,
         bullet:{
             def:{
                 damage:10,
@@ -174,7 +174,7 @@ Guns.insert(
         ammoType:"556mm",
         ammoSpawnAmount:90,
         class:GunClasses.Automatic,
-        quality:ItemQuality.Uncommon,
+        quality:ItemQuality.Rare,
         bullet:{
             def:{
                 damage:9.8,
@@ -238,7 +238,7 @@ Guns.insert(
         ammoType:"9mm",
         ammoSpawnAmount:99,
         class:GunClasses.Automatic,
-        quality:ItemQuality.Epic,
+        quality:ItemQuality.Mythic,
         bullet:{
             def:{
                 damage:5,
@@ -270,7 +270,7 @@ Guns.insert(
         ammoType:"9mm",
         ammoSpawnAmount:96,
         class:GunClasses.Automatic,
-        quality:ItemQuality.Epic,
+        quality:ItemQuality.Rare,
         bullet:{
             def:{
                 damage:5,
@@ -301,7 +301,7 @@ Guns.insert(
         ammoSpawnAmount:20,
         fireMode:FireMode.Single,
         class:GunClasses.Sniper,
-        quality:ItemQuality.Epic,
+        quality:ItemQuality.Mythic,
         bullet:{
             def:{
                 damage:44,
@@ -346,7 +346,7 @@ Guns.insert(
         ammoType:"762mm",
         fireMode:FireMode.Single,
         class:GunClasses.Sniper,
-        quality:ItemQuality.Epic,
+        quality:ItemQuality.Mythic,
         ammoSpawnAmount:30,
         bullet:{
             def:{
@@ -414,7 +414,7 @@ Guns.insert(
         size:4.3,
         fireMode:FireMode.Single,
         class:GunClasses.Shotgun,
-        quality:ItemQuality.Uncommon,
+        quality:ItemQuality.Rare,
         bullet:{
             def:{
                 damage:7,
@@ -448,7 +448,7 @@ Guns.insert(
         ammoSpawnAmount:18,
         jitterRadius:0.13,
         class:GunClasses.Shotgun,
-        quality:ItemQuality.Rare,
+        quality:ItemQuality.Epic,
         size:4.5,
         fireMode:FireMode.Single,
         muzzleFlash:MuzzleFlash.normal,
@@ -556,7 +556,7 @@ Guns.insert(
         ammoSpawn:"purple_pills",
         mana_consume:5,
         class:GunClasses.Magic,
-        quality:ItemQuality.Epic,
+        quality:ItemQuality.Mythic,
         fireMode:FireMode.Auto,
         projectile:{
             def:"fireball_projectile",

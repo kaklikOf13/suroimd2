@@ -79,6 +79,9 @@ export class GameMap{
         for(let i=0;i<5;i++){
             this.generate_obstacle(Obstacles.getFromString("barrel"))
         }
+        for(let i=0;i<5;i++){
+            this.generate_obstacle(Obstacles.getFromString("wood_crate"))
+        }
         for(let i=0;i<Object.values(Guns.valueNumber).length;i++){
             this.game.add_loot(v2.random2(NullVec2,this.size),Guns.getFromNumber(i) as unknown as GameItem,1)
         }
@@ -86,44 +89,5 @@ export class GameMap{
         this.game.add_loot(v2.new(3,3),Armors.getFromString("basic_helmet") as unknown as GameItem,1)
         this.game.add_loot(v2.new(3,3),Backpacks.getFromString("tactical_pack") as unknown as GameItem,1)
         //Feast
-        /*const crate=Obstacles.getFromString("wood_crate")
-        let obs=this.add_obstacle(crate)
-        obs.set_position(v2.new(2,4))
-        obs=this.add_obstacle(crate)
-        obs.set_position(v2.new(3,4))
-        obs=this.add_obstacle(crate)
-        obs.set_position(v2.new(2,5))
-        obs=this.add_obstacle(crate)
-        obs.set_position(v2.new(3,5))
-        obs=this.add_obstacle(crate)
-        obs.set_position(v2.new(2,6))
-        obs=this.add_obstacle(crate)
-        obs.set_position(v2.new(3,6))
-        // Map
-        for(let i=0;i<10;i++){
-            this.generate_obstacle(Obstacles.getFromString("barrel"))
-        }
-        for(let i=0;i<15;i++){
-            this.generate_obstacle(Obstacles.getFromString("stone"))
-        }
-        for(let i=0;i<5;i++){
-            this.generate_obstacle(crate)
-        }
-        for(let i=0;i<3;i++){
-            this.generate_obstacle(Obstacles.getFromString("copper_crate"))
-        }
-        for(let i=0;i<1;i++){
-            this.generate_obstacle(Obstacles.getFromString("iron_crate"))
-        }
-        for(let i=0;i<1;i++){
-            this.generate_obstacle(Obstacles.getFromString("gold_crate"))
-        }
-        for(let i=0;i<10;i++){
-            this.generate_obstacle(Obstacles.getFromString("bush"))
-        }
-        for(let i=0;i<15;i++){
-            this.generate_obstacle(Obstacles.getFromString("oak_tree"))
-        }
-        */
     }
 }
