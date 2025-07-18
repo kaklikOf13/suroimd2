@@ -6,7 +6,10 @@ export enum PlayerAnimationType{
 }
 export type PlayerAnimation={
 }&({
-    type:PlayerAnimationType.Shooting|PlayerAnimationType.Reloading
+    type:PlayerAnimationType.Shooting
+}|{
+    type:PlayerAnimationType.Reloading
+    alt_reload:boolean
 }|{
     type:PlayerAnimationType.Healing
     item:number
@@ -109,9 +112,14 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     const tp=stream.readUint8() as PlayerAnimationType
                     switch(tp){
                         case PlayerAnimationType.Shooting:
-                        case PlayerAnimationType.Reloading:
                             ret.full.animation={
                                 type:tp
+                            }
+                            break
+                        case PlayerAnimationType.Reloading:
+                            ret.full.animation={
+                                type:tp,
+                                alt_reload:!!stream.readUint8()
                             }
                             break
                         case PlayerAnimationType.Healing:
@@ -134,6 +142,15 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 .writeInt16(data.full!.current_weapon)
                 if(data.full!.animation!==undefined){
                     stream.writeUint8(data.full!.animation.type)
+                    switch(data.full!.animation.type){
+                        case PlayerAnimationType.Shooting:
+                            break
+                        case PlayerAnimationType.Reloading:
+                            stream.writeUint8(data.full!.animation.alt_reload?1:0)
+                            break
+                        case PlayerAnimationType.Healing:
+                            break
+                    }
                 }
             }
         }

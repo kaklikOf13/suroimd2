@@ -63,6 +63,9 @@ export class Game extends ClientGame2D<GameObject>{
     this.grid.grid_size=GameConstants.collision.chunckSize
     this.camera.addObject(this.grid)
     this.grid.zIndex=zIndexes.Grid
+    this.sounds.volumes={
+      "players":0.7
+    }
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})

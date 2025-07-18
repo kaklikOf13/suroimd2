@@ -56,14 +56,15 @@ export class GunItem extends LItem{
       return user.BoostType===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
     }
     reload(user:Player){
-      if(!this.def.reload)return
+      if(!this.def.reload||this.use_delay>0)return
       if(this.ammo>=this.def.reload.capacity||!user.inventory.ammos[this.def.ammoType]){
         this.reloading=false
         return
       }
       user.privateDirtys.action=true
       user.current_animation={
-        type:PlayerAnimationType.Reloading
+        type:PlayerAnimationType.Reloading,
+        alt_reload:this.ammo===0,
       }
       user.dirty=true
       user.actions.play(new ReloadAction(this))

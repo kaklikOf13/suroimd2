@@ -1,7 +1,13 @@
 {
     "files":{
         "spas12_fire":"spas12/spas12_fire.mp3",
-        "spas12_reload":"spas12/spas12_reload.mp3"
+        "spas12_reload":"spas12/spas12_reload.mp3",
+        "spas12_switch":"spas12/spas12_switch.mp3",
+
+        "kar98k_fire":"kar98k/kar98k_fire.mp3",
+        "kar98k_reload":"kar98k/kar98k_reload.mp3",
+        "kar98k_reload_alt":"kar98k/kar98k_reload_alt.mp3",
+        "kar98k_switch":"kar98k/kar98k_switch.mp3"
     },
     "dir":"sounds/game/common/items/guns"
 }

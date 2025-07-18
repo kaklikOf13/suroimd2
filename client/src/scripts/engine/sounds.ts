@@ -86,6 +86,7 @@ export class SoundInstance{
         this.playState=SoundPlayState.playInterrupted
     }
     disconnect(){
+        if(this.playState===SoundPlayState.playFinished)return
         if(this.on_complete)this.on_complete()
         this.manager.soundInstances.splice(this.manager.soundInstances.indexOf(this),1)
 
@@ -141,7 +142,7 @@ export class SoundManager{
         }
 
     }
-    play(sound:Sound,params:Partial<SoundOptions>,volume_group?:string){
+    play(sound:Sound,params:Partial<SoundOptions>,volume_group?:string):SoundInstance|undefined{
         if(!sound)return
         let volume = params.volume != undefined ? params.volume : 1
         volume *= sound.volume*this.masterVolume
@@ -165,6 +166,7 @@ export class SoundManager{
         if (!this.playingInstances.includes(instance)) {
             this.playingInstances.push(instance)
         }
+        return instance
     }
     update(_dt:number){
         const masterVolume = this.mute ? 0 : this.masterVolume

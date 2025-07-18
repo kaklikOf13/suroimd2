@@ -8,6 +8,16 @@ export enum FireMode{
 }
 export interface GasParticle{
     count:number
+    size:{
+        min:number
+        max:number
+    }
+    speed:{
+        min:number
+        max:number
+    }
+    life_time:number
+    direction_variation:number
 }
 export enum GunClasses{
     Shotgun,
@@ -18,12 +28,10 @@ export enum GunClasses{
 }
 export interface MuzzleFlash{
     sprite:string
-    duration:number
 }
 export const MuzzleFlash={
     normal:{
         sprite:"muzzle_flash_1",
-        duration:0.1
     }
 }
 export interface GunDef extends Definition{
@@ -81,10 +89,43 @@ export const Guns=new Definitions<GunDef,GameItem>((g)=>{
 
 export const GasParticles={
     shotgun:{
-        count:5
+        count:7,
+        size:{
+            min:0.5,
+            max:1.2
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:0.9,
+        direction_variation:0.4
+    } satisfies GasParticle,
+    sniper:{
+        count:8,
+        size:{
+            min:0.6,
+            max:1.4
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:1.1,
+        direction_variation:0.43
     } satisfies GasParticle,
     automatic:{
-        count:1
+        count:1,
+        size:{
+            min:0.8,
+            max:1
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:0.7,
+        direction_variation:0.2
     } satisfies GasParticle
 }
 
@@ -290,7 +331,11 @@ Guns.insert(
             position:v2.new(0.6,0.04),
             rotation:0
         },
+        gasParticles:GasParticles.sniper,
         muzzleFlash:MuzzleFlash.normal,
+        caseParticle:{
+            position:v2.new(0.6,0.3)
+        }
     },
     {
         idString:"awp",
