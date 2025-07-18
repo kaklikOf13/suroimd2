@@ -17,6 +17,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
+import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 export abstract class LItem extends Item{
   abstract on_use(user:Player,slot?:LItem):void
   abstract update(user:Player):void
@@ -106,6 +107,10 @@ export class GunItem extends LItem{
         user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
       }
 
+      user.current_animation={
+        type:PlayerAnimationType.Shooting
+      }
+      user.dirty=true
       user.privateDirtys.current_weapon=true
     }
     update(user:Player){
@@ -263,7 +268,7 @@ export class MeleeItem extends LItem{
     }
   }
   update(user: Player): void {
-    this.use_delay-=1/user.game.tps
+    if(this.use_delay>0)this.use_delay-=1/user.game.tps
   }
 }
 export class GInventory extends Inventory<LItem>{
@@ -320,6 +325,7 @@ export class GInventory extends Inventory<LItem>{
       }
     }
 
+    this.owner.current_animation=undefined
     this.owner.dirty=true
   }
   set_weapon(slot:keyof typeof this.weapons=0,id:string=""){

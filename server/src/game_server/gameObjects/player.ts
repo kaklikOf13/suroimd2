@@ -1,6 +1,6 @@
 import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
-import { PlayerData } from "common/scripts/others/objectsEncode.ts";
+import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { GInventory,GunItem,LItem} from "../inventory/inventory.ts";
 import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/update_packet.ts";
@@ -14,7 +14,6 @@ import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
-import { MeleeDef, Melees } from "../../../../common/scripts/definitions/items/melees.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 
 export class Player extends ServerGameObject{
@@ -22,7 +21,7 @@ export class Player extends ServerGameObject{
     oldPosition:Vec2
     stringType:string="player"
     numberType: number=1
-    name:string="a"
+    name:string=""
     using_item:boolean=false
     using_item_down:boolean=false
     rotation:number=0
@@ -51,6 +50,8 @@ export class Player extends ServerGameObject{
         damage:0,
         kills:0
     }
+    
+    current_animation?:PlayerAnimation
 
     pvpEnabled:boolean=false
     interactionsEnabled:boolean=false
@@ -132,6 +133,7 @@ export class Player extends ServerGameObject{
                   * this.modifiers.speed
         if(this.recoil){
             this.recoil.delay-=dt
+            this.current_animation=undefined
             if(this.recoil.delay<=0)this.recoil=undefined
         }
         switch(this.BoostType){
@@ -257,7 +259,8 @@ export class Player extends ServerGameObject{
                 name:this.name,
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
-                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1
+                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
+                animation:this.current_animation
             }
         }
     }

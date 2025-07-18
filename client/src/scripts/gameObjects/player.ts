@@ -1,4 +1,4 @@
-import { PlayerData } from "common/scripts/others/objectsEncode.ts";
+import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS, GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "common/scripts/definitions/equipaments.ts";
@@ -8,6 +8,8 @@ import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/m
 import { Debug } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { ABParticle2D } from "../engine/game.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -27,6 +29,7 @@ export class Player extends GameObject{
         left_arm:new Sprite2D(),
         right_arm:new Sprite2D(),
         weapon:new Sprite2D(),
+        muzzle_flash:new Sprite2D(),
     }
 
     current_weapon?:WeaponDef
@@ -41,6 +44,8 @@ export class Player extends GameObject{
             this.game.scene.objects.add_object(d,CATEGORYS.DECALS)
         }
     }
+
+    current_animation?:PlayerAnimation
 
     set_current_weapon(def:WeaponDef){
         if(this.current_weapon===def)return
@@ -132,6 +137,77 @@ export class Player extends GameObject{
         this.container.add_child(this.sprites.right_arm)
         this.container.add_child(this.sprites.helmet)
         this.container.add_child(this.sprites.weapon)
+        this.sprites.muzzle_flash.visible=false
+        this.sprites.muzzle_flash.hotspot=v2.new(0,.5)
+        this.sprites.muzzle_flash.zIndex=10
+        this.container.add_child(this.sprites.muzzle_flash)
+    }
+    play_animation(animation:PlayerAnimation){
+        this.current_animation=animation
+        this.sprites.muzzle_flash.visible=false
+        switch(this.current_animation.type){
+            case PlayerAnimationType.Shooting:{
+                if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun)break
+                this.current_animation=animation
+                const d=this.current_weapon as GunDef
+                if(d.recoil){
+                    const w=0.05
+                    const dur=0.1
+                    this.game.addTween({
+                        target:this.sprites.weapon.position,
+                        duration:dur,
+                        to:v2.sub(this.sprites.weapon.position,v2.new(w,0)),
+                        yoyo:true,
+                        onComplete:()=>{
+                            this.current_animation=undefined
+                        }
+                    })
+                    this.game.addTween({
+                        target:this.sprites.left_arm.position,
+                        duration:dur,
+                        to:v2.sub(this.sprites.left_arm.position,v2.new(w,0)),
+                        yoyo:true,
+                    })
+                    this.game.addTween({
+                        target:this.sprites.right_arm.position,
+                        duration:dur,
+                        to:v2.sub(this.sprites.right_arm.position,v2.new(w,0)),
+                        yoyo:true,
+                    })
+                }
+                if(d.muzzleFlash&&!this.sprites.muzzle_flash.visible){
+                    this.sprites.muzzle_flash.frame=this.game.resources.get_sprite(d.muzzleFlash.sprite)
+                    this.sprites.muzzle_flash.position=v2.new(d.lenght,0)
+                    
+                    this.sprites.muzzle_flash.visible=true
+                    this.game.addTimeout(()=>{
+                        this.sprites.muzzle_flash.visible=false
+                    },d.muzzleFlash.duration)
+                }
+                if(d.caseParticle){
+                    const p=new ABParticle2D({
+                        direction:this.rotation+(3.141592/2),
+                        life_time:0.4,
+                        position:v2.add(
+                            this.position,
+                            v2.mult(v2.from_RadAngle(this.rotation),d.caseParticle.position)
+                        ),
+                        sprite:d.caseParticle.frame??"casing_"+d.ammoType,
+                        speed:random.float(3,4),
+                        angle:0,
+                        scale:1,
+                        to:{
+                            angle:random.float(1,3),
+                            scale:0.7
+                        }
+                    })
+                    this.game.particles.add_particle(p)
+                }
+                break
+            }
+            case PlayerAnimationType.Reloading:
+            case PlayerAnimationType.Healing:
+        }
     }
     override updateData(data:PlayerData){
         if(data.full){
@@ -153,7 +229,9 @@ export class Player extends GameObject{
                 this.vest=Armors.getFromNumber(data.full.vest-1)
             }
             this.set_current_weapon(Weapons.valueNumber[data.full.current_weapon])
-
+            if(data.full.animation){
+                this.play_animation(data.full.animation!)
+            }
         }
         this.position=data.position
         this.rotation=data.rotation

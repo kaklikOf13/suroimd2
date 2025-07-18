@@ -1,10 +1,23 @@
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
+export enum PlayerAnimationType{
+    Shooting,
+    Reloading,
+    Healing,
+}
+export type PlayerAnimation={
+}&({
+    type:PlayerAnimationType.Shooting|PlayerAnimationType.Reloading
+}|{
+    type:PlayerAnimationType.Healing
+    item:number
+})
 export interface PlayerData extends EncodedData{
     full?:{
         name:string
         vest:number
         helmet:number
         current_weapon:number
+        animation?:PlayerAnimation
     }
     position:Vec2
     rotation:number
@@ -92,6 +105,19 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     helmet:stream.readUint8(),
                     current_weapon:stream.readInt16(),
                 }
+                if(bg1[2]){
+                    const tp=stream.readUint8() as PlayerAnimationType
+                    switch(tp){
+                        case PlayerAnimationType.Shooting:
+                        case PlayerAnimationType.Reloading:
+                            ret.full.animation={
+                                type:tp
+                            }
+                            break
+                        case PlayerAnimationType.Healing:
+                            break
+                    }
+                }
             }
             return ret
         },
@@ -100,13 +126,15 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:PlayerData,stream:NetStream){
             stream.writePosition(data.position)
             .writeRad(data.rotation)
-            .writeBooleanGroup(data.using_item,data.using_item_down)
+            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined)
             if(full){
                 stream.writeStringSized(28,data.full!.name)
                 .writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
                 .writeInt16(data.full!.current_weapon)
-                
+                if(data.full!.animation!==undefined){
+                    stream.writeUint8(data.full!.animation.type)
+                }
             }
         }
     },

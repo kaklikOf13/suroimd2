@@ -1,4 +1,4 @@
-import { v2 } from "../../engine/geometry.ts";
+import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts";
 import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../../others/item.ts";
 import { type BulletDef, GameItem, InventoryItemType } from "../utils.ts";
@@ -15,6 +15,16 @@ export enum GunClasses{
     Automatic,
     SMG,
     Magic
+}
+export interface MuzzleFlash{
+    sprite:string
+    duration:number
+}
+export const MuzzleFlash={
+    normal:{
+        sprite:"muzzle_flash_1",
+        duration:0.1
+    }
 }
 export interface GunDef extends Definition{
     bullet?:{
@@ -41,6 +51,7 @@ export interface GunDef extends Definition{
     ammoType:string
     class:GunClasses
     quality:ItemQuality
+    muzzleFlash?:MuzzleFlash
     reload?:{
         capacity:number
         delay:number
@@ -56,7 +67,11 @@ export interface GunDef extends Definition{
     }
     arms?:FistRig
     image?:WeaponRig
-    
+    caseParticle?:{
+        position:Vec2
+        at_begin?:boolean
+        frame?:string
+    }
     gasParticles?:GasParticle
 }
 
@@ -104,6 +119,7 @@ Guns.insert(
         },
         speed_mod:0.97,
         gasParticles:GasParticles.automatic,
+        muzzleFlash:MuzzleFlash.normal,
         arms:WeaponsArmRig[0],
         image:WeaponsRig[0]
     },
@@ -238,7 +254,7 @@ Guns.insert(
         idString:"kar98k",
         fireDelay:1.1,
         spread:1,
-        lenght:1.35,
+        lenght:1.26,
         size:4.5,
         ammoType:"762mm",
         ammoSpawnAmount:20,
@@ -270,7 +286,11 @@ Guns.insert(
         },
         speed_mod:0.95,
         arms:WeaponsArmRig[1],
-        image:WeaponsRig[0]
+        image:{
+            position:v2.new(0.6,0.04),
+            rotation:0
+        },
+        muzzleFlash:MuzzleFlash.normal,
     },
     {
         idString:"awp",
@@ -378,7 +398,7 @@ Guns.insert(
         idString:"spas12",
         fireDelay:0.7,
         spread:3,
-        lenght:1.25,
+        lenght:1.15,
         ammoType:"12g",
         ammoSpawnAmount:18,
         jitterRadius:0.13,
@@ -386,6 +406,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         size:4.5,
         fireMode:FireMode.Single,
+        muzzleFlash:MuzzleFlash.normal,
         bullet:{
             def:{
                 damage:5,
@@ -410,7 +431,13 @@ Guns.insert(
         speed_mod:0.95,
         gasParticles:GasParticles.shotgun,
         arms:WeaponsArmRig[0],
-        image:WeaponsRig[0]
+        image:{
+            position:v2.new(0.6,0.03),
+            rotation:0
+        },
+        caseParticle:{
+            position:v2.new(0.6,0.3)
+        }
     },
     {
         idString:"hp18",

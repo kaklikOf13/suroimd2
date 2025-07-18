@@ -30,7 +30,7 @@ export class DamageSplash extends ClientGameObject2D{
 
         const basePosition = v2.duplicate(this.sprite.position)
         const oscillation = (i=0) => {
-            if(this.dying||this.destroyed||i>10)return
+            if(this.dying||this.destroyed||i>15)return
             const offset = v2.new(
                 (Math.random() - 0.5) * 0.15,
                 (Math.random() - 0.5) * 0.15-1
