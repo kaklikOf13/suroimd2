@@ -3,12 +3,14 @@ import { BoostType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, CATEGORYS, GameOverPacket } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
 import { Player } from "../gameObjects/player.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts";
 import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
 import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
+import { KillFeedMessage, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 
 export class GuiManager{
     game:Game
@@ -49,6 +51,8 @@ export class GuiManager{
         weapon3:document.querySelector("#game-weapon-slot-02") as HTMLDivElement,
 
         ammos:document.querySelector("#ammos-inventory") as HTMLDivElement,
+
+        killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
     }
 
     weapons:{
@@ -120,6 +124,37 @@ export class GuiManager{
                 this.ammos_cache[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
             }
         }
+    }
+    players_name:Record<number,{name:string,badge:string}>={}
+    process_joined_packet(jp:JoinedPacket){
+        for(const p of jp.players){
+            this.players_name[p.id]={name:p.name,badge:""}
+        }
+    }
+    add_killfeed_message(msg:KillFeedMessage){
+        const elem=document.createElement("div") as HTMLDivElement
+        elem.classList.add("killfeed-message")
+        this.content.killfeed.appendChild(elem)
+        switch(msg.type){
+            case KillFeedMessageType.join:{
+                this.players_name[msg.playerId]={badge:"",name:msg.playerName}
+                elem.innerHTML=`${this.players_name[msg.playerId].name} Join`
+                break
+            }
+            case KillFeedMessageType.kill:{
+                const dsd=DamageSources.valueNumber[msg.used]
+                elem.innerHTML=`${this.players_name[msg.killerId].name} Killed ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                break
+            }
+            case KillFeedMessageType.down:{
+                const dsd=DamageSources.valueNumber[msg.used]
+                elem.innerHTML=`${this.players_name[msg.killerId].name} Knocked ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                break
+            }
+        }
+        this.game.addTimeout(()=>{
+            elem.remove()
+        },4)
     }
     update_gui(gui:GuiUpdate){
         this.set_health(gui.health,gui.max_health)

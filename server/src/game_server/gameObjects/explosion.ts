@@ -7,6 +7,7 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
+import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 
 export class Explosion extends ServerGameObject{
     stringType:string="explosion"
@@ -14,6 +15,7 @@ export class Explosion extends ServerGameObject{
     defs!:ExplosionDef
 
     owner?:Player
+    source?:DamageSourceDef
 
     radius:number=2
     constructor(){
@@ -61,11 +63,11 @@ export class Explosion extends ServerGameObject{
             for(const obj of damageCollisions){
                 switch(obj.stringType){
                     case "player":{
-                        (obj as Player).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
+                        (obj as Player).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
                         break
                     }
                     case "obstacle":
-                        (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
+                        (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
                         break
                 }
             }
@@ -74,9 +76,10 @@ export class Explosion extends ServerGameObject{
             this.delay--
         }
     }
-    create(args: {defs:ExplosionDef,position:Vec2,owner?:Player}): void {
+    create(args: {defs:ExplosionDef,source?:DamageSourceDef,position:Vec2,owner?:Player}): void {
         this.defs=args.defs
         this.owner=args.owner
+        this.source=args.source
         this.hb=new CircleHitbox2D(args.position,random.float(this.defs.size.min,this.defs.size.max))
     }
     override getData(): ExplosionData {

@@ -16,7 +16,6 @@ import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpac
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
-    name:string=""
     zIndex=zIndexes.Players
 
     vest?:EquipamentDef
@@ -319,7 +318,6 @@ export class Player extends GameObject{
     }
     override updateData(data:PlayerData){
         if(data.full){
-            this.name=data.full.name
             this.set_helmet(data.full.helmet)
             this.set_backpack(data.full.backpack)
             if(data.full.vest>0){

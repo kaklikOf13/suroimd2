@@ -6,6 +6,8 @@ import { JoinPacket } from "../packets/join_packet.ts"
 import { ActionPacket } from "../packets/action_packet.ts"
 import { GameOverPacket } from "../packets/gameOver.ts"
 import { UpdatePacket } from "../packets/update_packet.ts";
+import { KillFeedPacket } from "../packets/killfeed_packet.ts";
+import { JoinedPacket } from "../packets/joined_packet.ts";
 
 export const GameConstants={
     player:{
@@ -53,6 +55,8 @@ PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)
 PacketManager.add_packet(UpdatePacket)
 PacketManager.add_packet(GameOverPacket)
+PacketManager.add_packet(KillFeedPacket)
+PacketManager.add_packet(JoinedPacket)
 
 export enum zIndexes{
     Terrain,

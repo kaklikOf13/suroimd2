@@ -16,7 +16,6 @@ export type PlayerAnimation={
 })
 export interface PlayerData extends EncodedData{
     full?:{
-        name:string
         vest:number
         helmet:number
         backpack:number
@@ -104,7 +103,6 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             ret.using_item_down=bg1[1]
             if(full){
                 ret.full={
-                    name:stream.readStringSized(28),
                     vest:stream.readUint8(),
                     helmet:stream.readUint8(),
                     backpack:stream.readUint8(),
@@ -138,8 +136,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeRad(data.rotation)
             .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined)
             if(full){
-                stream.writeStringSized(28,data.full!.name)
-                .writeUint8(data.full!.vest)
+                stream.writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
                 .writeUint8(data.full!.backpack)
                 .writeInt16(data.full!.current_weapon)

@@ -9,13 +9,14 @@ import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
-import { GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
+import { DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Team } from "../others/teams.ts";
+import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -258,7 +259,6 @@ export class Player extends ServerGameObject{
             using_item:this.using_item,
             using_item_down:this.using_item_down,
             full:{
-                name:this.name,
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
                 current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
@@ -412,6 +412,12 @@ export class Player extends ServerGameObject{
 
         if(params.owner&&params.owner instanceof Player){
             params.owner.status.kills++
+            this.game.send_killfeed_message({
+                killerId:params.owner.id,
+                victimId:this.id,
+                type:KillFeedMessageType.kill,
+                used:DamageSources.keysString[params.source!.idString]
+            })
         }
         this.game.add_player_body(this)
         this.game.addTimeout(()=>{

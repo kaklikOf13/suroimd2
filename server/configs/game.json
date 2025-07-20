@@ -5,7 +5,7 @@
             "gameTps":100,
             "netTps":40,
             "chunckSize":12,
-            "teamSize":2,
+            "teamSize":1,
             "deenable_feast":true
         },
         "max_games":5

@@ -298,3 +298,19 @@
         border: 3px solid #eee;
     }
 }
+#killfeed-container{
+    position: absolute;
+    right: 300px;
+    top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    .killfeed-message{
+        background-color: #0003;
+        border-radius: 20px;
+        font-family: "Russo-One";
+        font-size: 18px;
+        img{align-self: center;
+        }
+    }
+}

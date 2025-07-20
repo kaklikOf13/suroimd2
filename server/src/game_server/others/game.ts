@@ -18,6 +18,9 @@ import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { TeamsManager } from "./teams.ts";
+import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
+import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
+import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -167,6 +170,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     killing_game:boolean=false
     nd:number=0
+    send_killfeed_message(msg:KillFeedMessage){
+        const p=new KillFeedPacket()
+        p.message=msg
+        this.clients.emit(p)
+    }
     netUpdate(){
         for(const p of Object.values(this.connectedPlayers)){
             p.update2()
@@ -196,7 +204,23 @@ export class Game extends ServerGame2D<ServerGameObject>{
         p.pvpEnabled=this._pvpEnabled||this.config.deenable_feast
         p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
 
+        const jp=new JoinedPacket()
+
+        for(const lp of this.players){
+            if(lp.id===p.id)continue
+            jp.players.push({
+                id:lp.id,
+                name:lp.name
+            })
+        }
+        client.emit(jp)
+
         this.modeManager.on_player_join(p)
+        this.send_killfeed_message({
+            type:KillFeedMessageType.join,
+            playerId:p.id,
+            playerName:p.name
+        })
 
         return p
     }
@@ -225,8 +249,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.bullets[b.id]=b
         return b
     }
-    add_explosion(position:Vec2,def:ExplosionDef,owner?:Player):Explosion{
-        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position}) as Explosion
+    add_explosion(position:Vec2,def:ExplosionDef,owner?:Player,source?:DamageSourceDef):Explosion{
+        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position,source}) as Explosion
         return e
     }
     add_player_body(owner:Player):PlayerBody{
