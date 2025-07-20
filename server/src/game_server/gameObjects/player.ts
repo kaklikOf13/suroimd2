@@ -258,6 +258,7 @@ export class Player extends ServerGameObject{
             rotation:this.rotation,
             using_item:this.using_item,
             using_item_down:this.using_item_down,
+            dead:this.dead,
             full:{
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
@@ -401,11 +402,9 @@ export class Player extends ServerGameObject{
         }
     }
     kill(params:DamageParams){
+        if(this.dead)return
         this.dead=true
         this.update2()
-        if(this.client){
-            this.destroy()
-        }
         this.inventory.drop_all();
         this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
         this.game.modeManager.on_player_die(this);
@@ -423,6 +422,8 @@ export class Player extends ServerGameObject{
         this.game.addTimeout(()=>{
             this.send_game_over(false)
         },2)
+        this.dirty=true
+        this.game.scene.cells.unregistry(this)
     }
     send_game_over(win:boolean=false){
         const p=new GameOverPacket()

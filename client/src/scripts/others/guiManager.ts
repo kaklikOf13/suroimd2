@@ -131,6 +131,9 @@ export class GuiManager{
             this.players_name[p.id]={name:p.name,badge:""}
         }
     }
+    clear_killfeed(){
+        this.content.killfeed.innerHTML=""
+    }
     add_killfeed_message(msg:KillFeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
         elem.classList.add("killfeed-message")

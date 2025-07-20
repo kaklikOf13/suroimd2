@@ -393,7 +393,7 @@ Guns.insert(
             }
         },
         reload:{
-            delay:5.5,
+            delay:4.5,
             capacity:5,
             shotsPerReload:5,
         },

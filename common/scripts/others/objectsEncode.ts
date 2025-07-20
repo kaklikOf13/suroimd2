@@ -26,6 +26,7 @@ export interface PlayerData extends EncodedData{
     rotation:number
     using_item:boolean
     using_item_down:boolean
+    dead:boolean
 }
 
 export interface LootData extends EncodedData{
@@ -97,10 +98,12 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 using_item:false,
                 using_item_down:false,
                 full:undefined,
+                dead:false
             }
             const bg1=stream.readBooleanGroup()
             ret.using_item=bg1[0]
             ret.using_item_down=bg1[1]
+            ret.dead=bg1[3]
             if(full){
                 ret.full={
                     vest:stream.readUint8(),
@@ -134,7 +137,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:PlayerData,stream:NetStream){
             stream.writePosition(data.position)
             .writeRad(data.rotation)
-            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined)
+            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined,data.dead)
             if(full){
                 stream.writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)

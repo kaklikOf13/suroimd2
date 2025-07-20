@@ -51,6 +51,7 @@ export class Player extends GameObject{
     }={weapon:{}}
 
     current_weapon?:WeaponDef
+    dead:boolean=false
 
     on_hitted(position:Vec2){
         if(Math.random()<=0.1){
@@ -115,6 +116,7 @@ export class Player extends GameObject{
     }
 
     set_skin(skin:string){
+        if(this.skin==skin)return
         this.skin=skin
 
         this.sprites.body.frame=this.game.resources.get_sprite(skin+"_body")
@@ -147,7 +149,6 @@ export class Player extends GameObject{
 
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
-        this.set_skin("skin_default")
         this.game.camera.addObject(this.container)
     }
     update(_dt:number): void {
@@ -317,7 +318,12 @@ export class Player extends GameObject{
         }
     }
     override updateData(data:PlayerData){
+        if(data.dead&&!this.dead){
+            this.dead=data.dead
+            this.container.destroy()
+        }
         if(data.full){
+            this.set_skin("skin_default")
             this.set_helmet(data.full.helmet)
             this.set_backpack(data.full.backpack)
             if(data.full.vest>0){

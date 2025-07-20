@@ -162,6 +162,9 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.emit(new JoinPacket(playerName))
     this.activePlayer=this.client.ID
     console.log("Joined As:",this.activePlayer)
+    
+    this.guiManager.players_name={}
+    this.guiManager.clear_killfeed()
   }
 }
 export async function getGame(server:string){
