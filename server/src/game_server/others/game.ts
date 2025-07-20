@@ -17,9 +17,11 @@ import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
+import { TeamsManager } from "./teams.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
+    teamSize:number
     netTps:number
     deenable_feast:boolean
 }
@@ -60,6 +62,30 @@ export class GamemodeManager{
     }
     on_player_die(_p:Player){
         if(this.game.livingPlayers.length<=1){
+            this.game.finish()
+        }
+    }
+}
+export class TeamsGamemodeManager extends GamemodeManager{
+    teamsManager:TeamsManager
+    constructor(game:Game){
+        super(game)
+        this.teamsManager=new TeamsManager()
+    }
+    override on_player_join(p:Player){
+        if(p.team===undefined){
+            let t=this.teamsManager.get_perfect_team(this.game.config.teamSize)
+            if(!t){
+                t=this.teamsManager.add_team()
+            }
+            t.add_player(p)
+        }
+        if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
+            this.game.addTimeout(this.game.start.bind(this.game),3)
+        }
+    }
+    override on_player_die(_p:Player){
+        if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }
     }
@@ -118,7 +144,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.scene.objects.encoders=ObjectsE
         this.map=new GameMap(this,v2.new(32,32))
         this.gamemode=DefaultGamemode
-        this.modeManager=new GamemodeManager(this)
+        this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false
     }
 

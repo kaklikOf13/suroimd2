@@ -15,6 +15,7 @@ import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
+import { type Team } from "../others/teams.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -55,6 +56,9 @@ export class Player extends ServerGameObject{
 
     pvpEnabled:boolean=false
     interactionsEnabled:boolean=false
+
+    team?:Team
+    teamId?:number
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -344,6 +348,7 @@ export class Player extends ServerGameObject{
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
+            if(params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)return
             mod*=params.owner.modifiers.damage
         }
         if(this.vest){
