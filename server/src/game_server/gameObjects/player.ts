@@ -15,7 +15,7 @@ import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
-import { type Team } from "../others/teams.ts";
+import { type Group, type Team } from "../others/teams.ts";
 import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 
 export class Player extends ServerGameObject{
@@ -60,6 +60,9 @@ export class Player extends ServerGameObject{
 
     team?:Team
     teamId?:number
+
+    group?:Group
+    groupId?:number
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -76,7 +79,7 @@ export class Player extends ServerGameObject{
     }
     interaction_input:boolean=false
     interact(user: Player): void {
-        if(!this.downed||user.teamId===undefined||user.teamId!==this.teamId)return
+        if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
         this.revive()
     }
 
@@ -367,7 +370,7 @@ export class Player extends ServerGameObject{
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)return
+            if(params.owner.id!==this.id&&((params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)||(params.owner.groupId!==undefined&&params.owner.groupId===this.groupId)))return
             mod*=params.owner.modifiers.damage
         }
         if(this.vest){

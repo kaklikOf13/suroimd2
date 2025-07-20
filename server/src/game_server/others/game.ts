@@ -17,7 +17,7 @@ import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
-import { TeamsManager } from "./teams.ts";
+import { GroupManager, TeamsManager } from "./teams.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
@@ -32,11 +32,13 @@ export interface GameConfig{
 export class GamemodeManager{
     game:Game
     closed:boolean=false
+    team_size:number=1
     can_join():boolean{
         return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
     }
     constructor(game:Game){
         this.game=game
+        this.team_size=game.config.teamSize
     }
     can_down(_player:Player):boolean{
         return false
@@ -81,14 +83,56 @@ export class TeamsGamemodeManager extends GamemodeManager{
     override can_down(player:Player):boolean{
         return (player.team&&player.team.get_not_downed_players().length>1)!
     }
-    override on_player_join(p:Player){
+    set_team_for_player(p:Player){
         if(p.team===undefined){
-            let t=this.teamsManager.get_perfect_team(this.game.config.teamSize)
+            let t=this.teamsManager.get_perfect_team(this.team_size,p.groupId)
             if(!t){
                 t=this.teamsManager.add_team()
             }
             t.add_player(p)
         }
+    }
+    override on_player_join(p:Player){
+        this.set_team_for_player(p)
+        if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
+            this.game.addTimeout(this.game.start.bind(this.game),3)
+        }
+    }
+    override on_player_die(p:Player){
+        if(p.team){
+            for(const pp of p.team.get_downed_players()){
+                pp.kill({amount:pp.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downedBy,source:pp.downedBySource})
+            }
+        }
+        if(this.teamsManager.get_living_teams().length<=1){
+            this.game.finish()
+        }
+    }
+}
+export class GroupGamemodeManager extends TeamsGamemodeManager{
+    groupsManager:GroupManager=new GroupManager()
+    f=0
+    groups_size:number
+    constructor(game:Game,groups_size:number=2){
+        super(game)
+        this.groups_size=groups_size
+        this.team_size=4
+    }
+    override can_down(player:Player):boolean{
+        return super.can_down(player)&&(player.team&&player.team.get_not_downed_players().length>1)!
+    }
+    override on_player_join(p:Player){
+        let g=this.groupsManager.groups[this.f]
+        if(!g){
+            g=this.groupsManager.add_group()
+        }
+        g.add_player(p)
+        this.f++
+        if(this.f>=this.groups_size){
+            this.f=0
+        }
+        super.set_team_for_player(p)
+        if(p.team)p.team.group=g.id
         if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
             this.game.addTimeout(this.game.start.bind(this.game),3)
         }

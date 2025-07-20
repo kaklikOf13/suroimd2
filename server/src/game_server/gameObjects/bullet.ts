@@ -52,7 +52,7 @@ export class Bullet extends ServerGameObject{
         for(const obj of objs){
             switch(obj.stringType){
                 case "player":{
-                    if((obj as Player).hb&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)){
+                    if((obj as Player).hb&&!(obj as Player).dead&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)){
                         const dmg:number=this.damage
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
                         *(this.critical?(this.defs.criticalMult??1.5):1);
