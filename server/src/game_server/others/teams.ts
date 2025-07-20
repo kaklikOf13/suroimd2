@@ -11,6 +11,12 @@ export class Team{
     get_living_players():Player[]{
         return this.players.filter((p)=>!p.dead)
     }
+    get_not_downed_players():Player[]{
+        return this.players.filter((p)=>!p.dead&&!p.downed)
+    }
+    get_downed_players():Player[]{
+        return this.players.filter((p)=>!p.dead&&p.downed)
+    }
     constructor(){
 
     }

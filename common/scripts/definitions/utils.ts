@@ -40,7 +40,8 @@ export enum DamageReason{
     Explosion,
     SafeZone,
     Abstinence,
-    Disconnect
+    Disconnect,
+    Bleend
 }
 export interface InventoryItemData{
     count:number

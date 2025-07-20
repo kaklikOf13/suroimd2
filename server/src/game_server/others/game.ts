@@ -10,7 +10,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
@@ -37,6 +37,9 @@ export class GamemodeManager{
     }
     constructor(game:Game){
         this.game=game
+    }
+    can_down(_player:Player):boolean{
+        return false
     }
     on_start(){
         this.game.interactionsEnabled=true
@@ -75,6 +78,9 @@ export class TeamsGamemodeManager extends GamemodeManager{
         super(game)
         this.teamsManager=new TeamsManager()
     }
+    override can_down(player:Player):boolean{
+        return (player.team&&player.team.get_not_downed_players().length>1)!
+    }
     override on_player_join(p:Player){
         if(p.team===undefined){
             let t=this.teamsManager.get_perfect_team(this.game.config.teamSize)
@@ -87,7 +93,12 @@ export class TeamsGamemodeManager extends GamemodeManager{
             this.game.addTimeout(this.game.start.bind(this.game),3)
         }
     }
-    override on_player_die(_p:Player){
+    override on_player_die(p:Player){
+        if(p.team){
+            for(const pp of p.team.get_downed_players()){
+                pp.kill({amount:pp.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downedBy,source:pp.downedBySource})
+            }
+        }
         if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }

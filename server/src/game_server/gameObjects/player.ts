@@ -9,7 +9,7 @@ import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
-import { DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
+import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
@@ -75,11 +75,16 @@ export class Player extends ServerGameObject{
         this.accessories=new AccessoriesManager(this,3)
     }
     interaction_input:boolean=false
-    interact(_user: Player): void {
-        return
+    interact(user: Player): void {
+        if(!this.downed||user.teamId===undefined||user.teamId!==this.teamId)return
+        this.revive()
     }
 
     dead=false
+    downed=false
+
+    downedBy?:Player
+    downedBySource?:DamageSourceDef
 
     modifiers:PlayerModifiers={
         boost:1,
@@ -133,6 +138,7 @@ export class Player extends ServerGameObject{
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing?this.using_healing_speed:1)
                   * (this.inventory.currentWeaponDef?.speed_mod??1)
                   * this.modifiers.speed
+                  * (this.downed?0.4:1)
         if(this.recoil){
             this.recoil.delay-=dt
             this.current_animation=undefined
@@ -168,9 +174,21 @@ export class Player extends ServerGameObject{
         }
 
         //Hand Use
-        if(this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
+        if(!this.downed&&this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
             this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
         }
+
+        if(this.downed){
+            this.piercingDamage({
+                amount:1*dt,
+                critical:false,
+                position:this.position,
+                reason:DamageReason.Bleend,
+                owner:this.downedBy,
+                source:this.downedBySource
+            })
+        }
+
         //Update Inventory
         for(const s of this.inventory.slots){
             if(!s.item)continue
@@ -349,7 +367,7 @@ export class Player extends ServerGameObject{
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
-            if(params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)return
+            if(params.owner.id!==this.id&&params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)return
             mod*=params.owner.modifiers.damage
         }
         if(this.vest){
@@ -373,7 +391,7 @@ export class Player extends ServerGameObject{
         }else{
             params.amount=Math.min(this.health,params.amount)
         }
-        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id){
+        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id&&params.reason!==DamageReason.Bleend){
             params.owner.status.damage+=params.amount
             if(!params.owner.damageSplash){
                 params.owner.damageSplash={
@@ -398,8 +416,37 @@ export class Player extends ServerGameObject{
             this.health=Math.max(this.health-params.amount,0)
         }
         if(this.health===0){
-            this.kill(params)
+            if(!this.downed&&this.game.modeManager.can_down(this)){
+                this.down(params)
+            }else{
+                this.kill(params)
+            }
         }
+    }
+    down(params:DamageParams){
+        if(this.downed)return
+        this.downed=true
+        this.downedBy=params.owner
+        this.downedBySource=params.source
+        this.health=this.maxHealth
+        this.boost=0
+
+        if(params.owner&&params.owner instanceof Player){
+            this.game.send_killfeed_message({
+                killerId:params.owner.id,
+                victimId:this.id,
+                type:KillFeedMessageType.down,
+                used:DamageSources.keysString[params.source!.idString]
+            })
+        }
+    }
+    revive(){
+        if(!this.downed)return
+        this.downed=false
+        this.downedBy=undefined
+        this.downedBySource=undefined
+        this.health=this.maxHealth*0.3
+        this.boost=0
     }
     kill(params:DamageParams){
         if(this.dead)return
@@ -410,7 +457,7 @@ export class Player extends ServerGameObject{
         this.game.modeManager.on_player_die(this);
 
         if(params.owner&&params.owner instanceof Player){
-            params.owner.status.kills++
+            if(params.owner.id!==this.id)params.owner.status.kills++
             this.game.send_killfeed_message({
                 killerId:params.owner.id,
                 victimId:this.id,
