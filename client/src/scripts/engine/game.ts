@@ -5,6 +5,7 @@ import { KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
 import { Camera2D, Container2D, Sprite2D } from "./container.ts";
+import { GameConsole } from "./console.ts";
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>
@@ -113,7 +114,8 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     particles:ParticlesManager2D<ClientParticle2D>
 
     sounds:SoundManager
-    constructor(keyl:KeyListener,mouse:MousePosListener,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+    save:GameConsole
+    constructor(keyl:KeyListener,mouse:MousePosListener,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
         super(60,objects)
         this.sounds=sounds
         this.mouse=mouse
@@ -122,6 +124,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.resources=resources
         this.camera=new Camera2D(renderer)
         this.particles=new ParticlesManager2D(this as unknown as Game2D)
+        this.save=console
     }
     readonly tweens = new Set<Tween<unknown>>();
     addTween<T>(config: TweenOptions<T>): Tween<T> {

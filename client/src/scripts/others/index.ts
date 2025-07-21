@@ -1,6 +1,6 @@
 import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
 import { Game, getGame } from "./game.ts"
-import { Graphics, GraphicsConfig, server } from "./config.ts";
+import { ConfigCasters, ConfigDefaultValues, server } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
@@ -8,6 +8,8 @@ import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
 import { BasicSocket, OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
+import { GameConsole } from "../engine/console.ts";
+import { MenuManager } from "./menuManager.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
@@ -17,6 +19,14 @@ import { PacketManager } from "common/scripts/others/constants.ts";
     const renderer=new WebglRenderer(canvas,100)
 
     const resources=new ResourcesManager(renderer.gl,sounds)
+
+    const GameSave=new GameConsole()
+    GameSave.casters=ConfigCasters
+    GameSave.default_values=ConfigDefaultValues
+    GameSave.init("suroimd2-config")
+
+    const menu_manager=new MenuManager(GameSave)
+    menu_manager.start()
 
     const offline=false
 
@@ -34,43 +44,8 @@ import { PacketManager } from "common/scripts/others/constants.ts";
     }
     
     const spg=await(await fetch("atlases/atlas-common-data.json")).json()
-    switch(Graphics){
-        case GraphicsConfig.VeryLow:{
-            for(const s of spg["very-low"]){
-                await resources.load_spritesheet("",s)
-            }
-            break
-        }
-        case GraphicsConfig.Low:{
-            for(const s of spg.low){
-                await resources.load_spritesheet("",s)
-            }
-            break
-        }
-        case GraphicsConfig.Medium:{
-            for(const s of spg.medium){
-                await resources.load_spritesheet("",s)
-            }
-            break
-        }
-        case GraphicsConfig.High:{
-            for(const s of spg.high){
-                await resources.load_spritesheet("",s)
-            }
-            break
-        }
-        case GraphicsConfig.VeryHigh:{
-            for(const s of spg["very-high"]){
-                await resources.load_spritesheet("",s)
-            }
-            break
-        }
-        case GraphicsConfig.Ultra:{
-            for(const s of spg["ultra"]){
-                await resources.load_spritesheet("",s)
-            }
-            break
-        }
+    for(const s of spg[GameSave.get_variable("cv_graphics_resolution")]){
+        await resources.load_spritesheet("",s)
     }
     resources.load_folder("/common.src").then(()=>{
         const lister=()=>{
@@ -114,18 +89,18 @@ import { PacketManager } from "common/scripts/others/constants.ts";
                 const sockets=new OfflineSocket(undefined)
                 const socketl:OfflineSocket=new OfflineSocket(sockets)
                 sockets.output=socketl
-                const g=new Game(KeyL,mouseML,sounds,resources,socketl,renderer)
+                const g=new Game(KeyL,mouseML,sounds,GameSave,resources,socketl,renderer)
                 sounds.set_music(null)
                 g.guiManager=new GuiManager(g)
                 sockets.open()
                 socketl.open()
                 gs?.clients.activate_ws(sockets,0,"localhost")
-                g.connect("")
+                g.connect(GameSave.get_variable("cv_loadout_name"))
                 this.game=g
             }else{
                 const socket=new WebSocket(ip)
-                const g=new Game(KeyL,mouseML,sounds,resources,socket as BasicSocket,renderer)
-                g.client.onopen=g.connect.bind(g,"")
+                const g=new Game(KeyL,mouseML,sounds,GameSave,resources,socket as BasicSocket,renderer)
+                g.client.onopen=g.connect.bind(g,GameSave.get_variable("cv_loadout_name"))
                 sounds.set_music(null)
                 g.guiManager=new GuiManager(g)
                 this.game=g

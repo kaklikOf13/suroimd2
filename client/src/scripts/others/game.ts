@@ -13,12 +13,13 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplash } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import { Debug } from "./config.ts";
+import { ConfigCasters, ConfigDefaultValues, Debug } from "./config.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
+import { GameConsole } from "../engine/console.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayer=0
@@ -32,8 +33,8 @@ export class Game extends ClientGame2D<GameObject>{
 
   grid:Grid2D
 
-  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(keyl,mp,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
+  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,console:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+    super(keyl,mp,console,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }

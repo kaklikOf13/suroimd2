@@ -1,11 +1,11 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS, GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { Debug, Graphics, GraphicsConfig } from "../others/config.ts";
+import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -141,7 +141,7 @@ export class Player extends GameObject{
         this.sprites.helmet.zIndex=5
         this.sprites.weapon.zIndex=2
 
-        if(Graphics>=GraphicsConfig.Low)this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
+        this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
 
         this.container.updateZIndex()
     }
@@ -223,49 +223,51 @@ export class Player extends GameObject{
                         this.sprites.muzzle_flash.visible=false
                     },dur)
                 }
-                if(d.caseParticle){
-                    const p=new ABParticle2D({
-                        direction:this.rotation+(3.141592/2),
-                        life_time:0.4,
-                        position:v2.add(
-                            this.position,
-                            v2.mult(v2.from_RadAngle(this.rotation),d.caseParticle.position)
-                        ),
-                        sprite:d.caseParticle.frame??"casing_"+d.ammoType,
-                        speed:random.float(3,4),
-                        angle:0,
-                        scale:1,
-                        to:{
-                            angle:random.float(1,3),
-                            scale:0.7
-                        }
-                    })
-                    this.game.particles.add_particle(p)
-                }
-                const sound=this.game.resources.get_audio(`${d.idString}_fire`)
-                if(sound){
-                    this.game.sounds.play(sound,{},"players")
-                }
-                if(Graphics>=GraphicsConfig.High&&d.gasParticles){
-                    for(let i=0;i<d.gasParticles.count;i++){
+                if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
+                    if(d.caseParticle&&!d.caseParticle.at_begin){
                         const p=new ABParticle2D({
-                            direction:this.rotation+random.float(-d.gasParticles.direction_variation,d.gasParticles.direction_variation),
-                            life_time:d.gasParticles.life_time,
+                            direction:this.rotation+(3.141592/2),
+                            life_time:0.4,
                             position:v2.add(
                                 this.position,
-                                v2.mult(v2.from_RadAngle(this.rotation),v2.new(d.lenght,d.lenght))
+                                v2.mult(v2.from_RadAngle(this.rotation),d.caseParticle.position)
                             ),
-                            sprite:"gas_smoke_particle",
-                            speed:random.float(d.gasParticles.speed.min,d.gasParticles.speed.max),
-                            scale:0.03,
-                            tint:ColorM.hex("#fff9"),
+                            sprite:d.caseParticle.frame??"casing_"+d.ammoType,
+                            speed:random.float(3,4),
+                            angle:0,
+                            scale:1,
                             to:{
-                            tint:ColorM.hex("#fff0"),
-                                scale:random.float(d.gasParticles.size.min,d.gasParticles.size.max)
+                                angle:random.float(1,3),
+                                scale:0.7
                             }
                         })
                         this.game.particles.add_particle(p)
                     }
+                    if(d.gasParticles){
+                        for(let i=0;i<d.gasParticles.count;i++){
+                            const p=new ABParticle2D({
+                                direction:this.rotation+random.float(-d.gasParticles.direction_variation,d.gasParticles.direction_variation),
+                                life_time:d.gasParticles.life_time,
+                                position:v2.add(
+                                    this.position,
+                                    v2.mult(v2.from_RadAngle(this.rotation),v2.new(d.lenght,d.lenght))
+                                ),
+                                sprite:"gas_smoke_particle",
+                                speed:random.float(d.gasParticles.speed.min,d.gasParticles.speed.max),
+                                scale:0.03,
+                                tint:ColorM.hex("#fff9"),
+                                to:{
+                                tint:ColorM.hex("#fff0"),
+                                    scale:random.float(d.gasParticles.size.min,d.gasParticles.size.max)
+                                }
+                            })
+                            this.game.particles.add_particle(p)
+                        }
+                }
+                }
+                const sound=this.game.resources.get_audio(`${d.idString}_fire`)
+                if(sound){
+                    this.game.sounds.play(sound,{},"players")
                 }
                 break
             }
