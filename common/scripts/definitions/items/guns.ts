@@ -151,7 +151,7 @@ Guns.insert(
             }
         },
         reload:{
-            delay:2,
+            delay:2.5,
             capacity:30
         },
         recoil:{
@@ -186,7 +186,7 @@ Guns.insert(
             }
         },
         reload:{
-            delay:2.2,
+            delay:2.5,
             capacity:30
         },
         recoil:{
@@ -201,7 +201,7 @@ Guns.insert(
         fireDelay:0.09,
         switchDelay:0.7,
         spread:3,
-        lenght:0.7,
+        lenght:0.87,
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:96,
@@ -226,7 +226,13 @@ Guns.insert(
             speed:0.8
         },
         speed_mod:1,
-        gasParticles:GasParticles.automatic
+        gasParticles:GasParticles.automatic,
+        muzzleFlash:MuzzleFlash.normal,
+        arms:WeaponsArmRig[0],
+        image:{
+            position:v2.new(0.5,0.0),
+            rotation:0
+        },
     },
     {
         idString:"vector",

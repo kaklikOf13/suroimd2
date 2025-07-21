@@ -3,7 +3,7 @@ import { Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
 import { BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS, zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
-import { Player } from "./player.ts";
+import { type Player } from "./player.ts";
 import { ColorM, Renderer } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Debug } from "../others/config.ts";
@@ -60,7 +60,7 @@ export class Bullet extends GameObject{
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){
                     case "player":
-                        if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
+                        if((obj as Player).hb&&!(obj as Player).dead&&this.hb.collidingWith((obj as Player).hb)){
                             (obj as Obstacle).on_hitted(this.position)
                             this.dying=true
                         }

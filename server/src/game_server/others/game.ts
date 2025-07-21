@@ -308,8 +308,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position,source}) as Explosion
         return e
     }
-    add_player_body(owner:Player):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(),CATEGORYS.PLAYERS_BODY,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+    add_player_body(owner:Player,angle?:number):PlayerBody{
+        const b=this.scene.objects.add_object(new PlayerBody(angle),CATEGORYS.PLAYERS_BODY,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
         return b
     }
     add_projectile(position:Vec2,def:ProjectileDef,owner?:Player):Projectile{

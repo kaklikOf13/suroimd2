@@ -17,7 +17,7 @@ import { Debug } from "./config.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
-import { KillFeedMessage, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
+import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client

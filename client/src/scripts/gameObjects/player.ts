@@ -44,7 +44,6 @@ export class Player extends GameObject{
     }={}
     sound_animation:{
         weapon:{
-            shot?:SoundInstance
             reload?:SoundInstance
             switch?:SoundInstance
         }
@@ -186,7 +185,7 @@ export class Player extends GameObject{
             case PlayerAnimationType.Shooting:{
                 if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined;break}
                 const d=this.current_weapon as GunDef
-                const dur=Math.min(d.fireDelay,0.1)
+                const dur=Math.min(d.fireDelay*0.9,0.1)
                 if(d.recoil&&!this.anims.fire){
                     const w=0.05
                     this.anims.fire={
@@ -245,12 +244,7 @@ export class Player extends GameObject{
                 }
                 const sound=this.game.resources.get_audio(`${d.idString}_fire`)
                 if(sound){
-                    if(this.sound_animation.weapon.shot)this.sound_animation.weapon.shot.stop()
-                    this.sound_animation.weapon.shot=this.game.sounds.play(sound,{
-                        on_complete:()=>{
-                            this.sound_animation.weapon.shot=undefined
-                        }
-                    },"players")
+                    this.game.sounds.play(sound,{},"players")
                 }
                 if(Graphics>=GraphicsConfig.Medium&&d.gasParticles){
                     for(let i=0;i<d.gasParticles.count;i++){

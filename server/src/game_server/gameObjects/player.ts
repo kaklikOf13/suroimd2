@@ -17,6 +17,7 @@ import { type Loot } from "./loot.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Group, type Team } from "../others/teams.ts";
 import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -63,6 +64,8 @@ export class Player extends ServerGameObject{
 
     group?:Group
     groupId?:number
+
+    push_vorce:Vec2=v2.new(0,0)
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -170,10 +173,11 @@ export class Player extends ServerGameObject{
                 break
             }
         }
-        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.scale(this.movement,speed*dt)),NullVec2,this.game.map.size),3)
+        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
+            this.push_vorce=v2.scale(this.push_vorce,1/(1+dt*4))
         }
 
         //Hand Use
@@ -267,8 +271,15 @@ export class Player extends ServerGameObject{
         this.inventory.set_current_weapon_index(1)
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
-        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,320)
-        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,320)
+        this.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
+        /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
+        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
+        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,120)
+        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,15)
+        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,10)*/
+
+        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,300)
+        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,300)
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
@@ -442,6 +453,8 @@ export class Player extends ServerGameObject{
                 used:DamageSources.keysString[params.source!.idString]
             })
         }
+
+        this.push_vorce=v2.add(this.push_vorce,v2.scale(v2.from_RadAngle(v2.lookTo(params.position,this.position)),5))
     }
     revive(){
         if(!this.downed)return
@@ -468,7 +481,7 @@ export class Player extends ServerGameObject{
                 used:DamageSources.keysString[params.source!.idString]
             })
         }
-        this.game.add_player_body(this)
+        this.game.add_player_body(this,v2.lookTo(params.position,this.position))
         this.game.addTimeout(()=>{
             this.send_game_over(false)
         },2)

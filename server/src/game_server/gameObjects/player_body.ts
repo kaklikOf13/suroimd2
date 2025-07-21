@@ -15,9 +15,9 @@ export class PlayerBody extends ServerGameObject{
     velocity:Vec2
     old_pos:Vec2=v2.new(-1,-1)
 
-    constructor(){
+    constructor(angle:number=random.rad()){
         super()
-        this.velocity=v2.scale(v2.from_RadAngle(random.rad()),8)
+        this.velocity=v2.scale(v2.from_RadAngle(angle),8)
     }
 
     fuse_delay:number=0
