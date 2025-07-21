@@ -13,7 +13,14 @@ const config: UserConfig = {
 
     plugins: [
         svelte(),
-        spritesheet({"common":"common"}),
+        spritesheet({"common":"common"},undefined,[
+            {name:"very-low",scale:0.35},
+            {name:"low",scale:0.5},
+            {name:"medium",scale:0.75},
+            {name:"high",scale:1},
+            {name:"very-high",scale:2},
+            {name:"ultra",scale:3.5},
+        ]),
     ],
 
     css: {

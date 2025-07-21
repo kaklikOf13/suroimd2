@@ -8,11 +8,8 @@ export const cacheDir = ".spritesheet-cache";
 export type CacheData = {
     lastModified: number
     fileMap: Record<string, string>
-    atlasFiles: {
-        low: Record<string,string[]>
-        high: Record<string,string[]>
-    }
-};
+    atlasFiles:Record<string,Record<string,string[]>>
+}
 export const supportedFormats = ["png", "jpeg"] as const;
 
 export interface CompilerOptions {
@@ -59,14 +56,14 @@ export interface CompilerOptions {
 
 export type AtlasList = Array<{json:SpritesheetJSON, readonly image: Buffer, readonly cacheName?: string }>;
 
-export type MultiResAtlasList = { readonly low: Record<string,AtlasList>, readonly high: Record<string,AtlasList> };
-
+export type MultiResAtlasList = Record<string,Record<string,AtlasList>>;
+export interface Resolution{scale:number,name:string}
 /**
  * Pack images spritesheets.
  * @param paths List of paths to the images.
  * @param options Options passed to the packer.
  */
-export async function createSpritesheets(pathMap: Record<string,Map<string, { lastModified: number, path: string }>>, options: CompilerOptions): Promise<MultiResAtlasList> {
+export async function createSpritesheets(pathMap: Record<string,Map<string, { lastModified: number, path: string }>>,resolutions:Resolution[], options: CompilerOptions): Promise<MultiResAtlasList> {
     if (!supportedFormats.includes(options.outputFormat)) {
         throw new Error(`outputFormat should only be one of ${JSON.stringify(supportedFormats)}, but "${options.outputFormat}" was given.`);
     }
@@ -93,7 +90,7 @@ export async function createSpritesheets(pathMap: Record<string,Map<string, { la
         }
     }
 
-    function createSheet(atlas:string,resolution: number): AtlasList{
+    function createSheet(atlas:string,resolution: number,resolution_name:string): AtlasList{
         console.log(`Building spritesheet @ ${resolution}x...`);
         const packer = new MaxRectsPacker(
             options.maximumSize * resolution,
@@ -157,9 +154,9 @@ export async function createSpritesheets(pathMap: Record<string,Map<string, { la
             }
             
             const buffer = canvas.toBuffer(`image/${options.outputFormat}` as "image/png");
-            json.meta.image = `${options.outDir}/${options.name}-${atlas}-${binn}@${resolution}x.${options.outputFormat}`;
-            const cacheName = `${options.name}-${atlas}-${binn}@${resolution}x`;
-            
+            json.meta.image = `${options.outDir}/${options.name}-${atlas}-${binn}@${resolution_name}.${options.outputFormat}`;
+            const cacheName = `${options.name}-${atlas}-${binn}@${resolution_name}`;
+
             writeFileSync(path.join(cacheDir, `${cacheName}.json`), JSON.stringify(json));
             writeFileSync(path.join(cacheDir, `${cacheName}.${options.outputFormat}`), buffer);
             atlases.push({
@@ -172,24 +169,22 @@ export async function createSpritesheets(pathMap: Record<string,Map<string, { la
         return atlases
     }
     const sheets:MultiResAtlasList={
-        low:{},
-        high:{}
     }
     
     const cacheData: CacheData = {
         lastModified: Date.now(),
         fileMap: {},
         atlasFiles:{
-            high:{},
-            low:{}
         }
     }
-    for(const k of Object.keys(pathMap)){
-        sheets.high[k]=createSheet(k,1)
-        sheets.low[k]=createSheet(k,0.5)
-        cacheData.fileMap={...cacheData.fileMap,...Object.fromEntries(Array.from(pathMap[k].entries(), ([name, data]) => [name.slice(1), data.path]))}
-        cacheData.atlasFiles.low[k]=sheets.low[k].map(s => s.cacheName ?? "")
-        cacheData.atlasFiles.high[k]=sheets.high[k].map(s => s.cacheName ?? "")
+    for(const r of resolutions){
+        sheets[r.name]={}
+        cacheData.atlasFiles[r.name]={}
+        for(const k of Object.keys(pathMap)){
+            sheets[r.name][k]=createSheet(k,r.scale,r.name)
+            cacheData.fileMap={...cacheData.fileMap,...Object.fromEntries(Array.from(pathMap[k].entries(), ([name, data]) => [name.slice(1), data.path]))}
+            cacheData.atlasFiles[r.name][k]=sheets[r.name][k].map(s => s.cacheName ?? "")
+        }
     }
 
     //writeFileSync(path.join(cacheDir, "data.json"), JSON.stringify(cacheData));

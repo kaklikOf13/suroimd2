@@ -141,7 +141,7 @@ export class Player extends GameObject{
         this.sprites.helmet.zIndex=5
         this.sprites.weapon.zIndex=2
 
-        this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
+        if(Graphics>=GraphicsConfig.Low)this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
 
         this.container.updateZIndex()
     }
@@ -246,7 +246,7 @@ export class Player extends GameObject{
                 if(sound){
                     this.game.sounds.play(sound,{},"players")
                 }
-                if(Graphics>=GraphicsConfig.Medium&&d.gasParticles){
+                if(Graphics>=GraphicsConfig.High&&d.gasParticles){
                     for(let i=0;i<d.gasParticles.count;i++){
                         const p=new ABParticle2D({
                             direction:this.rotation+random.float(-d.gasParticles.direction_variation,d.gasParticles.direction_variation),

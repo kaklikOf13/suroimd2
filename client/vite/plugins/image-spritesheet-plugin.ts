@@ -3,7 +3,7 @@ import { Minimatch } from "minimatch";
 import path, { resolve } from "node:path";
 import { type FSWatcher, type Plugin, type ResolvedConfig } from "vite";
 import readDirectory from "./utils/readDirectory.ts";
-import { CacheData, cacheDir, type CompilerOptions, createSpritesheets, type MultiResAtlasList } from "./utils/spritesheet.ts";
+import { CacheData, cacheDir, type CompilerOptions, createSpritesheets, type MultiResAtlasList, Resolution } from "./utils/spritesheet.ts";
 import { mkdir, readFile, stat } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { SpritesheetJSON } from "../../src/scripts/engine/resources.ts";
@@ -32,7 +32,7 @@ const getImageDirs = (atlases:Record<string,string>,imageDirs: string[] = []): s
 };
 interface buildSpritesheetRet{atlas:MultiResAtlasList,dirs:string[]}
 
-async function buildSpritesheets(imageDirs:string[]): Promise<buildSpritesheetRet> {
+async function buildSpritesheets(imageDirs:string[],resolutions:Resolution[]): Promise<buildSpritesheetRet> {
     const fileMap: Record<string,Map<string, { lastModified: number, path: string }>>={};
     const ff=new Map<string, { lastModified: number, path: string }>()
     
@@ -70,8 +70,6 @@ async function buildSpritesheets(imageDirs:string[]): Promise<buildSpritesheetRe
             lastModified: Date.now(),
             fileMap: {},
             atlasFiles: {
-                low: [],
-                high: []
             }
         };
 
@@ -83,23 +81,16 @@ async function buildSpritesheets(imageDirs:string[]): Promise<buildSpritesheetRe
     if (isCached) {
         console.log("Spritesheets are cached! Skipping build.");
         const ret:MultiResAtlasList={
-            high:{},
-            low:{}
         }
-        for(const kk of Object.keys(cacheData.atlasFiles.low)){
-            ret.low[kk]=[]
-            ret.high[kk]=[]
-            for(const ii in cacheData.atlasFiles.low[kk]){
-                ret.low[kk].push({
-                    json: JSON.parse(await readFile(path.join(cacheDir, `${cacheData.atlasFiles.low[kk][ii]}.json`), "utf8")) as SpritesheetJSON,
-                    image: await readFile(path.join(cacheDir, `${cacheData.atlasFiles.low[kk][ii]}.png`)),
-                })
-            }
-            for(const ii in cacheData.atlasFiles.high[kk]){
-                ret.high[kk].push({
-                    json: JSON.parse(await readFile(path.join(cacheDir, `${cacheData.atlasFiles.high[kk][ii]}.json`), "utf8")) as SpritesheetJSON,
-                    image: await readFile(path.join(cacheDir, `${cacheData.atlasFiles.high[kk][ii]}.png`)),
-                })
+        for(const kk of Object.keys(cacheData.atlasFiles[resolutions[0].name])){
+            for(const r of resolutions){
+                ret[r.name][kk]=[]
+                for(const ii in cacheData.atlasFiles[r.name][kk]){
+                    ret[r.name][kk].push({
+                        json: JSON.parse(await readFile(path.join(cacheDir, `${cacheData.atlasFiles[r.name][kk][ii]}.json`), "utf8")) as SpritesheetJSON,
+                        image: await readFile(path.join(cacheDir, `${cacheData.atlasFiles[r.name][kk][ii]}.png`)),
+                    })
+                }
             }
         }
         return {atlas:ret,dirs:imageDirs}
@@ -107,7 +98,7 @@ async function buildSpritesheets(imageDirs:string[]): Promise<buildSpritesheetRe
 
     console.log("Building spritesheets...");
 
-    return {atlas:await createSpritesheets(fileMap, compilerOpts),dirs:imageDirs};
+    return {atlas:await createSpritesheets(fileMap,resolutions, compilerOpts),dirs:imageDirs};
 }
 
 const SpriteSheetDirId = "virtual:spritesheets-dir";
@@ -119,7 +110,7 @@ const resolveId = (id: string): string | undefined => {
     }
 };
 
-export function spritesheet(atlas_list:Record<string,string>,dest_dir:string="atlases"): Plugin[] {
+export function spritesheet(atlas_list:Record<string,string>,dest_dir:string="atlases",resolutions:Resolution[]=[{name:"low",scale:0.5}]): Plugin[] {
     let watcher: FSWatcher;
     let config: ResolvedConfig;
 
@@ -141,32 +132,24 @@ export function spritesheet(atlas_list:Record<string,string>,dest_dir:string="at
             name: `${PLUGIN_NAME}:build`,
             apply: "build",
             async buildStart() {
-                atlases = await buildSpritesheets(imageDirs);
+                atlases = await buildSpritesheets(imageDirs,resolutions);
                 spriteSheetDir="atlas/"
             },
             generateBundle() {
-                for(const k of Object.keys(atlases.atlas.high)){
-                    const nn={
-                        low:[] as SpritesheetJSON[],
-                        high:[] as SpritesheetJSON[]
+                for(const k of Object.keys(atlases.atlas[resolutions[0].name])){
+                    const nn:Record<string,SpritesheetJSON[]>={
                     }
-                    for (const sheet of atlases.atlas.high[k]) {
-                        this.emitFile({
-                            type: "asset",
-                            fileName: sheet.json.meta.image,
-                            source: sheet.image
-                        });
-                        this.info("Built spritesheets");
-                        nn.high.push(sheet.json)
-                    }
-                    for (const sheet of atlases.atlas.low[k]) {
-                        this.emitFile({
-                            type: "asset",
-                            fileName: sheet.json.meta.image,
-                            source: sheet.image
-                        });
-                        this.info("Built spritesheets");
-                        nn.low.push(sheet.json)
+                    for(const r of resolutions){
+                        nn[r.name]=[]
+                        for (const sheet of atlases.atlas[r.name][k]) {
+                            this.emitFile({
+                                type: "asset",
+                                fileName: sheet.json.meta.image,
+                                source: sheet.image
+                            });
+                            this.info("Built spritesheets");
+                            nn[r.name].push(sheet.json)
+                        }
                     }
                     this.emitFile({
                         type: "asset",
@@ -207,22 +190,18 @@ export function spritesheet(atlas_list:Record<string,string>,dest_dir:string="at
                 const files = new Map<string, Buffer | string>();
 
                 async function buildSheets(): Promise<void> {
-                    atlases = await buildSpritesheets(imageDirs);
+                    atlases = await buildSpritesheets(imageDirs,resolutions);
 
                     files.clear();
-                    for(const k of Object.keys(atlases.atlas.low)){
-                        const nn={
-                            low:[] as SpritesheetJSON[],
-                            high:[] as SpritesheetJSON[]
+                    for(const k of Object.keys(atlases.atlas[resolutions[0].name])){
+                        const nn:Record<string,SpritesheetJSON[]>={
                         }
-                        
-                        for (const sheet of atlases.atlas.high[k]) {
-                            files.set(sheet.json.meta.image!, sheet.image);
-                            nn.high.push(sheet.json)
-                        }
-                        for (const sheet of atlases.atlas.low[k]) {
-                            files.set(sheet.json.meta.image!, sheet.image);
-                            nn.low.push(sheet.json)
+                        for(const r of resolutions){
+                            nn[r.name]=[]
+                            for (const sheet of atlases.atlas[r.name][k]) {
+                                files.set(sheet.json.meta.image!, sheet.image);
+                                nn[r.name].push(sheet.json)
+                            }
                         }
                         files.set(`${dest_dir}/atlas-${k}-data.json`,JSON.stringify(nn))
                     }

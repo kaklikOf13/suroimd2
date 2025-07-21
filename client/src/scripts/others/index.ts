@@ -1,6 +1,6 @@
 import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
 import { Game, getGame } from "./game.ts"
-import { server } from "./config.ts";
+import { Graphics, GraphicsConfig, server } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
@@ -27,20 +27,56 @@ import { PacketManager } from "common/scripts/others/constants.ts";
             deenable_feast:true,
             gameTps:60,
             maxPlayers:10,
+            teamSize:1,
             netTps:30
         })
         gs.mainloop()
     }
     
     const spg=await(await fetch("atlases/atlas-common-data.json")).json()
-    for(const s of spg.high){
-        await resources.load_spritesheet("",s)
+    switch(Graphics){
+        case GraphicsConfig.VeryLow:{
+            for(const s of spg["very-low"]){
+                await resources.load_spritesheet("",s)
+            }
+            break
+        }
+        case GraphicsConfig.Low:{
+            for(const s of spg.low){
+                await resources.load_spritesheet("",s)
+            }
+            break
+        }
+        case GraphicsConfig.Medium:{
+            for(const s of spg.medium){
+                await resources.load_spritesheet("",s)
+            }
+            break
+        }
+        case GraphicsConfig.High:{
+            for(const s of spg.high){
+                await resources.load_spritesheet("",s)
+            }
+            break
+        }
+        case GraphicsConfig.VeryHigh:{
+            for(const s of spg["very-high"]){
+                await resources.load_spritesheet("",s)
+            }
+            break
+        }
+        case GraphicsConfig.Ultra:{
+            for(const s of spg["ultra"]){
+                await resources.load_spritesheet("",s)
+            }
+            break
+        }
     }
-    resources.load_folder("/common.src").then(async()=>{
+    resources.load_folder("/common.src").then(()=>{
         const lister=()=>{
             setTimeout(()=>{
                 if(app.game)return
-                sounds.set_music(resources.get_audio("menu_music"))
+                //sounds.set_music(resources.get_audio("menu_music"))
             },1000)
             loaded=true
             document.removeEventListener("mousedown",lister)
@@ -52,7 +88,7 @@ import { PacketManager } from "common/scripts/others/constants.ts";
     mouseML.bind(document.body,canvas)
     KeyL.bind(document.body)
 
-    await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
+    //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
     class App{
         game?:Game

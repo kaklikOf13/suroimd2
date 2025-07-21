@@ -6,7 +6,7 @@ import { ParticlesEmitter2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { Debug } from "../others/config.ts";
+import { Debug, Graphics, GraphicsConfig } from "../others/config.ts";
 export class Obstacle extends ClientGameObject2D{
     stringType:string="obstacle"
     numberType: number=4
@@ -54,8 +54,10 @@ export class Obstacle extends ClientGameObject2D{
         this.update_frame()
         const ac=random.int(8,13)
         if(this.emitter_1)this.emitter_1.enabled=false
-        for(let i=0;i<ac;i++){
-            this._add_own_particle(this.hb.randomPoint(),2)
+        if(Graphics>=GraphicsConfig.Medium){
+            for(let i=0;i<ac;i++){
+                this._add_own_particle(this.hb.randomPoint(),2)
+            }
         }
         if(this.sounds&&this.sounds.break){
             this.game.sounds.play(this.sounds.break,{})
@@ -82,7 +84,7 @@ export class Obstacle extends ClientGameObject2D{
         
     }
     on_hitted(position:Vec2){
-        this._add_own_particle(position)
+        if(Graphics>=GraphicsConfig.Low)this._add_own_particle(position)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
             this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{},"obstacles")
         }
@@ -145,7 +147,7 @@ export class Obstacle extends ClientGameObject2D{
             this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
             this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
 
-            if(this.def.onDestroyExplosion){
+            if(this.def.onDestroyExplosion&&Graphics>=GraphicsConfig.Low){
                 this.emitter_1=this.game.particles.add_emiter({
                     delay:0.3,
                     particle:()=>new ABParticle2D({
@@ -165,6 +167,7 @@ export class Obstacle extends ClientGameObject2D{
             }
         }
         if(data.dead){
+            if(this.emitter_1)this.emitter_1.enabled=false
             this.die()
         }else if(this.dead){
             this.dead=false
