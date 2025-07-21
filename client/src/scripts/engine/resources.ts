@@ -1,6 +1,7 @@
 import { EaseFunction, ease, v2 } from "common/scripts/engine/mod.ts";
 import { Material2D } from "./renderer.ts";
 import { type SoundManager } from "./sounds.ts";
+import { Vec2 } from "common/scripts/engine/geometry.ts";
 interface FrameData {
     x: number
     y: number
@@ -16,16 +17,21 @@ export interface SoundDef{
     volume:number
     src:string
 }
-export class Sprite{
+export class Frame{
     source:HTMLImageElement
     texture!:WebGLTexture
     src:string
-    path:string
-    readonly resourceType:SourceType.Sprite=SourceType.Sprite
+    frame_rect?:{
+        x1:number
+        y1:number
+        x2:number
+        y2:number
+    }
+    frame_size?:Vec2
+    readonly resourceType:SourceType.Frame=SourceType.Frame
     gl:WebGLRenderingContext
-    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string,path:string){
+    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string){
         this.source=source
-        this.path=path
         this.src=src
         this.gl=gl
     }
@@ -50,16 +56,12 @@ export interface Sound extends SoundDef{
     resourceType:SourceType.Sound
 }
 export enum SourceType{
-    Sprite,
+    Frame,
     Animation,
     Sound,
     Material
 }
-export type Source=Sprite|Animation|Sound|Material2D
-function getSvgUrl(svg:string) {
-    return  URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-}
-
+export type Source=Frame|Animation|Sound|Material2D
 function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -76,7 +78,7 @@ function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
   
     return texture;
 }
-export interface SpriteDef{
+export interface FrameDef{
     path:string
     scale?:number
     variations?:number
@@ -92,7 +94,7 @@ export class ResourcesManager{
     gl:WebGLRenderingContext
     audioCtx:AudioContext
     soundsManager:SoundManager
-    default_sprite:Sprite
+    default_sprite:Frame
     constructor(gl:WebGLRenderingContext,soundsManager:SoundManager){ 
         this.sources={}
         this.canvas=document.createElement("canvas")
@@ -105,24 +107,24 @@ export class ResourcesManager{
         img.src=default_sprite_src
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
-        this.default_sprite=new Sprite(img,null,default_sprite_src,default_sprite_src);
+        this.default_sprite=new Frame(img,null,default_sprite_src,default_sprite_src);
         this.default_sprite.source.addEventListener("load",()=>{
             this.default_sprite.texture=loadTexture(this.gl,this.default_sprite.source)!
         })
     }
-    async load_source(id:string,src:string,scale:number=1,volume:number=1):Promise<Source|undefined>{
+    async load_source(id:string,src:string,volume:number=1):Promise<Source|undefined>{
         if(src.endsWith(".svg")||src.endsWith(".png")){
-            return await this.load_sprite(id,src,scale)
+            return await this.load_sprite(id,src)
         }else if(src.endsWith(".mp3")){
             return await this.load_audio(id,{src:src,volume:volume})
         }else if(src.endsWith(".src")){
-            await this.load_folder(src,scale)
+            await this.load_folder(src)
         }
 
         return undefined
     }
-    render_text(text:string, fontSize = 32,color="white",font:string="Arial"):Promise<Sprite>{
-        return new Promise<Sprite>((resolve, _reject) => {
+    render_text(text:string, fontSize = 32,color="white",font:string="Arial"):Promise<Frame>{
+        return new Promise<Frame>((resolve, _reject) => {
             this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
             this.ctx.save()
             this.ctx.font = `${fontSize}px ${font}`
@@ -139,55 +141,43 @@ export class ResourcesManager{
             const src=this.canvas.toDataURL()
 
             this.ctx.restore()
-            const ret=new Sprite(new Image(),this.gl,src,"");
+            const ret=new Frame(new Image(),this.gl,src);
             ret.source.addEventListener("load",()=>{
-                const sp=ret as Sprite
+                const sp=ret as Frame
                 sp.texture=loadTexture(this.gl,sp.source)!
                 resolve(ret)
             });
             ret.source.src=src
         })
     }
-    get_sprite(id:string):Sprite{
+    get_sprite(id:string):Frame{
         if(!this.sources[id]){
             return this.default_sprite
         }
-        return this.sources[id] as Sprite
+        return this.sources[id] as Frame
     }
     async load_spritesheet(idPrefix: string, json: SpritesheetJSON, imagePathOverride?: string) {
-        const imagePath = imagePathOverride ?? json.meta.image;
-        const image = await this.load_image(imagePath);
-
-        const sheetCanvas = document.createElement("canvas");
-        const sheetCtx = sheetCanvas.getContext("2d")!;
-        sheetCanvas.width = image.naturalWidth;
-        sheetCanvas.height = image.naturalHeight;
-        sheetCtx.drawImage(image, 0, 0);
+        const image = await this.load_image(imagePathOverride ?? json.meta.image);
+        const tex = loadTexture(this.gl, image);
 
         for (const [id, frame] of Object.entries(json.frames)) {
-            const frameCanvas = document.createElement("canvas");
-            const frameCtx = frameCanvas.getContext("2d")!;
-            frameCanvas.width = frame.w/json.meta.scale;
-            frameCanvas.height = frame.h/json.meta.scale;
+            const sprite = new Frame(image, this.gl, frame.file??"");
+            sprite.texture = tex;
+            const iw = sprite.source.width;
+            const ih = sprite.source.height;
 
-            frameCtx.drawImage(
-                sheetCanvas,
-                frame.x, frame.y, frame.w, frame.h,
-                0, 0, frame.w/json.meta.scale, frame.h/json.meta.scale
-            );
-
-            const spriteImage = new Image();
-            const src = frameCanvas.toDataURL();
-            spriteImage.src = src;
-
-            const sprite = new Sprite(spriteImage, this.gl, src, frame.file??imagePath);
-            spriteImage.onload = () => {
-                sprite.texture = loadTexture(this.gl, spriteImage)!;
+            sprite.frame_rect = {
+                x1: frame.x / iw,
+                y1: 1.0 - (frame.y + frame.h) / ih,
+                x2: (frame.x + frame.w) / iw,
+                y2: 1.0 - frame.y / ih
             };
 
+            sprite.frame_size=v2.new(frame.w/json.meta.scale,frame.h/json.meta.scale)
             this.sources[`${idPrefix}${id}`] = sprite;
         }
     }
+
     private load_image(src: string): Promise<HTMLImageElement> {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -196,53 +186,17 @@ export class ResourcesManager{
             img.src = src;
         });
     }
-    load_sprite(id:string,src:string,scale=1):Promise<Sprite>{
-        return new Promise<Sprite>((resolve, _reject) => {
-            if(this.sources[id])resolve(this.sources[id] as Sprite)
-            if(src.endsWith(".svg")){
-                fetch(src).then((r)=>r.text()).then(txt=>{
-                    const svg=this.domp.parseFromString(txt, "image/svg+xml");
-                    // deno-lint-ignore ban-ts-comment
-                    //@ts-expect-error
-                    resolve(this.load_svg(id,svg.querySelector("svg"),src,scale))
-                })
-            }else{
-                this.sources[id]=new Sprite(new Image(),this.gl,src,src);
-                (this.sources[id] as Sprite).source.addEventListener("load",()=>{
-                    const sp=this.sources[id] as Sprite
-                    sp.texture=loadTexture(this.gl,sp.source)!
-                    resolve(sp)
-                });
-                (this.sources[id] as Sprite).source.src=src;
-            }
-        })
-    }
-    private load_svg(id:string,svg:SVGAElement,svg_path:string="",scale:number=1):Promise<Sprite>{
-        return new Promise<Sprite>((resolve, _reject) => {
-            if(this.sources[id]){
-                resolve(this.sources[id] as Sprite)
-            }
-            svg.setAttribute("currentScale", scale.toString())
-            const img=new Image()
-            img.onload=()=>{
-                const size=v2.new(img.naturalWidth*2,img.naturalHeight*2)
-                this.canvas.width=size.x
-                this.canvas.height=size.y
-                this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
-                this.ctx.save()
-                this.ctx.scale(scale, scale)
-                this.ctx.drawImage(img, 0, 0,size.x,size.y)
-                this.ctx.restore()
-                const src=this.canvas.toDataURL()
-                this.sources[id]=new Sprite(new Image(),this.gl,src,svg_path);
-                (this.sources[id] as Sprite).source.addEventListener("load",()=>{
-                    const sp=this.sources[id] as Sprite
-                    sp.texture=loadTexture(this.gl,sp.source)!
-                    resolve(sp)
-                });
-                (this.sources[id] as Sprite).source.src=src
-            }
-            img.src=getSvgUrl(this.dome.serializeToString(svg))
+    load_sprite(id:string,src:string):Promise<Frame>{
+        return new Promise<Frame>((resolve, _reject) => {
+            if(this.sources[id])resolve(this.sources[id] as Frame)
+            this.sources[id]=new Frame(new Image(),this.gl,src);
+            (this.sources[id] as Frame).source.addEventListener("load",()=>{
+                const sp=this.sources[id] as Frame
+                sp.texture=loadTexture(this.gl,sp.source)!
+                resolve(sp)
+            });
+            (this.sources[id] as Frame).source.src=src;
+            
         })
     }
     load_material2D(id:string,mat:Material2D){
@@ -306,8 +260,8 @@ export class ResourcesManager{
     unload(id:string){
         if(this.sources[id]){
             switch(this.sources[id].resourceType){
-                case SourceType.Sprite:
-                    (this.sources[id] as Sprite).free();
+                case SourceType.Frame:
+                    (this.sources[id] as Frame).free();
                     break
                 default:
                     break
@@ -316,12 +270,12 @@ export class ResourcesManager{
         }
     }
     async load_folder(folder:string,scale:number=1){
-        const foundeds:Record<string,string|SpriteDef> = {};
+        const foundeds:Record<string,string|FrameDef> = {};
         try {
             const response = await fetch(`${folder}`);
             if (!response.ok) throw new Error(`Erro ao buscar a pasta: ${folder}`);
 
-            const files = await response.json() as {files:Record<string,string|SpriteDef>,dir:string}
+            const files = await response.json() as {files:Record<string,string|FrameDef>,dir:string}
 
             console.log("Loading: ",folder+",",'dir:',files.dir)
 
@@ -336,10 +290,10 @@ export class ResourcesManager{
                 this.unload(f)
                 await this.load_source(f,`${foundeds[f]}`,scale)
             }else{
-                if((foundeds[f] as SpriteDef).variations){
-                    const sca=((foundeds[f] as SpriteDef).scale??1)*scale
-                    for(let i=0;i<(foundeds[f] as SpriteDef).variations!;i++){
-                        const extF=(foundeds[f] as SpriteDef).path.split(".")
+                if((foundeds[f] as FrameDef).variations){
+                    const sca=((foundeds[f] as FrameDef).scale??1)*scale
+                    for(let i=0;i<(foundeds[f] as FrameDef).variations!;i++){
+                        const extF=(foundeds[f] as FrameDef).path.split(".")
                         const ext=extF[extF.length-1]
                         extF.length--
                         const name=extF.join(".")
@@ -349,7 +303,7 @@ export class ResourcesManager{
                     }
                 }else{
                     this.unload(f)
-                    await this.load_source(f,`${(foundeds[f] as SpriteDef).path}`,((foundeds[f] as SpriteDef).scale??1)*scale)
+                    await this.load_source(f,`${(foundeds[f] as FrameDef).path}`,((foundeds[f] as FrameDef).scale??1)*scale)
                 }
             }
         }

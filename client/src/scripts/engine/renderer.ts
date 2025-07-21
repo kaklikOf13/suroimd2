@@ -1,5 +1,5 @@
 import { CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
-import { SourceType, type Sprite } from "./resources.ts";
+import { SourceType, type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
 import { type Camera2D } from "./container.ts";
 export interface Transform2D{
@@ -166,7 +166,7 @@ export abstract class Renderer {
     // deno-lint-ignore no-explicit-any
     abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2,zIndex?:number): void
     abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2,zIndex?:number, precision?: number): void
-    abstract draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot?: Vec2,zIndex?:number,tint?:Color,size?:Vec2): void
+    abstract draw_image2D(image: Frame, position: Vec2, scale: Vec2, angle: number, hotspot?: Vec2,zIndex?:number,tint?:Color,size?:Vec2): void
     abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2,zIndex?:number): void
 
     abstract clear(): void
@@ -451,9 +451,9 @@ void main() {
         }
     }
 
-    draw_image2D(image: Sprite, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0,tint:Color=ColorM.default.white,size?:Vec2): void {
+    draw_image2D(image: Frame, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0,tint:Color=ColorM.default.white,size?:Vec2): void {
         if(!size){
-            size={
+            size=image.frame_size??{
                 x:image.source.width,
                 y:image.source.height
             }
@@ -484,7 +484,14 @@ void main() {
 
         const program=this.tex_program
 
-        const textureCoordinates: number[] = [
+        const textureCoordinates: number[] = image.frame_rect?[
+            image.frame_rect.x1,image.frame_rect.y2,
+            image.frame_rect.x2,image.frame_rect.y2,
+            image.frame_rect.x1,image.frame_rect.y1,
+            image.frame_rect.x1,image.frame_rect.y1,
+            image.frame_rect.x2,image.frame_rect.y2,
+            image.frame_rect.x2,image.frame_rect.y1,
+        ]:[
             0.0, 1.0,
             1.0, 1.0,
             0.0, 0.0,

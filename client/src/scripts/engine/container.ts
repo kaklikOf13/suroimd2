@@ -1,6 +1,6 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer } from "./renderer.ts";
-import { type ResourcesManager, type Sprite } from "./resources.ts";
+import { type ResourcesManager, type Frame } from "./resources.ts";
 import { KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 
@@ -27,7 +27,7 @@ export abstract class Container2DObject {
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
-        if(this.parent)this.parent.updateDestroy()
+        if(this.parent)this.parent.update_deletions()
     }
 
     update(_dt:number,_resources:ResourcesManager): void {
@@ -86,7 +86,7 @@ export class Grid2D extends Container2DObject{
 }
 export class Sprite2D extends Container2DObject{
     object_type:string="sprite2d"
-    frame?:Sprite
+    frame?:Frame
     hotspot:Vec2=v2.new(0,0)
     size?:Vec2
 
@@ -117,28 +117,15 @@ export class Container2D extends Container2DObject{
     object_type:string="container2d"
     children:Container2DObject[]=[]
 
-    override update(dt:number,resources:ResourcesManager){
-        super.update(dt,resources)
-        for(const c of this.children){
-            c.update(dt,resources)
-        }
+    update_deletions(){
+        this.children = this.children.filter(c => !c.destroyed);
     }
-    updateDestroy(){
-        for(let i=0;i<this.children.length;i++){
-            if(this.children[i].destroyed){
-                this.children.splice(i,1)
-                i--
-                continue
-            }
-        }
+    override update(dt:number,resources:ResourcesManager){
+        super.update(dt,resources);
+        for (const c of this.children) c.update(dt,resources);
     }
     updateZIndex(){
-        this.children = this.children.sort((a, b) => {
-            if (a.zIndex === b.zIndex) {
-                return a.id_on_parent - b.id_on_parent;
-            }
-            return a.zIndex - b.zIndex;
-        });
+        this.children.sort((a, b) => a.zIndex - b.zIndex || a.id_on_parent - b.id_on_parent);
     }
     draw(renderer:Renderer):void{
         for(const c of this.children){

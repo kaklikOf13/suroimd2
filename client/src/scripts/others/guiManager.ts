@@ -172,7 +172,7 @@ export class GuiManager{
             let img=this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.melee){
                 name.innerText=gui.weapons.melee.idString
-                img.src=this.game.resources.get_sprite(gui.weapons.melee.idString).path
+                img.src=this.game.resources.get_sprite(gui.weapons.melee.idString).src
                 this.weapons[0]=gui.weapons.melee
                 img.style.display="block"
             }else{
@@ -182,7 +182,7 @@ export class GuiManager{
             img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.gun1){
                 name.innerText=gui.weapons.gun1.idString
-                img.src=this.game.resources.get_sprite(gui.weapons.gun1.idString).path
+                img.src=this.game.resources.get_sprite(gui.weapons.gun1.idString).src
                 this.weapons[1]=gui.weapons.gun1
                 img.style.display="block"
             }else{
@@ -194,7 +194,7 @@ export class GuiManager{
             img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.gun2){
                 name.innerText=gui.weapons.gun2.idString
-                img.src=this.game.resources.get_sprite(gui.weapons.gun2.idString).path
+                img.src=this.game.resources.get_sprite(gui.weapons.gun2.idString).src
                 this.weapons[2]=gui.weapons.gun2
                 img.style.display="block"
             }else{
