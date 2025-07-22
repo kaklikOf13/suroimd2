@@ -40,7 +40,26 @@
     0% { transform: translate(-50%,-50%) rotate(-3deg) scale(100%); }
     100% { transform: translate(-50%,-50%) rotate(3deg) scale(108%); }
 }
-
+#top-left-section{
+    position: absolute;
+    display: block;
+    top: 10px;
+    left: 10px;
+    #btn-settings{
+        transition: none;
+    }
+}
+#settings-tabs{
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 50%;
+    height: 50%;
+    z-index: 5;
+    margin: auto;
+}
 #updates-section {
     position: absolute;
     width: 400px;

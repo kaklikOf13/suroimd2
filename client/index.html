@@ -109,11 +109,41 @@
       </div>
       <canvas id="game-canvas"></canvas>
     </div>
+    <tabs-container id="settings-tabs" class="background-menu">
+      <tab text="Graphics">
+        <div>
+          <span>Textures</span>
+          <select class="select-blue" id="settings-graphics-texture">
+            <option value="very-low">Very Low</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="very-high">Very High</option>
+          </select>
+        </div>
+
+        <div>
+          <span>Particles</span>
+          <select class="select-blue" id="settings-graphics-particles">
+            <option value="0">No</option>
+            <option value="1">Normal</option>
+            <option value="2">Advanced</option>
+          </select>
+        </div>
+      </tab>
+      <tab text="Sounds">
+
+      </tab>
+    </tabs-container>
     <div id="menu">
       <img id="title-section" src="img/menu/logos/title.png"></img>
 
       <div id="updates-section" class="background-menu">
         <h2>Updates</h2>
+      </div>
+
+      <div id="top-left-section">
+        <button id="btn-settings" class="btn-green">Settings</button>
       </div>
 
       <div id="main-section" class="background-menu">

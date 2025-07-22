@@ -42,3 +42,27 @@
         box-shadow: 0 0 20px rgba(0, 170, 119, 0.2);
     }
 }
+
+.select-blue{
+    font-family: Inter,sans-serif;
+    font-size: 16px;
+    color: #fff;
+    &:hover {
+        background: linear-gradient(135deg, rgba(7, 170, 238, 0.2) 0%, rgba(7, 170, 238, 0.3) 100%);
+        border-color: rgba(7, 170, 238, 0.8);
+        box-shadow: 0 0 20px rgba(7, 170, 238, 0.2);
+        transform: translateY(-2px);
+    }
+    &:active {
+        transform: translateY(1px);
+    }
+
+    background: linear-gradient(135deg, rgba(7, 170, 238, 0.1) 0%, rgba(7, 170, 238, 0.2) 100%);
+    border: 2px solid rgba(7, 170, 238, 0.5);
+    padding: 5px;
+    border-radius: 4px;
+    min-width: 100px;
+    height: 30px;
+    outline: none;
+    box-shadow: 1px 1px 3px #0009;
+}

@@ -106,6 +106,7 @@ import { MenuManager } from "./menuManager.ts";
                 this.game=g
             }
             this.game.request_animation_frame=false
+            menu_manager.game_start()
             this.game.mainloop()
             this.game.onstop=this.closeGame.bind(this)
         }
