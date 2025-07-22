@@ -17,6 +17,40 @@ export interface SoundDef{
     volume:number
     src:string
 }
+
+function rotatePoint(x:number, y:number, angle:number) {
+    const cosTheta = Math.cos(angle);
+    const sinTheta = Math.sin(angle);
+    return {
+        x: cosTheta * x - sinTheta * y,
+        y: sinTheta * x + cosTheta * y
+    };
+}
+export function ImageModel2D(scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),size:Vec2,meter_size:number=100):Float32Array{
+    const sizeR=v2.new((size.x/meter_size)*(scale.x/2),(size.y/meter_size)*(scale.y/2))
+    const x1 = -sizeR.x*hotspot.x
+    const y1 = -sizeR.y*hotspot.y
+    const x2 = sizeR.x+x1
+    const y2 = sizeR.y+y1
+
+    const verticesB = [
+        { x: x1, y: y1 },
+        { x: x2, y: y1 },
+        { x: x1, y: y2 },
+        { x: x2, y: y2 }
+    ];
+    const verticesR = verticesB.map(vertex => rotatePoint(vertex.x, vertex.y, angle))
+
+    return new Float32Array([
+        verticesR[0].x, verticesR[0].y,
+        verticesR[1].x, verticesR[1].y,
+        verticesR[2].x, verticesR[2].y,
+        
+        verticesR[2].x, verticesR[2].y,
+        verticesR[1].x, verticesR[1].y,
+        verticesR[3].x, verticesR[3].y
+    ])
+}
 export class Frame{
     source:HTMLImageElement
     texture!:WebGLTexture
@@ -308,7 +342,7 @@ export class ResourcesManager{
                 foundeds[file]=files.dir+"/"+files.files[file]
             }
         } catch (error) {
-            console.error(`Cant Load The Folder ${folder}: ${error.message}`);
+            console.error(`Cant Load The Folder ${folder}: ${(error as Error).message}`);
         }
         for(const f of Object.keys(foundeds)){
             if(typeof foundeds[f]==="string"){

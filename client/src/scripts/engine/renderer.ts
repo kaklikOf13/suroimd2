@@ -166,7 +166,7 @@ export abstract class Renderer {
     // deno-lint-ignore no-explicit-any
     abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2,zIndex?:number): void
     abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2,zIndex?:number, precision?: number): void
-    abstract draw_image2D(image: Frame, position: Vec2, scale: Vec2, angle: number, hotspot?: Vec2,zIndex?:number,tint?:Color,size?:Vec2): void
+    abstract draw_image2D(image: Frame,position: Vec2,model:Float32Array,tint?:Color): void
     abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2,zIndex?:number): void
 
     abstract clear(): void
@@ -184,12 +184,12 @@ attribute vec2 a_Position;
 attribute vec2 a_TexCoord;
     
 uniform mat4 u_ProjectionMatrix;
-uniform vec3 u_Translation;
+uniform vec2 u_Translation;
 
 varying highp vec2 vTextureCoord;
 
 void main(void) {
-    gl_Position = u_ProjectionMatrix*vec4(a_Position+u_Translation.xy,u_Translation.z,1.0);
+    gl_Position = u_ProjectionMatrix*vec4(a_Position+u_Translation.xy,0.0,1.0);
     vTextureCoord = a_TexCoord;
 }`;
 
@@ -229,14 +229,6 @@ export class Material2DFactory<MaterialArgs=any>{
         return ret
     }
 }
-function rotatePoint(x:number, y:number, angle:number) {
-    const cosTheta = Math.cos(angle);
-    const sinTheta = Math.sin(angle);
-    return {
-        x: cosTheta * x - sinTheta * y,
-        y: sinTheta * x + cosTheta * y
-    };
-}
 export interface GridMaterialArgs {
     color:Color
     width:number
@@ -261,9 +253,9 @@ export class WebglRenderer extends Renderer {
 `
 attribute vec2 a_Position;
 uniform mat4 u_ProjectionMatrix;
-uniform vec3 u_Translation;
+uniform vec2 u_Translation;
 void main() {
-    gl_Position = u_ProjectionMatrix * vec4(a_Position+u_Translation.xy, u_Translation.z, 1.0);
+    gl_Position = u_ProjectionMatrix * vec4(a_Position+u_Translation.xy, 0.0, 1.0);
 }`,
 `
 #ifdef GL_ES
@@ -451,43 +443,12 @@ void main() {
         }
     }
 
-    draw_image2D(image: Frame, position: Vec2, scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),zIndex:number=0,tint:Color=ColorM.default.white,size?:Vec2): void {
-        if(!size){
-            size=image.frame_size??{
-                x:image.source.width,
-                y:image.source.height
-            }
-        }
-        const sizeR=v2.new((size.x/this.meter_size)*(scale.x/2),(size.y/this.meter_size)*(scale.y/2))
-        const x1 = -sizeR.x*hotspot.x
-        const y1 = -sizeR.y*hotspot.y
-        const x2 = sizeR.x+x1
-        const y2 = sizeR.y+y1
-
-        const verticesB = [
-            { x: x1, y: y1 },
-            { x: x2, y: y1 },
-            { x: x1, y: y2 },
-            { x: x2, y: y2 }
-        ];
-        const verticesR = verticesB.map(vertex => rotatePoint(vertex.x, vertex.y, angle))
-
-        const vertices=[
-            verticesR[0].x, verticesR[0].y,
-            verticesR[1].x, verticesR[1].y,
-            verticesR[2].x, verticesR[2].y,
-            
-            verticesR[2].x, verticesR[2].y,
-            verticesR[1].x, verticesR[1].y,
-            verticesR[3].x, verticesR[3].y
-        ]
-
+    draw_image2D(image: Frame,position: Vec2,model:Float32Array,tint:Color=ColorM.default.white): void {
         const program=this.tex_program
-
 
         const vertexBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW)
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(model), this.gl.STATIC_DRAW)
 
         const textureCoordBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
@@ -512,14 +473,13 @@ void main() {
         let location = this.gl.getUniformLocation(program, "u_ProjectionMatrix")
         this.gl.uniformMatrix4fv(location, false, this.projectionMatrix);
 
-
         location = this.gl.getUniformLocation(program, "u_Translation")
-        this.gl.uniform3f(location,position.x,position.y,zIndex)
+        this.gl.uniform2f(location,position.x,position.y)
 
         location = this.gl.getUniformLocation(program, "u_Tint")
         this.gl.uniform4f(location,tint.r,tint.g,tint.b,tint.a)
 
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length / 2)
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, model.length / 2)
     }
 
     clear() {
