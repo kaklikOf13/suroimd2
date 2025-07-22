@@ -47,6 +47,7 @@ Melees.insert(
             position:DefaultFistRig.right!.position,
             rotation:-0.5,
             zIndex:1,
+            left_handed_suport:true,
             hotspot:v2.new(0.25,0.5)
         }
     },

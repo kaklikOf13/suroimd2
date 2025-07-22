@@ -228,7 +228,7 @@ Guns.insert(
         speed_mod:1,
         gasParticles:GasParticles.automatic,
         muzzleFlash:MuzzleFlash.normal,
-        arms:WeaponsArmRig[0],
+        arms:WeaponsArmRig[2],
         image:{
             position:v2.new(0.5,0.0),
             rotation:0

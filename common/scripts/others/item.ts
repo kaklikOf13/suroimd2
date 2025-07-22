@@ -25,6 +25,7 @@ export interface FistRig{
 export interface WeaponRig{
     position:Vec2
     rotation:number
+    left_handed_suport?:boolean
     zIndex?:number
     hotspot?:Vec2
 }
@@ -50,6 +51,16 @@ export const WeaponsArmRig={
         }
     },
     1:{
+        left:{
+            position:v2.new(0.8,-0.045),
+            rotation:0.32,
+        },
+        right:{
+            position:v2.new(0.5,0),
+            rotation:-0.2,
+        }
+    },
+    2:{
         left:{
             position:v2.new(0.8,-0.045),
             rotation:0.32,

@@ -52,6 +52,8 @@ export class Player extends GameObject{
     current_weapon?:WeaponDef
     dead:boolean=false
 
+    left_handed=false
+
     on_hitted(position:Vec2){
         if(Math.random()<=0.1){
             const d=new Decal()
@@ -73,6 +75,10 @@ export class Player extends GameObject{
                 this.sprites.left_arm.visible=true
                 this.sprites.left_arm.position=v2.duplicate(def.arms.left.position)
                 this.sprites.left_arm.rotation=def.arms.left.rotation
+                if(this.left_handed){
+                    this.sprites.left_arm.position.y*=-1
+                    this.sprites.left_arm.rotation*=-1
+                }
                 this.sprites.left_arm.zIndex=def.arms.left.zIndex??1
             }else{
                 this.sprites.left_arm.visible=false
@@ -81,6 +87,10 @@ export class Player extends GameObject{
                 this.sprites.right_arm.visible=true
                 this.sprites.right_arm.position=v2.duplicate(def.arms.right.position)
                 this.sprites.right_arm.rotation=def.arms.right.rotation
+                if(this.left_handed){
+                    this.sprites.right_arm.position.y*=-1
+                    this.sprites.right_arm.rotation*=-1
+                }
                 this.sprites.right_arm.zIndex=def.arms.right.zIndex??1
             }else{
                 this.sprites.right_arm.visible=false
@@ -94,6 +104,10 @@ export class Player extends GameObject{
             this.sprites.weapon.visible=true
             this.sprites.weapon.position=v2.duplicate(def.image.position)
             this.sprites.weapon.rotation=def.image.rotation
+            if(this.left_handed&&def.image.left_handed_suport){
+                this.sprites.weapon.position.y*=-1
+                this.sprites.weapon.rotation*=-1
+            }
             this.sprites.weapon.zIndex=def.image.zIndex??2
             this.sprites.weapon.hotspot=def.image.hotspot??v2.new(.5,.5)
         }else{
@@ -318,6 +332,7 @@ export class Player extends GameObject{
             this.dead=data.dead
             this.container.destroy()
         }
+        this.left_handed=data.left_handed
         if(data.full){
             this.set_skin("skin_default")
             this.set_helmet(data.full.helmet)
