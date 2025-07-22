@@ -8,7 +8,7 @@ import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
+import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
@@ -71,10 +71,6 @@ export class Player extends ServerGameObject{
         this.movement=v2.new(0,0)
         this.oldPosition=this.position
         this.inventory=new GInventory(this)
-
-        //this.inventory.give_item(this.default_melee as unknown as GameItem,1,false)
-
-        //this.inventory.give_item(GameItems.valueString["cellphone"],1)
 
         this.actions=new ActionsManager(this)
 
@@ -272,6 +268,8 @@ export class Player extends ServerGameObject{
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
         this.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
+
+        //this.helmet=Armors.getFromString("regular_helmet")
         /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,120)

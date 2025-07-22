@@ -77,8 +77,8 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2.new(0.7,0.7);
-                    this.sprite_outline.scale=v2.new(0.8,0.8);
+                    this.sprite_main.scale=v2.new(0.8,0.8);
+                    this.sprite_outline.scale=v2.new(0.9,0.9);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
                     break
                 case InventoryItemType.other:

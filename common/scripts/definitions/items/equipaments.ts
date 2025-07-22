@@ -55,7 +55,7 @@ Armors.insert(
         reduction:0.15,
         size:1,
         type:EquipamentType.Helmet,
-        position:v2.new(-23,0)
+        position:v2.new(0,0)
     },
     {
         idString:"soldier_vest",
@@ -66,13 +66,13 @@ Armors.insert(
         type:EquipamentType.Vest,
     },
     {
-        idString:"soldier_helmet",
+        idString:"tactical_helmet",
         defence:0,
         level:3,
         reduction:0.2,
         size:1.7,
         type:EquipamentType.Helmet,
-        position:v2.new(-0.2,0)
+        position:v2.new(0,0)
     },
     {
         idString:"warrior_vest",

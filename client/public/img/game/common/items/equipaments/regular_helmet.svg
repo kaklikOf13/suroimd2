@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    version="1.1"
-   width="161.53337"
-   height="160.67595"
-   viewBox="0 0 161.53337 160.67595"
+   width="112.47317"
+   height="113.07336"
+   viewBox="0 0 112.47317 113.07336"
    id="svg21"
-   sodipodi:docname="basic_helmet_world.svg"
+   sodipodi:docname="regular_helmet.svg"
    xml:space="preserve"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -21,8 +21,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.4425845"
-     inkscape:cx="-14.210606"
-     inkscape:cy="134.82746"
+     inkscape:cx="-37.779416"
+     inkscape:cy="111.25865"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -133,7 +133,7 @@
          offset="1"
          stop-color="#0d0800"
          id="stop12-4" /></linearGradient></defs><g
-     transform="matrix(0,-2.9628266,3.2520614,0,-501.63242,791.41632)"
+     transform="matrix(2.0739786,0,0,2.276443,-441.51825,-351.1427)"
      id="g21"><g
        stroke-width="0"
        stroke-miterlimit="10"
