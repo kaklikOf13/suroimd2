@@ -484,21 +484,6 @@ void main() {
 
         const program=this.tex_program
 
-        const textureCoordinates: number[] = image.frame_rect?[
-            image.frame_rect.x1,image.frame_rect.y2,
-            image.frame_rect.x2,image.frame_rect.y2,
-            image.frame_rect.x1,image.frame_rect.y1,
-            image.frame_rect.x1,image.frame_rect.y1,
-            image.frame_rect.x2,image.frame_rect.y2,
-            image.frame_rect.x2,image.frame_rect.y1,
-        ]:[
-            0.0, 1.0,
-            1.0, 1.0,
-            0.0, 0.0,
-            0.0, 0.0,
-            1.0, 1.0,
-            1.0, 0.0
-        ]
 
         const vertexBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
@@ -506,7 +491,7 @@ void main() {
 
         const textureCoordBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), this.gl.STATIC_DRAW)
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, image.texture_coordinates, this.gl.STATIC_DRAW)
 
         this.gl.useProgram(program);
 

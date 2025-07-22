@@ -27,13 +27,15 @@ export class Frame{
         x2:number
         y2:number
     }
+    texture_coordinates:Float32Array
     frame_size?:Vec2
     readonly resourceType:SourceType.Frame=SourceType.Frame
     gl:WebGLRenderingContext
-    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string){
+    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string,tc:number[]){
         this.source=source
         this.src=src
         this.gl=gl
+        this.texture_coordinates=new Float32Array(tc)
     }
     free(){
         this.gl.deleteTexture(this.texture)
@@ -141,7 +143,14 @@ export class ResourcesManager{
             const src=this.canvas.toDataURL()
 
             this.ctx.restore()
-            const ret=new Frame(new Image(),this.gl,src);
+            const ret=new Frame(new Image(),this.gl,src,[
+                0.0, 1.0,
+                1.0, 1.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                1.0, 1.0,
+                1.0, 0.0
+            ]);
             ret.source.addEventListener("load",()=>{
                 const sp=ret as Frame
                 sp.texture=loadTexture(this.gl,sp.source)!
@@ -161,17 +170,26 @@ export class ResourcesManager{
         const tex = loadTexture(this.gl, image);
 
         for (const [id, frame] of Object.entries(json.frames)) {
-            const sprite = new Frame(image, this.gl, frame.file??"");
-            sprite.texture = tex;
-            const iw = sprite.source.width;
-            const ih = sprite.source.height;
-
-            sprite.frame_rect = {
+            const iw = image.width;
+            const ih = image.height;
+            const rect = {
                 x1: frame.x / iw,
                 y1: 1.0 - (frame.y + frame.h) / ih,
                 x2: (frame.x + frame.w) / iw,
                 y2: 1.0 - frame.y / ih
             };
+            const sprite = new Frame(image, this.gl, frame.file??"",
+                [
+                    rect.x1,rect.y2,
+                    rect.x2,rect.y2,
+                    rect.x1,rect.y1,
+                    rect.x1,rect.y1,
+                    rect.x2,rect.y2,
+                    rect.x2,rect.y1
+                ]
+            );
+            sprite.texture = tex;
+
 
             sprite.frame_size=v2.new(frame.w/json.meta.scale,frame.h/json.meta.scale)
             this.sources[`${idPrefix}${id}`] = sprite;
@@ -189,7 +207,14 @@ export class ResourcesManager{
     load_sprite(id:string,src:string):Promise<Frame>{
         return new Promise<Frame>((resolve, _reject) => {
             if(this.sources[id])resolve(this.sources[id] as Frame)
-            this.sources[id]=new Frame(new Image(),this.gl,src);
+            this.sources[id]=new Frame(new Image(),this.gl,src,[
+                0.0, 1.0,
+                1.0, 1.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                1.0, 1.0,
+                1.0, 0.0
+            ]);
             (this.sources[id] as Frame).source.addEventListener("load",()=>{
                 const sp=this.sources[id] as Frame
                 sp.texture=loadTexture(this.gl,sp.source)!

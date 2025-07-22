@@ -173,8 +173,8 @@ export class Player extends GameObject{
         this.sprites.muzzle_flash.visible=false
         this.sprites.muzzle_flash.hotspot=v2.new(0,.5)
         this.sprites.muzzle_flash.zIndex=6
-        this.sprites.backpack.position=v2.new(-0.23,0)
-        this.sprites.backpack.scale=v2.new(1.45,1.45)
+        this.sprites.backpack.position=v2.new(-0.27,0)
+        this.sprites.backpack.scale=v2.new(1.34,1.34)
         this.container.add_child(this.sprites.muzzle_flash)
     }
     play_animation(animation:PlayerAnimation){

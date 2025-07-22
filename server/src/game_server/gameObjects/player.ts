@@ -269,7 +269,7 @@ export class Player extends ServerGameObject{
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
         this.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
 
-        //this.helmet=Armors.getFromString("regular_helmet")
+        //this.helmet=Armors.getFromString("tactical_helmet")
         /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,120)

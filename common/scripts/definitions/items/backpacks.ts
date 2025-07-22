@@ -39,7 +39,6 @@ Backpacks.insert(
             "308sub":20,
         },
         rarity:ItemQuality.Common,
-        no_world_image:true
     },
     {
         idString:"regular_pack",
@@ -52,7 +51,6 @@ Backpacks.insert(
             "308sub":30,
         },
         rarity:ItemQuality.Common,
-        no_world_image:true
     },
     {
         idString:"tactical_pack",
