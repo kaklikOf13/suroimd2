@@ -53,6 +53,10 @@ export class GuiManager{
         ammos:document.querySelector("#ammos-inventory") as HTMLDivElement,
 
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
+        
+        information_killbox:document.querySelector("#information-killbox") as HTMLDivElement,
+
+        killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
     }
 
     weapons:{
@@ -68,6 +72,10 @@ export class GuiManager{
     action?:{delay:number,start:number,type:ActionsType}
 
     currentWeapon?:HTMLDivElement
+    killleader?:{
+        id:number
+        kills:number
+    }
     constructor(game:Game){
         this.game=game
         this.game.client.on("gameover",this.show_game_over.bind(this))
@@ -146,12 +154,34 @@ export class GuiManager{
             }
             case KillFeedMessageType.kill:{
                 const dsd=DamageSources.valueNumber[msg.used]
-                elem.innerHTML=`${this.players_name[msg.killerId].name} Killed ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                elem.innerHTML=`${this.players_name[msg.killer.id].name} Killed ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                if(msg.killer.id===this.game.activePlayer!.id){
+                    this.content.information_killbox.innerText=`${msg.killer.kills} Kills`
+                    this.content.information_killbox.style.display="block"
+                    this.game.addTimeout(()=>{
+                        this.content.information_killbox.style="none"
+                    },2)
+                }
                 break
             }
             case KillFeedMessageType.down:{
                 const dsd=DamageSources.valueNumber[msg.used]
-                elem.innerHTML=`${this.players_name[msg.killerId].name} Knocked ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                elem.innerHTML=`${this.players_name[msg.killer.id].name} Knocked ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                break
+            }
+            case KillFeedMessageType.killleader_assigned:{
+                this.killleader={
+                    id:msg.player.id,
+                    kills:msg.player.kills
+                }
+                elem.innerHTML=`${this.players_name[msg.player.id].name} Become The Kill Leader`
+                this.content.killeader_span.innerText=this.players_name[msg.player.id].name
+                break
+            }
+            case KillFeedMessageType.killleader_dead:{
+                this.killleader=undefined
+                elem.innerHTML=`The Killleader Are Dead`
+                this.content.killeader_span.innerText="Waiting For A Kill Leader"
                 break
             }
         }
@@ -277,7 +307,7 @@ export class GuiManager{
         this.content.gameOver_menu_btn.onclick=this.game.onstop!.bind(this.game,this.game)
     }
     update_equipaments(){
-        const player=this.game.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.game.activePlayer}) as Player
+        /*const player=this.game.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.game.activePlayer}) as Player
         if(!player)return
         if(player.helmet){
             this.content.helmet_slot.src=this.game.resources.get_sprite(player.helmet.idString).path
@@ -288,7 +318,7 @@ export class GuiManager{
             this.content.vest_slot.src=this.game.resources.get_sprite(player.vest.idString).path
         }else{
             this.content.vest_slot.src="img/game/common/icons/vest.svg"
-        }
+        }*/
     }
     /*inventory_cache:HTMLDivElement[]=[]
     inventory_reset():HTMLDivElement[]{

@@ -13,7 +13,7 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplash } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import { ConfigCasters, ConfigDefaultValues, Debug } from "./config.ts";
+import { Debug } from "./config.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
@@ -22,7 +22,8 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
-  activePlayer=0
+  activePlayerId=0
+  activePlayer?:Player
 
   action:ActionPacket=new ActionPacket()
   guiManager!:GuiManager
@@ -135,10 +136,9 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.cellphoneAction=undefined
       this.action.hand=-1
 
-      const activePlayer=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
-      if(activePlayer){
+      if(this.activePlayer){
         this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));
-        (activePlayer as Player).container.rotation=this.action.angle
+        (this.activePlayer as Player).container.rotation=this.action.angle
       }
     }
     this.camera.zoom=0.8
@@ -152,8 +152,7 @@ export class Game extends ClientGame2D<GameObject>{
     //0.8=l1 1x
   }
   update_camera(){
-    const p=this.scene.objects.get_object({category:CATEGORYS.PLAYERS,id:this.activePlayer})
-    this.camera.position=p.position
+    if(this.activePlayer)this.camera.position=this.activePlayer!.position
   }
   connect(playerName:string){
     if(!this.client.opened){
@@ -161,7 +160,7 @@ export class Game extends ClientGame2D<GameObject>{
       return
     }
     this.client.emit(new JoinPacket(playerName))
-    this.activePlayer=this.client.ID
+    this.activePlayerId=this.client.ID
     console.log("Joined As:",this.activePlayer)
     
     this.guiManager.players_name={}

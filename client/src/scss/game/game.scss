@@ -314,3 +314,32 @@
         }
     }
 }
+#information-killbox{
+    display: none;
+    width: fit-content;
+    font-family: "Russo-One";
+    font-size: 30px;
+    height: fit-content;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    top: 40%;
+    padding: 15px;
+    margin: auto;
+}
+#killeader-container{
+    #killeader-container-icon{
+        position: relative;
+        transform: translate(0%,25%);
+        left: 0px;
+    }
+    width: fit-content;
+    font-family: "Russo-One";
+    font-size: 15px;
+    height: fit-content;
+    position: absolute;
+    top: 140px;
+    right: 5px;
+    padding: 15px;
+}

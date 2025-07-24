@@ -18,6 +18,7 @@ import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Group, type Team } from "../others/teams.ts";
 import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
+import { type Game } from "../others/game.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -138,6 +139,7 @@ export class Player extends ServerGameObject{
     }
 
     update(dt:number): void {
+        if(this.dead)return
         //Movement
         const gamemode=this.game.gamemode
         let speed=1*(this.recoil?this.recoil.speed:1)
@@ -450,7 +452,10 @@ export class Player extends ServerGameObject{
 
         if(params.owner&&params.owner instanceof Player){
             this.game.send_killfeed_message({
-                killerId:params.owner.id,
+                killer:{
+                    id:params.owner.id,
+                    kills:params.owner.status.kills
+                },
                 victimId:this.id,
                 type:KillFeedMessageType.down,
                 used:DamageSources.keysString[params.source!.idString]
@@ -475,14 +480,37 @@ export class Player extends ServerGameObject{
         this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
         this.game.modeManager.on_player_die(this);
 
+        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
+            this.game.send_killfeed_message({
+                type:KillFeedMessageType.killleader_dead,
+                player:{
+                    id:this.id,
+                    kills:this.status.kills
+                }
+            })
+        }
+
         if(params.owner&&params.owner instanceof Player){
             if(params.owner.id!==this.id)params.owner.status.kills++
             this.game.send_killfeed_message({
-                killerId:params.owner.id,
+                killer:{
+                    id:params.owner.id,
+                    kills:params.owner.status.kills
+                },
                 victimId:this.id,
                 type:KillFeedMessageType.kill,
                 used:DamageSources.keysString[params.source!.idString]
             })
+            if((!this.game.modeManager.kill_leader&&params.owner.status.kills>=3)||(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader.status.kills<params.owner.status.kills)){
+                this.game.modeManager.kill_leader=params.owner
+                this.game.send_killfeed_message({
+                    type:KillFeedMessageType.killleader_assigned,
+                    player:{
+                        id:params.owner.id,
+                        kills:params.owner.status.kills
+                    }
+                })
+            }
         }
         this.game.add_player_body(this,v2.lookTo(params.position,this.position))
         this.game.addTimeout(()=>{

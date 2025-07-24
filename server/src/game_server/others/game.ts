@@ -36,6 +36,8 @@ export class GamemodeManager{
     can_join():boolean{
         return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
     }
+    kill_leader?:Player
+
     constructor(game:Game){
         this.game=game
         this.team_size=game.config.teamSize
@@ -113,6 +115,7 @@ export class GroupGamemodeManager extends TeamsGamemodeManager{
     groupsManager:GroupManager=new GroupManager()
     f=0
     groups_size:number
+
     constructor(game:Game,groups_size:number=2){
         super(game)
         this.groups_size=groups_size

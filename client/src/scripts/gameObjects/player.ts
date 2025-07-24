@@ -163,6 +163,9 @@ export class Player extends GameObject{
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
         this.game.camera.addObject(this.container)
+        if(this.game.activePlayerId===this.id){
+            this.game.activePlayer=this
+        }
     }
     update(_dt:number): void {
         this.container.position=this.position
@@ -355,7 +358,7 @@ export class Player extends GameObject{
 
         this.manager.cells.updateObject(this)
 
-        if(this.id===this.game.activePlayer){
+        if(this.id===this.game.activePlayerId){
             this.game.update_camera()
             if(data.full){
                 this.game.guiManager.update_equipaments()

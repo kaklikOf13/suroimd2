@@ -9,14 +9,14 @@ export class JoinedPacket extends Packet{
     encode(stream: NetStream): void {
       stream.writeArray(this.players,(e)=>{
         stream.writeStringSized(28,e.name)
-        stream.writeUint16(e.id)
+        stream.writeUint32(e.id)
       },1)
     }
     decode(stream: NetStream): void {
       this.players=stream.readArray((e)=>{
         return {
           name:stream.readStringSized(28),
-          id:stream.readUint16()
+          id:stream.readUint32()
         }
       },1)
     }
