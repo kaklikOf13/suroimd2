@@ -9,7 +9,7 @@ import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts
 import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
 import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
-import { KillFeedMessage, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 
 export class GuiManager{
@@ -138,9 +138,25 @@ export class GuiManager{
         for(const p of jp.players){
             this.players_name[p.id]={name:p.name,badge:""}
         }
+        if(jp.kill_leader){
+            this.assign_killleader({
+                type:KillFeedMessageType.killleader_assigned,
+                player:jp.kill_leader
+            })
+        }
     }
     clear_killfeed(){
         this.content.killfeed.innerHTML=""
+        this.content.killeader_span.innerText=""
+        this.killleader=undefined
+        this.content.killeader_span.innerText="Waiting For A Kill Leader"
+    }
+    assign_killleader(msg:KillFeedMessageKillleader){
+        this.killleader={
+            id:msg.player.id,
+            kills:msg.player.kills
+        }
+        this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.player.id].name}`
     }
     add_killfeed_message(msg:KillFeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
@@ -162,6 +178,10 @@ export class GuiManager{
                         this.content.information_killbox.style="none"
                     },2)
                 }
+                if(this.killleader&&msg.killer.id===this.killleader.id){
+                    this.killleader.kills=msg.killer.kills
+                    this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.killer.id].name}`
+                }
                 break
             }
             case KillFeedMessageType.down:{
@@ -170,12 +190,8 @@ export class GuiManager{
                 break
             }
             case KillFeedMessageType.killleader_assigned:{
-                this.killleader={
-                    id:msg.player.id,
-                    kills:msg.player.kills
-                }
                 elem.innerHTML=`${this.players_name[msg.player.id].name} Become The Kill Leader`
-                this.content.killeader_span.innerText=this.players_name[msg.player.id].name
+                this.assign_killleader(msg)
                 break
             }
             case KillFeedMessageType.killleader_dead:{

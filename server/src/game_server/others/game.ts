@@ -51,7 +51,7 @@ export class GamemodeManager{
             this.closed=true
             this.game.pvpEnabled=true
             console.log(`Game ${this.game.id} Clossed`)
-        },20)
+        },50)
     }
     on_finish(){
         this.game.addTimeout(()=>{
@@ -271,13 +271,19 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 name:lp.name
             })
         }
+        if(this.modeManager.kill_leader){
+            jp.kill_leader={
+                id:this.modeManager.kill_leader.id,
+                kills:this.modeManager.kill_leader.status.kills,
+            }
+        }
         client.emit(jp)
 
         this.modeManager.on_player_join(p)
         this.send_killfeed_message({
             type:KillFeedMessageType.join,
             playerId:p.id,
-            playerName:p.name
+            playerName:p.name,
         })
 
         return p
