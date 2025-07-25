@@ -9,6 +9,7 @@ import { MeleeDef, Melees } from "./items/melees.ts";
 import { Backpacks } from "./items/backpacks.ts";
 import { Obstacles, type ObstacleDef } from "./obstacles.ts";
 import { ExplosionDef, Explosions } from "./explosions.ts";
+import { Skins } from "./loadout/skins.ts";
 
 export const GameItems=new DefinitionsMerge<GameItem>()
 GameItems.insert_def(Guns.value)
@@ -19,6 +20,7 @@ GameItems.insert_def(Armors.value)
 GameItems.insert_def(Backpacks.value)
 GameItems.insert_def(Accessories.value)
 GameItems.insert_def(Others.value)
+GameItems.insert_def(Skins.value)
 
 export type WeaponDef=MeleeDef|GunDef
 export const Weapons=new DefinitionsMerge<WeaponDef>()

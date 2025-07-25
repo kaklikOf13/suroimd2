@@ -8,6 +8,7 @@ import { GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
 import { Debug } from "../others/config.ts";
 import { ease } from "common/scripts/engine/utils.ts";
+import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 export class Loot extends GameObject{
     stringType:string="loot"
     numberType: number=2
@@ -87,6 +88,18 @@ export class Loot extends GameObject{
                     break
                 case InventoryItemType.accessorie:
                     break
+                case InventoryItemType.skin:{
+                    const ff=(this.item as unknown as SkinDef).frame?.base??(this.item.idString+"_body")
+                    this.sprite_main.frame=this.game.resources.get_sprite(ff)
+                    this.sprite_main.visible=true
+                    this.sprite_main.scale=v2.new(0.5,.5)
+                    this.sprite_main.rotation=3.141592/2
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_outline.scale=v2.new(0.9,0.9);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.skin
+                    break
+                }
             }
             //if(this.is_new){
                 this.container.scale=v2.new(0.05,0.05)

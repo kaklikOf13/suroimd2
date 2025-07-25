@@ -13,6 +13,7 @@ import { ABParticle2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
+import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -67,8 +68,8 @@ export class Player extends GameObject{
 
     current_animation?:PlayerAnimation
 
-    set_current_weapon(def:WeaponDef){
-        if(this.current_weapon===def)return
+    set_current_weapon(def:WeaponDef,force:boolean=false){
+        if(this.current_weapon===def&&!force)return
         this.current_weapon=def
         if(def?.arms){
             if(def.arms.left){
@@ -128,13 +129,15 @@ export class Player extends GameObject{
         this.container.updateZIndex()
     }
 
-    set_skin(skin:string){
-        if(this.skin==skin)return
-        this.skin=skin
+    set_skin(skin:SkinDef){
+        if(this.skin==skin.idString)return
+        this.skin=skin.idString
 
-        this.sprites.body.frame=this.game.resources.get_sprite(skin+"_body")
-        this.sprites.left_arm.frame=this.game.resources.get_sprite(skin+"_arm")
-        this.sprites.right_arm.frame=this.game.resources.get_sprite(skin+"_arm")
+        const bf=skin.frame?.base??(skin.idString+"_body")
+        this.sprites.body.frame=this.game.resources.get_sprite(bf)
+        const arf=skin.frame?.arm??(skin.idString+"_arm")
+        this.sprites.left_arm.frame=this.game.resources.get_sprite(arf)
+        this.sprites.right_arm.frame=this.game.resources.get_sprite(arf)
 
         this.sprites.left_arm.zIndex=1
         this.sprites.right_arm.zIndex=1
@@ -155,14 +158,23 @@ export class Player extends GameObject{
         this.sprites.helmet.zIndex=5
         this.sprites.weapon.zIndex=2
 
-        this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:skin+"_body"},{delay:0.1,image:skin+"_body_1"}]
+        /*if(!skin.animation?.no){
+            if(skin.animation?.frames){
+                this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:bf},...skin.animation.frames]
+            }else{
+                this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:bf},{delay:0.1,image:bf+"_1"}]
+            }
+        }*/
 
         this.container.updateZIndex()
+
+        if(this.current_weapon)this.set_current_weapon(this.current_weapon!,true)
     }
 
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
         this.game.camera.addObject(this.container)
+        this.set_skin(Skins.getFromString("default_skin"))
         if(this.game.activePlayerId===this.id){
             this.game.activePlayer=this
         }
@@ -337,9 +349,9 @@ export class Player extends GameObject{
         }
         this.left_handed=data.left_handed
         if(data.full){
-            this.set_skin("skin_default")
             this.set_helmet(data.full.helmet)
             this.set_backpack(data.full.backpack)
+            this.set_skin(Skins.getFromNumber(data.full.skin))
             if(data.full.vest>0){
                 this.vest=Armors.getFromNumber(data.full.vest-1)
             }

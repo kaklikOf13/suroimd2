@@ -9,6 +9,7 @@ import { GameItem } from "common/scripts/definitions/utils.ts";
 import { Guns } from "../../../../common/scripts/definitions/items/guns.ts";
 import { Armors } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
+import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 
 export class GameMap{
     readonly size:Vec2
@@ -88,6 +89,9 @@ export class GameMap{
         this.game.add_loot(v2.new(3,3),Armors.getFromString("soldier_vest") as unknown as GameItem,1)
         this.game.add_loot(v2.new(3,3),Armors.getFromString("basic_helmet") as unknown as GameItem,1)
         this.game.add_loot(v2.new(3,3),Backpacks.getFromString("tactical_pack") as unknown as GameItem,1)
+
+        this.game.add_loot(v2.new(3,3),Skins.getFromString("widower") as unknown as GameItem,1)
+        this.game.add_loot(v2.new(3,3),Skins.getFromString("kaklik") as unknown as GameItem,1)
         //Feast
     }
 }

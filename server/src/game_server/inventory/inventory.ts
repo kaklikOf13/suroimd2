@@ -441,6 +441,9 @@ export class GInventory extends Inventory<LItem>{
       if(this.backpack&&this.backpack.level){
         this.owner.game.add_loot(this.owner.position,this.backpack as unknown as GameItem,1)
       }
+      if(this.owner.skin.idString!==this.owner.loadout.skin){
+        this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+      }
       for(const loot of l){
         loot.is_new=true
       }

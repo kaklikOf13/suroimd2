@@ -8,6 +8,7 @@ import { type Obstacle } from "./obstacle.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
 import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -77,6 +78,18 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.other:
             case InventoryItemType.melee:
             case InventoryItemType.accessorie:
+                break
+            case InventoryItemType.skin:
+                if(user.skin.idString!==this.item.idString){
+                    this.game.add_loot(this.position,user.skin as unknown as GameItem,1)
+                    user.skin=this.item as unknown as SkinDef
+                    user.dirty=true
+                    this.count--
+                    if(this.count<=0){
+                        this.destroy()
+                    }
+                }
+                break
         }
         //user.give_item(this.item,this.count)
         return
@@ -137,6 +150,9 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.other:
             case InventoryItemType.melee:
             case InventoryItemType.accessorie:
+            case InventoryItemType.skin:
+                this.hb.radius=GameConstants.loot.radius.skin
+                break
         }
         this.real_radius=this.hb.radius
     }

@@ -21,6 +21,7 @@ export const GameConstants={
             ammo:0.38,
             gun:0.54,
             equipament:0.4,
+            skin:0.45
         }
     },
     tps:100,

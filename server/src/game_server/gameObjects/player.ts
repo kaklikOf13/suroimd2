@@ -8,7 +8,7 @@ import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
+import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
@@ -18,7 +18,7 @@ import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Group, type Team } from "../others/teams.ts";
 import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
-import { type Game } from "../others/game.ts";
+import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -30,6 +30,11 @@ export class Player extends ServerGameObject{
     using_item_down:boolean=false
     rotation:number=0
     recoil?:{speed:number,delay:number}
+
+    skin:SkinDef=Skins.getFromString("default_skin")
+    loadout={
+        skin:"default_skin"
+    }
 
     health:number=100
     maxHealth:number=100
@@ -301,7 +306,8 @@ export class Player extends ServerGameObject{
                 helmet:this.helmet?this.helmet.idNumber!+1:0,
                 current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
                 animation:this.current_animation,
-                backpack:this.inventory.backpack.idNumber!
+                backpack:this.inventory.backpack.idNumber!,
+                skin:this.skin.idNumber!
             }
         }
     }
