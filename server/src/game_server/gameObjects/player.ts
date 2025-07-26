@@ -330,6 +330,7 @@ export class Player extends ServerGameObject{
             up.gui.boost_type=this.BoostType
             up.gui.inventory=[]
             if(this.splashDelay<=0){
+                if(this.damageSplash)this.damageSplash.count=Math.ceil(this.damageSplash.count)
                 up.gui.damages=this.damageSplash
                 this.damageSplash=undefined
             }else{

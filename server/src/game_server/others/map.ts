@@ -92,6 +92,7 @@ export class GameMap{
 
         this.game.add_loot(v2.new(3,3),Skins.getFromString("widower") as unknown as GameItem,1)
         this.game.add_loot(v2.new(3,3),Skins.getFromString("kaklik") as unknown as GameItem,1)
+        this.game.add_loot(v2.new(3,3),Skins.getFromString("kitty") as unknown as GameItem,1)
         //Feast
     }
 }

@@ -34,4 +34,8 @@ Skins.insert(
         idString:"kaklik",
         rarity:ItemQuality.Legendary,
     },
+    {
+        idString:"kitty",
+        rarity:ItemQuality.Mythic,
+    },
 )

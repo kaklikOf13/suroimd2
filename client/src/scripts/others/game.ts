@@ -53,7 +53,7 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.scene.objects.encoders=ObjectsE;
 
-    this.renderer.background=ColorM.hex("#5d8a33");
+    this.renderer.background=ColorM.hex("#5e8739");
 
     if(Debug.hitbox){
       const hc=ColorM.hex("#ee000099")

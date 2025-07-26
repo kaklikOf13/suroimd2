@@ -158,13 +158,13 @@ export class Player extends GameObject{
         this.sprites.helmet.zIndex=5
         this.sprites.weapon.zIndex=2
 
-        /*if(!skin.animation?.no){
+        if(!skin.animation?.no){
             if(skin.animation?.frames){
-                this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:bf},...skin.animation.frames]
+                this.sprites.body.frames=[...skin.animation.frames]
             }else{
                 this.sprites.body.frames=[{delay:random.float(3.4,3.6),image:bf},{delay:0.1,image:bf+"_1"}]
             }
-        }*/
+        }
 
         this.container.updateZIndex()
 
