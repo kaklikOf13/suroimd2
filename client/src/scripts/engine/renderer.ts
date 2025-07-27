@@ -6,7 +6,6 @@ export interface Transform2D{
     position:Vec2
     scale:Vec2
     rotation:number
-    zIndex:number
 }
 export interface Color {
     r: number; // Red
@@ -14,7 +13,6 @@ export interface Color {
     b: number; // Blue
     a: number; // Alpha
 }
-
 export const ColorM={
     /**
      * Create The Color RGBA, limit=`(0 To 255)`
@@ -164,10 +162,10 @@ export abstract class Renderer {
         this.meter_size = meter_size
     }
     // deno-lint-ignore no-explicit-any
-    abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2,zIndex?:number): void
-    abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2,zIndex?:number, precision?: number): void
+    abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2): void
+    abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2, precision?: number): void
     abstract draw_image2D(image: Frame,position: Vec2,model:Float32Array,tint?:Color): void
-    abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2,zIndex?:number): void
+    abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2): void
 
     abstract clear(): void
 
@@ -239,10 +237,10 @@ export class WebglRenderer extends Renderer {
     projectionMatrix!: Float32Array;
     readonly tex_program:WebGLProgram
     readonly factorys2D:{
-        simple:Material2DFactory<Color>,
+        simple:Material2DFactory<Color>
         grid:Material2DFactory<GridMaterialArgs>
     }
-    constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white,depth:number=500) {
+    constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white) {
         super(canvas, meter_size);
         const gl = this.canvas.getContext("webgl", { antialias: true });
         this.background = background;
@@ -254,18 +252,21 @@ export class WebglRenderer extends Renderer {
 attribute vec2 a_Position;
 uniform mat4 u_ProjectionMatrix;
 uniform vec2 u_Translation;
+uniform vec2 u_Scale;
 void main() {
-    gl_Position = u_ProjectionMatrix * vec4(a_Position+u_Translation.xy, 0.0, 1.0);
+    gl_Position = u_ProjectionMatrix * vec4((a_Position*u_Scale)+u_Translation, 0.0, 1.0);
 }`,
 `
 #ifdef GL_ES
-precision highp float;
+precision mediump float;
 #endif
+
 uniform vec4 u_Color;
 
 void main() {
     gl_FragColor = u_Color;
-}`
+}
+`
             ),(factory:Material2DFactory<Color>,args:Color,vertices:number[],trans:Transform2D,mode:number)=>{
                 const vertexBuffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
@@ -280,7 +281,9 @@ void main() {
                 this.gl.uniform4f(location, args.r, args.g, args.b, args.a);
 
                 location = this.gl.getUniformLocation(factory.program, "u_Translation");
-                this.gl.uniform3f(location, trans.position.x, trans.position.y, trans.zIndex);
+                this.gl.uniform2f(location, trans.position.x, trans.position.y);
+                location = this.gl.getUniformLocation(factory.program, "u_Scale");
+                this.gl.uniform2f(location, trans.scale.x, trans.scale.y);
 
                 const projectionMatrixLocation = this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix");
                 this.gl.uniformMatrix4fv(projectionMatrixLocation, false, this.projectionMatrix);
@@ -290,12 +293,12 @@ void main() {
             grid:new Material2DFactory<GridMaterialArgs>(this.gl,this.createProgram(`
 attribute vec2 a_Position;
 uniform mat4 u_ProjectionMatrix;
-uniform vec3 u_Translation;
+uniform vec2 u_Translation;
 varying vec2 v_WorldPosition;
 
 void main() {
     v_WorldPosition = a_Position+u_Translation.xy;
-    gl_Position = u_ProjectionMatrix * vec4(a_Position,u_Translation.z, 1.0);
+    gl_Position = u_ProjectionMatrix * vec4(a_Position,0.0, 1.0);
 }`,`
 precision mediump float;
 varying vec2 v_WorldPosition;
@@ -326,7 +329,7 @@ void main() {
     this.gl.uniform1f(uniform,args.width)
 
     uniform=this.gl.getUniformLocation(factory.program,"u_Translation")
-    this.gl.uniform3f(uniform,trans.position.x,trans.position.y,trans.zIndex)
+    this.gl.uniform2f(uniform,trans.position.x,trans.position.y)
 
     uniform = this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")
     this.gl.uniformMatrix4fv(uniform, false, this.projectionMatrix)
@@ -395,8 +398,7 @@ void main() {
     _draw_vertices(vertices:number[],material:Material2D,trans:Transform2D,mode:number=this.gl.TRIANGLES){
         material.factory.on_execute(material.factory,material.args,vertices,trans,mode)
     }
-
-    draw_rect2D(rect: RectHitbox2D, material: Material2D,offset:Vec2=NullVec2,zIndex=0) {
+    draw_rect2D(rect: RectHitbox2D, material: Material2D,offset:Vec2=NullVec2) {
         const x1 = 0
         const y1 = 0
         const x2 = rect.max.x-rect.min.x
@@ -409,10 +411,10 @@ void main() {
             x1, y2,
             x2, y1,
             x2, y2
-        ], material,{position:v2.add(rect.position,offset),scale:v2.new(1,1),rotation:0,zIndex});
+        ], material,{position:v2.add(rect.position,offset),scale:v2.new(1,1),rotation:0});
     }
 
-    draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2,zIndex:number=0, precision: number = 50): void {
+    draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2, precision: number = 50): void {
         const centerX = 0
         const centerY = 0
         const radius = circle.radius
@@ -427,16 +429,16 @@ void main() {
             const y = centerY + radius * Math.sin(angle)
             vertices.push(x, y)
         }
-        this._draw_vertices(vertices, material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0,zIndex},this.gl.TRIANGLE_FAN);
+        this._draw_vertices(vertices, material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0},this.gl.TRIANGLE_FAN);
     }
 
-    draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset:Vec2=NullVec2,zIndex:number): void {
+    draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset:Vec2=NullVec2): void {
         switch (hitbox.type) {
             case HitboxType2D.circle:
-                this.draw_circle2D(hitbox, mat,offset,zIndex)
+                this.draw_circle2D(hitbox, mat,offset)
                 break;
             case HitboxType2D.rect:
-                this.draw_rect2D(hitbox, mat,offset,zIndex)
+                this.draw_rect2D(hitbox, mat,offset)
                 break;
             default:
                 return;

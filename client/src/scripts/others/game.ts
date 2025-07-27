@@ -1,6 +1,6 @@
 import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYS, CATEGORYSL, GameConstants, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { BasicSocket, Client, DefaultSignals, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { BasicSocket, CircleHitbox2D, Client, DefaultSignals, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -20,6 +20,7 @@ import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
+import { GasRender } from "../gameObjects/gas.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayerId=0
@@ -33,6 +34,7 @@ export class Game extends ClientGame2D<GameObject>{
   gameOver:boolean=false
 
   grid:Grid2D
+  gas_renderer:GasRender
 
   constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,console:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(keyl,mp,console,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
@@ -69,14 +71,16 @@ export class Game extends ClientGame2D<GameObject>{
     })
 
     this.grid=new Grid2D()
-    this.grid.width=0.04
-    this.grid.grid_size=GameConstants.collision.chunckSize
+    this.grid.width=0.03
+    this.grid.grid_size=1
+    this.grid.color.a=0.2
     this.camera.addObject(this.grid)
     this.grid.zIndex=zIndexes.Grid
     this.sounds.volumes={
       "players":0.45,
       "obstacles":0.7,
     }
+    this.gas_renderer=new GasRender(this.camera.container,1)
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -141,7 +145,7 @@ export class Game extends ClientGame2D<GameObject>{
         (this.activePlayer as Player).container.rotation=this.action.angle
       }
     }
-    this.camera.zoom=0.8
+    this.camera.zoom=1
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
     //0.12=l6 32x

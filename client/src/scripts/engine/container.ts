@@ -1,5 +1,5 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
-import { Color, ColorM, Renderer, WebglRenderer } from "./renderer.ts";
+import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts";
 import { type ResourcesManager, type Frame, ImageModel2D } from "./resources.ts";
 import { KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
@@ -81,9 +81,186 @@ export class Grid2D extends Container2DObject{
           -1000,  1000,
           1000, -1000,
           1000,  1000
-        ],mat,{position:v2.neg(this._real_position),scale:this._real_scale,rotation:this._real_rotation,zIndex:0})
+        ],mat,{position:v2.neg(this._real_position),scale:this._real_scale,rotation:this._real_rotation})
     }
 }
+function triangulateConvex(polygon: Vec2[]): number[] {
+    const tris: number[] = [];
+    for (let i = 1; i < polygon.length - 1; i++) {
+        tris.push(polygon[0].x,polygon[0].y, polygon[i].x,polygon[i].y, polygon[i + 1].x,polygon[i + 1].y);
+    }
+    return tris;
+}
+function isInside(p: Vec2, edgeStart: Vec2, edgeEnd: Vec2): boolean {
+    return (edgeEnd.x - edgeStart.x) * (p.y - edgeStart.y) -
+           (edgeEnd.y - edgeStart.y) * (p.x - edgeStart.x) >= 0;
+}
+
+function computeIntersection(p1: Vec2, p2: Vec2, e1: Vec2, e2: Vec2): Vec2 {
+    const A1 = p2.y - p1.y;
+    const B1 = p1.x - p2.x;
+    const C1 = A1 * p1.x + B1 * p1.y;
+
+    const A2 = e2.y - e1.y;
+    const B2 = e1.x - e2.x;
+    const C2 = A2 * e1.x + B2 * e1.y;
+
+    const denom = A1 * B2 - A2 * B1;
+    if (denom === 0) return p1; // paralelos
+
+    const x = (B2 * C1 - B1 * C2) / denom;
+    const y = (A1 * C2 - A2 * C1) / denom;
+    return v2.new(x, y);
+}
+
+function sutherlandHodgman(subject: Vec2[], clip: Vec2[]): Vec2[] {
+    let output = subject.slice();
+
+    for (let i = 0; i < clip.length; i++) {
+        const input = output;
+        output = [];
+
+        const A = clip[i];
+        const B = clip[(i + 1) % clip.length];
+
+        for (let j = 0; j < input.length; j++) {
+            const P = input[j];
+            const Q = input[(j + 1) % input.length];
+
+            const Pinside = isInside(P, A, B);
+            const Qinside = isInside(Q, A, B);
+
+            if (Pinside && Qinside) {
+                output.push(Q);
+            } else if (Pinside && !Qinside) {
+                output.push(computeIntersection(P, Q, A, B));
+            } else if (!Pinside && Qinside) {
+                output.push(computeIntersection(P, Q, A, B));
+                output.push(Q);
+            }
+        }
+    }
+
+    return output;
+}
+function cut(pathA: number[], pathB: number[]): number[] {
+    const polyA: Vec2[] = [];
+    for (let i = 0; i < pathA.length; i += 2)
+        polyA.push(v2.new(pathA[i], pathA[i + 1]));
+
+    const polyB: Vec2[] = [];
+    for (let i = 0; i < pathB.length; i += 2)
+        polyB.push(v2.new(pathB[i], pathB[i + 1]));
+
+    const result = sutherlandHodgman(polyA, polyB);
+
+    if (result.length < 3) return [];
+
+    const triangles: number[] = [];
+    for (let i = 1; i < result.length - 1; i++) {
+        triangles.push(
+            result[0].x, result[0].y,
+            result[i].x, result[i].y,
+            result[i + 1].x, result[i + 1].y
+        );
+    }
+
+    return triangles;
+}
+
+type Graphics2DCommand =
+  | { type: 'fillMaterial'; mat:Material2D }
+  | { type: 'fillColor'; color:Color }
+  | { type: 'fill' }
+  | { type: 'path'; path:number[] }
+
+export class Graphics2D extends Container2DObject {
+    object_type = "graphics2d";
+
+    current_path:Vec2[]=[]
+    current_position:Vec2=v2.new(0,0)
+
+    private command: Graphics2DCommand[] = [];
+    paths:number[][]=[]
+
+    beginPath(): this {
+        this.current_path=[];
+        return this;
+    }
+    lineTo(x:number,y:number):this{
+        this.current_path.push(v2.new(x,y))
+        this.current_position=v2.new(x,y)
+        return this
+    }
+    endPath():this{
+        this.command.push({type:"path",path:triangulateConvex(this.current_path)})
+        this.current_path=[]
+        return this
+    }
+    fill():this{
+        this.command.push({type:"fill"})
+        return this
+    }
+    fill_material(mat:Material2D):this{
+        this.command.push({type:"fillMaterial",mat:mat})
+        return this
+    }
+    fill_color(color:Color):this{
+        this.command.push({type:"fillColor",color})
+        return this
+    }
+
+    cut(): this {
+        let lastPath: number[] | null = null;
+
+        for (let i = this.command.length - 1; i >= 0; i--) {
+            const cmd = this.command[i];
+            if (cmd.type === "path") {
+                lastPath = cmd.path;
+                this.command.splice(i,1)
+                break;
+            }
+        }
+
+        if (!lastPath) return this;
+
+        this.command.push({
+            type: "path",
+            path: cut(lastPath,triangulateConvex(this.current_path))
+        });
+
+        return this;
+    }
+
+    override draw(renderer: Renderer): void {
+        const gl = renderer as WebglRenderer;
+
+        let currentMat: Material2D=gl.factorys2D.simple.create_material({r:0,g:0,b:0,a:1});
+        let currentModel:number[]=[]
+
+        for (const cmd of this.command) {
+            switch (cmd.type) {
+                case "fillMaterial":
+                    currentMat=cmd.mat
+                    break
+                case "fillColor":
+                    currentMat=gl.factorys2D.simple.create_material(cmd.color)
+                    break
+                case "fill":
+                    gl._draw_vertices(currentModel,currentMat,{
+                        position:this._real_position,
+                        rotation:this._real_rotation,
+                        scale:this._real_scale
+                    })
+                    break
+                case "path":
+                    currentModel=cmd.path
+                    break
+            }
+        }
+    }
+}
+
 export class Sprite2D extends Container2DObject{
     object_type:string="sprite2d"
     _frame?:Frame

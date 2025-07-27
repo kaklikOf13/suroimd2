@@ -1,8 +1,7 @@
 import { Game } from "./game.ts";
 import { BoostType } from "common/scripts/definitions/utils.ts";
-import { ActionsType, CATEGORYS, GameOverPacket } from "common/scripts/others/constants.ts";
-import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
-import { Player } from "../gameObjects/player.ts";
+import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
+import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts";
