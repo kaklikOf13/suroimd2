@@ -92,15 +92,17 @@ Obstacles.insert(
     {
         idString:"oak_tree",
         health:80,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.31),
         scale:{
-            destroy:0.8
+            destroy:0.9,
+            max:2.5,
+            min:2.3
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles4,
         material:"tree",
         frame:{
-            particle:"leaf_01_particle_1"
+            particle:"oak_tree_particle"
         }
     },
     {
