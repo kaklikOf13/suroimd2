@@ -1,5 +1,5 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { CATEGORYS, GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
@@ -24,6 +24,9 @@ export class Player extends GameObject{
     backpack?:BackpackDef
 
     rotation:number=0
+    scale:number=1
+
+    parachute:boolean=false
 
     skin!:string
     container:Container2D=new Container2D()
@@ -35,6 +38,7 @@ export class Player extends GameObject{
         right_arm:new Sprite2D(),
         weapon:new Sprite2D(),
         muzzle_flash:new Sprite2D(),
+        parachute:new Sprite2D(),
     }
     anims:{
         fire?:{
@@ -68,8 +72,15 @@ export class Player extends GameObject{
 
     current_animation?:PlayerAnimation
 
-    set_current_weapon(def:WeaponDef,force:boolean=false){
+    set_current_weapon(def?:WeaponDef,force:boolean=false){
         if(this.current_weapon===def&&!force)return
+        if(!def||this.parachute){
+            this.current_weapon=undefined
+            this.sprites.left_arm.visible=false
+            this.sprites.right_arm.visible=false
+            this.sprites.weapon.visible=false
+            return
+        }
         this.current_weapon=def
         if(def?.arms){
             if(def.arms.left){
@@ -174,6 +185,7 @@ export class Player extends GameObject{
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
         this.game.camera.addObject(this.container)
+        this.sprites.parachute.frame=this.game.resources.get_sprite("parachute")
         this.set_skin(Skins.getFromString("default_skin"))
         if(this.game.activePlayerId===this.id){
             this.game.activePlayer=this
@@ -199,9 +211,12 @@ export class Player extends GameObject{
         this.container.add_child(this.sprites.right_arm)
         this.container.add_child(this.sprites.helmet)
         this.container.add_child(this.sprites.weapon)
+        this.container.add_child(this.sprites.parachute)
         this.sprites.muzzle_flash.visible=false
         this.sprites.muzzle_flash.hotspot=v2.new(0,.5)
         this.sprites.muzzle_flash.zIndex=6
+        this.sprites.parachute.zIndex=7
+        this.sprites.parachute.hotspot=v2.new(0.5,0.5)
         this.sprites.backpack.position=v2.new(-0.27,0)
         this.sprites.backpack.scale=v2.new(1.34,1.34)
         this.container.add_child(this.sprites.muzzle_flash)
@@ -284,7 +299,7 @@ export class Player extends GameObject{
                                 sprite:"gas_smoke_particle",
                                 speed:random.float(d.gasParticles.speed.min,d.gasParticles.speed.max),
                                 scale:0.03,
-                                tint:ColorM.hex("#fff9"),
+                                tint:ColorM.hex("#fff5"),
                                 to:{
                                 tint:ColorM.hex("#fff0"),
                                     scale:random.float(d.gasParticles.size.min,d.gasParticles.size.max)
@@ -348,6 +363,18 @@ export class Player extends GameObject{
             this.container.destroy()
         }
         this.left_handed=data.left_handed
+        if(data.parachute){
+            this.set_current_weapon(undefined)
+            this.sprites.parachute.visible=true
+            const s=this.scale+(1*data.parachute.value)
+            this.container.scale=v2.new(s,s)
+            this.parachute=true
+            this.container.zIndex=zIndexes.ParachutePlayers+(0.9*data.parachute.value)
+        }else{
+            this.sprites.parachute.visible=false
+            this.parachute=false
+            this.container.zIndex=zIndexes.Players
+        }
         if(data.full){
             this.set_helmet(data.full.helmet)
             this.set_backpack(data.full.backpack)
@@ -372,8 +399,12 @@ export class Player extends GameObject{
 
         if(this.id===this.game.activePlayerId){
             this.game.update_camera()
+            this.sprites.parachute.tint=ColorM.rgba(255,255,255,100)
             if(data.full){
                 this.game.guiManager.update_equipaments()
+            }
+            if(data.parachute){
+                this.game.camera.zoom=this.game.scope_zoom-(0.5*data.parachute.value)
             }
         }
     }

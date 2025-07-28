@@ -60,7 +60,7 @@ export class Bullet extends GameObject{
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){
                     case "player":
-                        if((obj as Player).hb&&!(obj as Player).dead&&this.hb.collidingWith((obj as Player).hb)){
+                        if((obj as Player).hb&&!(obj as Player).dead&&this.hb.collidingWith((obj as Player).hb)&&!(obj as Player).parachute){
                             (obj as Obstacle).on_hitted(this.position)
                             this.dying=true
                         }

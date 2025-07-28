@@ -39,6 +39,17 @@ export class Game extends ClientGame2D<GameObject>{
   terrain:TerrainM=new TerrainM()
   
   terrain_gfx=new Graphics2D()
+  scope_zoom:number=0.78
+
+  //0.14=l6 32x
+  //0.27=l5 16x
+  //0.35=l4 8x
+  //0.53=l3 4x
+  //0.63=l2 2x
+  //0.78=l1 1x
+  //1=l-1 0.5x
+  //1.5=l-2 0.25x
+  //1.75=l-3 0.1x
 
   constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(keyl,mp,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
@@ -91,6 +102,7 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
+    this.camera.zoom=this.scope_zoom
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -155,18 +167,8 @@ export class Game extends ClientGame2D<GameObject>{
         (this.activePlayer as Player).container.rotation=this.action.angle
       }
     }
-    this.camera.zoom=0.27
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
-    //0.14=l6 32x
-    //0.27=l5 16x
-    //0.35=l4 8x
-    //0.53=l3 4x
-    //0.63=l2 2x
-    //0.78=l1 1x
-    //1=l-1 0.5x
-    //1.5=l-2 0.25x
-    //1.75=l-3 0.1x
   }
   update_camera(){
     if(this.activePlayer)this.camera.position=this.activePlayer!.position

@@ -300,7 +300,7 @@ Guns.insert(
     {
         idString:"kar98k",
         fireDelay:1.1,
-        spread:0.8,
+        spread:0.4,
         lenght:1.26,
         size:4.5,
         ammoType:"762mm",
@@ -346,7 +346,7 @@ Guns.insert(
     {
         idString:"awp",
         fireDelay:1.1,
-        spread:0.9,
+        spread:0.5,
         lenght:0.9,
         size:6,
         ammoType:"762mm",
@@ -379,7 +379,7 @@ Guns.insert(
     {
         idString:"awms",
         fireDelay:1.4,
-        spread:1.2,
+        spread:0.7,
         lenght:1,
         size:6,
         ammoType:"308sub",

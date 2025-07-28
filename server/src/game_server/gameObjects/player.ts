@@ -35,6 +35,11 @@ export class Player extends ServerGameObject{
     loadout={
         skin:"default_skin"
     }
+    parachute?:{
+        value:number
+    }={
+        value:1
+    }
 
     health:number=100
     maxHealth:number=100
@@ -180,6 +185,14 @@ export class Player extends ServerGameObject{
                 break
             }
         }
+        if(this.parachute){
+            speed*=1.5+(0.25+this.parachute.value)
+            this.parachute.value-=dt*0.05
+            if(this.parachute.value<=0){
+                this.parachute=undefined
+                this.dirty=true
+            }
+        }
         this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
@@ -188,10 +201,6 @@ export class Player extends ServerGameObject{
         }
 
         //Hand Use
-        if(!this.downed&&this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
-            this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
-        }
-
         if(this.downed){
             this.piercingDamage({
                 amount:1*dt,
@@ -201,47 +210,50 @@ export class Player extends ServerGameObject{
                 owner:this.downedBy,
                 source:this.downedBySource
             })
-        }
-
-        //Update Inventory
-        for(const s of this.inventory.slots){
-            if(!s.item)continue
-            s.item.update(this)
-        }
-        this.using_item_down=false
-
-        //Collision
-        //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-        const objs=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
-        let can_interact=this.interactionsEnabled
-        for(const obj of objs){
-            if((obj as BaseGameObject2D).id===this.id)continue
-            switch((obj as BaseGameObject2D).stringType){
-                case "obstacle":
-                    if((obj as Obstacle).def.noCollision)break
-                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
-                        if(can_interact&&this.interaction_input&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
-                            (obj as Obstacle).kill({
-                                amount:(obj as Obstacle).health,
-                                position:this.position,
-                                reason:DamageReason.Player,
-                                owner:this,
-                                critical:false
-                            })
+        }else if(!this.parachute){
+            if(this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
+                this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
+            }
+            
+            //Update Inventory
+            for(const s of this.inventory.slots){
+                if(!s.item)continue
+                s.item.update(this)
+            }
+            //Collision
+            //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
+            const objs=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
+            let can_interact=this.interactionsEnabled
+            for(const obj of objs){
+                if((obj as BaseGameObject2D).id===this.id)continue
+                switch((obj as BaseGameObject2D).stringType){
+                    case "obstacle":
+                        if((obj as Obstacle).def.noCollision)break
+                        if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
+                            if(can_interact&&this.interaction_input&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
+                                (obj as Obstacle).kill({
+                                    amount:(obj as Obstacle).health,
+                                    position:this.position,
+                                    reason:DamageReason.Player,
+                                    owner:this,
+                                    critical:false
+                                })
+                            }
+                            const ov=this.hb.overlapCollision((obj as Obstacle).hb)
+                            if(ov){
+                                this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                            }
                         }
-                        const ov=this.hb.overlapCollision((obj as Obstacle).hb)
-                        if(ov){
-                            this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                        break
+                    case "loot":
+                        if(can_interact&&this.interaction_input&&this.hb.collidingWith((obj as Loot).hb)){
+                            (obj as Loot).interact(this)
+                            can_interact=false
                         }
-                    }
-                    break
-                case "loot":
-                    if(can_interact&&this.interaction_input&&this.hb.collidingWith((obj as Loot).hb)){
-                        (obj as Loot).interact(this)
-                        can_interact=false
-                    }
+                }
             }
         }
+        this.using_item_down=false
         this.interaction_input=false
 
         this.actions.update(dt)
@@ -293,25 +305,6 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
     }
-    override getData(): PlayerData {
-        return {
-            position:this.position,
-            rotation:this.rotation,
-            using_item:this.using_item,
-            using_item_down:this.using_item_down,
-            dead:this.dead,
-            left_handed:this.left_handed,
-            full:{
-                vest:this.vest?this.vest.idNumber!+1:0,
-                helmet:this.helmet?this.helmet.idNumber!+1:0,
-                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
-                animation:this.current_animation,
-                backpack:this.inventory.backpack.idNumber!,
-                skin:this.skin.idNumber!
-            }
-        }
-    }
-
     damageSplash?:DamageSplash
 
     splashDelay:number=0
@@ -389,7 +382,7 @@ export class Player extends ServerGameObject{
         }
     }
     damage(params:DamageParams){
-        if(this.dead||!this.pvpEnabled)return
+        if(this.dead||!this.pvpEnabled||this.parachute)return
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
@@ -538,6 +531,25 @@ export class Player extends ServerGameObject{
         const idx=this.game.livingPlayers.indexOf(this)
         if(idx!==-1){
             this.game.livingPlayers.splice(idx,1);
+        }
+    }
+    override getData(): PlayerData {
+        return {
+            position:this.position,
+            rotation:this.rotation,
+            using_item:this.using_item,
+            using_item_down:this.using_item_down,
+            dead:this.dead,
+            left_handed:this.left_handed,
+            parachute:this.parachute,
+            full:{
+                vest:this.vest?this.vest.idNumber!+1:0,
+                helmet:this.helmet?this.helmet.idNumber!+1:0,
+                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
+                animation:this.current_animation,
+                backpack:this.inventory.backpack.idNumber!,
+                skin:this.skin.idNumber!
+            }
         }
     }
 }

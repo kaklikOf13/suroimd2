@@ -76,6 +76,7 @@ export enum zIndexes{
     Obstacles3,
     Obstacles4,
     Explosions,
+    ParachutePlayers,
     DamageSplashs
 }
 export enum ActionsType{
