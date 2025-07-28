@@ -56,6 +56,8 @@ export class GuiManager{
         information_killbox:document.querySelector("#information-killbox") as HTMLDivElement,
 
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
+
+        gui_items:document.querySelector("#gui-items") as HTMLSpanElement,
     }
 
     weapons:{
@@ -108,6 +110,7 @@ export class GuiManager{
         }
 
         this.update_ammos({})
+        this.update_gui_items([{},{},{},{}])
     }
     ammos_cache:Record<string,HTMLDivElement>={}
     update_ammos(ammos:Record<string,number>){
@@ -130,6 +133,16 @@ export class GuiManager{
                 this.content.ammos.insertAdjacentHTML("beforeend", htm);
                 this.ammos_cache[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
             }
+        }
+    }
+    update_gui_items(slots:{}[]){
+        this.content.gui_items.innerHTML=""
+        let i=0;
+        for(const s of slots){
+            this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
+              <div class="slot-number">${i+4}</div>
+              </div>`)
+              i++
         }
     }
     players_name:Record<number,{name:string,badge:string}>={}

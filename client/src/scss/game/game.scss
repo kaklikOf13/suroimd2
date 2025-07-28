@@ -154,10 +154,9 @@
 
 #bottom-center-container{
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 5px;
     background-color: #0002;
-    bottom: 5px;
+    bottom: 60px;
     width: 200px;
     height: 80px;
     span{
@@ -247,14 +246,15 @@
 #gui-weapons{
     position: absolute;
     bottom: 5px;
-    right: 5px;
+    left: 50%;
+    transform: translateX(-50%);
     width: max-content;
 
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 5px;
 
-    width: 12%;
+    width: 32%;
 
     .weapon-slot{
         margin: 0%;
@@ -286,9 +286,9 @@
             top:50%;
             left:5px;
             width: 100px;
+            height: auto;
 
             transform: translateY(-50%);
-            rotate: -30deg;
 
             font-family: "Russo-One", serif;
             font-size: 20px;
@@ -342,4 +342,29 @@
     top: 140px;
     right: 5px;
     padding: 15px;
+}
+#gui-items{
+    position: absolute;
+    bottom: 105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    .inventory-item-slot{
+        background-color: #0002;
+        width: 100px;
+        height: 60px;
+        border-radius: 10px;
+        .slot-number{
+            position: relative;
+            top:2px;
+            left:80%;
+
+            font-family: "Russo-One", serif;
+            font-size: 20px;
+        }
+    }
 }

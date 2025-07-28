@@ -80,12 +80,9 @@ export class GamemodeManager{
 }
 export class TeamsGamemodeManager extends GamemodeManager{
     teamsManager:TeamsManager
-    car:Vehicle
-    s=1
     constructor(game:Game){
         super(game)
         this.teamsManager=new TeamsManager()
-        this.car=this.game.add_vehicle(v2.new(10,10),Vehicles.getFromString("jeep"))
     }
     override can_down(player:Player):boolean{
         return (player.team&&player.team.get_not_downed_players().length>1)!
@@ -96,8 +93,6 @@ export class TeamsGamemodeManager extends GamemodeManager{
             if(!t){
                 t=this.teamsManager.add_team()
             }
-            this.car.seats[this.s].set_player(p)
-            this.s--
             t.add_player(p)
         }
     }

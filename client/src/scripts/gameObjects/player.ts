@@ -74,7 +74,7 @@ export class Player extends GameObject{
     current_animation?:PlayerAnimation
     driving:boolean=false
     set_driving(driving:boolean){
-        if(this.driving){
+        if(this.driving||!this.driving){
             this.driving=driving
             return
         }

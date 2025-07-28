@@ -271,7 +271,7 @@ export class Player extends ServerGameObject{
             this.using_item_down=true
         }
         this.using_item=action.UsingItem
-        if(!this.seat?.rotation===undefined)this.rotation=action.angle
+        if(this.seat?.rotation===undefined)this.rotation=action.angle
         this.interaction_input=action.interact
         if(action.hand>=0&&action.hand<3){
             this.inventory.set_current_weapon_index(action.hand)
