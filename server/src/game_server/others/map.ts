@@ -12,6 +12,7 @@ import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
+import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 
 export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRandom){
     map.terrain.add_floor(def.terrain.base,[

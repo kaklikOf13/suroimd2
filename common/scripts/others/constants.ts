@@ -39,7 +39,8 @@ export enum CATEGORYS{
     EXPLOSIONS,
     PROJECTILES,
     DECALS,
-    PLAYERS_BODY
+    PLAYERS_BODY,
+    VEHICLES
 }
 export const CATEGORYSL=[
     CATEGORYS.PLAYERS,
@@ -50,6 +51,7 @@ export const CATEGORYSL=[
     CATEGORYS.PROJECTILES,
     CATEGORYS.DECALS,
     CATEGORYS.PLAYERS_BODY,
+    CATEGORYS.VEHICLES
 ]
 
 export const PacketManager:PacketsManager=new PacketsManager()
@@ -71,6 +73,7 @@ export enum zIndexes{
     Bullets,
     Obstacles1,
     Obstacles2,
+    Vehicles,
     Players,
     Particles,
     Obstacles3,

@@ -411,6 +411,13 @@ export const Numeric={
     lerp(start:number,dest:number,inter:number):number{
         return  (start*(1-inter))+(dest*inter)
     },
+    lerp_rad(start: number, dest: number, inter: number): number {
+        const twoPi = Math.PI * 2;
+        let delta = (dest - start) % twoPi;
+        if (delta < -Math.PI) delta += twoPi;
+        else if (delta > Math.PI) delta -= twoPi;
+        return start + delta * inter;
+    },
     max(val1:number,val2:number):number{
         return val1<val2?val1:val2
     },

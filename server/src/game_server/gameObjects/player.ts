@@ -19,6 +19,8 @@ import { type Group, type Team } from "../others/teams.ts";
 import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
+import { type VehicleSeat } from "./vehicle.ts";
+import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -37,9 +39,8 @@ export class Player extends ServerGameObject{
     }
     parachute?:{
         value:number
-    }={
-        value:1
     }
+    seat?:VehicleSeat
 
     health:number=100
     maxHealth:number=100
@@ -193,7 +194,13 @@ export class Player extends ServerGameObject{
                 this.dirty=true
             }
         }
-        this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
+        if(this.seat){
+            this.position=v2.duplicate(this.seat.position)
+            if(this.seat.rotation)this.rotation=this.seat.rotation
+            if(this.seat.pillot)this.seat.vehicle.move(this.movement,dt)
+        }else{
+            this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,4.5*speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
+        }
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
@@ -210,7 +217,7 @@ export class Player extends ServerGameObject{
                 owner:this.downedBy,
                 source:this.downedBySource
             })
-        }else if(!this.parachute){
+        }else if(!this.parachute&&!this.seat){
             if(this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
                 this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
             }
@@ -261,13 +268,12 @@ export class Player extends ServerGameObject{
         this.dirtyPart=true
     }
     process_action(action:ActionPacket){
-        action.Movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        this.movement=v2.scale(action.Movement,4.5)
+        this.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
         if(!this.using_item&&action.UsingItem){
             this.using_item_down=true
         }
         this.using_item=action.UsingItem
-        this.rotation=action.angle
+        if(!this.seat?.rotation)this.rotation=action.angle
         this.interaction_input=action.interact
         if(action.hand>=0&&action.hand<3){
             this.inventory.set_current_weapon_index(action.hand)
@@ -304,6 +310,9 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
+
+        const v=this.game.add_vehicle(v2.new(10,10),Vehicles.getFromString("bike"))
+        this.seat=v.seats[0]
     }
     damageSplash?:DamageSplash
 
@@ -374,6 +383,7 @@ export class Player extends ServerGameObject{
                 ...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),
                 ...Object.values(this.manager.objects[CATEGORYS.PROJECTILES].objects),
                 ...Object.values(this.manager.objects[CATEGORYS.PLAYERS_BODY].objects),
+                ...Object.values(this.manager.objects[CATEGORYS.VEHICLES].objects),
             ]
             const o=this.game.scene.objects.encode_list(objs,undefined,this.view_objects)
             this.view_objects=o.last

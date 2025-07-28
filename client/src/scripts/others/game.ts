@@ -23,6 +23,7 @@ import { GameConsole } from "../engine/console.ts";
 import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { Graphics2D } from "../engine/container.ts";
+import { Vehicle } from "../gameObjects/vehicle.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayerId=0
@@ -52,7 +53,7 @@ export class Game extends ClientGame2D<GameObject>{
   //1.75=l-3 0.1x
 
   constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(keyl,mp,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
+    super(keyl,mp,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }

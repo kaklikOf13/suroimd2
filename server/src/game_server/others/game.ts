@@ -21,6 +21,8 @@ import { GroupManager, TeamsManager } from "./teams.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
+import { Vehicle } from "../gameObjects/vehicle.ts";
+import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -195,7 +197,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             Obstacle,
             Explosion,
             Projectile,
-            PlayerBody
+            PlayerBody,
+            Vehicle
         ])
         for(const i of CATEGORYSL){
             this.scene.objects.add_category(i)
@@ -329,6 +332,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
     add_loot(position:Vec2,def:GameItem,count:number):Loot{
         const l=this.scene.objects.add_object(new Loot(),CATEGORYS.LOOTS,undefined,{item:def,count:count,position:position}) as Loot
         return l
+    }
+    add_vehicle(position:Vec2,def:VehicleDef):Vehicle{
+        const v=this.scene.objects.add_object(new Vehicle(),CATEGORYS.VEHICLES,undefined,{position,def}) as Vehicle
+        return v
     }
     handleConnections(client:Client){
         const objId={id:client.ID,category:CATEGORYS.PLAYERS}
