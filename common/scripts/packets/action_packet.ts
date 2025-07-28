@@ -23,18 +23,20 @@ export class ActionPacket extends Packet{
     hand:number
     cellphoneAction:CellphoneAction
     interact:boolean=false
-    constructor(movement:Vec2=v2.new(0,0),using_item=false,angle:number=0,hand:number=-1){
+    use_slot:number=-1
+    constructor(){
         super()
-        this.Movement=movement
-        this.UsingItem=using_item
-        this.angle=angle
-        this.hand=hand
+        this.Movement=v2.new(0,0)
+        this.UsingItem=false
+        this.angle=0
+        this.hand=0
     }
     encode(stream: NetStream): void {
       stream.writePosition(this.Movement)
       stream.writeBooleanGroup(this.UsingItem,this.Reloading,this.cellphoneAction!==undefined,this.interact)
       stream.writeRad(this.angle)
       stream.writeInt8(this.hand)
+      stream.writeInt8(this.use_slot)
       if(this.cellphoneAction){
         stream.writeUint8(this.cellphoneAction.type)
         switch(this.cellphoneAction.type){
@@ -55,6 +57,7 @@ export class ActionPacket extends Packet{
       this.interact=b[3]
       this.angle=stream.readRad()
       this.hand=stream.readInt8()
+      this.use_slot=stream.readInt8()
       if(b[2]){
         switch(stream.readUint8() as CellphoneActionType){
           case CellphoneActionType.GiveItem:

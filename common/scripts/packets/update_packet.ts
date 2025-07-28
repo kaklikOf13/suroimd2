@@ -57,11 +57,13 @@ function encode_gui_packet(gui:GuiUpdate,stream:NetStream){
         gui.dirty.ammos,
         gui.action!==undefined,
         gui.damages!==undefined)
-    /*if(gui.dirty.inventory){
+    if(gui.dirty.inventory){
         stream.writeArray<InventoryItemData>(gui.inventory!,(i)=>{
-            InventoryItemDataEncode(stream,i)
+            stream.writeUint16(i.idNumber)
+            stream.writeUint8(i.type)
+            stream.writeUint8(i.count)
         },1)
-    }*/
+    }
     if(gui.dirty.weapons){
         stream.writeInt16(gui.weapons.melee?.idNumber??-1)
         stream.writeInt16(gui.weapons.gun1?.idNumber??-1)
@@ -109,12 +111,16 @@ function decode_gui_packet(gui:GuiUpdate,stream:NetStream){
         action:dirtyAction,
         ammos:dirtyAmmos
     }
-    /*if(dirtyInventory){
+    if(dirtyInventory){
         gui.dirty.inventory=true
         gui.inventory=stream.readArray<InventoryItemData>(()=>{
-            return InventoryItemDataDecode(stream)
+            return {
+                idNumber:stream.readUint16(),
+                type:stream.readUint8(),
+                count:stream.readUint8()
+            }
         },1)
-    }*/
+    }
     if(dirtyWeapons){
         gui.weapons.melee=Melees.getFromNumber(stream.readInt16())
         gui.weapons.gun1=Guns.getFromNumber(stream.readInt16())

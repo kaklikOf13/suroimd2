@@ -1,11 +1,11 @@
 import { type Player } from "../gameObjects/player.ts";
 import { Angle, CircleHitbox2D, Definition, getPatterningShape, Numeric, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef, Guns } from "../../../../common/scripts/definitions/items/guns.ts";
-import { Inventory, Item, SlotCap } from "common/scripts/engine/inventory.ts";
+import { Inventory, Item, Slot, SlotCap } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { HealingAction, ReloadAction } from "./actions.ts";
+import { ConsumingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "../../../../common/scripts/definitions/items/ammo.ts";
-import { HealingCondition, HealingDef } from "common/scripts/definitions/healings.ts";
+import { ConsumibleCondition, ConsumibleDef } from "../../../../common/scripts/definitions/items/consumibles.ts";
 import { OtherDef } from "common/scripts/definitions/others.ts";
 import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
@@ -148,37 +148,36 @@ export class AmmoItem extends LItem{
     
   }
 }
-export class HealingItem extends LItem{
-  def:HealingDef
-  cap: number
-  itemType: InventoryItemType.healing=InventoryItemType.healing
+export class ConsumibleItem extends LItem{
+  def:ConsumibleDef
+  itemType: InventoryItemType.consumible=InventoryItemType.consumible
 
   type="healing"
-  constructor(def:HealingDef,droppable=true){
+  inventory:GInventory
+  constructor(def:ConsumibleDef,droppable=true,inventory:GInventory){
     super()
     this.def=def
-    this.cap=def.size
     this.droppable=droppable
+    this.inventory=inventory
   }
   is(other: LItem): boolean {
-    return (other instanceof HealingItem)&&other.def.idNumber==this.def.idNumber
+    return (other instanceof ConsumibleItem)&&other.def.idNumber==this.def.idNumber
   }
   on_use(user: Player,slot?:LItem): void {
-    if(!user.using_item_down||!user.handItem||!user.handItem.is(this))return
     if(this.def.condition){
       for(const c of this.def.condition){
         switch(c){
-          case HealingCondition.UnfullHealth:
-            if(user.health>=user.maxHealth)return
+          case ConsumibleCondition.UnfullHealth:
+            if(user.health>=user.maxHealth*(this.def.max_heal??1))return
             break
-          case HealingCondition.UnfullExtra:
-            if(!(user.boost<user.maxBoost||user.BoostType!==this.def.boost_type))return
+          case ConsumibleCondition.UnfullExtra:
+            if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.BoostType!==this.def.boost_type))return
             break
         }
       }
     }
     user.privateDirtys.action=true
-    user.actions.play(new HealingAction(this.def,slot))
+    user.actions.play(new ConsumingAction(this))
   }
   update(_user: Player): void {
     
@@ -293,11 +292,20 @@ export class GInventory extends Inventory<LItem>{
   default_melee:string="survival_knife"
 
   set_backpack(backpack:BackpackDef){
+    if(this.backpack&&this.backpack.idString===backpack.idString)return
     this.backpack=backpack
+    for(const s of this.slots){
+      if(s.item){
+        s.item.limit_per_slot=backpack.max[s.item.def.idString]??15
+      }
+    }
+    while(this.slots.length<backpack.slots){
+      this.slots.push(new Slot<LItem>())
+    }
   }
 
   constructor(owner:Player,default_melee:string="survival_knife"){
-    super(7)
+    super(4)
     this.owner=owner
     this.default_melee=default_melee
     this.set_weapon(0,default_melee)
@@ -378,7 +386,7 @@ export class GInventory extends Inventory<LItem>{
       switch(def.item_type){
           case InventoryItemType.ammo:{
               this.owner.privateDirtys.ammos=true
-              const max=this.backpack.ammos_max[def.idString]??0
+              const max=this.backpack.max[def.idString]??0
               const ac=this.ammos[def.idString]??0
               const dp=Math.max((ac+count)-max,0)
               this.ammos[def.idString]=Numeric.max(ac+count,max)
@@ -387,9 +395,13 @@ export class GInventory extends Inventory<LItem>{
               }
               return dp
             }
-          case InventoryItemType.healing:
-              //this.add(new HealingItem(def as unknown as HealingDef,droppable),count)
+          case InventoryItemType.consumible:{
+              const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
+              item.limit_per_slot=this.backpack.max[item.def.idString]??15
+              this.add(item,count)
+              this.owner.privateDirtys.inventory=true
               break
+          }
           case InventoryItemType.equipament:
               break
           /*case InventoryItemType.other:

@@ -131,6 +131,27 @@ export class Game extends ClientGame2D<GameObject>{
         case Key.Number_3:
           this.action.hand=2
           break
+        case Key.Number_4:
+          this.action.use_slot=0
+          break
+        case Key.Number_5:
+          this.action.use_slot=1
+          break
+        case Key.Number_6:
+          this.action.use_slot=2
+          break
+        case Key.Number_7:
+          this.action.use_slot=3
+          break
+        case Key.Number_8:
+          this.action.use_slot=4
+          break
+        case Key.Number_9:
+          this.action.use_slot=5
+          break
+        case Key.Number_0:
+          this.action.use_slot=6
+          break
         case Key.E:
           this.action.interact=true
       }
@@ -162,6 +183,7 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.interact=false
       this.action.cellphoneAction=undefined
       this.action.hand=-1
+      this.action.use_slot=-1
 
       if(this.activePlayer){
         this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));

@@ -84,7 +84,7 @@ export enum zIndexes{
 }
 export enum ActionsType{
     Reload,
-    Healing
+    Consuming
 }
 
 export type PlayerModifiers={

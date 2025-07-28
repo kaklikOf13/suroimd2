@@ -1,9 +1,8 @@
-import { Action, type SlotCap } from "common/scripts/engine/inventory.ts";
+import { Action, Slot } from "common/scripts/engine/inventory.ts";
 import { type Player } from "../gameObjects/player.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type GunItem } from "./inventory.ts";
+import { type ConsumibleItem, type LItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
-import { HealingDef } from "common/scripts/definitions/healings.ts";
 
 export class ReloadAction extends Action<Player>{
     delay:number
@@ -48,34 +47,29 @@ export class ReloadAction extends Action<Player>{
     }
     type: number=ActionsType.Reload
 }
-export class HealingAction extends Action<Player>{
+export class ConsumingAction extends Action<Player>{
     delay:number
-    def:HealingDef
-    slot:SlotCap
-    
-    type: number=ActionsType.Healing
-    constructor(def:HealingDef,slot:SlotCap){
+    item:ConsumibleItem
+    type: number=ActionsType.Consuming
+    constructor(item:ConsumibleItem){
         super()
-        this.delay=def.use_delay
-        this.def=def
-        this.slot=slot
+        this.item=item
+        this.delay=item.def.use_delay
     }
     on_execute(user:Player){
-        if(!user.handItem||!this.slot||user.handItem.itemType!=InventoryItemType.healing||user.handItem.def.idNumber!==this.def.idNumber)return
-        if(this.def.health){
-            user.health=Math.min(user.health+this.def.health,user.maxHealth)
+        const def=this.item.def
+        if(def.health){
+            user.health=Math.min(user.health+def.health,user.maxHealth*(def.max_heal??1))
         }
-        if(this.def.boost){
-            if(this.def.boost_type!==undefined&&this.def.boost_type!==user.BoostType){
-                user.BoostType=this.def.boost_type
-                user.boost=this.def.boost
+        if(def.boost){
+            if(def.boost_type!==undefined&&def.boost_type!==user.BoostType){
+                user.BoostType=def.boost_type
+                user.boost=def.boost
             }else{
-                user.boost=Math.min(user.boost+this.def.boost,user.maxBoost)
+                user.boost=Math.min(user.boost+def.boost,user.maxBoost*(def.max_boost??1))
             }
         }
-        this.slot.quantity--
-        user.update_hand()
-        user.privateDirtys.hand=true
+        this.item.inventory.consume(this.item,1)
         user.privateDirtys.inventory=true
     }
 }

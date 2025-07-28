@@ -21,6 +21,7 @@ import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
 import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -47,7 +48,7 @@ export class Player extends ServerGameObject{
 
     boost:number=0
     maxBoost:number=100
-    BoostType:BoostType=BoostType.Shield
+    BoostType:BoostType=BoostType.Null
 
     actions:ActionsManager<this>
 
@@ -155,7 +156,7 @@ export class Player extends ServerGameObject{
         //Movement
         const gamemode=this.game.gamemode
         let speed=1*(this.recoil?this.recoil.speed:1)
-                  * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Healing?this.using_healing_speed:1)
+                  * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.using_healing_speed:1)
                   * (this.inventory.currentWeaponDef?.speed_mod??1)
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
@@ -168,7 +169,7 @@ export class Player extends ServerGameObject{
             case BoostType.Shield:
                 break
             case BoostType.Adrenaline:
-                speed+=this.boost*gamemode.player.boosts.adrenaline.speed
+                speed*=1+(gamemode.player.boosts.adrenaline.speed*(this.boost/this.maxBoost))
                 this.boost=Math.max(this.boost-gamemode.player.boosts.adrenaline.decay*dt,0)
                 this.health=Math.min(this.health+(this.boost*dt)*gamemode.player.boosts.adrenaline.regen,this.maxHealth)
                 break
@@ -288,6 +289,12 @@ export class Player extends ServerGameObject{
                 this.seat.clear_player()
             }
         }
+        if(action.use_slot!==-1){
+            const item=this.inventory.slots[action.use_slot]?.item
+            if(item){
+                item.on_use(this,item)
+            }
+        }
         /*
         if(action.cellphoneAction){
             if(this.handItem&&this.handItem instanceof OtherItem){
@@ -317,6 +324,14 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
+
+        this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,5)
+        this.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,1)
+        this.inventory.give_item(Consumibles.getFromString("soda") as unknown as GameItem,16)
+        this.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString("small_blue_potion") as unknown as GameItem,10)
+        this.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,4)
 
         const v=this.game.add_vehicle(v2.new(3,3),Vehicles.getFromString("jeep"))
         v.seats[0].set_player(this)
@@ -348,8 +363,11 @@ export class Player extends ServerGameObject{
             let ii=0
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
-                if(!s.item)continue
-                up.gui.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
+                if(s.item){
+                    up.gui.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
+                }else{
+                    up.gui.inventory.push({count:0,idNumber:0,type:InventoryItemType.consumible})
+                }
                 ii++
             }
             up.gui.dirty=this.privateDirtys

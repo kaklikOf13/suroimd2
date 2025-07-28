@@ -24,7 +24,7 @@ export interface BulletDef{
 export enum InventoryItemType{
     gun,
     ammo,
-    healing,
+    consumible,
     equipament,
     other,
     melee,
@@ -63,6 +63,7 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
 }
 
 export enum BoostType{
+    Null,
     Shield,
     Adrenaline,
     Mana,

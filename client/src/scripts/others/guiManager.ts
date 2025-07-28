@@ -1,5 +1,5 @@
 import { Game } from "./game.ts";
-import { BoostType } from "common/scripts/definitions/utils.ts";
+import { BoostType, InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
@@ -115,7 +115,8 @@ export class GuiManager{
         }
 
         this.update_ammos({})
-        this.update_gui_items([{},{},{},{}])
+        this.update_gui_items([
+        ])
     }
     ammos_cache:Record<string,HTMLDivElement>={}
     update_ammos(ammos:Record<string,number>){
@@ -140,14 +141,23 @@ export class GuiManager{
             }
         }
     }
-    update_gui_items(slots:{}[]){
+    update_gui_items(slots:InventoryItemData[]){
         this.content.gui_items.innerHTML=""
         let i=0;
         for(const s of slots){
-            this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
-              <div class="slot-number">${i+4}</div>
-              </div>`)
-              i++
+            if(s.count>0){
+                const def=GameItems.valueNumber[s.idNumber]
+                this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
+                <div class="slot-number">${i+4}</div>
+                <div class="slot-count">${s.count}</div>
+                <img class="slot-image" src="${this.game.resources.get_sprite(def.idString).src}"></img>
+                </div>`)
+            }else{
+                this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
+                <div class="slot-number">${i+4}</div>
+                </div>`)
+            }
+            i++
         }
     }
     players_name:Record<number,{name:string,badge:string}>={}
@@ -309,13 +319,9 @@ export class GuiManager{
             this.currentWeapon.classList.add("weapon-slot-selected")
         }
 
-        /*if(p.inventory){
-            this.inventory.length=0
-            for(const s of p.inventory){
-                this.inventory.push({count:s.count,def:GameItems.valueNumber[s.idNumber],type:s.type})
-            }
-            this.inventory_cache=this.inventory_reset()
-        }*/
+        if(gui.dirty.inventory&&gui.inventory){
+            this.update_gui_items(gui.inventory)
+        }
         if(gui.dirty.action){
             if(gui.action){
                 this.action={
@@ -470,6 +476,7 @@ export class GuiManager{
     }
 }
 const BoostsColors:Record<BoostType,string>={
+    [BoostType.Null]:"#fff",
     [BoostType.Adrenaline]:"#ff0",
     [BoostType.Shield]:"#08f",
     [BoostType.Mana]:"#92a",

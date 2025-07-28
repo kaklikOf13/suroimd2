@@ -1,160 +1,141 @@
-import { Definitions,Definition } from "../engine/mod.ts"
-import { ItemQuality } from "../others/item.ts";
-import { BoostType, GameItem, InventoryItemType } from "./utils.ts";
+import { Definitions,Definition } from "../../engine/mod.ts"
+import { ItemQuality } from "../../others/item.ts";
+import { BoostType, GameItem, InventoryItemType } from "../utils.ts";
 
-export enum HealingCondition{
+export enum ConsumibleCondition{
     UnfullHealth,
     UnfullExtra
 }
-export interface HealingDef extends Definition{
-    size:number
+export interface ConsumibleDef extends Definition{
     health?:number
     boost?:number
     boost_type?:BoostType
+    max_heal?:number
+    max_boost?:number
     quality:ItemQuality
     use_delay:number
-    condition?:HealingCondition[]
+    condition?:ConsumibleCondition[]
 }
-export const Healings=new Definitions<HealingDef,GameItem>((i)=>{
-    i.item_type=InventoryItemType.healing
+export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
+    i.item_type=InventoryItemType.consumible
 })
-Healings.insert(
-    {
-        idString:"lifecandy",
-        size:0.02,
-        health:3,
-        use_delay:0.65,
-        quality:ItemQuality.Common,
-        condition:[HealingCondition.UnfullHealth]
-    },
+Consumibles.insert(
     {
         idString:"gauze",
-        size:0.09,
         health:15,
-        use_delay:2,
+        max_heal:0.75,
+        use_delay:3,
         quality:ItemQuality.Uncommon,
-        condition:[HealingCondition.UnfullHealth]
+        condition:[ConsumibleCondition.UnfullHealth]
     },
     {
         idString:"medikit",
-        size:0.9,
         health:100,
         use_delay:5.5,
         quality:ItemQuality.Uncommon,
-        condition:[HealingCondition.UnfullHealth]
+        condition:[ConsumibleCondition.UnfullHealth]
     },
 
     //Adrenaline
     {
         idString:"soda",
-        size:0.3,
         boost:25,
         use_delay:2.5,
         boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Uncommon,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"inhaler",
-        size:0.4,
         boost:50,
         use_delay:4.5,
         boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Uncommon,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"yellow_pills",
-        size:0.7,
         boost:100,
-        use_delay:4.5,
+        use_delay:6,
         boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Rare,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
 
     //Shield
     {
         idString:"small_blue_potion",
-        size:0.3,
         boost:25,
+        max_boost:0.5,
         use_delay:2.5,
         boost_type:BoostType.Shield,
         quality:ItemQuality.Uncommon,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"blue_potion",
-        size:0.4,
         boost:50,
         use_delay:4.5,
         boost_type:BoostType.Shield,
         quality:ItemQuality.Rare,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"blue_pills",
-        size:0.7,
         boost:100,
-        use_delay:4.5,
+        use_delay:6,
         boost_type:BoostType.Shield,
         quality:ItemQuality.Epic,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     //Mana
     {
         idString:"small_purple_potion",
-        size:0.2,
         boost:15,
         use_delay:1.1,
         boost_type:BoostType.Mana,
         quality:ItemQuality.Rare,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"purple_potion",
-        size:0.5,
         boost:40,
         use_delay:2.4,
         boost_type:BoostType.Mana,
         quality:ItemQuality.Epic,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"purple_pills",
-        size:0.75,
         boost:100,
         use_delay:4.5,
         boost_type:BoostType.Mana,
         quality:ItemQuality.Legendary,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     //Addiction
     {
         idString:"small_red_crystal",
-        size:0.2,
         boost:25,
         use_delay:1.5,
         boost_type:BoostType.Addiction,
         quality:ItemQuality.Epic,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"red_crystal",
-        size:0.4,
         boost:50,
         use_delay:2.2,
         boost_type:BoostType.Addiction,
         quality:ItemQuality.Epic,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
     {
         idString:"red_pills",
-        size:0.7,
         boost:100,
         use_delay:4.5,
         boost_type:BoostType.Addiction,
         quality:ItemQuality.Legendary,
-        condition:[HealingCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra]
     },
 )

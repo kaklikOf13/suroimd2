@@ -353,18 +353,43 @@
     display: flex;
     flex-direction: row;
     gap: 5px;
-    .inventory-item-slot{
-        background-color: #0002;
-        width: 100px;
+    .inventory-item-slot {
+        position: relative;
+        background-color: #0004;
+        width: 60px;
         height: 60px;
-        border-radius: 10px;
-        .slot-number{
-            position: relative;
-            top:2px;
-            left:80%;
+        border-radius: 8px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
 
-            font-family: "Russo-One", serif;
-            font-size: 20px;
+        font-family: "Russo-One", serif;
+
+        .slot-image {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        pointer-events: none;
+        }
+
+        .slot-count {
+        position: absolute;
+        bottom: 2px;
+        right: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 0 2px #000;
+        }
+
+        .slot-number {
+        position: absolute;
+        top: 2px;
+        left: 4px;
+        font-size: 12px;
+        color: #fff9;
+        text-shadow: 0 0 2px #000;
         }
     }
 }
