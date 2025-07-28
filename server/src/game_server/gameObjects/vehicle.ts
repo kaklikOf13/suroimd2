@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { VehicleData } from "common/scripts/others/objectsEncode.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
@@ -49,13 +49,16 @@ export class Vehicle extends ServerGameObject{
         super()
     }
     is_moving:boolean=false
-    move(direction:Vec2,dt:number){
+
+    back_walk:boolean=false
+    move(direction:Vec2,back_walk:boolean,dt:number){
         if(direction.x!==0||direction.y!==0){
             const dir=Math.atan2(direction.y,direction.x)
-            this.angle=Numeric.lerp_rad(this.angle,dir,1/(1+dt*this.def.movimentation.angle_acceleration))
+            this.angle=Numeric.lerp_rad(this.angle,dir,1/(1+dt*this.def.movimentation.angle_acceleration*(this.def.movimentation.final_speed/this.speed)))
             this.is_moving=true
             this.direction=Numeric.normalize_rad(dir - this.angle)
-            this.speed=Numeric.lerp(this.speed,this.def.movimentation.final_speed,1/(1+dt*this.def.movimentation.acceleration))
+            this.back_walk=back_walk
+            this.speed=Numeric.lerp(this.speed,this.def.movimentation.final_speed*(this.back_walk?-this.def.movimentation.back_walk_mult:1),1/(1+dt*this.def.movimentation.acceleration))
         }
     }
     interact(_user: Player): void {
@@ -73,9 +76,9 @@ export class Vehicle extends ServerGameObject{
             s.rotation=this.angle
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
-        if(!this.is_moving)this.speed=Numeric.lerp(this.speed,0,1/(1+dt*this.def.movimentation.desacceleration))
+        if(!this.is_moving||(this.back_walk&&this.speed>0))this.speed=Numeric.lerp(this.speed,0,1/(1+dt*this.def.movimentation.desacceleration))
         this.is_moving=false
-        this.velocity=v2.scale(v2.from_RadAngle(this.angle),this.speed)
+        this.velocity=v2.scale(v2.normalizeSafe(v2.from_RadAngle(this.angle),NullVec2),this.speed)
     }
     create(args: {position:Vec2,def:VehicleDef}): void {
         this.hb=new CircleHitbox2D(args.position,2)

@@ -93,6 +93,7 @@ export class Player extends ServerGameObject{
         this.accessories=new AccessoriesManager(this,3)
     }
     interaction_input:boolean=false
+    reloading_input:boolean=false
     interact(user: Player): void {
         if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
         this.revive()
@@ -196,7 +197,7 @@ export class Player extends ServerGameObject{
         }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
-            if(this.seat.pillot)this.seat.vehicle.move(this.movement,dt)
+            if(this.seat.pillot)this.seat.vehicle.move(this.movement,this.reloading_input,dt)
         }else{
             this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,4.5*speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
         }
@@ -274,6 +275,7 @@ export class Player extends ServerGameObject{
         this.using_item=action.UsingItem
         if(this.seat?.rotation===undefined)this.rotation=action.angle
         this.interaction_input=action.interact
+        this.reloading_input=action.Reloading
         if(action.hand>=0&&action.hand<3){
             this.inventory.set_current_weapon_index(action.hand)
         }
