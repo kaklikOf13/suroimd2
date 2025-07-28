@@ -1,0 +1,23 @@
+import { Floors, TerrainManager } from "common/scripts/others/terrain.ts";
+import { Graphics2D } from "../engine/container.ts";
+import { ColorM } from "../engine/renderer.ts";
+import { MapConfig } from "common/scripts/packets/map_packet.ts";
+
+export class TerrainM extends TerrainManager{
+    process_map(mp:MapConfig){
+        for(const f of mp.terrain){
+            this.add_floor(f.type,f.vertex)
+        }
+    }
+    draw(graphic:Graphics2D,scale:number){
+        for(const f of this.floors[0]){
+            graphic.beginPath()
+            for(const v of f.vertex){
+                graphic.lineTo(v.x,v.y)
+            }
+            graphic.endPath()
+            graphic.fill_color(ColorM.number(Floors[f.type].default_color))
+            graphic.fill()
+        }
+    }
+}

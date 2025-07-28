@@ -20,7 +20,9 @@ import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
-import { GasRender } from "../gameObjects/gas.ts";
+import { TerrainM } from "../gameObjects/terrain.ts";
+import { MapPacket } from "common/scripts/packets/map_packet.ts";
+import { Graphics2D } from "../engine/container.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayerId=0
@@ -34,10 +36,12 @@ export class Game extends ClientGame2D<GameObject>{
   gameOver:boolean=false
 
   grid:Grid2D
-  gas_renderer:GasRender
+  terrain:TerrainM=new TerrainM()
+  
+  terrain_gfx=new Graphics2D()
 
-  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,console:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(keyl,mp,console,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
+  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+    super(keyl,mp,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
@@ -53,9 +57,13 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("joined",(jp:JoinedPacket)=>{
       this.guiManager.process_joined_packet(jp)
     })
+    this.client.on("map",(mp:MapPacket)=>{
+      this.terrain.process_map(mp.map)
+      this.terrain.draw(this.terrain_gfx,1)
+    })
     this.scene.objects.encoders=ObjectsE;
 
-    this.renderer.background=ColorM.hex("#5e8739");
+    this.renderer.background=ColorM.hex("#201");
 
     if(Debug.hitbox){
       const hc=ColorM.hex("#ee000099")
@@ -72,7 +80,7 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.grid=new Grid2D()
     this.grid.width=0.03
-    this.grid.grid_size=1
+    this.grid.grid_size=8
     this.grid.color.a=0.2
     this.camera.addObject(this.grid)
     this.grid.zIndex=zIndexes.Grid
@@ -80,7 +88,9 @@ export class Game extends ClientGame2D<GameObject>{
       "players":0.45,
       "obstacles":0.7,
     }
-    this.gas_renderer=new GasRender(this.camera.container,1)
+
+    this.terrain_gfx.zIndex=zIndexes.Terrain
+    this.camera.addObject(this.terrain_gfx)
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -145,7 +155,7 @@ export class Game extends ClientGame2D<GameObject>{
         (this.activePlayer as Player).container.rotation=this.action.angle
       }
     }
-    this.camera.zoom=1
+    this.camera.zoom=0.3
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
     //0.12=l6 32x

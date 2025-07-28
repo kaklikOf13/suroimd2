@@ -203,7 +203,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(32,32))
+        this.map=new GameMap(this,v2.new(128,128))
         this.gamemode=DefaultGamemode
         this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false
@@ -278,6 +278,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }
         client.emit(jp)
+        client.sendStream(this.map.map_packet_stream)
 
         this.modeManager.on_player_join(p)
         this.send_killfeed_message({

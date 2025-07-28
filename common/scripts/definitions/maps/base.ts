@@ -2,6 +2,7 @@ import { LootTableItemRet, LootTablesDefs } from "../../engine/inventory.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 import { GameItems } from "../alldefs.ts";
 import { GunDef } from "../items/guns.ts";
+import { FloorType } from "../../others/terrain.ts";
 
 export interface Aditional{
     withammo:boolean
@@ -34,7 +35,17 @@ export function get_item(item:string,count:number,_aditional:Aditional):LootTabl
         ]
     }
 }
-
+export interface IslandDef{
+    terrain:{
+        base:FloorType
+        floors:{
+            type:FloorType
+            padding:number
+            variation:number
+            spacing:number
+        }[]
+    }
+}
 export const LootTables=new LootTablesDefs<GameItem,Aditional>(get_item)
 LootTables.add_tables({
     //Guns

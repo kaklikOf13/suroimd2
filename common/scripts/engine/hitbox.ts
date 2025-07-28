@@ -1,5 +1,5 @@
 import { NullVec2, type Vec2, v2 } from "./geometry.ts"
-import { random } from "./random.ts";
+import { random, SeededRandom } from "./random.ts";
 import { Numeric } from "./utils.ts";
 
 export const Collision=Object.freeze({
@@ -305,4 +305,36 @@ export class RectHitbox2D extends BaseHitbox2D{
     override clone():RectHitbox2D{
         return new RectHitbox2D(this.min,this.max)
     }
+}
+export function jaggedRectangle(
+    min: Vec2,
+    max: Vec2,
+    spacing: number,
+    variation: number,
+    random: SeededRandom
+): Vec2[] {
+    const topLeft = v2.duplicate(min);
+    const topRight = v2.new(max.x, min.y);
+    const bottomRight = v2.duplicate(max);
+    const bottomLeft = v2.new(min.x, max.y);
+
+    const points: Vec2[] = [];
+
+    variation = variation / 2;
+    const getVariation = (): number => random.get(-variation, variation);
+
+    for (let x = topLeft.x + spacing; x < topRight.x; x += spacing) {
+        points.push(v2.new(x, topLeft.y + getVariation()));
+    }
+    for (let y = topRight.y + spacing; y < bottomRight.y; y += spacing) {
+        points.push(v2.new(topRight.x + getVariation(), y));
+    }
+    for (let x = bottomRight.x - spacing; x > bottomLeft.x; x -= spacing) {
+        points.push(v2.new(x, bottomRight.y + getVariation()));
+    }
+    for (let y = bottomLeft.y - spacing; y > topLeft.y; y -= spacing) {
+        points.push(v2.new(bottomLeft.x + getVariation(), y));
+    }
+
+    return points;
 }

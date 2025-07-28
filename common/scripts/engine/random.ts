@@ -1,5 +1,5 @@
 import { type DegAngle, type RadAngle } from "./geometry.ts";
-import { type ID } from "./utils.ts";
+import { Numeric, type ID } from "./utils.ts";
 
 export interface WeightDefinition{
     weight:number
@@ -47,3 +47,27 @@ export const random=Object.freeze({
         }
     }
 })
+export class SeededRandom {
+    private _rng = 0;
+
+    constructor(seed: number) {
+        this._rng = seed;
+    }
+
+    /**
+     * @param [min = 0] min value (included)
+     * @param [max = 1] max value (excluded)
+     */
+    get(min = 0, max = 1): number {
+        this._rng = this._rng * 16807 % 2147483647;
+        return Numeric.lerp(min, max, this._rng / 2147483647);
+    }
+
+    /**
+     * @param [min = 0] min value (included)
+     * @param [max = 1] max value (excluded)
+     */
+    getInt(min = 0, max = 1): number {
+        return Math.round(this.get(min, max));
+    }
+}
