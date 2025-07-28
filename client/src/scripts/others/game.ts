@@ -63,7 +63,7 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.scene.objects.encoders=ObjectsE;
 
-    this.renderer.background=ColorM.hex("#201");
+    this.renderer.background=ColorM.hex("#000");
 
     if(Debug.hitbox){
       const hc=ColorM.hex("#ee000099")
@@ -79,7 +79,7 @@ export class Game extends ClientGame2D<GameObject>{
     })
 
     this.grid=new Grid2D()
-    this.grid.width=0.03
+    this.grid.width=0.04
     this.grid.grid_size=8
     this.grid.color.a=0.2
     this.camera.addObject(this.grid)
@@ -155,15 +155,18 @@ export class Game extends ClientGame2D<GameObject>{
         (this.activePlayer as Player).container.rotation=this.action.angle
       }
     }
-    this.camera.zoom=0.3
+    this.camera.zoom=0.27
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
-    //0.12=l6 32x
-    //0.17=l5 16x
-    //0.3=l4 8x
-    //0.57=l3 4x
-    //0.65=l2 2x
-    //0.8=l1 1x
+    //0.14=l6 32x
+    //0.27=l5 16x
+    //0.35=l4 8x
+    //0.53=l3 4x
+    //0.63=l2 2x
+    //0.78=l1 1x
+    //1=l-1 0.5x
+    //1.5=l-2 0.25x
+    //1.75=l-3 0.1x
   }
   update_camera(){
     if(this.activePlayer)this.camera.position=this.activePlayer!.position
