@@ -74,7 +74,6 @@ export class GuiManager{
         1:undefined,
         2:undefined
     }
-    //inventory:{count:number,def:Definition,type:InventoryItemType}[]=[]
     action?:{delay:number,start:number,type:ActionsType}
 
     currentWeapon?:HTMLDivElement
@@ -114,9 +113,21 @@ export class GuiManager{
             }
         }
 
+        const dropW=(w:number)=>{
+            return (e:MouseEvent)=>{
+                if(e.button==2){
+                    this.game.action.drop=w
+                    this.game.action.drop_kind=1
+                }
+            }
+        }
+        this.content.weapon2.addEventListener("mouseup",dropW(1))
+        this.content.weapon3.addEventListener("mouseup",dropW(2))
+
         this.update_ammos({})
         this.update_gui_items([
         ])
+        document.addEventListener("contextmenu", e => e.preventDefault());
     }
     ammos_cache:Record<string,HTMLDivElement>={}
     update_ammos(ammos:Record<string,number>){
@@ -128,9 +139,18 @@ export class GuiManager{
                 c.innerText=`${ammos[a]}`
             }
         }else{
+            const dropA=(a:number)=>{
+                return (e:MouseEvent)=>{
+                    if(e.button==2){
+                        this.game.action.drop=a
+                        this.game.action.drop_kind=2
+                    }
+                }
+            }
             this.content.ammos.innerHTML=""
             this.ammos_cache={}
             for(const a of ak){
+                const def=Ammos.getFromString(a)
                 const htm=`<div class="ammo-slot" id="ammo-${a}">
                     <image class="icon" src="img/game/common/items/ammos/${a}.svg"></image>
                     <span class="count">${ammos[a]}</span>
@@ -138,20 +158,33 @@ export class GuiManager{
 
                 this.content.ammos.insertAdjacentHTML("beforeend", htm);
                 this.ammos_cache[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
+                this.ammos_cache[a].addEventListener("mouseup",dropA(def.idNumber!))
             }
         }
     }
     update_gui_items(slots:InventoryItemData[]){
         this.content.gui_items.innerHTML=""
         let i=0;
+        const Ic=(i:number)=>{
+            return (e:MouseEvent)=>{
+                if(e.button==2){
+                    this.game.action.drop=i
+                    this.game.action.drop_kind=3
+                }else if(e.button==0){
+                    this.game.action.use_slot=i
+                }
+            }
+        }
         for(const s of slots){
             if(s.count>0){
                 const def=GameItems.valueNumber[s.idNumber]
-                this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
+                this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot" id="inventory-slot-${i}">
                 <div class="slot-number">${i+4}</div>
                 <div class="slot-count">${s.count}</div>
                 <img class="slot-image" src="${this.game.resources.get_sprite(def.idString).src}"></img>
                 </div>`)
+                const vv=this.content.gui_items.querySelector(`#inventory-slot-${i}`) as HTMLDialogElement
+                vv.addEventListener("mouseup",Ic(i))
             }else{
                 this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
                 <div class="slot-number">${i+4}</div>
@@ -381,75 +414,6 @@ export class GuiManager{
             this.content.vest_slot.src="img/game/common/icons/vest.svg"
         }*/
     }
-    /*inventory_cache:HTMLDivElement[]=[]
-    inventory_reset():HTMLDivElement[]{
-        const cache:HTMLDivElement[]=[]
-        this.content.inventory.innerHTML=""
-        let i=0
-        const sMM=(slot:HTMLDivElement,i:number)=>{
-            slot.addEventListener("mousedown",(e)=>{
-                if(e.button!==0)return
-                this.game.action.hand=i
-                this.game.action.UsingItem=false
-            })
-        }
-        for(const s of this.inventory){
-            const slot = document.createElement("div")
-            slot.classList.add("inventory-slot")
-
-            if(this.hand&&this.hand.location===i){
-                slot.classList.add("inventory-slot-selected")
-            }
-
-            const img = document.createElement("img")
-            switch(s.type){
-                case InventoryItemType.gun:
-                    img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.style.width = "40px"
-                    img.style.height = "40px"
-                    break
-                case InventoryItemType.melee:
-                    img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.style.width = "40px"
-                    img.style.height = "40px"
-                    break
-                case InventoryItemType.ammo:
-                    img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.style.width="25px"
-                    img.style.height="25px"
-                    img.style.transform="unset"
-                    if(s.count>0){
-                        const another=document.createElement("span")
-                        another.innerText=`${s.count}`
-                        slot.appendChild(another)
-                    }
-                    break
-                case InventoryItemType.healing:
-                    img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.style.width="25px"
-                    img.style.height="25px"
-                    img.style.transform="unset"
-                    if(s.count>0){
-                        const another=document.createElement("span")
-                        another.innerText=`${s.count}`
-                        slot.appendChild(another)
-                    }
-                    break
-                case InventoryItemType.other:
-                    img.src=this.game.resources.get_sprite(s.def.idString).path
-                    img.style.width = "40px"
-                    img.style.height = "40px"
-                    break
-            }
-            slot.appendChild(img)
-            this.content.inventory.appendChild(slot)
-            cache.push(slot)
-            sMM(slot,i)
-            i++
-
-        }
-        return cache
-    }*/
     update(){
         if(this.action){
             const w=(Date.now()-this.action.start)/1000

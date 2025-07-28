@@ -283,17 +283,31 @@ export class Player extends ServerGameObject{
         if(action.Reloading&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
         }
-        if(action.interact){
-            if(this.seat){
-                this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
-                this.seat.clear_player()
+        if(!this.downed&&!this.parachute){
+            if(action.interact){
+                if(this.seat){
+                    this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
+                    this.seat.clear_player()
+                    this.interaction_input=false
+                }
+            }
+            if(action.use_slot!==-1){
+                const item=this.inventory.slots[action.use_slot]?.item
+                if(item){
+                    item.on_use(this,item)
+                }
             }
         }
-        if(action.use_slot!==-1){
-            const item=this.inventory.slots[action.use_slot]?.item
-            if(item){
-                item.on_use(this,item)
-            }
+        switch(action.drop_kind){
+            case 1:
+                this.inventory.drop_weapon(Numeric.clamp(action.drop,0,2) as (0|1|2))
+                break
+            case 2:
+                this.inventory.drop_ammo(action.drop)
+                break
+            case 3:
+                this.inventory.drop_slot(action.drop)
+                break
         }
         /*
         if(action.cellphoneAction){

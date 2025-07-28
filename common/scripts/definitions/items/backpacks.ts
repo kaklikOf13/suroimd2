@@ -42,6 +42,8 @@ Backpacks.insert(
             "yellow_pills":1,
             "purple_pills":1,
             "red_pills":1,
+
+            "pocket_portal":1,
         },
         rarity:ItemQuality.Common,
         no_world_image:true,
@@ -73,6 +75,8 @@ Backpacks.insert(
             "yellow_pills":2,
             "purple_pills":2,
             "red_pills":2,
+
+            "pocket_portal":2,
         },
         rarity:ItemQuality.Common,
         slots:6,
@@ -103,6 +107,8 @@ Backpacks.insert(
             "yellow_pills":3,
             "purple_pills":3,
             "red_pills":3,
+
+            "pocket_portal":3,
         },
         rarity:ItemQuality.Common,
         slots:6,
@@ -133,6 +139,8 @@ Backpacks.insert(
             "yellow_pills":4,
             "purple_pills":4,
             "red_pills":4,
+
+            "pocket_portal":4,
         },
         rarity:ItemQuality.Common,
         slots:7,

@@ -15,6 +15,7 @@ export interface ConsumibleDef extends Definition{
     quality:ItemQuality
     use_delay:number
     condition?:ConsumibleCondition[]
+    parachute?:number
 }
 export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.consumible
@@ -137,5 +138,12 @@ Consumibles.insert(
         boost_type:BoostType.Addiction,
         quality:ItemQuality.Legendary,
         condition:[ConsumibleCondition.UnfullExtra]
+    },
+    //Misc
+    {
+        idString:"pocket_portal",
+        use_delay:1.5,
+        parachute:1,
+        quality:ItemQuality.Mythic
     },
 )

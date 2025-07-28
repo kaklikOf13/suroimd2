@@ -69,6 +69,12 @@ export class ConsumingAction extends Action<Player>{
                 user.boost=Math.min(user.boost+def.boost,user.maxBoost*(def.max_boost??1))
             }
         }
+        if(def.parachute){
+            user.parachute={
+                value:def.parachute
+            }
+            user.seat?.clear_player()
+        }
         this.item.inventory.consume(this.item,1)
         user.privateDirtys.inventory=true
     }

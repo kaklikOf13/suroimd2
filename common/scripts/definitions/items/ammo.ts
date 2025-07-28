@@ -10,6 +10,7 @@ export interface AmmoDef extends Definition{
     defaultProj:number
     strongProj:number
     ammoType:string
+    drop_count?:number
 }
 export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.ammo
@@ -26,6 +27,7 @@ Ammos.insert(
         strongProj:0xdb2218,
         tint:0xff0000,
         size:0.01,
+        drop_count:15,
     },
     {
         idString:"762mm",
@@ -87,6 +89,7 @@ Ammos.insert(
         strongProj:0xefef33,
         tint:0x001330,
         size:0.08,
+        drop_count:10,
     },
     {
         idString:"40mm",

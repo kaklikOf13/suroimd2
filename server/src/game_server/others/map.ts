@@ -118,6 +118,7 @@ export class GameMap{
         this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_blue_potion") as unknown as GameItem,16)
         this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_purple_potion") as unknown as GameItem,16)
         this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_red_crystal") as unknown as GameItem,16)
+        this.game.add_loot(v2.new(7,7),Consumibles.getFromString("pocket_portal") as unknown as GameItem,1)
 
         SingleIslandGeneration(this,{
             terrain:{

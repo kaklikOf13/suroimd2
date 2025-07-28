@@ -48,7 +48,7 @@ export class Slot<ItemBase extends Item = Item>{
         }
         this.quantity-=quantity
         const ret=Math.max(-this.quantity,0)
-        if(ret!=0){
+        if(ret!=0||this.quantity===0){
             this.item=null
             this.quantity=0
         }

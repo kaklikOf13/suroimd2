@@ -176,7 +176,7 @@ export class Game extends ClientGame2D<GameObject>{
         }else{
           this.action.Movement.y=0
         }
-        this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)
+        this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)&&this.action.use_slot===-1
         this.action.Reloading=this.key.keyPress(Key.R)
       }
       this.client.emit(this.action)
@@ -184,6 +184,8 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.cellphoneAction=undefined
       this.action.hand=-1
       this.action.use_slot=-1
+      this.action.drop=-1
+      this.action.drop_kind=0
 
       if(this.activePlayer){
         this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));

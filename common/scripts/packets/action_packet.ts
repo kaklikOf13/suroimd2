@@ -24,6 +24,9 @@ export class ActionPacket extends Packet{
     cellphoneAction:CellphoneAction
     interact:boolean=false
     use_slot:number=-1
+
+    drop_kind:number=0
+    drop:number=0
     constructor(){
         super()
         this.Movement=v2.new(0,0)
@@ -37,6 +40,8 @@ export class ActionPacket extends Packet{
       stream.writeRad(this.angle)
       stream.writeInt8(this.hand)
       stream.writeInt8(this.use_slot)
+      stream.writeInt8(this.drop)
+      stream.writeInt8(this.drop_kind)
       if(this.cellphoneAction){
         stream.writeUint8(this.cellphoneAction.type)
         switch(this.cellphoneAction.type){
@@ -58,6 +63,8 @@ export class ActionPacket extends Packet{
       this.angle=stream.readRad()
       this.hand=stream.readInt8()
       this.use_slot=stream.readInt8()
+      this.drop=stream.readInt8()
+      this.drop_kind=stream.readInt8()
       if(b[2]){
         switch(stream.readUint8() as CellphoneActionType){
           case CellphoneActionType.GiveItem:

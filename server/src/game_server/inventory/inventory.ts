@@ -163,7 +163,7 @@ export class ConsumibleItem extends LItem{
   is(other: LItem): boolean {
     return (other instanceof ConsumibleItem)&&other.def.idNumber==this.def.idNumber
   }
-  on_use(user: Player,slot?:LItem): void {
+  on_use(user: Player,_slot?:LItem): void {
     if(this.def.condition){
       for(const c of this.def.condition){
         switch(c){
@@ -313,7 +313,7 @@ export class GInventory extends Inventory<LItem>{
   }
 
   set_current_weapon_index(idx:number){
-    if(this.weaponIdx===idx)return
+    if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
   
     if(this.currentWeapon){
         switch(this.currentWeapon.type){
@@ -347,7 +347,7 @@ export class GInventory extends Inventory<LItem>{
     this.owner.dirty=true
   }
   set_weapon(slot:keyof typeof this.weapons=0,id:string=""){
-    this.drop_weapon(slot)
+    this.drop_weapon(slot,false)
     if(slot===0){
       this.weapons[slot]=new MeleeItem(Melees.getFromString(id),true)
     }else if(slot==1||slot==2){
@@ -358,16 +358,14 @@ export class GInventory extends Inventory<LItem>{
     if(slot===this.weaponIdx){this.weaponIdx=-1;this.set_current_weapon_index(slot)}
   }
   give_gun(id:string=""):boolean{
-    if(this.weaponIdx===0){
       if(!this.weapons[1])this.set_weapon(1,id)
       else if(!this.weapons[2])this.set_weapon(2,id)
-      else return false
-    }else{
+      else{
       this.set_weapon(this.weaponIdx as keyof typeof this.weapons,id)
-    }
+      }
     return true
   }
-  drop_weapon(slot:keyof typeof this.weapons=0){
+  drop_weapon(slot:keyof typeof this.weapons=0,normal:boolean=true){
     if(!this.weapons[slot])return
     this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
     //l.velocity.x=-3
@@ -377,10 +375,16 @@ export class GInventory extends Inventory<LItem>{
     this.weapons[slot]=undefined
     this.owner.actions.cancel()
     this.owner.privateDirtys.weapons=true
-    if(slot===this.weaponIdx)this.set_current_weapon_index(slot)
+    if(slot===this.weaponIdx&&normal)this.set_current_weapon_index(0)
       if(slot===0){
         this.set_weapon(slot,this.default_melee)
       }
+  }
+  drop_ammo(idx:number=0){
+    const a=Ammos.getFromNumber(idx)
+    const rc=Math.min(a.drop_count??60,this.ammos[a.idString])
+    this.consume_ammo(a.idString,rc)
+    this.owner.game.add_loot(this.owner.position,a as unknown as GameItem,rc)
   }
   give_item(def:GameItem,count:number,drop_n:boolean=true):number{
       switch(def.item_type){
@@ -413,6 +417,15 @@ export class GInventory extends Inventory<LItem>{
       }
       this.owner.privateDirtys.inventory=true
       return count
+  }
+  drop_slot(si:number=0,count:number=10){
+    const s=this.slots[si]
+    if(s?.item&&s.quantity>0){
+      const c=Math.min(count,s.quantity)
+      this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,c)
+      s.remove(c)
+      this.owner.privateDirtys.inventory=true
+    }
   }
   consume_ammo(a:string,val:number):number{
     this.owner.privateDirtys.ammos=true
