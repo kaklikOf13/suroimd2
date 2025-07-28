@@ -10,7 +10,10 @@ import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
-
+export interface HelpGuiState{
+    driving:boolean
+    gun:boolean
+}
 export class GuiManager{
     game:Game
     content={
@@ -58,6 +61,8 @@ export class GuiManager{
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
 
         gui_items:document.querySelector("#gui-items") as HTMLSpanElement,
+
+        help_gui:document.querySelector("#help-gui") as HTMLDivElement,
     }
 
     weapons:{
@@ -157,11 +162,33 @@ export class GuiManager{
             })
         }
     }
-    clear_killfeed(){
+    state?:HelpGuiState
+    update_hint(state:HelpGuiState){
+        if(!this.state||
+            state.driving!==this.state.driving||
+            state.gun!==this.state.gun
+        ){
+            this.state=state
+            this.content.help_gui.innerHTML=``
+            if(state.driving){
+                this.content.help_gui.insertAdjacentHTML("beforeend",`
+                    <span>R - Reverse</span>
+                    <span>E - Leave</span>
+                    `)
+            }
+            if(state.gun){
+                this.content.help_gui.insertAdjacentHTML("beforeend",`
+                    <span>R - Reload</span>
+                    `)
+            }
+        }
+    }
+    clear(){
         this.content.killfeed.innerHTML=""
         this.content.killeader_span.innerText=""
         this.killleader=undefined
         this.content.killeader_span.innerText="Waiting For A Kill Leader"
+        this.content.help_gui.innerText=""
     }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={

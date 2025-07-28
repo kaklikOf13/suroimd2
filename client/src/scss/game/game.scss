@@ -368,3 +368,13 @@
         }
     }
 }
+#help-gui{
+    display: flex;
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    flex-direction: column;
+    transform: translateY(-50%);
+    font-family: "Russo-One";
+    font-size: 20px;
+}

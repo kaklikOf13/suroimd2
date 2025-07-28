@@ -424,6 +424,10 @@ export class Player extends GameObject{
             if(data.parachute){
                 this.game.camera.zoom=this.game.scope_zoom-(0.5*data.parachute.value)
             }
+            this.game.guiManager.update_hint({
+                driving:this.driving,
+                gun:!this.driving&&((this.current_weapon&&(this.current_weapon as unknown as GameItem).item_type===InventoryItemType.gun)??false)
+            })
         }
     }
 }
