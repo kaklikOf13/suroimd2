@@ -100,6 +100,7 @@ export interface VehicleData extends EncodedData{
         dead:boolean
         def:number
     }
+    direction:number
     rotation:number
     position:Vec2
 }
@@ -357,7 +358,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         decode:(full:boolean,stream:NetStream)=>{
             const ret:VehicleData={
                 position:stream.readPosition(),
-                rotation:stream.readRad()
+                rotation:stream.readRad(),
+                direction:stream.readRad()
             }
             if(full){
                 const bg=stream.readBooleanGroup()
@@ -373,6 +375,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:VehicleData,stream:NetStream){
             stream.writePosition(data.position) 
             stream.writeRad(data.rotation)
+            stream.writeRad(data.direction)
             if(full){
                 stream.writeBooleanGroup(data.full!.dead)
                 stream.writeUint8(data.full!.def)

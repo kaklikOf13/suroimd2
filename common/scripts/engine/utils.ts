@@ -418,6 +418,9 @@ export const Numeric={
         else if (delta > Math.PI) delta -= twoPi;
         return start + delta * inter;
     },
+    normalize_rad(angle: number): number {
+        return Math.atan2(Math.sin(angle), Math.cos(angle))
+    },
     max(val1:number,val2:number):number{
         return val1<val2?val1:val2
     },

@@ -10,11 +10,13 @@ export class VehicleSeat{
     rotation?:number
     pillot:boolean
     vehicle:Vehicle
-    constructor(vehicle:Vehicle,position:Vec2,pillot:boolean){
+    leave:Vec2
+    constructor(vehicle:Vehicle,position:Vec2,pillot:boolean,leave:Vec2){
         this.vehicle=vehicle
         this.position=position
         this.base_position=v2.duplicate(position)
         this.pillot=pillot
+        this.leave=leave
     }
     clear_player(){
         if(!this.player)return
@@ -33,6 +35,7 @@ export class Vehicle extends ServerGameObject{
     numberType: number=9
 
     angle:number=0
+    direction:number=0
     dead:boolean=false
     def!:VehicleDef
 
@@ -51,6 +54,7 @@ export class Vehicle extends ServerGameObject{
             const dir=Math.atan2(direction.y,direction.x)
             this.angle=Numeric.lerp_rad(this.angle,dir,1/(1+dt*this.def.movimentation.angle_acceleration))
             this.is_moving=true
+            this.direction=Numeric.normalize_rad(dir - this.angle)
             this.speed=Numeric.lerp(this.speed,this.def.movimentation.final_speed,1/(1+dt*this.def.movimentation.acceleration))
         }
     }
@@ -76,9 +80,9 @@ export class Vehicle extends ServerGameObject{
     create(args: {position:Vec2,def:VehicleDef}): void {
         this.hb=new CircleHitbox2D(args.position,2)
         this.def=args.def
-        this.seats.push(new VehicleSeat(this,this.def.pillot_seat.position,true))
+        this.seats.push(new VehicleSeat(this,this.def.pillot_seat.position,true,this.def.pillot_seat.leave))
         for(const s of this.def.seats??[]){
-            this.seats.push(new VehicleSeat(this,s.position,false))
+            this.seats.push(new VehicleSeat(this,s.position,false,s.leave))
         }
     }
     override onDestroy(): void {
@@ -87,6 +91,7 @@ export class Vehicle extends ServerGameObject{
         return {
             position:this.position,
             rotation:this.angle,
+            direction:this.direction,
             full:{
                 dead:this.dead,
                 def:this.def.idNumber!

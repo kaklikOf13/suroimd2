@@ -20,6 +20,7 @@ import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
+import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -279,6 +280,12 @@ export class Player extends ServerGameObject{
         if(action.Reloading&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
         }
+        if(action.interact){
+            if(this.seat){
+                this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
+                this.seat.clear_player()
+            }
+        }
         /*
         if(action.cellphoneAction){
             if(this.handItem&&this.handItem instanceof OtherItem){
@@ -308,6 +315,9 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
+
+        const v=this.game.add_vehicle(v2.new(3,3),Vehicles.getFromString("jeep"))
+        v.seats[0].set_player(this)
     }
     damageSplash?:DamageSplash
 
