@@ -177,7 +177,7 @@ export class Player extends ServerGameObject{
                 this.boost=Numeric.lerp(this.boost,this.maxBoost,gamemode.player.boosts.mana.regen*dt)
                 break
             case BoostType.Addiction:{
-                speed+=this.boost*gamemode.player.boosts.addiction.speed
+                speed*=1+(gamemode.player.boosts.addiction.speed*(this.boost/this.maxBoost))
                 this.boost=Math.max(this.boost-gamemode.player.boosts.addiction.decay*dt,0)
                 this.piercingDamage({
                     amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt)*50,
@@ -200,7 +200,7 @@ export class Player extends ServerGameObject{
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.movement,this.reloading_input,dt)
         }else{
-            this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,4.5*speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
+            this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,5*speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
         }
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
@@ -325,13 +325,7 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
 
-        this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,5)
-        this.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,1)
-        this.inventory.give_item(Consumibles.getFromString("soda") as unknown as GameItem,16)
-        this.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString("small_blue_potion") as unknown as GameItem,10)
-        this.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,30)
 
         const v=this.game.add_vehicle(v2.new(3,3),Vehicles.getFromString("jeep"))
         v.seats[0].set_player(this)

@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="49.094955mm"
-   height="71.901703mm"
-   viewBox="0 0 49.094955 71.901703"
+   width="9.8189907mm"
+   height="14.380341mm"
+   viewBox="0 0 9.8189905 14.380341"
    version="1.1"
    id="svg993"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="purple_pills.svg"
    inkscape:export-filename="purple_pills.png"
    inkscape:export-xdpi="96"
@@ -27,8 +27,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.6763685"
-     inkscape:cx="118.11246"
-     inkscape:cy="127.35863"
+     inkscape:cx="44.143039"
+     inkscape:cy="17.001035"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -47,7 +47,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-100.1383,-110.72825)">
+     transform="matrix(0.2,0,0,0.2,-20.02766,-22.14565)">
     <rect
        style="fill:#b2b2b2;fill-opacity:1;stroke-width:0;stroke-linecap:square"
        id="rect2383"

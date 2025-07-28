@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="27.266117mm"
-   height="43.210884mm"
-   viewBox="0 0 27.266117 43.210884"
+   width="13.038697mm"
+   height="20.663507mm"
+   viewBox="0 0 13.038697 20.663507"
    version="1.1"
    id="svg7017"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="inhaler.svg"
    inkscape:export-filename="inhaler.png"
    inkscape:export-xdpi="96"
@@ -48,7 +48,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-59.369374,-114.55566)">
+     transform="matrix(0.47820147,0,0,0.47820147,-28.390522,-54.780685)">
     <rect
        style="fill:#bdbdbd;fill-opacity:1;stroke:#777777;stroke-width:0.944906;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1"
        id="rect7704"

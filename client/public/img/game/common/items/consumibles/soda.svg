@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="23.746605mm"
-   height="41.880764mm"
-   viewBox="0 0 23.746605 41.880765"
+   width="9.7650337mm"
+   height="17.222128mm"
+   viewBox="0 0 9.7650337 17.222129"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="soda.svg"
    inkscape:export-filename="soda.png"
    inkscape:export-xdpi="96"
@@ -27,7 +27,7 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.9462504"
-     inkscape:cx="82.1383"
+     inkscape:cx="82.308007"
      inkscape:cy="69.410258"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -47,7 +47,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-51.060437,-117.04973)">
+     transform="matrix(0.41121811,0,0,0.41121811,-20.996976,-48.132968)">
     <path
        id="rect880"
        style="fill:#ffff00;fill-opacity:1;stroke:#9d7f00;stroke-width:0.5;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1"

@@ -22,7 +22,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number

@@ -70,7 +70,14 @@ export class Loot extends GameObject{
                     this.sprite_outline.scale=v2.new(1.5,1.5);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.ammo
                     break
-                case InventoryItemType.healing:
+                case InventoryItemType.consumible:
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_main.scale=v2.new(1.5,1.5);
+                    this.sprite_outline.scale=v2.new(0.9,0.9);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.consumible
                     break
                 case InventoryItemType.backpack:
                 case InventoryItemType.equipament:

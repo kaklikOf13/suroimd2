@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="40.963501mm"
-   height="24.654758mm"
-   viewBox="0 0 40.963502 24.654759"
+   width="18.381491mm"
+   height="11.063293mm"
+   viewBox="0 0 18.381491 11.063294"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="medikit.svg"
    inkscape:export-filename="medikit.png"
    inkscape:export-xdpi="96"
@@ -26,9 +26,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="3.0322568"
-     inkscape:cx="43.202146"
-     inkscape:cy="21.271285"
+     inkscape:zoom="2.1441293"
+     inkscape:cx="82.55099"
+     inkscape:cy="53.401629"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -47,7 +47,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(1.0372045,0,0,1.0372045,-61.421954,-148.45305)">
+     transform="matrix(0.46542324,0,0,0.46542324,-27.561782,-66.615119)">
     <g
        id="g2"
        transform="matrix(1.1818673,0,0,1.5370924,-13.799266,-77.950994)"
@@ -79,7 +79,7 @@
          id="path5"
          sodipodi:nodetypes="csssscc" />
       <rect
-         style="fill:#d02245;fill-opacity:1;stroke:#86163a;stroke-width:0.96413002;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="fill:#d02245;fill-opacity:1;stroke:#86163a;stroke-width:0.96413;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect4"
          width="20.447369"
          height="3.8375092"
@@ -89,7 +89,7 @@
          ry="0.10981594"
          transform="rotate(90)" />
       <rect
-         style="fill:#d02245;fill-opacity:1;stroke:#86163a;stroke-width:0.96413002;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="fill:#d02245;fill-opacity:1;stroke:#86163a;stroke-width:0.96413;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect3"
          width="20.447369"
          height="3.8375092"

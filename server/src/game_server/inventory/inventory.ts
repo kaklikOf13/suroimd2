@@ -398,7 +398,10 @@ export class GInventory extends Inventory<LItem>{
           case InventoryItemType.consumible:{
               const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
               item.limit_per_slot=this.backpack.max[item.def.idString]??15
-              this.add(item,count)
+              const ov=this.add(item,count)
+              if(ov){
+                this.owner.game.add_loot(this.owner.position,def,ov)
+              }
               this.owner.privateDirtys.inventory=true
               break
           }
@@ -455,6 +458,12 @@ export class GInventory extends Inventory<LItem>{
       }
       if(this.owner.skin.idString!==this.owner.loadout.skin){
         this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+      }
+      for(const s of this.slots){
+        if(s.item&&s.quantity>0){
+          this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,s.quantity)
+          s.remove(s.quantity)
+        }
       }
       for(const loot of l){
         loot.is_new=true

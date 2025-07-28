@@ -13,6 +13,7 @@ import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 
 export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRandom){
     map.terrain.add_floor(def.terrain.base,[
@@ -112,6 +113,11 @@ export class GameMap{
         this.game.add_loot(v2.new(3,3),Skins.getFromString("widower") as unknown as GameItem,1)
         this.game.add_loot(v2.new(3,3),Skins.getFromString("kaklik") as unknown as GameItem,1)
         this.game.add_loot(v2.new(3,3),Skins.getFromString("kitty") as unknown as GameItem,1)
+
+        this.game.add_loot(v2.new(7,7),Consumibles.getFromString("soda") as unknown as GameItem,16)
+        this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_blue_potion") as unknown as GameItem,16)
+        this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_purple_potion") as unknown as GameItem,16)
+        this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_red_crystal") as unknown as GameItem,16)
 
         SingleIslandGeneration(this,{
             terrain:{

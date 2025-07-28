@@ -31,7 +31,7 @@ export class Loot extends ServerGameObject{
                 break
             }
             case InventoryItemType.ammo:
-            case InventoryItemType.healing:{
+            case InventoryItemType.consumible:{
                 user.inventory.give_item(this.item,this.count)
                 this.destroy()
                 break
@@ -142,7 +142,9 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.ammo:
                 this.hb.radius=GameConstants.loot.radius.ammo
                 break
-            case InventoryItemType.healing:
+            case InventoryItemType.consumible:
+                this.hb.radius=GameConstants.loot.radius.consumible
+                break
             case InventoryItemType.backpack:
             case InventoryItemType.equipament:
                 this.hb.radius=GameConstants.loot.radius.equipament
