@@ -22,7 +22,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
+import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -80,9 +80,12 @@ export class GamemodeManager{
 }
 export class TeamsGamemodeManager extends GamemodeManager{
     teamsManager:TeamsManager
+    car:Vehicle
+    s=1
     constructor(game:Game){
         super(game)
         this.teamsManager=new TeamsManager()
+        this.car=this.game.add_vehicle(v2.new(10,10),Vehicles.getFromString("jeep"))
     }
     override can_down(player:Player):boolean{
         return (player.team&&player.team.get_not_downed_players().length>1)!
@@ -93,6 +96,8 @@ export class TeamsGamemodeManager extends GamemodeManager{
             if(!t){
                 t=this.teamsManager.add_team()
             }
+            this.car.seats[this.s].set_player(p)
+            this.s--
             t.add_player(p)
         }
     }

@@ -29,6 +29,7 @@ export interface PlayerData extends EncodedData{
     using_item_down:boolean
     dead:boolean
     left_handed:boolean
+    driving:boolean
     parachute?:{
         value:number
     }
@@ -112,13 +113,15 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 using_item_down:false,
                 full:undefined,
                 dead:false,
-                left_handed:false
+                left_handed:false,
+                driving:false
             }
             const bg1=stream.readBooleanGroup()
             ret.using_item=bg1[0]
             ret.using_item_down=bg1[1]
             ret.dead=bg1[3]
             ret.left_handed=bg1[4]
+            ret.driving=bg1[6]
             if(bg1[5]){
                 ret.parachute={
                     value:stream.readFloat(0,1,1)
@@ -158,7 +161,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:PlayerData,stream:NetStream){
             stream.writePosition(data.position)
             .writeRad(data.rotation)
-            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined,data.dead,data.left_handed,data.parachute!==undefined)
+            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined,data.dead,data.left_handed,data.parachute!==undefined,data.driving)
             if(data.parachute){
                 stream.writeFloat(data.parachute.value,0,1,1)
             }

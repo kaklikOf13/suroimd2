@@ -20,7 +20,6 @@ import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
-import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -195,8 +194,7 @@ export class Player extends ServerGameObject{
             }
         }
         if(this.seat){
-            this.position=v2.duplicate(this.seat.position)
-            if(this.seat.rotation)this.rotation=this.seat.rotation
+            if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.movement,dt)
         }else{
             this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,4.5*speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
@@ -273,7 +271,7 @@ export class Player extends ServerGameObject{
             this.using_item_down=true
         }
         this.using_item=action.UsingItem
-        if(!this.seat?.rotation)this.rotation=action.angle
+        if(!this.seat?.rotation===undefined)this.rotation=action.angle
         this.interaction_input=action.interact
         if(action.hand>=0&&action.hand<3){
             this.inventory.set_current_weapon_index(action.hand)
@@ -310,9 +308,6 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
-
-        const v=this.game.add_vehicle(v2.new(10,10),Vehicles.getFromString("bike"))
-        this.seat=v.seats[0]
     }
     damageSplash?:DamageSplash
 
@@ -552,6 +547,7 @@ export class Player extends ServerGameObject{
             dead:this.dead,
             left_handed:this.left_handed,
             parachute:this.parachute,
+            driving:this.seat!==undefined,
             full:{
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,

@@ -14,6 +14,7 @@ import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
+import { DefaultFistRig } from "common/scripts/others/item.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -71,9 +72,25 @@ export class Player extends GameObject{
     }
 
     current_animation?:PlayerAnimation
+    driving:boolean=false
+    set_driving(driving:boolean){
+        if(this.driving){
+            this.driving=driving
+            return
+        }
+        this.set_current_weapon(undefined)
+        this.driving=driving
+        this.sprites.left_arm.visible=true
+        this.sprites.right_arm.visible=true
+        this.sprites.left_arm.position=v2.duplicate(DefaultFistRig.left!.position)
+        this.sprites.right_arm.position=v2.duplicate(DefaultFistRig.right!.position)
+        this.sprites.left_arm.rotation=DefaultFistRig.left!.rotation
+        this.sprites.right_arm.rotation=DefaultFistRig.right!.rotation
+        this.driving=true
+    }
 
     set_current_weapon(def?:WeaponDef,force:boolean=false){
-        if(this.current_weapon===def&&!force)return
+        if((this.current_weapon===def&&!force)||this.driving)return
         if(!def||this.parachute){
             this.current_weapon=undefined
             this.sprites.left_arm.visible=false
@@ -390,6 +407,7 @@ export class Player extends GameObject{
                 this.current_animation=undefined
             }
         }
+        this.set_driving(data.driving)
         this.position=data.position
         this.rotation=data.rotation
 

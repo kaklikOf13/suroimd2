@@ -6,13 +6,26 @@ import {VehicleDef} from "common/scripts/definitions/objects/vehicles.ts"
 export class VehicleSeat{
     player?:Player
     position:Vec2
+    base_position:Vec2
     rotation?:number
     pillot:boolean
     vehicle:Vehicle
     constructor(vehicle:Vehicle,position:Vec2,pillot:boolean){
         this.vehicle=vehicle
         this.position=position
+        this.base_position=v2.duplicate(position)
         this.pillot=pillot
+    }
+    clear_player(){
+        if(!this.player)return
+        this.player.dirty=true
+        this.player.seat=undefined
+        this.player=undefined
+    }
+    set_player(p:Player){
+        if(this.player)return
+        this.player=p
+        p.seat=this
     }
 }
 export class Vehicle extends ServerGameObject{
@@ -31,7 +44,6 @@ export class Vehicle extends ServerGameObject{
 
     constructor(){
         super()
-        this.seats.push(new VehicleSeat(this,this.position,true))
     }
     is_moving:boolean=false
     move(direction:Vec2,dt:number){
@@ -52,7 +64,8 @@ export class Vehicle extends ServerGameObject{
             this.old_pos=v2.duplicate(this.position)
         }
         for(const s of this.seats){
-            s.position=this.position
+            s.position=v2.add(this.position,v2.rotate_RadAngle(s.base_position,this.angle))
+            if(s.player)s.player.position=s.position
             s.rotation=this.angle
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
@@ -63,6 +76,10 @@ export class Vehicle extends ServerGameObject{
     create(args: {position:Vec2,def:VehicleDef}): void {
         this.hb=new CircleHitbox2D(args.position,2)
         this.def=args.def
+        this.seats.push(new VehicleSeat(this,this.def.pillot_seat.position,true))
+        for(const s of this.def.seats??[]){
+            this.seats.push(new VehicleSeat(this,s.position,false))
+        }
     }
     override onDestroy(): void {
     }
