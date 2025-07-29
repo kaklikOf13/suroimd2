@@ -1,11 +1,8 @@
-import { GameServerConfig,GameServer } from "./server.ts"
+import { GameServer } from "./server.ts"
 import { Server } from "../../engine/mod.ts"
 import { HostConfig } from "../../engine/websockets.ts";
+import { Config } from "../../../configs/config.ts";
 
-export interface Config{
-  server:GameServerConfig
-  host:HostConfig
-}
 function new_server_from_hc(hc:HostConfig):Server{
   if(hc.https){
     return new Server(hc.port,hc.https,hc.cert,hc.key)
@@ -16,15 +13,13 @@ function new_server_from_hc(hc:HostConfig):Server{
 // Game Server
 function hostGame(){
   return new Promise(()=>{
-    if(config.host){
-      const server=new GameServer(new_server_from_hc(config.host),config.server)
+    if(Config.game.host){
+      const server=new GameServer(new_server_from_hc(Config.game.host))
       server.run()
     }
   })
 }
 
-//Execute
-const config:Config=JSON.parse(await Deno.readTextFile("configs/game.json"))
 if (import.meta.main) {
   hostGame()
 }

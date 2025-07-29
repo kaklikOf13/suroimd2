@@ -1,6 +1,6 @@
 import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
-import { Game, getGame } from "./game.ts"
-import { ConfigCasters, ConfigDefaultValues, server } from "./config.ts";
+import { Game} from "./game.ts"
+import {  api_server, ConfigCasters, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
@@ -10,6 +10,8 @@ import { BasicSocket, OfflineClientsManager, OfflineSocket } from "common/script
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "./menuManager.ts";
+import { RegionDef } from "common/scripts/definitions/utils.ts";
+import { Server } from "../engine/mod.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
@@ -32,6 +34,9 @@ import { MenuManager } from "./menuManager.ts";
 
     let loaded=false
     let gs:OfflineGameServer|undefined
+
+    let regions:Record<string,RegionDef>={}
+
     if(offline){
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
             deenable_feast:true,
@@ -41,7 +46,10 @@ import { MenuManager } from "./menuManager.ts";
             netTps:30
         })
         gs.mainloop()
+    }else{
+        regions=await(await fetch(`http${api_server.toString()}/get-regions`)).json()
     }
+    const current_region="local"
     
     const spg=await(await fetch("atlases/atlas-common-data.json")).json()
     for(const s of spg[GameSave.get_variable("cv_graphics_resolution")]){
@@ -84,7 +92,7 @@ import { MenuManager } from "./menuManager.ts";
             if(this.game||!loaded)return
             this.gameD.style.display="unset"
             this.menuD.style.display="none"
-            const ip=`ws${server.toString()}/${await getGame("http"+server.toString())}`
+            const ser=new Server(regions[current_region].host,regions[current_region].port)
             if(offline){
                 const sockets=new OfflineSocket(undefined)
                 const socketl:OfflineSocket=new OfflineSocket(sockets)
@@ -98,7 +106,8 @@ import { MenuManager } from "./menuManager.ts";
                 g.connect(GameSave.get_variable("cv_loadout_name"))
                 this.game=g
             }else{
-                const socket=new WebSocket(ip)
+                const ghost=await((await fetch(`http${ser.toString()}/api/get-game`)).text())
+                const socket=new WebSocket("ws"+ser.toString()+"/api/"+ghost+"/ws")
                 const g=new Game(KeyL,mouseML,sounds,GameSave,resources,socket as BasicSocket,renderer)
                 g.client.onopen=g.connect.bind(g,GameSave.get_variable("cv_loadout_name"))
                 sounds.set_music(null)

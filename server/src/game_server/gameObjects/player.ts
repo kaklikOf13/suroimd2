@@ -341,7 +341,7 @@ export class Player extends ServerGameObject{
 
         this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,30)
 
-        const v=this.game.add_vehicle(v2.new(3,3),Vehicles.getFromString("jeep"))
+        const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
         v.seats[0].set_player(this)
     }
     damageSplash?:DamageSplash

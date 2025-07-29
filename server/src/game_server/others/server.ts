@@ -2,26 +2,20 @@ import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
 import { Game, GameConfig } from "./game.ts"
 import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
-export interface GameServerConfig{
-    game:GameConfig
-    max_games:number
-}
-
+import { Config } from "../../../configs/config.ts";
 export class GameServer{
     server:Server
-    config:GameServerConfig
     games:Game[]
     game_handles:Record<ID,string>
-    constructor(server:Server,config:GameServerConfig){
+    constructor(server:Server){
         this.server=server
-        this.config=config
         this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
             const game=this.get_game()
             return Cors(new Response(`game/${game}`,{status:200}))
         })
         this.games=[]
         this.game_handles={}
-        this.addGame(this.config.game)
+        this.addGame(Config.game.config)
     }
     get_game(config?:GameConfig):ID{
         for(const g of this.games){
@@ -35,7 +29,7 @@ export class GameServer{
                 g--
             }
         }
-        if(this.games.length<this.config.max_games){
+        if(this.games.length<Config.game.max_games){
             const g=this.addGame(config)
             return g.id
         }
@@ -43,7 +37,7 @@ export class GameServer{
     }
     addGame(config?:GameConfig):Game{
         const id=this.games.length
-        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? this.config.game))
+        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? Config.game.config))
         this.games[id].mainloop()
         const handler=(this.games[id].clients as ClientsManager).handler(()=>{
             let idC=random.id()

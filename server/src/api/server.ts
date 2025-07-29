@@ -1,24 +1,12 @@
+import { Config } from "../../configs/config.ts";
 import { Server } from "../engine/mod.ts";
-export interface RegionConfig{
-    host:string
-    safe?:boolean
-}
-export interface ApiConfig{
-  regions:Record<string,RegionConfig>
-}
-export interface GetRegionArgs{
-    region:string
-}
+import { Cors } from "../engine/server.ts";
 export class ApiServer{
     server:Server
-    config:ApiConfig
-    constructor(server:Server,config:ApiConfig){
+    constructor(server:Server){
         this.server=server
-        this.config=config
-        this.server.route("/get-region",async(req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
-            const params:GetRegionArgs=await req.json()
-            const response=this.config.regions[params.region]
-            return new Response(JSON.stringify(response),{status:200})
+        this.server.route("/get-regions",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
+            return Cors(new Response(JSON.stringify(Config.regions),{status:200}))
         })
     }
     run(){

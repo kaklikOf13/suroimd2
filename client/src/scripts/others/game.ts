@@ -1,6 +1,6 @@
 import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D} from "../engine/mod.ts"
-import { ActionPacket, CATEGORYS, CATEGORYSL, GameConstants, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { BasicSocket, CircleHitbox2D, Client, DefaultSignals, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { ActionPacket, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
+import { BasicSocket, Client, DefaultSignals, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
