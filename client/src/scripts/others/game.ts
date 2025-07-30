@@ -24,6 +24,7 @@ import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { Graphics2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
+import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 export class Game extends ClientGame2D<GameObject>{
   client:Client
   activePlayerId=0
@@ -203,7 +204,9 @@ export class Game extends ClientGame2D<GameObject>{
       console.log("not connected")
       return
     }
-    this.client.emit(new JoinPacket(playerName))
+    const p=new JoinPacket(playerName)
+    p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
+    this.client.emit(p)
     this.activePlayerId=this.client.ID
     console.log("Joined As:",this.activePlayer)
     

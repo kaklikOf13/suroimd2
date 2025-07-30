@@ -150,6 +150,8 @@
     <div id="menu">
       <img id="title-section" src="img/menu/logos/title.png"></img>
 
+      <div id="account-status" class="background-menu-green">
+      </div>
       <div id="updates-section" class="background-menu">
         <h2>Updates</h2>
       </div>
@@ -196,6 +198,27 @@
           </a>-->
         </div>
       </div>
+      
+      <tabs-container id="sections-tabs" class="background-menu">
+        <tab text="Login">
+            <div id="registry-div" class="entry-tab">
+              <span>Login</span>
+              <input class="text-input" id="input-login-name" placeholder="Username">
+              <input class="text-input" id="input-login-password" type="password" placeholder="Password">
+              <button class="btn-green" id="btn-login">Login</button>
+            </div>
+        </tab>
+        <tab text="Registry">
+            <div id="registry-div" class="entry-tab">
+              <span>Registry</span>
+              <input class="text-input" id="input-register-name" placeholder="Username">
+              <input class="text-input" id="input-register-password" type="password" placeholder="Password">
+              <input class="text-input" id="input-register-confirm-password" type="password" placeholder="Confirm Password">
+              <button class="btn-green" id="btn-register">Registry</button>
+            </div>
+        </tab>
+      </tabs-container>
+
     </div>
     <script type="module" src="./src/scripts/others/index.ts" async></script>
   </body>

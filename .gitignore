@@ -35,3 +35,6 @@ vite.config.ts.timestamp-*
 
 .spritesheet-cache
 .spritesheet-cache/*
+
+database
+database/*

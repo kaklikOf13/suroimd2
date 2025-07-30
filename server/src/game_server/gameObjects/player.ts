@@ -64,8 +64,14 @@ export class Player extends ServerGameObject{
 
     status={
         damage:0,
-        kills:0
+        kills:0,
+        rank:0,
     }
+    earned={
+        coins:0,
+        xp:0,
+    }
+    username:string=""
     
     current_animation?:PlayerAnimation
 
@@ -534,7 +540,11 @@ export class Player extends ServerGameObject{
         }
 
         if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id)params.owner.status.kills++
+            if(params.owner.id!==this.id&&params.owner.username!==this.username){
+                params.owner.status.kills++
+                params.owner.earned.coins+=3
+                params.owner.earned.xp+=1
+            }
             this.game.send_killfeed_message({
                 killer:{
                     id:params.owner.id,
@@ -561,6 +571,7 @@ export class Player extends ServerGameObject{
         },2)
         this.dirty=true
         this.game.scene.cells.unregistry(this)
+        this.status.rank=this.game.livingPlayers.length+1
     }
     send_game_over(win:boolean=false){
         const p=new GameOverPacket()

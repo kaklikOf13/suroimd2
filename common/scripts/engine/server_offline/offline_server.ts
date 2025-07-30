@@ -160,13 +160,13 @@ export class Client{
 export class OfflineClientsManager{
     clients:Map<ID,Client>
     packets_manager:PacketsManager
-    onconnection?:(client:Client)=>void
+    onconnection?:(client:Client,username:string)=>void
     constructor(packets:PacketsManager,onconnection?:(client:Client)=>void){
         this.clients=new Map()
         this.packets_manager=packets
         this.onconnection=onconnection
     }
-    activate_ws(ws:BasicSocket,id:number,ip:string):ID{
+    activate_ws(ws:BasicSocket,id:number,ip:string,username:string):ID{
         const client=new Client(ws,this.packets_manager,ip)
         client.ID=id
         client.on(DefaultSignals.DISCONNECT,(packet:DisconnectPacket)=>{
@@ -174,7 +174,7 @@ export class OfflineClientsManager{
         })
         this.clients.set(client.ID,client)
         client.opened=true
-        if(this.onconnection)this.onconnection(client)
+        if(this.onconnection)this.onconnection(client,username)
         client.emit(new ConnectPacket(client.ID))
         return client.ID
     }
@@ -221,7 +221,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
         c.disconnect()
       }
     }
-    abstract handleConnections(client:Client):void
+    abstract handleConnections(client:Client,username:string):void
     update_delay:number=3
     override on_update(): void {
         this.scene.objects.apply_destroy_queue()

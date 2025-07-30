@@ -1,4 +1,4 @@
-import { ID, Numeric, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -23,6 +23,9 @@ import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scr
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
+import { Config } from "../../../configs/config.ts";
+import { Skins } from "common/scripts/definitions/loadout/skins.ts";
+
 export interface GameConfig{
     maxPlayers:number
     gameTps:number
@@ -30,7 +33,13 @@ export interface GameConfig{
     netTps:number
     deenable_feast:boolean
 }
-
+export interface GameStatus{
+    players:{
+        name:string
+        username:string
+        kills:number
+    }[]
+}
 export class GamemodeManager{
     game:Game
     closed:boolean=false
@@ -168,6 +177,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
     started:boolean=false
 
+    status:GameStatus={
+        players:[]
+    }
+
     private _pvpEnabled:boolean=false
     set pvpEnabled(v:boolean){
         this._pvpEnabled=v
@@ -188,6 +201,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             p.interactionsEnabled=v
         }
     }
+    string_id=""
 
     constructor(clients:OfflineClientsManager,id:ID,config:GameConfig){
         super(config.gameTps,id,clients,PacketManager,[
@@ -227,6 +241,13 @@ export class Game extends ServerGame2D<ServerGameObject>{
     override on_stop():void{
         super.on_stop()
         clearInterval(this.privatesDirtysInter)
+        for(const p of this.players){
+            this.status.players.push({
+                kills:p.status.kills,
+                name:p.name,
+                username:p.name,
+            })
+        }
         console.log(`Game ${this.id} Stopped`)
     }
     killing_game:boolean=false
@@ -250,7 +271,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     override on_run(): void {
         this.map.generate()
     }
-    add_player(client:Client,id:number,packet:JoinPacket):Player{
+    async add_player(client:Client,id:number,username:string,packet:JoinPacket):Promise<Player>{
         const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,id) as Player
                 (p as Player).client=client;
                 (p as Player).update2()
@@ -264,6 +285,17 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
         p.pvpEnabled=this._pvpEnabled||this.config.deenable_feast
         p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
+
+        p.username=username
+        const ff=await(await fetch(`http${Config.api.global}/get-status/${p.username}`)).json()
+        if(ff.user){
+            const inv=JSON.parse(ff.user.inventory)
+            const s=Skins.getFromNumber(packet.skin)
+            if(inv.skins.includes(s.idNumber)){
+                p.skin=s
+                p.loadout.skin=s.idString
+            }
+        }
 
         const jp=new JoinedPacket()
 
@@ -289,6 +321,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             playerId:p.id,
             playerName:p.name,
         })
+
+        p.dirty=true
 
         return p
     }
@@ -337,11 +371,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
         const v=this.scene.objects.add_object(new Vehicle(),CATEGORYS.VEHICLES,undefined,{position,def}) as Vehicle
         return v
     }
-    handleConnections(client:Client){
+    handleConnections(client:Client,username:string){
         const objId={id:client.ID,category:CATEGORYS.PLAYERS}
-        client.on("join",(packet:JoinPacket)=>{
+        client.on("join",async(packet:JoinPacket)=>{
             if (this.allowJoin&&!this.scene.objects.exist(objId)){
-                const p=this.add_player(client,objId.id,packet)
+                const p=await this.add_player(client,objId.id,username,packet)
                 this.connectedPlayers[p.id]=p
                 console.log(`${p.name} Connected`)
             }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    version="1.1"
-   width="83.162155"
-   height="23.570549"
-   viewBox="0 0 83.162158 23.570549"
+   width="162.33389"
+   height="46.010147"
+   viewBox="0 0 162.3339 46.010147"
    id="svg158"
-   sodipodi:docname="Spas-12.svg"
+   sodipodi:docname="spas12.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -20,9 +20,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="7.5658235"
-     inkscape:cx="36.281576"
-     inkscape:cy="20.024258"
+     inkscape:zoom="3.7829118"
+     inkscape:cx="96.090003"
+     inkscape:cy="53.001501"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -273,7 +273,7 @@
     </linearGradient>
   </defs>
   <g
-     transform="translate(-203.50092,-172.29849)"
+     transform="matrix(1.9520185,0,0,1.9520185,-397.23765,-336.32984)"
      id="g158">
     <g
        data-paper-data="{&quot;isPaintingLayer&quot;:true}"

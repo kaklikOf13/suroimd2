@@ -1,6 +1,6 @@
 import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import {  api_server, ConfigCasters, ConfigDefaultValues } from "./config.ts";
+import { api_server, ConfigCasters, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
@@ -102,7 +102,7 @@ import { Server } from "../engine/mod.ts";
                 g.guiManager=new GuiManager(g)
                 sockets.open()
                 socketl.open()
-                gs?.clients.activate_ws(sockets,0,"localhost")
+                gs?.clients.activate_ws(sockets,0,"localhost","aaa")
                 g.connect(GameSave.get_variable("cv_loadout_name"))
                 this.game=g
             }else{
@@ -120,6 +120,7 @@ import { Server } from "../engine/mod.ts";
             this.game.onstop=this.closeGame.bind(this)
         }
         closeGame(){
+            menu_manager.update_account()
             this.game=undefined
             this.gameD.style.display="none"
             this.menuD.style.display="unset"

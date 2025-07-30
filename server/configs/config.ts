@@ -1,12 +1,12 @@
 import { RegionDef } from "common/scripts/definitions/utils.ts";
 import { GameConfig } from "../src/game_server/others/game.ts";
 import { HostConfig } from "../src/engine/websockets.ts";
-
 export const Config:ConfigType={
     api:{
         host:{
             port:8000,
         },
+        global:"://localhost:8000"
     },
     game:{
         max_games:5,
@@ -28,12 +28,23 @@ export const Config:ConfigType={
         },
     },
     database:{
-        enabled:true
+        enabled:true,
+        files:{
+            accounts:"database/accounts.db"
+        },
+        api_key:"your_api_key"
+    },
+    shop:{
+        skins:{
+            1:0,
+            2:0
+        }
     }
 }
 export interface ConfigType{
     api:{
         host:HostConfig
+        global:string
     }
     game:{
         max_games:number
@@ -43,5 +54,12 @@ export interface ConfigType{
     regions:Record<string,RegionDef>
     database:{
         enabled:boolean
+        files:{
+            accounts:string
+        }
+        api_key:string
+    }
+    shop:{
+        skins:Partial<Record<number,number>>
     }
 }

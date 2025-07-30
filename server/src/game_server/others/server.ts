@@ -3,6 +3,7 @@ import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
 import { Game, GameConfig } from "./game.ts"
 import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
 import { Config } from "../../../configs/config.ts";
+import { v1 as uuid } from "https://deno.land/std@0.224.0/uuid/mod.ts"
 export class GameServer{
     server:Server
     games:Game[]
@@ -13,9 +14,13 @@ export class GameServer{
             const game=this.get_game()
             return Cors(new Response(`game/${game}`,{status:200}))
         })
+        this.server.route("/api/game-status",(_req:Request,url:string[], _info: Deno.ServeHandlerInfo)=>{
+            return Cors(new Response(Deno.readFileSync(`database/games/game-${url[url.length-1]}`),{status:200}))
+        })
         this.games=[]
         this.game_handles={}
         this.addGame(Config.game.config)
+        Deno.mkdirSync("database/games",{recursive:true})
     }
     get_game(config?:GameConfig):ID{
         for(const g of this.games){
@@ -39,7 +44,8 @@ export class GameServer{
         const id=this.games.length
         this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? Config.game.config))
         this.games[id].mainloop()
-        const handler=(this.games[id].clients as ClientsManager).handler(()=>{
+        this.games[id].string_id=uuid.generate() as string
+        const handler=(this.games[id].clients as ClientsManager).handler_log(()=>{
             let idC=random.id()
             while(this.games[id].scene.objects.exist({
                 id:idC,
@@ -51,6 +57,35 @@ export class GameServer{
         })
         this.server.route(`api/game/${id}/ws`,handler)
         this.game_handles[id]=`api/game/${id}`
+        this.games[id].on_stop=()=>{
+            Game.prototype.on_stop.call(this.games[id])
+            if(Config.database.enabled){
+                const f=Deno.openSync(`database/games/game-${this.games[id].string_id}`,{write:true,create:true})
+                const encoder = new TextEncoder();
+                f.writeSync(encoder.encode(JSON.stringify(this.games[id].status)))
+                f.close()
+            }
+            const ln:string[]=[]
+            for(const p of this.games[id].players){
+                if(ln.includes(p.username))continue
+                if(p.earned.coins>0||p.earned.xp>0){
+                    ln.push(p.username)
+                }
+                fetch("http://localhost:8000/internal/update-user", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": Config.database.api_key
+                    },
+                    body: JSON.stringify({
+                        name: p.username,
+                        coins: p.earned.coins,
+                        xp: p.earned.coins,
+                        score: 0,
+                    })
+                });
+            }
+        }
         console.log(`Game ${id} Initialized`)
         return this.games[id]
     }
