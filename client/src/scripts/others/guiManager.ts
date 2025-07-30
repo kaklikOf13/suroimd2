@@ -15,8 +15,10 @@ export interface HelpGuiState{
     gun:boolean
 }
 export class GuiManager{
-    game:Game
+    game!:Game
     content={
+        menuD:document.querySelector("#menu") as HTMLDivElement,
+        gameD:document.querySelector("#game") as HTMLDivElement,
         health_bar_interior:document.querySelector("#health-bar") as HTMLDivElement,
         health_bar_animation:document.querySelector("#health-bar-animation") as HTMLDivElement,
         health_bar_amount:document.querySelector("#health-bar-amount") as HTMLSpanElement,
@@ -81,16 +83,12 @@ export class GuiManager{
         id:number
         kills:number
     }
-    constructor(game:Game){
-        this.game=game
-        this.game.client.on("gameover",this.show_game_over.bind(this))
-        this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
+    constructor(){
         this.set_health(100,100)
-
+        this.content.cellphone_actions.style.display="none"
         this.content.gameOver.style.opacity="0%"
 
         //Cellphone
-        this.content.cellphone_actions.style.display="none"
 
         const deenable_act=()=>{
             this.game.can_act=false
@@ -104,7 +102,7 @@ export class GuiManager{
 
         this.content.cellphone_input_item_count.onfocus=deenable_act
         this.content.cellphone_input_item_count.onblur=enable_act
-
+        
         this.content.cellphone_give_item.onclick=(_)=>{
             this.game.action.cellphoneAction={
                 type:CellphoneActionType.GiveItem,
@@ -128,6 +126,18 @@ export class GuiManager{
         this.update_gui_items([
         ])
         document.addEventListener("contextmenu", e => e.preventDefault());
+        this.clear()
+        this.content.gameD.style.display="none"
+        this.content.menuD.style.display="unset"
+    }
+    init(game:Game){
+        this.game=game
+        this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
+    }
+    start(){
+        if(this.game.client){
+            this.game.client.on("gameover",this.show_game_over.bind(this))
+        }
     }
     ammos_cache:Record<string,HTMLDivElement>={}
     update_ammos(ammos:Record<string,number>){
@@ -204,6 +214,8 @@ export class GuiManager{
                 player:jp.kill_leader
             })
         }
+        this.content.gameD.style.display="unset"
+        this.content.menuD.style.display="none"
     }
     state?:HelpGuiState
     update_hint(state:HelpGuiState){
@@ -232,6 +244,9 @@ export class GuiManager{
         this.killleader=undefined
         this.content.killeader_span.innerText="Waiting For A Kill Leader"
         this.content.help_gui.innerText=""
+
+        this.content.gameD.style.display="none"
+        this.content.menuD.style.display="unset"
     }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={

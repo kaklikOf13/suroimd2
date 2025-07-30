@@ -6,7 +6,7 @@ import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
-import { BasicSocket, OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
+import { BasicSocket, Client, OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "./menuManager.ts";
@@ -36,6 +36,7 @@ import { Server } from "../engine/mod.ts";
     let gs:OfflineGameServer|undefined
 
     let regions:Record<string,RegionDef>={}
+    const gui=new GuiManager()
 
     if(offline){
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
@@ -74,56 +75,42 @@ import { Server } from "../engine/mod.ts";
     //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
     class App{
-        game?:Game
-        menuD:HTMLDivElement=document.querySelector("#menu") as HTMLDivElement
-        gameD:HTMLDivElement=document.querySelector("#game") as HTMLDivElement
+        game:Game
 
         elements={
             play_button:document.querySelector("#btn-play") as HTMLButtonElement
         }
 
         constructor(){
-            this.gameD.style.display="none"
-            this.menuD.style.display="unset"
-
             this.elements.play_button.onclick=(_e)=>{this.playGame()}
+            this.game=new Game(KeyL,mouseML,sounds,GameSave,resources,renderer)
+            this.game.init_gui(gui)
+            this.game.request_animation_frame=false
+            this.game.onstop=this.closeGame.bind(this)
         }
         async playGame(){
-            if(this.game||!loaded)return
-            this.gameD.style.display="unset"
-            this.menuD.style.display="none"
+            if(this.game.happening||!loaded)return
             const ser=new Server(regions[current_region].host,regions[current_region].port)
             if(offline){
-                const sockets=new OfflineSocket(undefined)
-                const socketl:OfflineSocket=new OfflineSocket(sockets)
-                sockets.output=socketl
-                const g=new Game(KeyL,mouseML,sounds,GameSave,resources,socketl,renderer)
-                sounds.set_music(null)
-                g.guiManager=new GuiManager(g)
-                sockets.open()
-                socketl.open()
-                gs?.clients.activate_ws(sockets,0,"localhost","aaa")
-                g.connect(GameSave.get_variable("cv_loadout_name"))
-                this.game=g
+                //
             }else{
                 const ghost=await((await fetch(`http${ser.toString()}/api/get-game`)).text())
                 const socket=new WebSocket("ws"+ser.toString()+"/api/"+ghost+"/ws")
-                const g=new Game(KeyL,mouseML,sounds,GameSave,resources,socket as BasicSocket,renderer)
-                g.client.onopen=g.connect.bind(g,GameSave.get_variable("cv_loadout_name"))
+                const c=new Client(socket as BasicSocket,PacketManager)
+                c.onopen=this.game.connect.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
                 sounds.set_music(null)
-                g.guiManager=new GuiManager(g)
-                this.game=g
             }
-            this.game.request_animation_frame=false
+
+            this.game.running=true
             menu_manager.game_start()
             this.game.mainloop()
-            this.game.onstop=this.closeGame.bind(this)
         }
         closeGame(){
             menu_manager.update_account()
-            this.game=undefined
-            this.gameD.style.display="none"
-            this.menuD.style.display="unset"
+            this.game.scene.objects.clear()
+            this.game.guiManager.clear()
+            this.game.guiManager.content.gameOver.style.display="none"
+            this.game.happening=false
         }
 
     }

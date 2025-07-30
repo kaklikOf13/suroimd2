@@ -98,6 +98,12 @@ export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
         this.removeObjectFromCells(obj)
         delete this.objects[obj.category][obj.id]
     }
+    clear(){
+        this.categorys=[]
+        this.cells={}
+        this.objectCells={}
+        this.objects={}
+    }
     private removeObjectFromCells(key:ObjectKey){
         if(!this.objectCells[key.category] || !this.objectCells[key.category][key.id]) return
         for(const c of this.objectCells[key.category][key.id]){
@@ -233,10 +239,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(const c in this.objects){
             for(let j=0;j<this.objects[c].orden.length;j++){
                 const o=this.objects[c].orden[j]
-                this.unregister(this.objects[c].objects[o].get_key())
+                this.objects[c].objects[o].onDestroy()
             }
+            this.objects[c].orden.length=0
         }
         this.objects={}
+        this.categorys=[]
+        this.new_objects=[]
+        this.destroy_queue=[]
+        this.cells.clear()
     }
 
     // deno-lint-ignore no-explicit-any
@@ -433,14 +444,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){
-            this.unregister(obj.get_key())
+            this.unregister(obj.get_key(),true)
             delete this.objects[obj.category].objects[obj.id]
             this.objects[obj.category].orden.splice(this.objects[obj.category].orden.indexOf(obj.id),1)
         }
         this.destroy_queue.length=0
     }
-    unregister(k:ObjectKey){
-        if(this.objects[k.category].objects[k.id].calldestroy){
+    unregister(k:ObjectKey,force_destroy:boolean=false){
+        if(this.objects[k.category].objects[k.id].calldestroy||force_destroy){
             this.ondestroy(this.objects[k.category].objects[k.id])
             this.objects[k.category].objects[k.id].onDestroy()
         }

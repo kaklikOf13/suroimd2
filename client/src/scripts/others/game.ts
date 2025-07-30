@@ -26,7 +26,7 @@ import { Graphics2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 export class Game extends ClientGame2D<GameObject>{
-  client:Client
+  client?:Client
   activePlayerId=0
   activePlayer?:Player
 
@@ -42,6 +42,7 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   scope_zoom:number=0.78
+  happening:boolean=false
 
   //0.14=l6 32x
   //0.27=l5 16x
@@ -53,27 +54,12 @@ export class Game extends ClientGame2D<GameObject>{
   //1.5=l-2 0.25x
   //1.75=l-3 0.1x
 
-  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,socket:BasicSocket,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(keyl,mp,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
     this.scene.objects.add_category(7)
-    this.client=new Client(socket,PacketManager)
-    this.client.on("update",(up:UpdatePacket)=>{
-      this.guiManager.update_gui(up.gui)
-      this.scene.objects.proccess_l(up.objects!,true)
-    })
-    this.client.on("killfeed",(kfp:KillFeedPacket)=>{
-      this.guiManager.add_killfeed_message(kfp.message)
-    })
-    this.client.on("joined",(jp:JoinedPacket)=>{
-      this.guiManager.process_joined_packet(jp)
-    })
-    this.client.on("map",(mp:MapPacket)=>{
-      this.terrain.process_map(mp.map)
-      this.terrain.draw(this.terrain_gfx,1)
-    })
     this.scene.objects.encoders=ObjectsE;
 
     this.renderer.background=ColorM.hex("#000");
@@ -86,10 +72,6 @@ export class Game extends ClientGame2D<GameObject>{
       this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
     }
-
-    this.client.on(DefaultSignals.DISCONNECT,()=>{
-      this.running=false
-    })
 
     this.grid=new Grid2D()
     this.grid.width=0.04
@@ -105,21 +87,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
     this.camera.zoom=this.scope_zoom
-  }
-  add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
-    this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
-  }
-  override on_stop(): void {
-    super.on_stop()
-    if(!this.gameOver){
-      this.scene.objects.clear()
-      if(this.onstop)this.onstop(this)
-    }
-  }
-  onstop?:(g:Game)=>void
-  override on_render(_dt:number):void{
-  }
-  override on_run(): void {
+
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
       if(!this.can_act)return
       switch(k){
@@ -158,9 +126,27 @@ export class Game extends ClientGame2D<GameObject>{
       }
     })
   }
+  add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
+    this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
+  }
+  override on_stop(): void {
+    super.on_stop()
+    if(!this.gameOver){
+      if(this.onstop)this.onstop(this)
+    }
+  }
+  onstop?:(g:Game)=>void
+  clear(){
+    this.scene.reset()
+  }
+  override on_render(_dt:number):void{
+  }
+  override on_run(): void {
+    
+  }
   override on_update(dt:number): void {
     super.on_update(dt)
-    if(this.client.opened){
+    if(this.client&&this.client.opened){
       if(this.can_act){
         if(this.key.keyPress(Key.A)){
           this.action.Movement.x=-1
@@ -199,19 +185,44 @@ export class Game extends ClientGame2D<GameObject>{
   update_camera(){
     if(this.activePlayer)this.camera.position=this.activePlayer!.position
   }
-  connect(playerName:string){
+  connect(client:Client,playerName:string){
+    this.client=client
+    this.client.on("update",(up:UpdatePacket)=>{
+      this.guiManager.update_gui(up.gui)
+      this.scene.objects.proccess_l(up.objects!,true)
+    })
+    this.client.on("killfeed",(kfp:KillFeedPacket)=>{
+      this.guiManager.add_killfeed_message(kfp.message)
+    })
+    this.client.on("joined",(jp:JoinedPacket)=>{
+      this.guiManager.process_joined_packet(jp)
+      this.happening=true
+    })
+    this.client.on("map",(mp:MapPacket)=>{
+      this.terrain.process_map(mp.map)
+      this.terrain.draw(this.terrain_gfx,1)
+    })
+    this.client.on(DefaultSignals.DISCONNECT,()=>{
+      this.running=false
+    })
     if(!this.client.opened){
       console.log("not connected")
       return
     }
+    this.activePlayer?.onDestroy()
+    this.activePlayer=undefined
     const p=new JoinPacket(playerName)
     p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
     this.client.emit(p)
     this.activePlayerId=this.client.ID
-    console.log("Joined As:",this.activePlayer)
+    console.log("Joined As:",this.activePlayerId)
     
     this.guiManager.players_name={}
-    this.guiManager.clear()
+    this.guiManager.start()
+  }
+  init_gui(gui:GuiManager){
+    this.guiManager=gui
+    this.guiManager.init(this)
   }
 }
 export async function getGame(server:string){

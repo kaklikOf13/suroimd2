@@ -212,7 +212,7 @@ export class Player extends GameObject{
         this.container.position=this.position
     }
     override onDestroy(): void {
-      this.container.destroy()
+        this.container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
         if(Debug.hitbox){

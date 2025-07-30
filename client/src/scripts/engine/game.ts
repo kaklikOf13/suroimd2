@@ -144,6 +144,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.on_render(dt)
         for(const c in this.scene.objects.objects){
             for(const o of this.scene.objects.objects[c].orden){
+                if(!this.scene.objects.objects[c].objects[o])continue
                 this.scene.objects.objects[c].objects[o].render(this.camera,renderer,dt)
             }
         }
