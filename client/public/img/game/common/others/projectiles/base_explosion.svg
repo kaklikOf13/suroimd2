@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="80"
-   height="80"
-   viewBox="0 0 21.166665 21.166667"
+   width="202.75546"
+   height="202.75546"
+   viewBox="0 0 53.645712 53.645717"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="base_explosion.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -26,8 +26,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="3.1037318"
-     inkscape:cx="104.22937"
-     inkscape:cy="38.824231"
+     inkscape:cx="104.39046"
+     inkscape:cy="183.1666"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -59,12 +59,13 @@
        fx="10.583333"
        fy="10.583333"
        r="10.583333"
-       gradientUnits="userSpaceOnUse" />
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="scale(2.5344432)" />
   </defs>
   <circle
-     style="fill:url(#radialGradient2);stroke-width:0.6606"
+     style="fill:url(#radialGradient2);stroke-width:1.67425"
      id="path1"
-     cx="10.583333"
-     cy="10.583333"
-     r="10.583333" />
+     cx="26.822857"
+     cy="26.822857"
+     r="26.822857" />
 </svg>

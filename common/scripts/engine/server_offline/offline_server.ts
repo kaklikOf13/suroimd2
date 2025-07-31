@@ -3,6 +3,7 @@ import { ID } from "../utils.ts";
 import { SignalManager } from "../utils.ts"
 import { NetStream } from "../stream.ts"
 import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D } from "../game.ts";
+import { random } from "../random.ts";
 export class BasicSocket{
     readyState = 1;
     binaryType = "";
@@ -75,6 +76,7 @@ export class OfflineSocket extends BasicSocket{
         }
     }
     open(){
+        this.readyState=this.OPEN
         if(this.onopen)this.onopen()
     }
     // deno-lint-ignore no-explicit-any
@@ -191,6 +193,13 @@ export class OfflineClientsManager{
         for (const client of this.clients.values()) {
             client.sendStream(stream)
         }
+    }
+    fake_connect(lag:number):BasicSocket{
+        const s1=new OfflineSocket(undefined,lag)
+        const s2=new OfflineSocket(s1,lag)
+        s1.output=s2
+        this.activate_ws(s1,random.id(),"localhost","localhost")
+        return s2
     }
 }
 

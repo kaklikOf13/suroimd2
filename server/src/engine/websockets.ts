@@ -36,11 +36,11 @@ export class ClientsManager extends OfflineClientsManager {
             if (checkLogin) {
                 const cookie = req.headers.get("cookie") ?? "";
                 const match = cookie.match(/user=([^;]+)/);
-                if (!match) {
-                    return new Response("Not logged in", { status: 401 });
+                if (match) {
+                    username = decodeURIComponent(match[1]);
+                } else {
+                    username = "";
                 }
-                username = decodeURIComponent(match[1]);
-                // opcional: validar com base de dados ou blacklist
             }
 
             const { socket, response } = Deno.upgradeWebSocket(req);

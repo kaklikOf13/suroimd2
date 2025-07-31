@@ -115,6 +115,95 @@ class SubMenu extends HTMLElement{
         })
     }
 }
+class KLJoystick extends HTMLElement {
+    constructor() {
+        super();
+        this.knob = document.createElement("div");
+        this.knob.className = "knob";
+        this.active = false;
+        this.center = { x: 0, y: 0 };
+        this.value = { x: 0, y: 0 };
+        this.pointerId = null;
+    }
+
+    connectedCallback() {
+        this.style.position = "relative";
+        if (!this.contains(this.knob)) this.appendChild(this.knob);
+
+        const start = (e) => {
+            e.preventDefault();
+            const isTouch = e.type === "touchstart";
+            const point = isTouch ? e.changedTouches[0] : e;
+            this.pointerId = isTouch ? point.identifier : point.pointerId ?? "mouse";
+
+            const rect = this.getBoundingClientRect();
+            this.center = {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2,
+            };
+            this.active = true;
+            move(e);
+
+            document.addEventListener(isTouch ? "touchmove" : "pointermove", move, { passive: false });
+            document.addEventListener(isTouch ? "touchend" : "pointerup", end);
+        };
+
+        const move = (e) => {
+            if (!this.active) return;
+            const isTouch = e.type === "touchmove";
+            const points = isTouch ? e.changedTouches : [e];
+            const point = [...points].find(p =>
+                (isTouch ? p.identifier : p.pointerId ?? "mouse") === this.pointerId
+            );
+            if (!point) return;
+
+            const dx = point.clientX - this.center.x;
+            const dy = point.clientY - this.center.y;
+            const max = this.offsetWidth / 2;
+            const dist = Math.min(Math.sqrt(dx * dx + dy * dy), max);
+            const angle = Math.atan2(dy, dx);
+            const x = Math.cos(angle) * dist;
+            const y = Math.sin(angle) * dist;
+
+            this.value.x = x / max;
+            this.value.y = y / max;
+            this.knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+            this.dispatchEvent(new CustomEvent("joystickmove", {
+                detail: { x: this.value.x, y: this.value.y }
+            }));
+        };
+
+        const end = (e) => {
+            const isTouch = e.type === "touchend";
+            const points = isTouch ? e.changedTouches : [e];
+            const point = [...points].find(p =>
+                (isTouch ? p.identifier : p.pointerId ?? "mouse") === this.pointerId
+            );
+            if (!point) return;
+
+            this.active = false;
+            this.pointerId = null;
+            this.value = { x: 0, y: 0 };
+            this.knob.style.transform = "translate(-50%, -50%)";
+            this.dispatchEvent(new Event("joystickend"));
+
+            document.removeEventListener(isTouch ? "touchmove" : "pointermove", move);
+            document.removeEventListener(isTouch ? "touchend" : "pointerup", end);
+        };
+
+        this.addEventListener("touchstart", start, { passive: false });
+        this.addEventListener("pointerdown", start);
+        
+        this.knob.style.position = "absolute";
+        this.knob.style.top = "50%";
+        this.knob.style.left = "50%";
+        this.knob.style.transform = "translate(-50%, -50%)";
+    }
+}
+
+
+customElements.define("kl-joystick", KLJoystick);
 customElements.define('tabs-container', TabsContainer)
 customElements.define("kl-menu", Menu)
 customElements.define("kl-submenu", SubMenu)

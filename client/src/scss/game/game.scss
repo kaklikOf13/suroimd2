@@ -2,6 +2,7 @@
 @use "../fonts.scss";
 @use "./cellphone.scss";
 @use "./gameOver.scss";
+@use "./mobile.scss";
 #game {
     user-select: none;
     --webkit-user-select: none;
@@ -40,28 +41,31 @@
     overflow: visible;
     z-index: 100;
 }
-
-#health-bar-container {
-    background: palette.$transparent_bg;
-    border-radius: 2px;
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    width: 330px;
-    height: 30px;
+#boost-bar-container,
+#health-bar-container{
     display: block;
     justify-content: space-between;
     align-items: center;
     overflow: visible;
+    position: absolute;
+    left: 5px;
+    background: palette.$transparent_bg;
+    border-radius: 2px;
+
+    width: 330px;
     transform: translateY(-100%),translateX(-100%);
-
-    @media screen and (max-width: palette.$screen_large) {
-        width: 230px;
-        height: 20px;
-        bottom: 5px;
-
-        border-width: 5px;
+    font-size: 20px;
+    font-family: "Russo-One", serif;
+    
+    @media screen and (max-width: palette.$screen_medium) {
+        width: 130px;
+        font-size: 10px;
     }
+    
+}
+#health-bar-container {
+    bottom: 5px;
+    height: 30px;
 
     #health-bar,
     #health-bar-animation {
@@ -87,41 +91,20 @@
     #health-bar-amount {
         position: absolute;
         color: #fff;
-        font-size: 20px;
         font-style: italic;
         z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
 
-        font-family: "Russo-One", serif;
-
-        @media screen and (max-width: palette.$screen_large) {
-            font-size: 10px;
-        };
     }
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 20px;
+    };
 }
 #boost-bar-container {
-    background: palette.$transparent_bg;
-    border-radius: 2px;
-    position: absolute;
     bottom: 40px;
-    left: 5px;
-    width: 330px;
     height: 10px;
-    display: block;
-    justify-content: space-between;
-    align-items: center;
-    overflow: visible;
-    transform: translateY(-100%),translateX(-100%);
-
-    @media screen and (max-width: palette.$screen_large) {
-        width: 230px;
-        height: 10px;
-        bottom: 30px;
-
-        border-width: 5px;
-    }
 
     #boost-bar {
         position: absolute;
@@ -137,19 +120,16 @@
     #boost-bar-amount {
         position: absolute;
         color: #fff;
-        font-size: 20px;
         font-style: italic;
         z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
-
-        font-family: "Russo-One", serif;
-
-        @media screen and (max-width: palette.$screen_large) {
-            font-size: 10px;
-        };
     }
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 10px;
+        bottom: 30px;
+    };
 }
 
 #bottom-center-container{
@@ -183,6 +163,14 @@
             height: 70px;
         }
     }
+    @media screen and (max-width: palette.$screen_medium) {
+        bottom: 45px;
+        width: 100px;
+        height: 40px;
+        span{
+            font-size: 20px;
+        }
+    }
 }
 
 #ammos-inventory{
@@ -212,6 +200,16 @@
             padding-top: 5px;
             padding-left: 5px;
             padding-right: 5px;
+            
+        }
+        @media screen and (max-width: palette.$screen_medium){
+            .count{
+                font-size: 10px;
+            }
+            .icon{
+                width: 12px;
+                height: 12px;
+            }
         }
     }
     .ammo-slot:hover{
@@ -219,6 +217,7 @@
     }
 }
 #equipaments{
+    display: none;
     position: absolute;
     background-color: #0002;
     top: 5px;
@@ -228,19 +227,15 @@
     overflow-y: hidden;
     overflow-x: hidden;
 
-    display: grid;
-    grid-template-columns: repeat(3, 60px);
-    grid-template-rows: repeat(2, 60px);
-    grid-gap: 5px;
-    padding: 10px;
-    padding-top: 10px;
-
     .inventory-slot{
         margin: 0%;
         img{
             transform: unset;
             rotate: unset;
         }
+    }
+    @media screen and (max-width: palette.$screen_large) {
+
     }
 }
 #gui-weapons{
@@ -265,21 +260,18 @@
         border-radius: 10px;
         display: block;
         position: relative;
+        font-size: 20px;
+        font-family: "Russo-One", serif;
 
         .weapon-slot-number{
             position: relative;
             top:5px;
             left:93%;
-
-            font-family: "Russo-One", serif;
-            font-size: 20px;
         }
         .weapon-slot-name{
             position: absolute;
             bottom: 5px;
             right: 10px;
-            font-family: "Russo-One", serif;
-            font-size: 20px;
         }
         .weapon-slot-image{
             position: absolute;
@@ -289,13 +281,27 @@
             height: auto;
 
             transform: translateY(-50%);
-
-            font-family: "Russo-One", serif;
-            font-size: 20px;
         }
     }
     .weapon-slot-selected{
         border: 3px solid #eee;
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        .weapon-slot{
+            height: 50px;
+            font-size: 7px;
+            .weapon-slot-image{
+                width: 30px;
+            }
+            .weapon-slot-number{
+                left:86%;
+            }
+            .weapon-slot-name{
+                bottom: 3px;
+                right: 3px;
+            }
+        }
+        
     }
 }
 #killfeed-container{
@@ -330,6 +336,8 @@
 }
 #killeader-container{
     #killeader-container-icon{
+        width: 30px;
+        height: 30px;
         position: relative;
         transform: translate(0%,25%);
         left: 0px;
@@ -342,6 +350,15 @@
     top: 140px;
     right: 5px;
     padding: 15px;
+    @media screen and (max-width: palette.$screen_medium) {
+        font-size: 5px;
+        top: 5px;
+        right: 5px;
+        #killeader-container-icon{
+            width: 10px;
+            height: 10px;
+        }
+    }
 }
 #gui-items{
     position: absolute;
@@ -367,33 +384,52 @@
         font-family: "Russo-One", serif;
 
         .slot-image {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-        pointer-events: none;
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            pointer-events: none;
         }
 
         .slot-count {
-        position: absolute;
-        bottom: 2px;
-        right: 4px;
-        font-size: 14px;
-        font-weight: bold;
-        color: #fff;
-        text-shadow: 0 0 2px #000;
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 2px #000;
         }
 
         .slot-number {
-        position: absolute;
-        top: 2px;
-        left: 4px;
-        font-size: 12px;
-        color: #fff9;
-        text-shadow: 0 0 2px #000;
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 12px;
+            color: #fff9;
+            text-shadow: 0 0 2px #000;
+        }
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        bottom: 65px;
+        gap: 2px;
+        .inventory-item-slot{
+            width: 23px;
+            height: 23px;
+            .slot-count{
+                font-size: 6px;
+            }
+            .slot-number{
+                font-size: 4px;
+            }
+            .slot-image {
+                width: 20px;
+                height: 20px;
+            }
         }
     }
 }
 #help-gui{
+    pointer-events: none;
     display: flex;
     position: absolute;
     left: 5px;
@@ -402,4 +438,7 @@
     transform: translateY(-50%);
     font-family: "Russo-One";
     font-size: 20px;
+    @media screen and (max-width: palette.$screen_medium){
+        font-size: 10px;
+    }
 }

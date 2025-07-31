@@ -48,7 +48,6 @@ export class GamemodeManager{
         return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
     }
     kill_leader?:Player
-
     constructor(game:Game){
         this.game=game
         this.team_size=game.config.teamSize
@@ -166,6 +165,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
     config:GameConfig
     map:GameMap
     gamemode:Gamemode
+    subscribe_db?:Record<string,{
+        skins:number[],
+    }>
+
 
     players:Player[]=[]
     livingPlayers:Player[]=[]
@@ -287,7 +290,14 @@ export class Game extends ServerGame2D<ServerGameObject>{
         p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
 
         p.username=username
-        const ff=await(await fetch(`http${Config.api.global}/get-status/${p.username}`)).json()
+        let ff
+        if(this.subscribe_db){
+            ff=this.subscribe_db[p.username]
+        }else{
+            ff=await(await fetch(`http${Config.api.global}/get-status/${p.username}`)).json()
+            
+        }
+
         if(ff.user){
             const inv=JSON.parse(ff.user.inventory)
             const s=Skins.getFromNumber(packet.skin)
@@ -296,6 +306,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 p.loadout.skin=s.idString
             }
         }
+        
 
         const jp=new JoinedPacket()
 

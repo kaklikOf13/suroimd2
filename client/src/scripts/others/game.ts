@@ -25,6 +25,7 @@ import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { Graphics2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
+import { MouseEvents } from "../engine/keys.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -86,11 +87,37 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
-    this.camera.zoom=this.scope_zoom
 
+    this.key.listener.on(KeyEvents.KeyUp,(k:Key)=>{
+      switch(k){
+        case Key.A:
+        case Key.D:
+          this.action.Movement.x=0
+          break
+        case Key.W:
+        case Key.S:
+          this.action.Movement.y=0
+          break
+        case Key.Mouse_Left:
+          this.action.UsingItem=false
+          break
+      }
+    })
     this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
       if(!this.can_act)return
       switch(k){
+        case Key.A:
+          this.action.Movement.x=-1
+          break
+        case Key.D:
+          this.action.Movement.x=1
+          break
+        case Key.W:
+          this.action.Movement.y=-1
+          break
+        case Key.S:
+          this.action.Movement.y=1
+          break
         case Key.Number_1:
           this.action.hand=0
           break
@@ -123,6 +150,18 @@ export class Game extends ClientGame2D<GameObject>{
           break
         case Key.E:
           this.action.interact=true
+          break
+        case Key.Mouse_Left:
+          this.action.UsingItem=this.action.use_slot===-1
+          break
+      }
+    })
+    this.mouse.listener.on(MouseEvents.MouseMove,()=>{
+      if(this.activePlayer){
+        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));
+        if(!this.activePlayer.driving){
+          (this.activePlayer as Player).container.rotation=this.action.angle
+        }
       }
     })
   }
@@ -148,22 +187,6 @@ export class Game extends ClientGame2D<GameObject>{
     super.on_update(dt)
     if(this.client&&this.client.opened){
       if(this.can_act){
-        if(this.key.keyPress(Key.A)){
-          this.action.Movement.x=-1
-        }else if(this.key.keyPress(Key.D)){
-          this.action.Movement.x=1
-        }else{
-          this.action.Movement.x=0
-        }
-  
-        if(this.key.keyPress(Key.W)){
-          this.action.Movement.y=-1
-        }else if(this.key.keyPress(Key.S)){
-          this.action.Movement.y=1
-        }else{
-          this.action.Movement.y=0
-        }
-        this.action.UsingItem=this.key.keyPress(Key.Mouse_Left)&&this.action.use_slot===-1
         this.action.Reloading=this.key.keyPress(Key.R)
       }
       this.client.emit(this.action)
@@ -173,14 +196,10 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.use_slot=-1
       this.action.drop=-1
       this.action.drop_kind=0
-
-      if(this.activePlayer){
-        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));
-        (this.activePlayer as Player).container.rotation=this.action.angle
-      }
     }
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
+    this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/1920)
   }
   update_camera(){
     if(this.activePlayer)this.camera.position=this.activePlayer!.position
@@ -219,6 +238,7 @@ export class Game extends ClientGame2D<GameObject>{
     
     this.guiManager.players_name={}
     this.guiManager.start()
+    this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/300)
   }
   init_gui(gui:GuiManager){
     this.guiManager=gui

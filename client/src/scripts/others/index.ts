@@ -1,6 +1,6 @@
 import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api_server, ConfigCasters, ConfigDefaultValues } from "./config.ts";
+import { api_server, ConfigCasters, ConfigDefaultValues, offline } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "./guiManager.ts";
 import "../news/new.ts"
@@ -30,7 +30,6 @@ import { Server } from "../engine/mod.ts";
     const menu_manager=new MenuManager(GameSave)
     menu_manager.start()
 
-    const offline=false
 
     let loaded=false
     let gs:OfflineGameServer|undefined
@@ -41,12 +40,17 @@ import { Server } from "../engine/mod.ts";
     if(offline){
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
             deenable_feast:true,
-            gameTps:60,
+            gameTps:100,
             maxPlayers:10,
             teamSize:1,
             netTps:30
         })
         gs.mainloop()
+        gs.subscribe_db={
+            "localhost":{
+                skins:[1,2]
+            }
+        }
     }else{
         regions=await(await fetch(`http${api_server.toString()}/get-regions`)).json()
     }
@@ -82,7 +86,7 @@ import { Server } from "../engine/mod.ts";
         }
 
         constructor(){
-            this.elements.play_button.onclick=(_e)=>{this.playGame()}
+            this.elements.play_button.addEventListener("click",(_e)=>{this.playGame()})
             this.game=new Game(KeyL,mouseML,sounds,GameSave,resources,renderer)
             this.game.init_gui(gui)
             this.game.request_animation_frame=false
@@ -90,16 +94,17 @@ import { Server } from "../engine/mod.ts";
         }
         async playGame(){
             if(this.game.happening||!loaded)return
-            const ser=new Server(regions[current_region].host,regions[current_region].port)
+            let socket:BasicSocket
             if(offline){
-                //
+                socket=gs?.clients.fake_connect(1) as BasicSocket
             }else{
+                const ser=new Server(regions[current_region].host,regions[current_region].port)
                 const ghost=await((await fetch(`http${ser.toString()}/api/get-game`)).text())
-                const socket=new WebSocket("ws"+ser.toString()+"/api/"+ghost+"/ws")
-                const c=new Client(socket as BasicSocket,PacketManager)
-                c.onopen=this.game.connect.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
-                sounds.set_music(null)
+                socket=new WebSocket("ws"+ser.toString()+"/api/"+ghost+"/ws") as BasicSocket
             }
+            sounds.set_music(null)
+            const c=new Client(socket!,PacketManager)
+            c.onopen=this.game.connect.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
 
             this.game.running=true
             menu_manager.game_start()

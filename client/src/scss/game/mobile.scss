@@ -1,0 +1,21 @@
+@use "../palette.scss";
+#right-joystick,
+#left-joystick{
+    position: absolute;
+    right: 0px;
+    top: 35vh;
+    width: 100px;
+    height: 100px;
+    .knob{
+        width: 30%;
+        height: 30%;
+        background-color: #555e;
+    }
+    background-color: #0003;
+}
+#left-joystick{
+    left: 16%;
+}
+#right-joystick{
+    left: 60%;
+}

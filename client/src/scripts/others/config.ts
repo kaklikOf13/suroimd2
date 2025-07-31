@@ -2,7 +2,7 @@ import { Casters } from "../engine/console.ts";
 import { Server } from "../engine/mod.ts";
 
 export const api_server=new Server("localhost",8000,false)
-
+export const offline=false
 export enum GraphicsParticlesConfig {
     None=0,
     Normal,

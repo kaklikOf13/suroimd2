@@ -182,6 +182,7 @@ export class Server extends Router {
     if (this.https) {
       this.server = Deno.serve({
         port: this.port,
+        hostname:"0.0.0.0",
         cert: Deno.readTextFileSync(this.certFile),
         key: Deno.readTextFileSync(this.keyFile),
       }, async (req: Request, info: Deno.ServeHandlerInfo) => {
@@ -198,6 +199,7 @@ export class Server extends Router {
     } else {
       this.server = Deno.serve({
         port: this.port,
+        hostname:"0.0.0.0"
       }, async (req: Request, info: Deno.ServeHandlerInfo) => {
         const url = new URL(req.url);
         const path = [url.host];

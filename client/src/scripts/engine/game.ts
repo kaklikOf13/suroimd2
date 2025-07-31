@@ -6,6 +6,7 @@ import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
 import { Camera2D, Container2D, Sprite2D } from "./container.ts";
 import { GameConsole } from "./console.ts";
+export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame2D<any,any>

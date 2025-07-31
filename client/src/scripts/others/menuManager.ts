@@ -1,5 +1,6 @@
 import { type GameConsole } from "../engine/console.ts";
-import { api_server } from "./config.ts";
+import { isMobile } from "../engine/game.ts";
+import { api_server, offline } from "./config.ts";
 
 export class MenuManager{
     save:GameConsole
@@ -31,28 +32,11 @@ export class MenuManager{
     }
     constructor(save:GameConsole){
         this.save=save
-    }
-    start(){
-        this.content.insert_name.value=this.save.get_variable("cv_loadout_name")
-        this.content.insert_name.addEventListener("change",()=>{
-            this.save.set_variable("cv_loadout_name",this.content.insert_name.value)
-        })
-
-        this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
-        this.content.settings.graphics_textures.addEventListener("change",()=>{
-            this.save.set_variable("cv_graphics_resolution",this.content.settings.graphics_textures.value)
-        })
-
-        this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
-        this.content.settings.graphics_particles.addEventListener("change",()=>{
-            this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
-        })
-        this.content.settings_tabs.style.display="none"
-        this.content.section_tabs.style.display="none"
-
         this.content.btn_settings.addEventListener("click",()=>{
             this.content.settings_tabs.style.display=this.content.settings_tabs.style.display==="none"?"block":'none'
         })
+    }
+    accounts_system_init(){
         this.content.registry.btn.addEventListener("click",async()=>{
             const password=this.content.registry.password.value
             const passwc=this.content.registry.confirm_password.value
@@ -94,6 +78,26 @@ export class MenuManager{
         })
         this.no_logged()
         this.update_account()
+    }
+    start(){
+        this.content.insert_name.value=this.save.get_variable("cv_loadout_name")
+        this.content.insert_name.addEventListener("change",()=>{
+            this.save.set_variable("cv_loadout_name",this.content.insert_name.value)
+        })
+
+        this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
+        this.content.settings.graphics_textures.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_resolution",this.content.settings.graphics_textures.value)
+        })
+
+        this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
+        this.content.settings.graphics_particles.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
+        })
+        this.content.settings_tabs.style.display="none"
+        this.content.section_tabs.style.display="none"
+
+        if(!offline)this.accounts_system_init()
     }
     no_logged(){
         this.content.ac_status.innerHTML=""

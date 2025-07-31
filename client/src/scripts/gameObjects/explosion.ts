@@ -24,7 +24,7 @@ export class Explosion extends GameObject{
                 if(this.sprite.tint.a>0){
                     this.sprite.tint.a-=1*dt
                 }else{
-                    this.destroy()
+                    this.destroy() 
                 }
             }else{
                 (this.hb as CircleHitbox2D).radius+=7*dt

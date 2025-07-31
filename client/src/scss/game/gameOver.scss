@@ -11,8 +11,10 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     font-size: 24px;
     transform: translateY(-50%);
+    pointer-events: none;
     *{
         padding: 5px;
+        pointer-events: auto;
     }
     #gameover-status{
         color:#eee;

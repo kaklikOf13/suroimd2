@@ -183,16 +183,19 @@ export const KeyNames: Record<number, Key> = {
     37: Key.Arrow_Left,
     39: Key.Arrow_Right,
   
-    301: Key.Mouse_Left,
-    302: Key.Mouse_Middle,
-    303: Key.Mouse_Right,
-    304: Key.Mouse_Option1,
-    305: Key.Mouse_Option2
+    300: Key.Mouse_Left,
+    301: Key.Mouse_Middle,
+    302: Key.Mouse_Right,
+    303: Key.Mouse_Option1,
+    304: Key.Mouse_Option2
 }
 
 export enum KeyEvents{
     KeyDown="keydown",
     KeyUp="keyup"
+}
+export enum MouseEvents{
+    MouseMove="mousemove",
 }
 
 export class KeyListener{
@@ -220,6 +223,7 @@ export class KeyListener{
         elem.addEventListener("mousedown",(e:MouseEvent)=>{
             this.keysdown.push(e.button+300)
             this.keys.push(e.button+300)
+            
             this.listener.emit(KeyEvents.KeyDown,KeyNames[e.button+300])
         })
         elem.addEventListener("mouseup",(e:MouseEvent)=>{
@@ -254,12 +258,14 @@ export class KeyListener{
 export class MousePosListener{
     private _position:Vec2
     private readonly meter_size:number
+    public listener:SignalManager
     get position():Vec2{
         return v2.dscale(this._position,this.meter_size)
     }
     constructor(meter_size:number){
         this._position=v2.new(0,0)
         this.meter_size=meter_size
+        this.listener=new SignalManager()
     }
     camera_pos(camera:Camera2D):Vec2{
         return v2.add(v2.scale(this.position,camera.zoom),camera.position)
@@ -268,6 +274,7 @@ export class MousePosListener{
         elem.addEventListener("pointermove",(e:MouseEvent)=>{
             const rect=canvas.getBoundingClientRect()
             this._position=v2.new(e.x-rect.left,e.y-rect.top)
+            this.listener.emit(MouseEvents.MouseMove,this.position)
         })
     }
 }

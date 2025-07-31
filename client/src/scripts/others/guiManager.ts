@@ -1,7 +1,7 @@
 import { Game } from "./game.ts";
 import { BoostType, InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
+import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts";
@@ -10,6 +10,8 @@ import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
+import { type Player } from "../gameObjects/player.ts";
+import { isMobile } from "../engine/game.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -66,6 +68,11 @@ export class GuiManager{
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
     }
+    mobile_content={
+        gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
+        left_joystick:document.querySelector("#left-joystick") as HTMLDivElement,
+        right_joystick:document.querySelector("#right-joystick") as HTMLDivElement,
+    }
 
     weapons:{
         0?:MeleeDef,
@@ -119,8 +126,18 @@ export class GuiManager{
                 }
             }
         }
+        
+        const selecW=(w:number)=>{
+            return (e:TouchEvent)=>{
+                this.game.action.hand=w
+            }
+        }
         this.content.weapon2.addEventListener("mouseup",dropW(1))
         this.content.weapon3.addEventListener("mouseup",dropW(2))
+
+        this.content.weapon1.addEventListener("touchstart",selecW(0))
+        this.content.weapon2.addEventListener("touchstart",selecW(1))
+        this.content.weapon3.addEventListener("touchstart",selecW(2))
 
         this.update_ammos({})
         this.update_gui_items([
@@ -130,7 +147,41 @@ export class GuiManager{
         this.content.gameD.style.display="none"
         this.content.menuD.style.display="unset"
     }
+    mobile_init(){
+        this.mobile_content.gui.style.display="block"
+        this.mobile_content.gui.style.pointerEvents="auto"
+        this.content.help_gui.style.display="none"
+        this.mobile_content.left_joystick.addEventListener("joystickmove",(e)=>{
+            this.game.action.Movement.x=e.detail.x
+            this.game.action.Movement.y=e.detail.y
+        })
+        this.mobile_content.left_joystick.addEventListener("joystickend",(e)=>{
+            this.game.action.Movement.x=0
+            this.game.action.Movement.y=0
+        })
+        
+        this.mobile_content.right_joystick.addEventListener("joystickmove",(e)=>{
+            this.game.action.angle=Math.atan2(e.detail.y,e.detail.x);
+            if(this.game.activePlayer&&!this.game.activePlayer.driving){
+                (this.game.activePlayer as Player).container.rotation=this.game.action.angle
+                const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
+                if(dist>0.9){
+                    this.game.action.UsingItem=true
+                }else{
+                    this.game.action.UsingItem=false
+                }
+            }
+        })
+        this.mobile_content.right_joystick.addEventListener("joystickend",(e)=>{
+            this.game.action.UsingItem=false
+        })
+    }
+    mobile_deinit(){
+    }
     init(game:Game){
+        if(isMobile){
+            this.mobile_init()
+        }
         this.game=game
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
     }
@@ -180,9 +231,12 @@ export class GuiManager{
                 if(e.button==2){
                     this.game.action.drop=i
                     this.game.action.drop_kind=3
-                }else if(e.button==0){
-                    this.game.action.use_slot=i
                 }
+            }
+        }
+        const Ic2=(i:number)=>{
+            return (e:MouseEvent)=>{
+                this.game.action.use_slot=i
             }
         }
         for(const s of slots){
@@ -195,6 +249,7 @@ export class GuiManager{
                 </div>`)
                 const vv=this.content.gui_items.querySelector(`#inventory-slot-${i}`) as HTMLDialogElement
                 vv.addEventListener("mouseup",Ic(i))
+                vv.addEventListener("click",Ic2(i))
             }else{
                 this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
                 <div class="slot-number">${i+4}</div>

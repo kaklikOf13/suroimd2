@@ -150,3 +150,23 @@ kl-menu kl-submenu kl-menu {
     margin-top: -1px;
     margin-left: 0px;
 }
+
+kl-joystick {
+  position: relative;
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  user-select: none;
+  touch-action: none;
+}
+kl-joystick .knob {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}

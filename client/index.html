@@ -15,12 +15,17 @@
     <title>Suroimd.io 2</title>
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   </head>
   <body>
     <script src="scripts/extra_elements.js"></script>
     <link rel="stylesheet" href="scripts/extra_elements.css">
     <div id="game" style="display: none;">
       <div id="game-gui">
+        <div id="game-mobile-gui" style="display: none; pointer-events: none;">
+          <kl-joystick id="left-joystick"></kl-joystick>
+          <kl-joystick id="right-joystick"></kl-joystick>
+        </div>
         <div id="bars-container">
           <div id="health-bar-container">
             <div id="health-bar-animation"></div>
