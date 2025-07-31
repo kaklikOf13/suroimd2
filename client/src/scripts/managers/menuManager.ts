@@ -1,6 +1,6 @@
 import { type GameConsole } from "../engine/console.ts";
 import { isMobile } from "../engine/game.ts";
-import { api_server, offline } from "./config.ts";
+import { api_server, offline } from "../others/config.ts";
 
 export class MenuManager{
     save:GameConsole

@@ -1,4 +1,5 @@
 import { cloneDeep } from "common/scripts/engine/utils.ts";
+import { InputAction, InputManager } from "./keys.ts";
 
 /**
  * Represents a successful operation
@@ -65,6 +66,7 @@ export const Casters = Object.freeze({
 });
 export interface GameConsoleFile{
     settings:Record<string,any>
+    actions:Record<string,InputAction>
 }
 export type SetCallback = (n:any,o:any)=>void
 export class GameConsole{
@@ -75,6 +77,17 @@ export class GameConsole{
     variable_set_callbacks:Partial<Record<keyof typeof this.casters,(SetCallback)[]>>={}
 
     current_save?:string
+    input_manager?:InputManager
+
+    default_actions:Record<string,InputAction>={}
+
+    set_action(name:string,action:InputAction){
+        if(!this.input_manager)return
+        this.input_manager.actions.set(name,action)
+        if(this.current_save){
+            this.save(this.current_save)
+        }
+    }
     constructor(){
         
     }
@@ -113,14 +126,24 @@ export class GameConsole{
     }
     save(save:string){
         this.current_save=save
-        self.localStorage.setItem(save,JSON.stringify({settings:this.content}))
+        const s={
+            settings:this.content,
+            actions:this.input_manager?.saveConfig()
+        }
+        self.localStorage.setItem(save,JSON.stringify(s))
     }
     init(save:string){
         const s=self.localStorage.getItem(save)
         this.content=cloneDeep(this.default_values)
+        if(this.input_manager){
+            for(const a of Object.keys(this.default_actions)){
+                this.input_manager.registerAction(a,this.default_actions[a])
+            }
+        }
         if(s){ 
             const f=JSON.parse(s) as GameConsoleFile
             this.load_save(f.settings)
+            if(f.actions)this.input_manager?.loadConfig(f.actions)
         }
         this.save(save)
     }

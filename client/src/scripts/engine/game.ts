@@ -1,7 +1,7 @@
 import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { Color, ColorM, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
-import { KeyListener, MousePosListener } from "./keys.ts";
+import { type GamepadManager, InputManager, KeyListener, MousePosListener } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
 import { Camera2D, Container2D, Sprite2D } from "./container.ts";
@@ -108,19 +108,17 @@ export class ABParticle2D extends ClientParticle2D{
 export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{
     camera:Camera2D
     renderer:Renderer
-    key:KeyListener
-    mouse:MousePosListener
     resources:ResourcesManager
 
     particles:ParticlesManager2D<ClientParticle2D>
+    input_manager:InputManager
 
     sounds:SoundManager
     save:GameConsole
-    constructor(keyl:KeyListener,mouse:MousePosListener,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+    constructor(input_manager:InputManager,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
         super(60,objects)
         this.sounds=sounds
-        this.mouse=mouse
-        this.key=keyl
+        this.input_manager=input_manager
         this.renderer=renderer
         this.resources=resources
         this.camera=new Camera2D(renderer)
@@ -160,6 +158,6 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
         this.draw(this.renderer,dt)
         this.particles.update(dt)
         this.sounds.update(dt)
-        this.key.tick()
+        this.input_manager.tick()
     }
 }

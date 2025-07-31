@@ -1,5 +1,5 @@
 import { SignalManager, Vec2, v2 } from "common/scripts/engine/mod.ts";
-import { type Camera2D } from "./renderer.ts";
+import { type Camera2D } from "./container.ts";
 
 export enum Key{
     A=0,
@@ -276,5 +276,234 @@ export class MousePosListener{
             this._position=v2.new(e.x-rect.left,e.y-rect.top)
             this.listener.emit(MouseEvents.MouseMove,this.position)
         })
+    }
+}
+export enum GamepadButtonID {
+    A = 0,
+    B = 1,
+    X = 2,
+    Y = 3,
+
+    L1 = 4,
+    R1 = 5,
+    L2 = 6,
+    R2 = 7,
+
+    Select = 8,
+    Start = 9,
+
+    L3 = 10,
+    R3 = 11,
+
+    DPAD_Up = 12,
+    DPAD_Down = 13,
+    DPAD_Left = 14,
+    DPAD_Right = 15,
+
+    Home = 16
+}
+export enum GamepadManagerEvent{
+    close="close",
+    buttondown="buttondown",
+    buttonup="buttonup",
+    analogicmove="analogicmove"
+}
+export class GamepadManager {
+    listener: SignalManager = new SignalManager();
+    private previousStates: Map<number, Gamepad> = new Map();
+    private deadZone: Vec2;
+    private animationFrameId: number | null = null;
+
+    constructor(deadZone: Vec2 = v2.new(0.1, 0.1)) {
+        this.deadZone = deadZone;
+
+        addEventListener("gamepadconnected", (e: GamepadEvent) => {
+            this.previousStates.set(e.gamepad.index, e.gamepad);
+            this.listener.emit(GamepadManagerEvent.analogicmove, { index: e.gamepad.index, gamepad: e.gamepad });
+            this.startLoop();
+        });
+
+        addEventListener("gamepaddisconnected", (e: GamepadEvent) => {
+            this.previousStates.delete(e.gamepad.index);
+            this.listener.emit(GamepadManagerEvent.close, { index: e.gamepad.index });
+        });
+    }
+
+    private startLoop() {
+        const loop = () => {
+            const pads = navigator.getGamepads();
+            for (const pad of pads) {
+                if (!pad) continue;
+
+                const prev = this.previousStates.get(pad.index);
+                if (!prev) {
+                    this.previousStates.set(pad.index, pad);
+                    continue;
+                }
+
+                // Check button changes
+                for (let i = 0; i < pad.buttons.length; i++) {
+                    const current = pad.buttons[i].pressed;
+                    const previous = prev.buttons[i]?.pressed ?? false;
+
+                    if (current && !previous) {
+                        this.listener.emit(GamepadManagerEvent.buttondown, { index: pad.index, button: i });
+                    } else if (!current && previous) {
+                        this.listener.emit(GamepadManagerEvent.buttonup, { index: pad.index, button: i });
+                    }
+                }
+
+                if (pad.axes.length >= 2) {
+                    const x = pad.axes[0];
+                    const y = pad.axes[1];
+                    const dx = Math.abs(x) < this.deadZone.x ? 0 : x;
+                    const dy = Math.abs(y) < this.deadZone.y ? 0 : y;
+                    this.listener.emit(GamepadManagerEvent.analogicmove, {
+                        index: pad.index,
+                        stick: "left",
+                        axis: v2.new(dx, dy)
+                    });
+                }
+                if (pad.axes.length >= 4) {
+                    const x = pad.axes[2];
+                    const y = pad.axes[3];
+                    const dx = Math.abs(x) < this.deadZone.x ? 0 : x;
+                    const dy = Math.abs(y) < this.deadZone.y ? 0 : y;
+                    this.listener.emit(GamepadManagerEvent.analogicmove, {
+                        index: pad.index,
+                        stick: "right",
+                        axis: v2.new(dx, dy)
+                    });
+                }
+
+                this.previousStates.set(pad.index, {
+                    buttons: pad.buttons.map(b => ({ pressed: b.pressed })),
+                    axes: [...pad.axes],
+                // deno-lint-ignore no-explicit-any
+                } as any);
+            }
+
+            this.animationFrameId = requestAnimationFrame(loop);
+        };
+
+        if (!this.animationFrameId) {
+            this.animationFrameId = requestAnimationFrame(loop);
+        }
+    }
+
+    stop() {
+        if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    }
+}
+export interface InputAction {
+    keys: number[];    // Teclado / mouse
+    buttons: number[]; // Gamepad
+}
+
+export interface ActionEvent {
+    action: string;
+}
+
+export class InputManager {
+    gamepad: GamepadManager;
+    mouse: MousePosListener;
+    keys: KeyListener;
+
+    actions: Map<string, InputAction> = new Map();
+    private activeActions: Set<string> = new Set();
+    private pressedButtons: Set<number> = new Set(); // <-- NOVO
+
+    private callbacks: Record<"actiondown" | "actionup", ((event: ActionEvent) => void)[]> = {
+        actiondown: [],
+        actionup: [],
+    };
+
+    constructor(meterSize: number) {
+        this.gamepad = new GamepadManager();
+        this.mouse = new MousePosListener(meterSize);
+        this.keys = new KeyListener();
+
+        // Captura eventos do controle e atualiza estado
+        this.gamepad.listener.on(GamepadManagerEvent.buttondown, (e: { button: number }) => {
+            this.pressedButtons.add(e.button);
+            this.handleInput(e.button, true);
+        });
+
+        this.gamepad.listener.on(GamepadManagerEvent.buttonup, (e: { button: number }) => {
+            this.pressedButtons.delete(e.button);
+            this.handleInput(e.button, false);
+        });
+    }
+
+    bind(element: HTMLElement, canvas: HTMLCanvasElement) {
+        this.keys.bind(element);
+        this.mouse.bind(element, canvas);
+    }
+
+    on(event: "actiondown" | "actionup", callback: (event: ActionEvent) => void) {
+        this.callbacks[event].push(callback);
+    }
+
+    registerAction(name: string, input: InputAction) {
+        this.actions.set(name, input);
+    }
+
+    unregisterAction(name: string) {
+        this.actions.delete(name);
+        this.activeActions.delete(name);
+    }
+
+    private handleInput(code: number, isDown: boolean) {
+        for (const [action, { keys, buttons }] of this.actions.entries()) {
+            const match = keys.includes(code) || buttons.includes(code);
+
+            if (match && isDown && !this.activeActions.has(action)) {
+                this.activeActions.add(action);
+                this.emit("actiondown", action);
+            } else if (match && !isDown && this.activeActions.has(action)) {
+                this.activeActions.delete(action);
+                this.emit("actionup", action);
+            }
+        }
+    }
+
+    tick() {
+        this.keys.tick();
+
+        for (const [action, { keys, buttons }] of this.actions.entries()) {
+            const keyPressed = keys.some(k => this.keys.keyPress(k));
+            const buttonPressed = buttons.some(b => this.pressedButtons.has(b));
+
+            const isPressed = keyPressed || buttonPressed;
+            const wasActive = this.activeActions.has(action);
+
+            if (isPressed && !wasActive) {
+                this.activeActions.add(action);
+                this.emit("actiondown", action);
+            } else if (!isPressed && wasActive) {
+                this.activeActions.delete(action);
+                this.emit("actionup", action);
+            }
+        }
+    }
+
+    private emit(type: "actiondown" | "actionup", action: string) {
+        const event: ActionEvent = { action };
+        for (const callback of this.callbacks[type]) {
+            callback(event);
+        }
+    }
+
+    saveConfig(): Record<string, InputAction> {
+        return Object.fromEntries(this.actions);
+    }
+
+    loadConfig(ac: Record<string, InputAction>) {
+        for (const a of Object.keys(ac)) {
+            this.registerAction(a, ac[a]);
+        }
     }
 }

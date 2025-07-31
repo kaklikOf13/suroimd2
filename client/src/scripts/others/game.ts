@@ -1,13 +1,13 @@
-import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D} from "../engine/mod.ts"
+import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D, GamepadButton, InputManager} from "../engine/mod.ts"
 import { ActionPacket, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { BasicSocket, Client, DefaultSignals, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { BasicSocket, Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
 import { Loot } from "../gameObjects/loot.ts";
 import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { GuiManager } from "./guiManager.ts";
+import { GuiManager } from "../managers/guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
 import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
@@ -25,7 +25,7 @@ import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { Graphics2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
-import { MouseEvents } from "../engine/keys.ts";
+import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -55,8 +55,103 @@ export class Game extends ClientGame2D<GameObject>{
   //1.5=l-2 0.25x
   //1.75=l-3 0.1x
 
-  constructor(keyl:KeyListener,mp:MousePosListener,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(keyl,mp,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle])
+  listners_init(){
+    this.input_manager.on("actiondown",(a:ActionEvent)=>{
+      switch(a.action){
+        case "fire":
+          this.action.UsingItem=true
+          break
+        case "reload":
+          this.action.Reloading=true
+          break
+        case "interact":
+          this.action.interact=true
+          break
+        case "weapon1":
+          this.action.hand=0
+          break
+        case "weapon2":
+          this.action.hand=1
+          break
+        case "weapon3":
+          this.action.hand=2
+          break
+        case "move_left":
+          this.action.Movement.x=-1
+          break
+        case "move_right":
+          this.action.Movement.x=1
+          break
+        case "move_up":
+          this.action.Movement.y=-1
+          break
+        case "move_down":
+          this.action.Movement.y=1
+          break
+        case "use_item1":
+          this.action.use_slot=0
+          break
+        case "use_item2":
+          this.action.use_slot=1
+          break
+        case "use_item3":
+          this.action.use_slot=2
+          break
+        case "use_item4":
+          this.action.use_slot=3
+          break
+        case "use_item5":
+          this.action.use_slot=4
+          break
+        case "use_item6":
+          this.action.use_slot=5
+          break
+        case "use_item7":
+          this.action.use_slot=6
+          break
+        case "previour_weapon":
+          this.action.hand=this.guiManager.currentWeaponIDX-1
+          break
+        case "next_weapon":
+          this.action.hand=Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)
+          break
+      }
+    })
+    this.input_manager.on("actionup",(a:ActionEvent)=>{
+      switch(a.action){
+        case "fire":
+          this.action.UsingItem=false
+          break
+        case "move_left":
+        case "move_right":
+          this.action.Movement.x=0
+          break
+        case "move_up":
+        case "move_down":
+          this.action.Movement.y=0
+          break
+      }
+    })
+    this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
+      this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
+    })
+    
+    this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e)=>{
+      if(e.stick==="left"){
+        this.action.Movement=e.axis
+      }else if(e.stick==="right"){
+        this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x))
+      }
+    })
+  }
+  set_lookTo_angle(angle:number){
+    this.action.angle=angle;
+    if(this.activePlayer&&!this.activePlayer.driving){
+      (this.activePlayer as Player).container.rotation=this.action.angle
+    }
+  }
+  constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle])
     for(const i of CATEGORYSL){
       this.scene.objects.add_category(i)
     }
@@ -87,83 +182,6 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
-
-    this.key.listener.on(KeyEvents.KeyUp,(k:Key)=>{
-      switch(k){
-        case Key.A:
-        case Key.D:
-          this.action.Movement.x=0
-          break
-        case Key.W:
-        case Key.S:
-          this.action.Movement.y=0
-          break
-        case Key.Mouse_Left:
-          this.action.UsingItem=false
-          break
-      }
-    })
-    this.key.listener.on(KeyEvents.KeyDown,(k:Key)=>{
-      if(!this.can_act)return
-      switch(k){
-        case Key.A:
-          this.action.Movement.x=-1
-          break
-        case Key.D:
-          this.action.Movement.x=1
-          break
-        case Key.W:
-          this.action.Movement.y=-1
-          break
-        case Key.S:
-          this.action.Movement.y=1
-          break
-        case Key.Number_1:
-          this.action.hand=0
-          break
-        case Key.Number_2:
-          this.action.hand=1
-          break
-        case Key.Number_3:
-          this.action.hand=2
-          break
-        case Key.Number_4:
-          this.action.use_slot=0
-          break
-        case Key.Number_5:
-          this.action.use_slot=1
-          break
-        case Key.Number_6:
-          this.action.use_slot=2
-          break
-        case Key.Number_7:
-          this.action.use_slot=3
-          break
-        case Key.Number_8:
-          this.action.use_slot=4
-          break
-        case Key.Number_9:
-          this.action.use_slot=5
-          break
-        case Key.Number_0:
-          this.action.use_slot=6
-          break
-        case Key.E:
-          this.action.interact=true
-          break
-        case Key.Mouse_Left:
-          this.action.UsingItem=this.action.use_slot===-1
-          break
-      }
-    })
-    this.mouse.listener.on(MouseEvents.MouseMove,()=>{
-      if(this.activePlayer){
-        this.action.angle=v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.mouse.position,this.camera.zoom));
-        if(!this.activePlayer.driving){
-          (this.activePlayer as Player).container.rotation=this.action.angle
-        }
-      }
-    })
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -186,12 +204,10 @@ export class Game extends ClientGame2D<GameObject>{
   override on_update(dt:number): void {
     super.on_update(dt)
     if(this.client&&this.client.opened){
-      if(this.can_act){
-        this.action.Reloading=this.key.keyPress(Key.R)
-      }
       this.client.emit(this.action)
       this.action.interact=false
       this.action.cellphoneAction=undefined
+      this.action.Reloading=false
       this.action.hand=-1
       this.action.use_slot=-1
       this.action.drop=-1

@@ -1,4 +1,4 @@
-import { Game } from "./game.ts";
+import { Game } from "../others/game.ts";
 import { BoostType, InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
@@ -86,6 +86,7 @@ export class GuiManager{
     action?:{delay:number,start:number,type:ActionsType}
 
     currentWeapon?:HTMLDivElement
+    currentWeaponIDX:number=0
     killleader?:{
         id:number
         kills:number
@@ -148,9 +149,7 @@ export class GuiManager{
         this.content.menuD.style.display="unset"
     }
     mobile_init(){
-        this.mobile_content.gui.style.display="block"
-        this.mobile_content.gui.style.pointerEvents="auto"
-        this.content.help_gui.style.display="none"
+        this.mobile_open()
         this.mobile_content.left_joystick.addEventListener("joystickmove",(e)=>{
             this.game.action.Movement.x=e.detail.x
             this.game.action.Movement.y=e.detail.y
@@ -176,7 +175,15 @@ export class GuiManager{
             this.game.action.UsingItem=false
         })
     }
-    mobile_deinit(){
+    mobile_close(){
+        this.mobile_content.gui.style.display="none"
+        this.mobile_content.gui.style.pointerEvents="none"
+        this.content.help_gui.style.display="unset"
+    }
+    mobile_open(){
+        this.mobile_content.gui.style.display="block"
+        this.mobile_content.gui.style.pointerEvents="auto"
+        this.content.help_gui.style.display="none"
     }
     init(game:Game){
         if(isMobile){
@@ -184,6 +191,7 @@ export class GuiManager{
         }
         this.game=game
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
+        
     }
     start(){
         if(this.game.client){
@@ -406,12 +414,15 @@ export class GuiManager{
             switch(gui.current_weapon.slot){
                 case 1:
                     this.currentWeapon=this.content.weapon2
+                    this.currentWeaponIDX=1
                     break
                 case 2:
                     this.currentWeapon=this.content.weapon3
+                    this.currentWeaponIDX=2
                     break
                 default:
                     this.currentWeapon=this.content.weapon1
+                    this.currentWeaponIDX=0
             }
 
             if(gui.current_weapon.slot===0){

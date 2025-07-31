@@ -1,19 +1,22 @@
-import { MousePosListener, KeyListener, ResourcesManager, WebglRenderer } from "../engine/mod.ts"
+import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api_server, ConfigCasters, ConfigDefaultValues, offline } from "./config.ts";
+import { api_server, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline } from "./config.ts";
 import "../../scss/main.scss"
-import { GuiManager } from "./guiManager.ts";
+import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
-import { BasicSocket, Client, OfflineClientsManager, OfflineSocket } from "common/scripts/engine/mod.ts";
+import { BasicSocket, Client, OfflineClientsManager, v2 } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
-import { MenuManager } from "./menuManager.ts";
+import { MenuManager } from "../managers/menuManager.ts";
 import { RegionDef } from "common/scripts/definitions/utils.ts";
 import { Server } from "../engine/mod.ts";
+import { InputManager } from "../engine/keys.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
+    const inputs=new InputManager(100);
+    inputs.bind(document.body,canvas)
 
     document.body.appendChild(canvas)
     const sounds=new SoundManager()
@@ -23,6 +26,8 @@ import { Server } from "../engine/mod.ts";
     const resources=new ResourcesManager(renderer.gl,sounds)
 
     const GameSave=new GameConsole()
+    GameSave.input_manager=inputs
+    GameSave.default_actions=ConfigDefaultActions
     GameSave.casters=ConfigCasters
     GameSave.default_values=ConfigDefaultValues
     GameSave.init("suroimd2-config")
@@ -71,10 +76,6 @@ import { Server } from "../engine/mod.ts";
         }
         document.addEventListener("mousedown",lister)
     })
-    const mouseML=new MousePosListener(100)
-    const KeyL=new KeyListener()
-    mouseML.bind(document.body,canvas)
-    KeyL.bind(document.body)
 
     //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
@@ -87,7 +88,8 @@ import { Server } from "../engine/mod.ts";
 
         constructor(){
             this.elements.play_button.addEventListener("click",(_e)=>{this.playGame()})
-            this.game=new Game(KeyL,mouseML,sounds,GameSave,resources,renderer)
+            this.game=new Game(inputs,sounds,GameSave,resources,renderer)
+            this.game.listners_init()
             this.game.init_gui(gui)
             this.game.request_animation_frame=false
             this.game.onstop=this.closeGame.bind(this)

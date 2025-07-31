@@ -449,7 +449,7 @@ Guns.insert(
         idString:"spas12",
         fireDelay:0.7,
         spread:3,
-        lenght:1.15,
+        lenght:1,
         ammoType:"12g",
         ammoSpawnAmount:18,
         jitterRadius:0.13,
@@ -483,7 +483,7 @@ Guns.insert(
         gasParticles:GasParticles.shotgun,
         arms:WeaponsArmRig[0],
         image:{
-            position:v2.new(0.6,0.03),
+            position:v2.new(0.4,0.01),
             rotation:0
         },
         caseParticle:{
