@@ -252,6 +252,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.guiManager.players_name={}
     this.guiManager.start()
     this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/300)
+    this.renderer.fullCanvas(this.camera)
   }
   init_gui(gui:GuiManager){
     this.guiManager=gui

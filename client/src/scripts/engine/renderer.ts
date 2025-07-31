@@ -472,6 +472,12 @@ export function applyShadow(elem: HTMLElement) {
 }
 
 export function fullCanvas(elem: HTMLCanvasElement) {
-    elem.width=self.innerWidth;
-    elem.height=self.innerHeight;
+    const ratio = self.devicePixelRatio || 1;
+
+    elem.width  = Math.floor(self.innerWidth  * ratio);
+    elem.height = Math.floor(self.innerHeight * ratio);
+
+    // Mas para não esticar na tela:
+    elem.style.width  = self.innerWidth + "px";
+    elem.style.height = self.innerHeight + "px";
 }
