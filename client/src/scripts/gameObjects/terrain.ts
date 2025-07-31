@@ -2,13 +2,17 @@ import { Floors, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Graphics2D } from "../engine/container.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
+import { v2 } from "common/scripts/engine/geometry.ts";
 
 export class TerrainM extends TerrainManager{
+    map!:MapConfig
     process_map(mp:MapConfig){
+        this.map=mp
         for(const f of mp.terrain){
             this.add_floor(f.type,f.vertex)
         }
     }
+
     draw(graphic:Graphics2D,scale:number){
         for(const f of this.floors[0]){
             graphic.beginPath()
@@ -19,5 +23,6 @@ export class TerrainM extends TerrainManager{
             graphic.fill_color(ColorM.number(Floors[f.type].default_color))
             graphic.fill()
         }
+        graphic.fill_color(ColorM.hex("#0005"))
     }
 }

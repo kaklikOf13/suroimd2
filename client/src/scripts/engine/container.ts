@@ -1,6 +1,6 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts";
-import { type ResourcesManager, type Frame, ImageModel2D } from "./resources.ts";
+import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D } from "./resources.ts";
 import { KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 
@@ -58,31 +58,6 @@ export abstract class Container2DObject {
     }
 
     abstract draw(renderer: Renderer): void;
-}
-export class Grid2D extends Container2DObject{
-    object_type:string="sprite2d"
-
-    color:Color=ColorM.rgba(0,0,0,90)
-    grid_size:number=16
-    width:number=0.034
-    constructor(){
-        super()
-    }
-    override draw(renderer: Renderer): void {
-        const mat=(renderer as WebglRenderer).factorys2D.grid.create_material({
-            color:this.color,
-            gridSize:this.grid_size,
-            width:this.width,
-        });
-        (renderer as WebglRenderer)._draw_vertices([
-          -1000, -1000, 
-          1000, -1000,
-          -1000,  1000,
-          -1000,  1000,
-          1000, -1000,
-          1000,  1000
-        ],mat,{position:v2.neg(this._real_position),scale:this._real_scale,rotation:this._real_rotation})
-    }
 }
 function triangulateConvex(polygon: Vec2[]): number[] {
     const tris: number[] = [];
@@ -172,7 +147,8 @@ type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material2D }
   | { type: 'fillColor'; color:Color }
   | { type: 'fill' }
-  | { type: 'path'; path:number[] }
+  | { type: 'path'; path:Float32Array }
+  | { type: 'model'; model:Float32Array }
 
 export class Graphics2D extends Container2DObject {
     object_type = "graphics2d";
@@ -193,7 +169,7 @@ export class Graphics2D extends Container2DObject {
         return this
     }
     endPath():this{
-        this.command.push({type:"path",path:triangulateConvex(this.current_path)})
+        this.command.push({type:"path",path:new Float32Array(triangulateConvex(this.current_path))})
         this.current_path=[]
         return this
     }
@@ -209,34 +185,36 @@ export class Graphics2D extends Container2DObject {
         this.command.push({type:"fillColor",color})
         return this
     }
+    clear(){
+        this.command.length=0
+    }
+    drawGrid(begin:Vec2,size:Vec2,space:number,width:number){
+        const minx=begin.x*space
+        const miny=begin.y*space
+        const maxx = (begin.x + size.x)*space;
+        const maxy = (begin.y + size.y)*space;
 
-    cut(): this {
-        let lastPath: number[] | null = null;
-
-        for (let i = this.command.length - 1; i >= 0; i--) {
-            const cmd = this.command[i];
-            if (cmd.type === "path") {
-                lastPath = cmd.path;
-                this.command.splice(i,1)
-                break;
-            }
+        for (let x = minx; x <= maxx; x += space) {
+            const p1 = v2.new(x, miny);
+            const p2 = v2.new(x, maxy);
+            this.drawLine(p1,p2,width)
         }
 
-        if (!lastPath) return this;
-
-        this.command.push({
-            type: "path",
-            path: cut(lastPath,triangulateConvex(this.current_path))
-        });
-
-        return this;
+        for (let y = miny; y <= maxy; y += space) {
+            const p1 = v2.new(minx, y);
+            const p2 = v2.new(maxx, y);
+            this.drawLine(p1,p2,width)
+        }
+    }
+    drawLine(a:Vec2,b:Vec2,width:number){
+        this.command.push({type:"model",model:LineModel2D(a,b,width)})
     }
 
     override draw(renderer: Renderer): void {
         const gl = renderer as WebglRenderer;
 
         let currentMat: Material2D=gl.factorys2D.simple.create_material({r:0,g:0,b:0,a:1});
-        let currentModel:number[]=[]
+        let currentModel:Float32Array
 
         for (const cmd of this.command) {
             switch (cmd.type) {
@@ -247,12 +225,20 @@ export class Graphics2D extends Container2DObject {
                     currentMat=gl.factorys2D.simple.create_material(cmd.color)
                     break
                 case "fill":
-                    gl._draw_vertices(currentModel,currentMat,{
+                    gl._draw_vertices(currentModel!,currentMat,{
                         position:this._real_position,
                         rotation:this._real_rotation,
                         scale:this._real_scale
                     })
                     break
+                case "model": {
+                    gl._draw_vertices(cmd.model,currentMat,{
+                        position:this._real_position,
+                        scale:v2.new(1,1),
+                        rotation:0
+                    })
+                    break;
+                }
                 case "path":
                     currentModel=cmd.path
                     break

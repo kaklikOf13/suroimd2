@@ -29,7 +29,7 @@ export const GameConstants={
     tps:100,
     collision:{
         threads:2,
-        chunckSize:8
+        chunckSize:7
     }
 }
 export enum CATEGORYS{

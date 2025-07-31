@@ -213,10 +213,10 @@ export class Material2D<MaterialArgs=any>{
 }
 // deno-lint-ignore no-explicit-any
 export class Material2DFactory<MaterialArgs=any>{
-    on_execute:(factory:Material2DFactory<MaterialArgs>,args:MaterialArgs,vertex:number[],trans:Transform2D,mode:number)=>void
+    on_execute:(factory:Material2DFactory<MaterialArgs>,args:MaterialArgs,vertex:Float32Array,trans:Transform2D,mode:number)=>void
     gl:WebGLRenderingContext
     program:WebGLProgram
-    constructor(gl:WebGLRenderingContext,program:WebGLProgram,on_execute:(factory:Material2DFactory<MaterialArgs>,args:MaterialArgs,vertex:number[],trans:Transform2D,mode:number)=>void){
+    constructor(gl:WebGLRenderingContext,program:WebGLProgram,on_execute:(factory:Material2DFactory<MaterialArgs>,args:MaterialArgs,vertex:Float32Array,trans:Transform2D,mode:number)=>void){
         this.on_execute=on_execute
         this.gl=gl
         this.program=program
@@ -226,19 +226,12 @@ export class Material2DFactory<MaterialArgs=any>{
         ret.args=args
         return ret
     }
-}
-export interface GridMaterialArgs {
-    color:Color
-    width:number
-    gridSize:number
-}
-export class WebglRenderer extends Renderer {
+}export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext;
     projectionMatrix!: Float32Array;
     readonly tex_program:WebGLProgram
     readonly factorys2D:{
         simple:Material2DFactory<Color>
-        grid:Material2DFactory<GridMaterialArgs>
     }
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white) {
         super(canvas, meter_size);
@@ -267,10 +260,10 @@ void main() {
     gl_FragColor = u_Color;
 }
 `
-            ),(factory:Material2DFactory<Color>,args:Color,vertices:number[],trans:Transform2D,mode:number)=>{
+            ),(factory:Material2DFactory<Color>,args:Color,vertices:Float32Array,trans:Transform2D,mode:number)=>{
                 const vertexBuffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-                this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
                 this.gl.useProgram(factory.program);
 
                 const positionAttributeLocation = this.gl.getAttribLocation(factory.program, "a_Position");
@@ -290,55 +283,6 @@ void main() {
 
                 this.gl.drawArrays(mode, 0, vertices.length / 2);
             }),
-            grid:new Material2DFactory<GridMaterialArgs>(this.gl,this.createProgram(`
-attribute vec2 a_Position;
-uniform mat4 u_ProjectionMatrix;
-uniform vec2 u_Translation;
-varying vec2 v_WorldPosition;
-
-void main() {
-    v_WorldPosition = a_Position+u_Translation.xy;
-    gl_Position = u_ProjectionMatrix * vec4(a_Position,0.0, 1.0);
-}`,`
-precision mediump float;
-varying vec2 v_WorldPosition;
-
-uniform float u_GridSize;
-uniform vec4 u_Color;
-uniform float u_LineWidth;
-
-void main() {
-    vec2 grid = abs(mod(v_WorldPosition, u_GridSize) - (u_GridSize * 0.5));
-
-    float line = 1.0-step(u_LineWidth, min(grid.x, grid.y));
-    gl_FragColor = vec4(u_Color.rgb, line * u_Color.a);
-}`),(factory:Material2DFactory<GridMaterialArgs>,args:GridMaterialArgs,vertices:number[],trans:Transform2D,mode:number)=>{
-    const vertexBuffer = this.gl.createBuffer()
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW)
-    this.gl.useProgram(factory.program)
-
-    const positionAttributeLocation = this.gl.getAttribLocation(factory.program, "a_Position")
-    this.gl.enableVertexAttribArray(positionAttributeLocation)
-    this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0)
-
-    let uniform=this.gl.getUniformLocation(factory.program,"u_GridSize")
-    this.gl.uniform1f(uniform,args.gridSize)
-
-    uniform=this.gl.getUniformLocation(factory.program,"u_LineWidth")
-    this.gl.uniform1f(uniform,args.width)
-
-    uniform=this.gl.getUniformLocation(factory.program,"u_Translation")
-    this.gl.uniform2f(uniform,trans.position.x,trans.position.y)
-
-    uniform = this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")
-    this.gl.uniformMatrix4fv(uniform, false, this.projectionMatrix)
-
-    uniform = this.gl.getUniformLocation(factory.program, "u_Color");
-    this.gl.uniform4f(uniform, args.color.r, args.color.g, args.color.b, args.color.a)
-
-    this.gl.drawArrays(mode, 0, vertices.length / 2)
-})
         }
 
         //Tex Program
@@ -395,7 +339,7 @@ void main() {
         this.gl.linkProgram(p!)
         return p!
     }
-    _draw_vertices(vertices:number[],material:Material2D,trans:Transform2D,mode:number=this.gl.TRIANGLES){
+    _draw_vertices(vertices:Float32Array,material:Material2D,trans:Transform2D,mode:number=this.gl.TRIANGLES){
         material.factory.on_execute(material.factory,material.args,vertices,trans,mode)
     }
     draw_rect2D(rect: RectHitbox2D, material: Material2D,offset:Vec2=NullVec2) {
@@ -404,14 +348,14 @@ void main() {
         const x2 = rect.max.x-rect.min.x
         const y2 = rect.max.x-rect.min.x
 
-        this._draw_vertices([
+        this._draw_vertices(new Float32Array([
             x1, y1,
             x2, y1,
             x1, y2,
             x1, y2,
             x2, y1,
             x2, y2
-        ], material,{position:v2.add(rect.position,offset),scale:v2.new(1,1),rotation:0});
+        ]), material,{position:v2.add(rect.position,offset),scale:v2.new(1,1),rotation:0});
     }
 
     draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2, precision: number = 50): void {
@@ -429,7 +373,7 @@ void main() {
             const y = centerY + radius * Math.sin(angle)
             vertices.push(x, y)
         }
-        this._draw_vertices(vertices, material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0},this.gl.TRIANGLE_FAN);
+        this._draw_vertices(new Float32Array(vertices), material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0},this.gl.TRIANGLE_FAN);
     }
 
     draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset:Vec2=NullVec2): void {
@@ -496,6 +440,7 @@ void main() {
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
     }
+
 }
 export function createCanvas(size: Vec2, pixelated: boolean = true, center: boolean = true): HTMLCanvasElement {
     const canvas = document.createElement("canvas");

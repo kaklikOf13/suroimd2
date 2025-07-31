@@ -145,7 +145,8 @@ export class GameMap{
     encode():MapPacket{
         const p=new MapPacket()
         p.map={
-            terrain:this.terrain.floors[0]
+            terrain:this.terrain.floors[0],
+            size:this.size
         }
         return p
     }

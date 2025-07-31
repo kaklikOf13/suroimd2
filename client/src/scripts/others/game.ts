@@ -1,5 +1,5 @@
 import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D, GamepadButton, InputManager} from "../engine/mod.ts"
-import { ActionPacket, CATEGORYSL, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
+import { ActionPacket, CATEGORYSL, GameConstants, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
 import { BasicSocket, Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
@@ -38,10 +38,10 @@ export class Game extends ClientGame2D<GameObject>{
 
   gameOver:boolean=false
 
-  grid:Grid2D
   terrain:TerrainM=new TerrainM()
   
   terrain_gfx=new Graphics2D()
+  grid_gfx=new Graphics2D()
   scope_zoom:number=0.78
   happening:boolean=false
 
@@ -168,20 +168,10 @@ export class Game extends ClientGame2D<GameObject>{
       this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
     }
-
-    this.grid=new Grid2D()
-    this.grid.width=0.04
-    this.grid.grid_size=8
-    this.grid.color.a=0.2
-    this.camera.addObject(this.grid)
-    this.grid.zIndex=zIndexes.Grid
-    this.sounds.volumes={
-      "players":0.45,
-      "obstacles":0.7,
-    }
-
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
+    this.camera.addObject(this.grid_gfx)
+    this.grid_gfx.zIndex=zIndexes.Grid
   }
   add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
     this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
@@ -216,9 +206,16 @@ export class Game extends ClientGame2D<GameObject>{
     this.renderer.fullCanvas(this.camera)
     this.camera.resize()
     this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/1920)
+    
   }
   update_camera(){
-    if(this.activePlayer)this.camera.position=this.activePlayer!.position
+    if(this.activePlayer){
+      this.camera.position=this.activePlayer!.position
+      const gridSize=GameConstants.collision.chunckSize
+      this.grid_gfx.clear()
+      this.grid_gfx.fill_color(ColorM.hex("#0002"))
+      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.07)
+    }
   }
   connect(client:Client,playerName:string){
     this.client=client
