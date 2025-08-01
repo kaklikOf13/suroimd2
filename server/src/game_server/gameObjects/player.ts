@@ -233,8 +233,7 @@ export class Player extends ServerGameObject{
                 s.item.update(this)
             }
             //Collision
-            //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-            const objs=[...Object.values(this.manager.objects[this.layer].objects)]
+            const objs=this.manager.cells.get_objects(this.hb,this.layer)
             let can_interact=this.interactionsEnabled
             for(const obj of objs){
                 if((obj as BaseGameObject2D).id===this.id)continue
@@ -412,14 +411,14 @@ export class Player extends ServerGameObject{
             if(this.actions.current_action){
                 up.gui.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
-            this.camera_hb.min.x=this.position.x-(5/2)
-            this.camera_hb.min.y=this.position.y-(5/2)
-            this.camera_hb.max.x=this.position.x+(5/2)
-            this.camera_hb.max.y=this.position.y+(5/2)
-            const objs=[
+            this.camera_hb.min.x=this.position.x-(30/2)
+            this.camera_hb.min.y=this.position.y-(30/2)
+            this.camera_hb.max.x=this.position.x+(30/2)
+            this.camera_hb.max.y=this.position.y+(30/2)
+            /*const objs=[
                 ...Object.values(this.manager.objects[this.layer].objects),
-            ]
-            //const objs=this.manager.cells.get_objects(this.camera_hb,CATEGORYSL)
+            ]*/
+            const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
             const o=this.game.scene.objects.encode_list(objs,undefined,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm

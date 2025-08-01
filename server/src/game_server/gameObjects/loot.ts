@@ -101,8 +101,7 @@ export class Loot extends ServerGameObject{
             this.dirtyPart=true
             this.oldPos=v2.duplicate(this.position)
         }
-        //const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-        const others=[...Object.values(this.manager.objects[this.layer].objects)]
+        const others=this.manager.cells.get_objects(this.hb,this.layer)
         for(const other of others){
             switch(other.stringType){
                 case "loot":{

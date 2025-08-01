@@ -54,8 +54,7 @@ export class Bullet extends GameObject{
             this.manager.cells.updateObject(this)
             this.position=v2.add(this.hb.position,this.dts)
 
-            //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
-            const objs=[...Object.values(this.manager.objects[this.layer].objects)]
+            const objs=this.manager.cells.get_objects(this.hb,this.layer)
             for(const obj of objs){
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){

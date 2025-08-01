@@ -238,7 +238,7 @@ export class MeleeItem extends LItem{
       v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.offset,this.def.offset))
     )
     const hb=new CircleHitbox2D(position,this.def.radius)
-    const collidibles:ServerGameObject[]=user.manager.cells.get_objects2(hb,user.layer)
+    const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
     for(const c of collidibles){
       if(!hb.collidingWith(c.hb))continue
       if(c instanceof Obstacle){

@@ -5,6 +5,7 @@ import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "../../../../common/scripts/definitions/items/ammo.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
+import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 
 export class Bullet extends ServerGameObject{
     velocity:Vec2
@@ -46,8 +47,7 @@ export class Bullet extends ServerGameObject{
         const disT=v2.distance(this.initialPosition,this.position)/this.maxDistance
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         this.manager.cells.updateObject(this)
-        //const objs:BaseGameObject2D[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
-        const objs=[...Object.values(this.manager.objects[this.layer].objects)]
+        const objs=this.manager.cells.get_objects(this.hb,this.layer)
         for(const obj of objs){
             switch(obj.stringType){
                 case "player":{
@@ -55,7 +55,7 @@ export class Bullet extends ServerGameObject{
                         const dmg:number=this.damage
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
                         *(this.critical?(this.defs.criticalMult??1.5):1);
-                        (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         this.destroy()
                         break
                     }
@@ -67,7 +67,7 @@ export class Bullet extends ServerGameObject{
                         const col=this.hb.overlapCollision((obj as Obstacle).hb)
                         if(!col)continue
                         const od=(obj as Obstacle).health;
-                        (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source})
+                        (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3){
                             const angle = 2 * Math.atan2(col.dir.y, -col.dir.x) - this.angle
                             this.position = v2.add(this.position, v2.new(Math.cos(angle), -Math.sin(angle)))

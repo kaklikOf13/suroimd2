@@ -42,7 +42,7 @@ export class GameMap{
         let attempt=0
         if(!valid){
             valid=(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>{
-                const objs=map.game.scene.objects.cells.get_objects2(hitbox,layer)
+                const objs=map.game.scene.objects.cells.get_objects(hitbox,layer)
                 for(const o of objs){
                     if(!(o.id===id&&o.layer===layer)&&hb.collidingWith((o as Obstacle).spawnHitbox)){
                         return false

@@ -68,15 +68,15 @@ export abstract class BaseObject2D{
 export interface Layer2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[]}
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cellSize: number;
-    cells: Map<string, Set<GameObject>> = new Map();
-    objectCells: Map<GameObject, Set<string>> = new Map();
+    cells: Map<number, Map<string, Set<GameObject>>> = new Map();
+    objectCells: Map<GameObject, { layer: number; keys: Set<string> }> = new Map();
 
     constructor(cellSize = 5) {
         this.cellSize = cellSize;
     }
 
-    private key(cat: number, x: number, y: number): string {
-        return `${cat}:${x}:${y}`;
+    private key(x: number, y: number): string {
+        return `${x}:${y}`;
     }
 
     private cellPos(pos: Vec2): Vec2 {
@@ -96,15 +96,25 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         this.objectCells.clear();
     }
 
-    private removeObjectFromCells(obj: GameObject) {
-        const cells = this.objectCells.get(obj);
-        if (!cells) return;
+    private getLayerMap(layer: number): Map<string, Set<GameObject>> {
+        if (!this.cells.has(layer)) {
+            this.cells.set(layer, new Map());
+        }
+        return this.cells.get(layer)!;
+    }
 
-        for (const cellKey of cells) {
-            const set = this.cells.get(cellKey);
-            if (set) {
-                set.delete(obj);
-                if (set.size === 0) this.cells.delete(cellKey);
+    private removeObjectFromCells(obj: GameObject) {
+        const entry = this.objectCells.get(obj);
+        if (!entry) return;
+
+        const layerMap = this.cells.get(entry.layer);
+        if (layerMap) {
+            for (const cellKey of entry.keys) {
+                const set = layerMap.get(cellKey);
+                if (set) {
+                    set.delete(obj);
+                    if (set.size === 0) layerMap.delete(cellKey);
+                }
             }
         }
         this.objectCells.delete(obj);
@@ -117,49 +127,46 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         const min = this.cellPos(rect.min);
         const max = this.cellPos(rect.max);
 
-        const occupiedCells = new Set<string>();
+        const layer = obj.layer;
+        const layerMap = this.getLayerMap(layer);
+        const occupiedKeys = new Set<string>();
 
         for (let y = min.y; y <= max.y; y++) {
             for (let x = min.x; x <= max.x; x++) {
-                const cellKey = this.key(obj.layer, x, y);
-                if (!this.cells.has(cellKey)) {
-                    this.cells.set(cellKey, new Set());
+                const key = this.key(x, y);
+                if (!layerMap.has(key)) {
+                    layerMap.set(key, new Set());
                 }
-                this.cells.get(cellKey)!.add(obj);
-                occupiedCells.add(cellKey);
+                layerMap.get(key)!.add(obj);
+                occupiedKeys.add(key);
             }
         }
 
-        this.objectCells.set(obj, occupiedCells);
+        this.objectCells.set(obj, { layer, keys: occupiedKeys });
     }
 
-    get_objects(hitbox: Hitbox2D, categories: number[]): GameObject[] {
+    get_objects(hitbox: Hitbox2D, layer: number): GameObject[] {
         const rect = hitbox.toRect();
         const min = this.cellPos(rect.min);
         const max = this.cellPos(rect.max);
 
         const results = new Set<GameObject>();
+        const layerMap = this.cells.get(layer);
+        if (!layerMap) return [];
 
-        for (const c of categories) {
-            for (let y = min.y; y <= max.y; y++) {
-                for (let x = min.x; x <= max.x; x++) {
-                    const set = this.cells.get(this.key(c, x, y));
-                    if (set) {
-                        for (const obj of set) {
-                            results.add(obj);
-                        }
+        for (let y = min.y; y <= max.y; y++) {
+            for (let x = min.x; x <= max.x; x++) {
+                const set = layerMap.get(this.key(x, y));
+                if (set) {
+                    for (const obj of set) {
+                        results.add(obj);
                     }
                 }
             }
         }
         return [...results];
     }
-
-    get_objects2(hitbox: Hitbox2D, category: number): GameObject[] {
-        return this.get_objects(hitbox, [category]);
-    }
 }
-
 export type EncodedData={
     // deno-lint-ignore ban-types
     full?:Object
@@ -286,12 +293,12 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             }
             this.process_object(layer,stream)
         }
-        /*os=stream.readUint16()
+        os=stream.readUint16()
         for(let i=0;i<os;i++){
             const c=stream.readUint8()
             const id=stream.readID()
             if(process_deletion&&this.objects[c]&&this.objects[c].objects[id])this.objects[c].objects[id].destroy()
-        }*/
+        }
     }
     encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):NetStream{
         const stream=new NetStream(new ArrayBuffer(size))
@@ -332,11 +339,11 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         const deletions=last_list.filter(obj =>
            !l.includes(obj)&&obj.netSync.deletion
         );
-        /*stream.writeUint16(deletions.length)
+        stream.writeUint16(deletions.length)
         for(let i=0;i<deletions.length;i++){
             stream.writeUint8(deletions[i].layer)
             stream.writeID(deletions[i].id)
-        }*/
+        }
         return {strm:stream,last:l}
     }
     update(dt:number){

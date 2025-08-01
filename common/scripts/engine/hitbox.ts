@@ -182,7 +182,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
         return v2.new(this.position.x+(Math.cos(angle)*length),this.position.y+(Math.sin(angle)*length))
     }
     override toRect():RectHitbox2D{
-        return new RectHitbox2D(this.position,v2.new(this.radius,this.radius))
+        return RectHitbox2D.positioned(this.position,v2.new(this.radius,this.radius))
     }
     override transform(position?:Vec2,scale?:number):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D

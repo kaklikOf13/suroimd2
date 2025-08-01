@@ -41,8 +41,7 @@ export class Explosion extends ServerGameObject{
                 }
             }
 
-            //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS,CATEGORYS.PROJECTILES])
-            const objs=Object.values(this.manager.objects[this.layer].objects)
+            const objs=this.manager.cells.get_objects(this.hb,this.layer)
             const damageCollisions:ServerGameObject[]=[]
             for(const obj of objs){
                 switch((obj as ServerGameObject).stringType){

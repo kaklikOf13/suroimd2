@@ -1,7 +1,7 @@
-import { Action, Slot } from "common/scripts/engine/inventory.ts";
+import { Action } from "common/scripts/engine/inventory.ts";
 import { type Player } from "../gameObjects/player.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type ConsumibleItem, type LItem, type GunItem } from "./inventory.ts";
+import { type ConsumibleItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 
 export class ReloadAction extends Action<Player>{
