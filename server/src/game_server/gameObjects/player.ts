@@ -535,7 +535,7 @@ export class Player extends ServerGameObject{
         }
 
         if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&params.owner.username!==this.username){
+            if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)){
                 params.owner.status.kills++
                 params.owner.earned.coins+=3
                 params.owner.earned.xp+=1

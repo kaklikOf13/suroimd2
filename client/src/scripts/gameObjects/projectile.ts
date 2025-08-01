@@ -21,7 +21,7 @@ export class Projectile extends GameObject{
     }
 
     render(camera: Camera2D, renderer: Renderer,_dt:number): void {
-        if(this.spr){ 
+        if(this.spr){
             const zs=this.def.zBaseScale+(this.def.zScaleAdd*this.zpos)
             renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(zs,zs),Angle.rad2deg(this.rotation),v2.new(.5,.5))
             if(Debug.hitbox){

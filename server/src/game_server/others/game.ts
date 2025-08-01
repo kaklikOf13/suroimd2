@@ -307,6 +307,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
                     p.loadout.skin=s.idString
                 }
             }
+        }else{
+            p.username=""
         }
         
 

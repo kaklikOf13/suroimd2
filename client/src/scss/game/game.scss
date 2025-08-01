@@ -202,7 +202,13 @@
             padding-right: 5px;
             
         }
-        @media screen and (max-width: palette.$screen_medium){
+    }
+    
+    .ammo-slot:hover{
+        border: 2px solid #ccc;
+    }
+    @media screen and (max-width: palette.$screen_medium){
+        .ammo-slot{
             .count{
                 font-size: 10px;
             }
@@ -211,22 +217,25 @@
                 height: 12px;
             }
         }
-    }
-    .ammo-slot:hover{
-        border: 2px solid #ccc;
+        left: 3px;
     }
 }
 #equipaments{
-    display: none;
     position: absolute;
     background-color: #0002;
     top: 5px;
     right: 5px;
-    height: max-content;
-    width: max-content;
+    height: 150px;
+    width: 200px;
     overflow-y: hidden;
     overflow-x: hidden;
-
+    .skin-closeup{
+        position: absolute;
+        scale:30%;
+        transition: -50%,-50%;
+        left: 26%;
+        top: -26%;
+    }
     .inventory-slot{
         margin: 0%;
         img{
@@ -234,8 +243,17 @@
             rotate: unset;
         }
     }
-    @media screen and (max-width: palette.$screen_large) {
-
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 60px;
+        width: 100px;
+        top: 3px;
+        right: 3px;
+        .skin-closeup{
+            scale:10%;
+            transition: -50%,-50%;
+            left: 0px;
+            top: -90px;
+        }
     }
 }
 #gui-weapons{
