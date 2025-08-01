@@ -2,7 +2,7 @@ import { Casters } from "../engine/console.ts";
 import { GamepadButtonID, Key, Server } from "../engine/mod.ts";
 
 export const api_server=new Server("localhost",8000,false)
-export const offline=true
+export const offline=false
 export enum GraphicsParticlesConfig {
     None=0,
     Normal,
@@ -14,7 +14,7 @@ export const ConfigCasters=Object.freeze({
     cv_loadout_name:Casters.toString,
     cv_loadout_skin:Casters.toString,
 
-    cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high","ultra"]),
+    cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
     cv_graphics_particles:Casters.toInt
 })
 export const ConfigDefaultValues={

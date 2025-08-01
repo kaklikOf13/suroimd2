@@ -8,7 +8,7 @@ import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
+import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
@@ -332,6 +332,8 @@ export class Player extends ServerGameObject{
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
         this.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
 
+        /*this.helmet=Armors.getFromString("tactical_helmet")
+        this.vest=Armors.getFromString("tactical_vest")*/
         //this.helmet=Armors.getFromString("basic_helmet")
         /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
@@ -345,8 +347,9 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
 
-        this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,30)
+        /*this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,30)
         this.inventory.give_item(Consumibles.getFromString("soda") as unknown as GameItem,10)
+        this.inventory.give_item(Consumibles.getFromString("blue_potion") as unknown as GameItem,5)*/
 
         /*const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
         v.seats[0].set_player(this)*/

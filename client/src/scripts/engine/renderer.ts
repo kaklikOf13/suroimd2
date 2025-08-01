@@ -233,6 +233,7 @@ export class Material2DFactory<MaterialArgs=any>{
     readonly factorys2D:{
         simple:Material2DFactory<Color>
     }
+    readonly factorys2D_consts:Record<string,Record<string,number|WebGLUniformLocation>>={}
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white) {
         super(canvas, meter_size);
         const gl = this.canvas.getContext("webgl", { antialias: true });
@@ -266,23 +267,27 @@ void main() {
                 this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
                 this.gl.useProgram(factory.program);
 
-                const positionAttributeLocation = this.gl.getAttribLocation(factory.program, "a_Position");
+                const positionAttributeLocation = this.factorys2D_consts["simple"]["position"] as number;
                 this.gl.enableVertexAttribArray(positionAttributeLocation);
                 this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
 
-                let location = this.gl.getUniformLocation(factory.program, "u_Color");
-                this.gl.uniform4f(location, args.r, args.g, args.b, args.a);
+                this.gl.uniform4f(this.factorys2D_consts["simple"]["color"], args.r, args.g, args.b, args.a);
 
-                location = this.gl.getUniformLocation(factory.program, "u_Translation");
-                this.gl.uniform2f(location, trans.position.x, trans.position.y);
-                location = this.gl.getUniformLocation(factory.program, "u_Scale");
-                this.gl.uniform2f(location, trans.scale.x, trans.scale.y);
+                this.gl.uniform2f(this.factorys2D_consts["simple"]["translation"], trans.position.x, trans.position.y);
+                this.gl.uniform2f(this.factorys2D_consts["simple"]["scale"], trans.scale.x, trans.scale.y);
 
-                const projectionMatrixLocation = this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix");
-                this.gl.uniformMatrix4fv(projectionMatrixLocation, false, this.projectionMatrix);
+                this.gl.uniformMatrix4fv(this.factorys2D_consts["simple"]["proj"], false, this.projectionMatrix);
 
                 this.gl.drawArrays(mode, 0, vertices.length / 2);
             }),
+        }
+        const factory=this.factorys2D.simple
+        this.factorys2D_consts["simple"]={
+            "position":this.gl.getAttribLocation(factory.program, "a_Position"),
+            "color":this.gl.getUniformLocation(factory.program, "u_Color")!,
+            "translation":this.gl.getUniformLocation(factory.program, "u_Translation")!,
+            "scale":this.gl.getUniformLocation(factory.program, "u_Scale")!,
+            "proj":this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")!,
         }
 
         //Tex Program
@@ -291,6 +296,17 @@ void main() {
         gl!.attachShader(tex_program!, this.createShader(texFragmentShaderSource, gl!.FRAGMENT_SHADER))
         this.tex_program = tex_program!
         gl!.linkProgram(this.tex_program)
+        
+        this.factorys2D_consts["texture"]={
+            "position":this.gl.getAttribLocation(this.tex_program, "a_Position"),
+            "coord":this.gl.getAttribLocation(this.tex_program, "a_TexCoord"),
+            "color":this.gl.getUniformLocation(this.tex_program, "u_Color")!,
+            "translation":this.gl.getUniformLocation(this.tex_program, "u_Translation")!,
+            "scale":this.gl.getUniformLocation(this.tex_program, "u_Scale")!,
+            "proj":this.gl.getUniformLocation(this.tex_program, "u_ProjectionMatrix")!,
+            "texture":this.gl.getUniformLocation(this.tex_program, "u_Texture")!,
+            "tint":this.gl.getUniformLocation(this.tex_program, "u_Tint")!,
+        }
 
         document.body.addEventListener("pointerdown", e => {
             canvas.dispatchEvent(new PointerEvent("pointerdown", {
@@ -402,28 +418,23 @@ void main() {
 
         this.gl.useProgram(program);
 
-        let locationA:number|null = this.gl.getAttribLocation(program, "a_Position")
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
-        this.gl.enableVertexAttribArray(locationA)
-        this.gl.vertexAttribPointer(locationA, 2, this.gl.FLOAT, false, 0, 0)
+        this.gl.enableVertexAttribArray(this.factorys2D_consts["texture"]["position"] as number)
+        this.gl.vertexAttribPointer(this.factorys2D_consts["texture"]["position"] as number, 2, this.gl.FLOAT, false, 0, 0)
 
-        locationA = this.gl.getAttribLocation(program, "a_TexCoord")
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
-        this.gl.enableVertexAttribArray(locationA);
-        this.gl.vertexAttribPointer(locationA, 2, this.gl.FLOAT, false, 0, 0)
+        this.gl.enableVertexAttribArray(this.factorys2D_consts["texture"]["coord"] as number);
+        this.gl.vertexAttribPointer(this.factorys2D_consts["texture"]["coord"] as number, 2, this.gl.FLOAT, false, 0, 0)
 
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, image.texture);
-        this.gl.uniform1i(this.gl.getUniformLocation(program, "u_Texture"), 0)
+        this.gl.uniform1i(this.factorys2D_consts["texture"]["texture"] as WebGLUniformLocation, 0)
 
-        let location = this.gl.getUniformLocation(program, "u_ProjectionMatrix")
-        this.gl.uniformMatrix4fv(location, false, this.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.factorys2D_consts["texture"]["proj"], false, this.projectionMatrix);
 
-        location = this.gl.getUniformLocation(program, "u_Translation")
-        this.gl.uniform2f(location,position.x,position.y)
+        this.gl.uniform2f(this.factorys2D_consts["texture"]["translation"],position.x,position.y)
 
-        location = this.gl.getUniformLocation(program, "u_Tint")
-        this.gl.uniform4f(location,tint.r,tint.g,tint.b,tint.a)
+        this.gl.uniform4f(this.factorys2D_consts["texture"]["tint"],tint.r,tint.g,tint.b,tint.a)
 
         this.gl.drawArrays(this.gl.TRIANGLES, 0, model.length / 2)
     }

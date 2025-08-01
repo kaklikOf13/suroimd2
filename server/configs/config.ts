@@ -28,7 +28,7 @@ export const Config:ConfigType={
         },
     },
     database:{
-        enabled:true,
+        enabled:false,
         files:{
             accounts:"database/accounts.db"
         },

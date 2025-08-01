@@ -290,20 +290,22 @@ export class Game extends ServerGame2D<ServerGameObject>{
         p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
 
         p.username=username
-        let ff
-        if(this.subscribe_db){
-            ff=this.subscribe_db[p.username]
-        }else{
-            ff=await(await fetch(`http${Config.api.global}/get-status/${p.username}`)).json()
-            
-        }
+        if(Config.database.enabled){
+            let ff
+            if(this.subscribe_db){
+                ff=this.subscribe_db[p.username]
+            }else{
+                ff=await(await fetch(`http${Config.api.global}/get-status/${p.username}`)).json()
+                
+            }
 
-        if(ff.user){
-            const inv=JSON.parse(ff.user.inventory)
-            const s=Skins.getFromNumber(packet.skin)
-            if(inv.skins.includes(s.idNumber)){
-                p.skin=s
-                p.loadout.skin=s.idString
+            if(ff.user){
+                const inv=JSON.parse(ff.user.inventory)
+                const s=Skins.getFromNumber(packet.skin)
+                if(inv.skins.includes(s.idNumber)){
+                    p.skin=s
+                    p.loadout.skin=s.idString
+                }
             }
         }
         

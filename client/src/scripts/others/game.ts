@@ -42,7 +42,7 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
-  scope_zoom:number=0.78
+  scope_zoom:number=0.53
   happening:boolean=false
 
   //0.14=l6 32x
@@ -123,12 +123,16 @@ export class Game extends ClientGame2D<GameObject>{
           this.action.UsingItem=false
           break
         case "move_left":
+          this.action.Movement.x=this.action.Movement.x!==-1?this.action.Movement.x:0
+          break
         case "move_right":
-          this.action.Movement.x=0
+          this.action.Movement.x=this.action.Movement.x!==1?this.action.Movement.x:0
           break
         case "move_up":
+          this.action.Movement.y=this.action.Movement.y!==-1?this.action.Movement.y:0
+          break
         case "move_down":
-          this.action.Movement.y=0
+          this.action.Movement.y=this.action.Movement.y!==1?this.action.Movement.y:0
           break
       }
     })
@@ -213,8 +217,8 @@ export class Game extends ClientGame2D<GameObject>{
       this.camera.position=this.activePlayer!.position
       const gridSize=GameConstants.collision.chunckSize
       this.grid_gfx.clear()
-      this.grid_gfx.fill_color(ColorM.hex("#0002"))
-      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.07)
+      this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
+      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.08)
     }
   }
   connect(client:Client,playerName:string){
