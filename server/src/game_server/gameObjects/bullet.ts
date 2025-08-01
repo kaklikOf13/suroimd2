@@ -1,7 +1,6 @@
 import { BaseGameObject2D, CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
 import { Ammos } from "../../../../common/scripts/definitions/items/ammo.ts";
@@ -48,7 +47,7 @@ export class Bullet extends ServerGameObject{
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         this.manager.cells.updateObject(this)
         //const objs:BaseGameObject2D[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
-        const objs=[...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
+        const objs=[...Object.values(this.manager.objects[this.layer].objects)]
         for(const obj of objs){
             switch(obj.stringType){
                 case "player":{

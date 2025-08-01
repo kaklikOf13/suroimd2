@@ -1,7 +1,7 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
 import { BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
-import { CATEGORYS, zIndexes } from "common/scripts/others/constants.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { type Player } from "./player.ts";
 import { ColorM, Renderer } from "../engine/renderer.ts";
@@ -55,7 +55,7 @@ export class Bullet extends GameObject{
             this.position=v2.add(this.hb.position,this.dts)
 
             //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
-            const objs=[...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
+            const objs=[...Object.values(this.manager.objects[this.layer].objects)]
             for(const obj of objs){
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){

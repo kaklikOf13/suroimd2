@@ -4,7 +4,6 @@ import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 
@@ -37,7 +36,7 @@ export class Projectile extends ServerGameObject{
 
     fuse_delay:number=0
     update(dt:number): void {
-        if(!v2.is(this.velocity,NullVec2)){
+        /*if(!v2.is(this.velocity,NullVec2)){
             this.position=v2.clamp2(v2.add(this.position,v2.scale(this.velocity,dt)),NullVec2,this.game.map.size)
             this.manager.cells.updateObject(this)
             this.dirtyPart=true
@@ -83,7 +82,7 @@ export class Projectile extends ServerGameObject{
                         break
                 }
             }
-        }
+        }*/
     }
     create(args: {defs:ProjectileDef,position:Vec2,owner?:Player}): void {
         this.defs=args.defs

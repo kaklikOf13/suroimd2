@@ -1,5 +1,5 @@
-import { ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
-import { CATEGORYS,CATEGORYSL, GameConstants, PacketManager } from "common/scripts/others/constants.ts"
+import { ID, Numeric, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts"
@@ -217,8 +217,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             PlayerBody,
             Vehicle
         ])
-        for(const i of CATEGORYSL){
-            this.scene.objects.add_category(i)
+        for(const i of LayersL){
+            this.scene.objects.add_layer(i)
         }
         this.config=config
         this.clients
@@ -274,8 +274,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
     override on_run(): void {
         this.map.generate()
     }
-    async add_player(client:Client,id:number,username:string,packet:JoinPacket):Promise<Player>{
-        const p=this.scene.objects.add_object(new Player(),CATEGORYS.PLAYERS,id) as Player
+    async add_player(client:Client,id:number,username:string,packet:JoinPacket,layer:number=Layers.Normal):Promise<Player>{
+        const p=this.scene.objects.add_object(new Player(),layer,id) as Player
                 (p as Player).client=client;
                 (p as Player).update2()
         if(ValidString.simple_characters(packet.PlayerName)){
@@ -352,8 +352,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.modeManager.on_finish()
         console.log(`Game ${this.id} Fineshed`)
     }
-    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:GameItem):Bullet{
-        const b=this.scene.objects.add_object(new Bullet(),CATEGORYS.BULLETS,undefined,{
+    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:GameItem,layer:number=Layers.Normal):Bullet{
+        const b=this.scene.objects.add_object(new Bullet(),layer,undefined,{
             defs:def,
             position:v2.duplicate(position),
             owner:owner,
@@ -364,45 +364,45 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.bullets[b.id]=b
         return b
     }
-    add_explosion(position:Vec2,def:ExplosionDef,owner?:Player,source?:DamageSourceDef):Explosion{
-        const e=this.scene.objects.add_object(new Explosion(),CATEGORYS.EXPLOSIONS,undefined,{defs:def,owner,position:position,source}) as Explosion
+    add_explosion(position:Vec2,def:ExplosionDef,owner?:Player,source?:DamageSourceDef,layer:number=Layers.Normal):Explosion{
+        const e=this.scene.objects.add_object(new Explosion(),layer,undefined,{defs:def,owner,position:position,source}) as Explosion
         return e
     }
-    add_player_body(owner:Player,angle?:number):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(angle),CATEGORYS.PLAYERS_BODY,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+    add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
+        const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
         return b
     }
-    add_projectile(position:Vec2,def:ProjectileDef,owner?:Player):Projectile{
-        const p=this.scene.objects.add_object(new Projectile(),CATEGORYS.PROJECTILES,undefined,{defs:def,owner,position:position}) as Projectile
+    add_projectile(position:Vec2,def:ProjectileDef,owner?:Player,layer:number=Layers.Normal):Projectile{
+        const p=this.scene.objects.add_object(new Projectile(),layer,undefined,{defs:def,owner,position:position}) as Projectile
         return p
     }
-    add_loot(position:Vec2,def:GameItem,count:number):Loot{
-        const l=this.scene.objects.add_object(new Loot(),CATEGORYS.LOOTS,undefined,{item:def,count:count,position:position}) as Loot
+    add_loot(position:Vec2,def:GameItem,count:number,layer:number=Layers.Normal):Loot{
+        const l=this.scene.objects.add_object(new Loot(),layer,undefined,{item:def,count:count,position:position}) as Loot
         return l
     }
-    add_vehicle(position:Vec2,def:VehicleDef):Vehicle{
-        const v=this.scene.objects.add_object(new Vehicle(),CATEGORYS.VEHICLES,undefined,{position,def}) as Vehicle
+    add_vehicle(position:Vec2,def:VehicleDef,layer:number=Layers.Normal):Vehicle{
+        const v=this.scene.objects.add_object(new Vehicle(),layer,undefined,{position,def}) as Vehicle
         return v
     }
     handleConnections(client:Client,username:string){
-        const objId={id:client.ID,category:CATEGORYS.PLAYERS}
+        let player:Player|undefined
         client.on("join",async(packet:JoinPacket)=>{
-            if (this.allowJoin&&!this.scene.objects.exist(objId)){
-                const p=await this.add_player(client,objId.id,username,packet)
+            if (this.allowJoin&&!this.scene.objects.exist_all(client.ID,1)){
+                const p=await this.add_player(client,client.ID,username,packet)
                 this.connectedPlayers[p.id]=p
+                player=p
                 console.log(`${p.name} Connected`)
             }
         })
         client.on("action",(p:ActionPacket)=>{
-            if(this.scene.objects.exist(objId)){
-                (this.scene.objects.get_object(objId) as Player).process_action(p)
+            if(player){
+                player.process_action(p)
             }
         })
         client.on(DefaultSignals.DISCONNECT,()=>{
-            if(this.scene.objects.exist(objId)){
-                const p=this.scene.objects.get_object(objId) as Player
-                delete this.connectedPlayers[p.id]
-                console.log(`${p.name} Disconnected`)
+            if(player){
+                delete this.connectedPlayers[player.id]
+                console.log(`${player.name} Disconnected`)
             }
         })
     }

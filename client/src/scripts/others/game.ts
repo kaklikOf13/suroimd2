@@ -1,6 +1,6 @@
-import { ClientGame2D, type MousePosListener, type KeyListener, ResourcesManager, Key, KeyEvents, Renderer, ColorM, WebglRenderer, Grid2D, GamepadButton, InputManager} from "../engine/mod.ts"
-import { ActionPacket, CATEGORYSL, GameConstants, PacketManager, zIndexes } from "common/scripts/others/constants.ts";
-import { BasicSocket, Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { ClientGame2D, ResourcesManager, Renderer, ColorM, WebglRenderer, InputManager} from "../engine/mod.ts"
+import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
+import { Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -140,7 +140,7 @@ export class Game extends ClientGame2D<GameObject>{
       this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
     })
     
-    this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e)=>{
+    this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e: { stick: string; axis: Vec2; })=>{
       if(e.stick==="left"){
         this.action.Movement=e.axis
       }else if(e.stick==="right"){
@@ -156,10 +156,9 @@ export class Game extends ClientGame2D<GameObject>{
   }
   constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle])
-    for(const i of CATEGORYSL){
-      this.scene.objects.add_category(i)
+    for(const i of LayersL){
+      this.scene.objects.add_layer(i)
     }
-    this.scene.objects.add_category(7)
     this.scene.objects.encoders=ObjectsE;
 
     this.renderer.background=ColorM.hex("#000");

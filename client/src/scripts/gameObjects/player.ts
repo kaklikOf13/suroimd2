@@ -1,6 +1,6 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
-import { CATEGORYS, GameConstants, zIndexes } from "common/scripts/others/constants.ts";
+import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
@@ -67,7 +67,7 @@ export class Player extends GameObject{
             d.sprite.scale=v2.random(0.7,1.4)
             d.sprite.rotation=random.rad()
             d.sprite.position=v2.duplicate(position)
-            this.game.scene.objects.add_object(d,CATEGORYS.DECALS)
+            this.game.scene.objects.add_object(d,this.layer)
         }
     }
 

@@ -11,7 +11,6 @@ import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/act
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import { MeleeDef, Melees } from "../../../../common/scripts/definitions/items/melees.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { Projectiles } from "common/scripts/definitions/projectiles.ts";
@@ -239,7 +238,7 @@ export class MeleeItem extends LItem{
       v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.offset,this.def.offset))
     )
     const hb=new CircleHitbox2D(position,this.def.radius)
-    const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,[CATEGORYS.PLAYERS,CATEGORYS.OBSTACLES])
+    const collidibles:ServerGameObject[]=user.manager.cells.get_objects2(hb,user.layer)
     for(const c of collidibles){
       if(!hb.collidingWith(c.hb))continue
       if(c instanceof Obstacle){

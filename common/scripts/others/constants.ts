@@ -32,27 +32,11 @@ export const GameConstants={
         chunckSize:7
     }
 }
-export enum CATEGORYS{
-    PLAYERS=0,
-    LOOTS,
-    BULLETS,
-    OBSTACLES,
-    EXPLOSIONS,
-    PROJECTILES,
-    DECALS,
-    PLAYERS_BODY,
-    VEHICLES
+export enum Layers{
+    Normal=10
 }
-export const CATEGORYSL=[
-    CATEGORYS.PLAYERS,
-    CATEGORYS.LOOTS,
-    CATEGORYS.BULLETS,
-    CATEGORYS.OBSTACLES,
-    CATEGORYS.EXPLOSIONS,
-    CATEGORYS.PROJECTILES,
-    CATEGORYS.DECALS,
-    CATEGORYS.PLAYERS_BODY,
-    CATEGORYS.VEHICLES
+export const LayersL=[
+    Layers.Normal
 ]
 
 export const PacketManager:PacketsManager=new PacketsManager()

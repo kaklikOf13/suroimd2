@@ -1,14 +1,14 @@
 import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { ActionsType, CATEGORYS, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
+import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { GInventory,GunItem,LItem} from "../inventory/inventory.ts";
 import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/update_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
+import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
@@ -20,8 +20,6 @@ import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
-import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
-import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -236,7 +234,7 @@ export class Player extends ServerGameObject{
             }
             //Collision
             //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-            const objs=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
+            const objs=[...Object.values(this.manager.objects[this.layer].objects)]
             let can_interact=this.interactionsEnabled
             for(const obj of objs){
                 if((obj as BaseGameObject2D).id===this.id)continue
@@ -414,20 +412,14 @@ export class Player extends ServerGameObject{
             if(this.actions.current_action){
                 up.gui.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
-            this.camera_hb.min.x=this.position.x-(25/2)
-            this.camera_hb.min.y=this.position.y-(13/2)
-            this.camera_hb.max.x=this.position.x+(25/2)
-            this.camera_hb.max.y=this.position.y+(13/2)
+            this.camera_hb.min.x=this.position.x-(5/2)
+            this.camera_hb.min.y=this.position.y-(5/2)
+            this.camera_hb.max.x=this.position.x+(5/2)
+            this.camera_hb.max.y=this.position.y+(5/2)
             const objs=[
-                ...Object.values(this.manager.objects[CATEGORYS.BULLETS].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.EXPLOSIONS].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.PLAYERS].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.PROJECTILES].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.PLAYERS_BODY].objects),
-                ...Object.values(this.manager.objects[CATEGORYS.VEHICLES].objects),
+                ...Object.values(this.manager.objects[this.layer].objects),
             ]
+            //const objs=this.manager.cells.get_objects(this.camera_hb,CATEGORYSL)
             const o=this.game.scene.objects.encode_list(objs,undefined,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm

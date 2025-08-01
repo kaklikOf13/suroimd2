@@ -1,7 +1,6 @@
-import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, ObjectKey, Packet, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
 
 import { IslandDef } from "common/scripts/definitions/maps/base.ts"
@@ -12,8 +11,8 @@ import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
-import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
+import { Layers } from "common/scripts/others/constants.ts";
 
 export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRandom){
     map.terrain.add_floor(def.terrain.base,[
@@ -38,14 +37,14 @@ export class GameMap{
     }
     map_packet_stream:NetStream=new NetStream(new ArrayBuffer(10*1024))
     terrain:TerrainManager=new TerrainManager()
-    getRandomPosition(hitbox:Hitbox2D,k:ObjectKey,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,k:ObjectKey,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
+    getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
         let pos:Vec2|undefined=undefined
         let attempt=0
         if(!valid){
-            valid=(hitbox:Hitbox2D,k:ObjectKey,map:GameMap)=>{
-                const objs=map.game.scene.objects.cells.get_objects2(hitbox,CATEGORYS.OBSTACLES)
+            valid=(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>{
+                const objs=map.game.scene.objects.cells.get_objects2(hitbox,layer)
                 for(const o of objs){
-                    if(!(o.id===k.id&&o.category===k.category)&&hb.collidingWith((o as Obstacle).spawnHitbox)){
+                    if(!(o.id===id&&o.layer===layer)&&hb.collidingWith((o as Obstacle).spawnHitbox)){
                         return false
                     }
                 }
@@ -63,7 +62,7 @@ export class GameMap{
             if(attempt>=maxAttempts)break
             pos=gp!(hc,this)
             hb.translate(pos)
-            if(!valid!(hb,k,this)){
+            if(!valid!(hb,id,layer,this)){
                 pos=undefined
             }
             attempt++
@@ -71,14 +70,14 @@ export class GameMap{
         return pos
     }
     add_obstacle(def:ObstacleDef):Obstacle{
-        const o=this.game.scene.objects.add_object(new Obstacle(),CATEGORYS.OBSTACLES,undefined,{
+        const o=this.game.scene.objects.add_object(new Obstacle(),Layers.Normal,undefined,{
             def:def
         }) as Obstacle
         return o
     }
     generate_obstacle(def:ObstacleDef):Obstacle|undefined{
         const o=this.add_obstacle(def)
-        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.get_key())
+        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.id,o.layer)
         if(!p){
             o.destroy()
             return undefined
@@ -100,9 +99,6 @@ export class GameMap{
         for(let i=0;i<5;i++){
             this.generate_obstacle(Obstacles.getFromString("barrel"))
         }
-        /*for(let i=0;i<5;i++){
-            this.generate_obstacle(Obstacles.getFromString("wood_crate"))
-        }*/
         for(let i=0;i<Object.values(Guns.valueNumber).length;i++){
             this.game.add_loot(v2.random2(NullVec2,this.size),Guns.getFromNumber(i) as unknown as GameItem,1)
         }

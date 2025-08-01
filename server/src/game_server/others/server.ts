@@ -1,9 +1,9 @@
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
 import { Game, GameConfig } from "./game.ts"
 import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
 import { Config } from "../../../configs/config.ts";
 import { v1 as uuid } from "https://deno.land/std@0.224.0/uuid/mod.ts"
+import { Layers } from "common/scripts/others/constants.ts";
 export class GameServer{
     server:Server
     games:Game[]
@@ -47,10 +47,10 @@ export class GameServer{
         this.games[id].string_id=uuid.generate() as string
         const handler=(this.games[id].clients as ClientsManager).handler_log(()=>{
             let idC=random.id()
-            while(this.games[id].scene.objects.exist({
-                id:idC,
-                category:CATEGORYS.PLAYERS
-            })){
+            while(this.games[id].scene.objects.exist(
+                idC,
+                Layers.Normal
+            )){
                 idC=random.id()
             }
             return idC

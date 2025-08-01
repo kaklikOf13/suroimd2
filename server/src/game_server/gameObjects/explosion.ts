@@ -3,7 +3,6 @@ import { Player } from "./player.ts";
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { Projectiles } from "common/scripts/definitions/projectiles.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
@@ -42,7 +41,8 @@ export class Explosion extends ServerGameObject{
                 }
             }
 
-            const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS,CATEGORYS.PROJECTILES])
+            //const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS,CATEGORYS.PROJECTILES])
+            const objs=Object.values(this.manager.objects[this.layer].objects)
             const damageCollisions:ServerGameObject[]=[]
             for(const obj of objs){
                 switch((obj as ServerGameObject).stringType){

@@ -108,7 +108,7 @@ export class Loot extends GameObject{
                     break
                 }
             }
-            //if(this.is_new){
+            if(this.is_new){
                 this.container.scale=v2.new(0.05,0.05)
                 this.game.addTween({
                     duration:3,
@@ -119,7 +119,7 @@ export class Loot extends GameObject{
                         y:1
                     },
                 })
-            //}
+            }
             this.container.visible=true
         }
     }

@@ -1,6 +1,6 @@
 import { CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { LootData } from "common/scripts/others/objectsEncode.ts";
-import { CATEGORYS, GameConstants } from "common/scripts/others/constants.ts";
+import { GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
@@ -102,7 +102,7 @@ export class Loot extends ServerGameObject{
             this.oldPos=v2.duplicate(this.position)
         }
         //const others:ServerGameObject[]=this.game.scene.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.LOOTS])
-        const others=[...Object.values(this.manager.objects[CATEGORYS.LOOTS].objects),...Object.values(this.manager.objects[CATEGORYS.OBSTACLES].objects)]
+        const others=[...Object.values(this.manager.objects[this.layer].objects)]
         for(const other of others){
             switch(other.stringType){
                 case "loot":{

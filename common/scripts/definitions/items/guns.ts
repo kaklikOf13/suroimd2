@@ -426,7 +426,7 @@ Guns.insert(
                 damage:7,
                 radius:0.014,
                 speed:24,
-                range:20,
+                range:25,
                 falloff:0.8,
                 criticalMult:1.2,
                 tracer:tracers.small
