@@ -21,7 +21,7 @@ export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRa
         v2.new(map.size.x,0),
         v2.new(map.size.x,map.size.y),
         v2.new(0,map.size.y),
-    ])
+    ],undefined,false)
     let cp=0
     for(const f of def.terrain.floors.sort()){
         cp+=f.padding
@@ -129,13 +129,13 @@ export class GameMap{
                 base:FloorType.Water,
                 floors:[
                     {
-                        padding:20,
+                        padding:23,
                         type:FloorType.Sand,
                         spacing:4,
                         variation:1.3,
                     },
                     {
-                        padding:7,
+                        padding:10,
                         type:FloorType.Grass,
                         spacing:4,
                         variation:1.3,

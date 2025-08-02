@@ -22,11 +22,12 @@ export const Floors:Record<FloorType,FloorDef>={
 }
 export interface Floor{
     type:FloorType
+    smooth:boolean
     vertex:Vec2[]
 }
 export class TerrainManager{
     floors:Record<number,Floor[]>={0:[]}
-    add_floor(type:FloorType,vertex:Vec2[],layer:number=0){
-        this.floors[layer].push({type:type,vertex:vertex})
+    add_floor(type:FloorType,vertex:Vec2[],layer:number=0,smooth:boolean=true){
+        this.floors[layer].push({type,vertex,smooth})
     }
 }

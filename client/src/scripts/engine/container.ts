@@ -1,4 +1,4 @@
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts";
 import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D, } from "./resources.ts";
 import { FrameDef, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
@@ -160,7 +160,7 @@ export class Graphics2D extends Container2DObject {
     paths:number[][]=[]
 
     beginPath(): this {
-        this.current_path=[];
+        this.current_path=[];   
         return this;
     }
     lineTo(x:number,y:number):this{
@@ -168,6 +168,10 @@ export class Graphics2D extends Container2DObject {
         this.current_position=v2.new(x,y)
         return this
     }
+    smooth_shape(subdivisions=8) {
+        this.current_path=SmoothShape2D(this.current_path,subdivisions)
+    }
+
     endPath():this{
         this.command.push({type:"path",path:new Float32Array(triangulateConvex(this.current_path))})
         this.current_path=[]

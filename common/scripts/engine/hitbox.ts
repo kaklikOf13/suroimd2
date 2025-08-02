@@ -1,4 +1,5 @@
 import { NullVec2, type Vec2, v2 } from "./geometry.ts"
+import { type NetStream } from "./mod.ts";
 import { random, SeededRandom } from "./random.ts";
 import { Numeric } from "./utils.ts";
 
@@ -42,6 +43,8 @@ export abstract class BaseHitbox2D{
     abstract readonly position:Vec2
     abstract translate(position:Vec2):void
     abstract clamp(min:Vec2,max:Vec2):void
+    abstract encode(stream:NetStream):void
+
     constructor(){
     }
     is_null():boolean{
@@ -93,6 +96,12 @@ export class NullHitbox2D extends BaseHitbox2D{
     }
     override clamp(min:Vec2,max:Vec2){
         this.position=v2.clamp2(this.position,min,max)
+    }
+    override encode(stream:NetStream){
+        stream.writePosition(this.position)
+    }
+    static decode(stream:NetStream):NullHitbox2D{
+        return new NullHitbox2D(stream.readPosition())
     }
 }
 export type OverlapCollision2D={
@@ -211,6 +220,13 @@ export class CircleHitbox2D extends BaseHitbox2D{
         const mm=v2.new(this.radius,this.radius)
         this.position=v2.clamp2(this.position,v2.add(min,mm),v2.sub(max,mm))
     }
+    override encode(stream:NetStream){
+        stream.writePosition(this.position)
+        stream.writeFloat(this.radius,0,500,2)
+    }
+    static decode(stream:NetStream):CircleHitbox2D{
+        return new CircleHitbox2D(stream.readPosition(),stream.readFloat(0,500,2))
+    }
 }
 
 export class RectHitbox2D extends BaseHitbox2D{
@@ -313,6 +329,19 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override clone():RectHitbox2D{
         return new RectHitbox2D(this.min,this.max)
+    }
+    override encode(stream:NetStream){
+        stream.writePosition(this.min)
+        stream.writePosition(this.max)
+    }
+    static decode(stream:NetStream):RectHitbox2D{
+        return new RectHitbox2D(stream.readPosition(),stream.readPosition())
+    }
+    override clamp(min: Vec2, max: Vec2): void {
+        this.translate(v2.clamp2(this.position,min,v2.sub(max,v2.sub(this.min,this.max))))
+    }
+    override is_null(): boolean {
+      return false
     }
 }
 export function jaggedRectangle(

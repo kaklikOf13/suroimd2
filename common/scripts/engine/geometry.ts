@@ -389,3 +389,49 @@ export const rotationFull={
     bottom:Angle.deg2rad(90),
     top:Angle.deg2rad(-90),
 }
+/**
+ * Suaviza um polígono usando Catmull–Rom spline
+ * @param polygon - Lista de pontos do polígono (fechado)
+ * @param subdivisions - Número de subdivisões por segmento (maior = mais suave)
+ */
+export function SmoothShape2D(polygon: Vec2[], subdivisions: number = 8): Vec2[] {
+    if (polygon.length < 3) return polygon;
+
+    const result: Vec2[] = [];
+    const n = polygon.length;
+
+    // Garante que é fechado
+    const points = [...polygon, polygon[0], polygon[1], polygon[2]];
+
+    // Catmull–Rom: gera pontos suaves
+    for (let i = 0; i < n; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const p2 = points[i + 2];
+        const p3 = points[i + 3];
+
+        for (let t = 0; t < subdivisions; t++) {
+            const tt = t / subdivisions;
+            const tt2 = tt * tt;
+            const tt3 = tt2 * tt;
+
+            const x = 0.5 * (
+                (2 * p1.x) +
+                (-p0.x + p2.x) * tt +
+                (2*p0.x - 5*p1.x + 4*p2.x - p3.x) * tt2 +
+                (-p0.x + 3*p1.x - 3*p2.x + p3.x) * tt3
+            );
+
+            const y = 0.5 * (
+                (2 * p1.y) +
+                (-p0.y + p2.y) * tt +
+                (2*p0.y - 5*p1.y + 4*p2.y - p3.y) * tt2 +
+                (-p0.y + 3*p1.y - 3*p2.y + p3.y) * tt3
+            );
+
+            result.push(v2.new(x, y));
+        }
+    }
+
+    return result;
+}

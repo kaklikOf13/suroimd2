@@ -40,6 +40,10 @@
     transform-origin: 0 0;
     overflow: visible;
     z-index: 100;
+    pointer-events: none;
+    *{
+        pointer-events: auto;
+    }
 }
 #boost-bar-container,
 #health-bar-container{

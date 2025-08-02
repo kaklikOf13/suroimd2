@@ -371,6 +371,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){
+            if(!this.objects[obj.layer]||!this.objects[obj.layer].objects[obj.id])continue
             this.unregister(obj,true)
             delete this.objects[obj.layer].objects[obj.id]
             this.objects[obj.layer].orden.splice(this.objects[obj.layer].orden.indexOf(obj.id),1)

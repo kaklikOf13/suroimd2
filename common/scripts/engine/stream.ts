@@ -1,4 +1,5 @@
 import { Vec2 } from "./geometry.ts";
+import { CircleHitbox2D, Hitbox2D, HitboxType2D, NullHitbox2D, RectHitbox2D } from "./hitbox.ts";
 import { ID } from "./utils.ts";
 //Thanks Suroi.io
 
@@ -701,5 +702,20 @@ export class NetStream {
     }
     readRad(): ID {
         return this.readFloat((-Math.PI)*2,Math.PI*2,3);
+    }
+
+    writeHitbox(hb:Hitbox2D){
+        this.writeUint8(hb.type)
+        hb.encode(this)
+    }
+    readHitbox():Hitbox2D{
+        switch(this.readUint8() as HitboxType2D){
+            case HitboxType2D.circle:
+                return CircleHitbox2D.decode(this)
+            case HitboxType2D.rect:
+                return RectHitbox2D.decode(this)
+            case HitboxType2D.null:
+                return NullHitbox2D.decode(this)
+        }
     }
 }

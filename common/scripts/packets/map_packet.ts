@@ -14,18 +14,21 @@ export class MapPacket extends Packet{
     }
     encode(stream: NetStream): void {
         stream.writeArray(this.map.terrain,(t)=>{
-            stream.writeUint8(t.type)
-            stream.writeArray(t.vertex,(p)=>{
+            stream.writeBooleanGroup(t.smooth)
+            .writeUint8(t.type)
+            .writeArray(t.vertex,(p)=>{
                 stream.writePosition(p)
             },2)
         },2)
-        stream.writeUint16(this.map.size.x)
-        stream.writeUint16(this.map.size.y)
+        .writeUint16(this.map.size.x)
+        .writeUint16(this.map.size.y)
     }
     decode(stream: NetStream): void {
         this.map.terrain=stream.readArray(()=>{
+            const bg=stream.readBooleanGroup()
             return {
                 type:stream.readUint8(),
+                smooth:bg[0],
                 vertex:stream.readArray(()=>{
                     return stream.readPosition()
                 },2)

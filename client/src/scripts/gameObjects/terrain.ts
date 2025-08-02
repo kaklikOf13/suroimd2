@@ -9,7 +9,7 @@ export class TerrainM extends TerrainManager{
     process_map(mp:MapConfig){
         this.map=mp
         for(const f of mp.terrain){
-            this.add_floor(f.type,f.vertex)
+            this.add_floor(f.type,f.vertex,undefined,f.smooth)
         }
     }
 
@@ -19,6 +19,7 @@ export class TerrainM extends TerrainManager{
             for(const v of f.vertex){
                 graphic.lineTo(v.x,v.y)
             }
+            if(f.smooth)graphic.smooth_shape()
             graphic.endPath()
             graphic.fill_color(ColorM.number(Floors[f.type].default_color))
             graphic.fill()
