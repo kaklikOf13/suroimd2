@@ -1,7 +1,7 @@
 import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
+import { ObstacleDef, Obstacles } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 
 import { IslandDef } from "common/scripts/definitions/maps/base.ts"
 import { GameItem } from "common/scripts/definitions/utils.ts";
@@ -13,6 +13,7 @@ import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { Layers } from "common/scripts/others/constants.ts";
+import { Creatures } from "../../../../common/scripts/definitions/objects/creatures.ts";
 
 export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRandom){
     map.terrain.add_floor(def.terrain.base,[
@@ -75,6 +76,9 @@ export class GameMap{
         }) as Obstacle
         return o
     }
+    clamp_hitbox(hb:Hitbox2D){
+        hb.clamp(v2.new(0,0),this.size)
+    }
     generate_obstacle(def:ObstacleDef):Obstacle|undefined{
         const o=this.add_obstacle(def)
         const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.id,o.layer)
@@ -115,6 +119,10 @@ export class GameMap{
         this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_purple_potion") as unknown as GameItem,16)
         this.game.add_loot(v2.new(7,7),Consumibles.getFromString("small_red_crystal") as unknown as GameItem,16)
         this.game.add_loot(v2.new(7,7),Consumibles.getFromString("pocket_portal") as unknown as GameItem,1)
+
+        for(let i=0;i<10;i++){
+            this.game.add_creature(v2.random2(NullVec2,this.size),Creatures.getFromString("pig"),Layers.Normal)
+        }
 
         SingleIslandGeneration(this,{
             terrain:{

@@ -1,5 +1,5 @@
 import { Angle, Hitbox2D, LootTableItemRet, v2, Vec2 } from "common/scripts/engine/mod.ts"
-import { ObstacleDef } from "common/scripts/definitions/obstacles.ts";
+import { ObstacleDef } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
@@ -52,7 +52,6 @@ export class Obstacle extends ServerGameObject{
             this.rotation=Angle.random_rotation_modded(this.def.rotationMode)
         }
         this.health=this.def.health
-        this.reset_scale()
 
         if(this.def.lootTable){
             this.loot=LootTables.get_loot(this.def.lootTable,{withammo:true})
@@ -75,6 +74,7 @@ export class Obstacle extends ServerGameObject{
         }else{
             this.spawnHitbox=this.hb.clone()
         }
+        this.reset_scale()
     }
     override getData(): ObstacleData {
         return {

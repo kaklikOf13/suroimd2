@@ -26,6 +26,7 @@ export class PlayerBody extends ServerGameObject{
             this.manager.cells.updateObject(this)
             this.dirtyPart=true
             this.old_pos=v2.duplicate(this.position)
+            this.game.map.clamp_hitbox(this.hb)
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
         this.velocity=v2.scale(this.velocity,1/(1+dt*3))

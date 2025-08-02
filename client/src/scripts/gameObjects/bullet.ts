@@ -7,6 +7,7 @@ import { type Player } from "./player.ts";
 import { ColorM, Renderer } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Debug } from "../others/config.ts";
+import { Creature } from "./creature.ts";
 const images=[
     "bullet_normal"
 ]
@@ -60,7 +61,12 @@ export class Bullet extends GameObject{
                 switch((obj as BaseGameObject2D).stringType){
                     case "player":
                         if((obj as Player).hb&&!(obj as Player).dead&&this.hb.collidingWith((obj as Player).hb)&&!(obj as Player).parachute){
-                            (obj as Obstacle).on_hitted(this.position)
+                            (obj as Player).on_hitted(this.position)
+                            this.dying=true
+                        }
+                        break
+                    case "creature":
+                        if((obj as Creature).hb&&!(obj as Creature).dead&&this.hb.collidingWith(obj.hb)){
                             this.dying=true
                         }
                         break

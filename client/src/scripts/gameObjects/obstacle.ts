@@ -1,6 +1,6 @@
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { ABParticle2D, type Camera2D, ClientGameObject2D, type ClientParticle2D, ColorM, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
-import { Materials, ObstacleDef, Obstacles } from "common/scripts/definitions/obstacles.ts";
+import { Materials, ObstacleDef, Obstacles } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { ParticlesEmitter2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";

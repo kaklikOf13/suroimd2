@@ -41,6 +41,7 @@ export abstract class BaseHitbox2D{
     abstract clone():Hitbox2D
     abstract readonly position:Vec2
     abstract translate(position:Vec2):void
+    abstract clamp(min:Vec2,max:Vec2):void
     constructor(){
     }
     is_null():boolean{
@@ -89,6 +90,9 @@ export class NullHitbox2D extends BaseHitbox2D{
     }
     override clone():Hitbox2D{
         return new NullHitbox2D(this.position)
+    }
+    override clamp(min:Vec2,max:Vec2){
+        this.position=v2.clamp2(this.position,min,max)
     }
 }
 export type OverlapCollision2D={
@@ -201,6 +205,11 @@ export class CircleHitbox2D extends BaseHitbox2D{
     }
     override clone():CircleHitbox2D{
         return new CircleHitbox2D(v2.duplicate(this.position),this.radius)
+    }
+    
+    override clamp(min:Vec2,max:Vec2){
+        const mm=v2.new(this.radius,this.radius)
+        this.position=v2.clamp2(this.position,v2.add(min,mm),v2.sub(max,mm))
     }
 }
 

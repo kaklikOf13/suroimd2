@@ -26,6 +26,7 @@ import { Graphics2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts";
+import { Creature } from "../gameObjects/creature.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -155,7 +156,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle])
+    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
       this.scene.objects.add_layer(i)
     }

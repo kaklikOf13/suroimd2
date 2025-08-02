@@ -104,6 +104,15 @@ export interface VehicleData extends EncodedData{
     rotation:number
     position:Vec2
 }
+export interface CreatureData extends EncodedData{
+    full?:{
+        def:number
+        dead:boolean
+    }
+    state:number
+    angle:number
+    position:Vec2
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -381,5 +390,33 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 stream.writeUint8(data.full!.def)
             }
         }
-    }
+    },
+    creature:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:CreatureData={
+                position:stream.readPosition(),
+                angle:stream.readRad(),
+                state:stream.readUint8()
+            }
+            if(full){
+                const [dead]=stream.readBooleanGroup()
+                ret.full={
+                    def:stream.readUint16(),
+                    dead
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:CreatureData,stream:NetStream){
+            stream.writePosition(data.position)
+            .writeRad(data.angle)
+            .writeUint8(data.state)
+            if(full){
+                stream.writeBooleanGroup(data.full!.dead)
+                stream.writeUint16(data.full!.def)
+            }
+        }
+    },
 }

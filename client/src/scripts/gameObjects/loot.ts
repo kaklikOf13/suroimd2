@@ -51,6 +51,7 @@ export class Loot extends GameObject{
     override updateData(data:LootData){
         this.position=data.position
         this.container.position=this.position
+        this.manager.cells.updateObject(this)
         if(data.full){
             this.item=GameItems.valueNumber[data.full.item]
             switch(this.item.item_type){

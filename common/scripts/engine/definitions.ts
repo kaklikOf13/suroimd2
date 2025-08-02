@@ -1,3 +1,4 @@
+import { Vec2 } from "./geometry.ts";
 import { mergeDeep, splitPath } from "./utils.ts";
 export interface Definition{
     idString:string,
@@ -203,7 +204,12 @@ export class LocalizatorDefs{
         return this._get(val.split("."),this.language.value,val)
     }
 }
-export interface KeyFrameSpriteDef{
-    delay:number
+export interface FrameDef{
     image:string
+    scale?:number
+    hotspot?:Vec2
+    rotation?:number
 }
+export type KeyFrameSpriteDef={
+    delay:number
+}&FrameDef

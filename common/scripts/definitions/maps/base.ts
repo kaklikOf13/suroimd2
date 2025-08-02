@@ -176,4 +176,9 @@ LootTables.add_tables({
         [{weight:1,count:4,table:"ammos"}],
         [{weight:1,count:1,table:"legendary_guns"}],
     ],
+    //Animals
+    "animal_medium":[
+        [{weight:1,count:1,table:"special_consumibles"}],
+        [{weight:10,count:1,table:""},{weight:1,count:1,table:"ammos"}],
+    ]
 })

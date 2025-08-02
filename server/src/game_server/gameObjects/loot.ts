@@ -100,6 +100,8 @@ export class Loot extends ServerGameObject{
         if(!v2.is(this.position,this.oldPos)){
             this.dirtyPart=true
             this.oldPos=v2.duplicate(this.position)
+            this.game.map.clamp_hitbox(this.hb)
+            this.manager.cells.updateObject(this)
         }
         const others=this.manager.cells.get_objects(this.hb,this.layer)
         for(const other of others){

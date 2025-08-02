@@ -1,7 +1,7 @@
-import { v2 } from "../engine/geometry.ts";
-import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2 } from "../engine/mod.ts";
-import { zIndexes } from "../others/constants.ts";
-import { RectHitbox2D } from "../engine/hitbox.ts";
+import { v2 } from "../../engine/geometry.ts";
+import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2 } from "../../engine/mod.ts";
+import { zIndexes } from "../../others/constants.ts";
+import { RectHitbox2D } from "../../engine/hitbox.ts";
 
 export interface ObstacleDef extends Definition{
     health:number
@@ -92,7 +92,7 @@ Obstacles.insert(
     {
         idString:"oak_tree",
         health:80,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.31),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.2),
         scale:{
             destroy:0.9,
             max:2.5,

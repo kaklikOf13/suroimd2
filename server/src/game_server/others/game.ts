@@ -25,6 +25,8 @@ import { Vehicle } from "../gameObjects/vehicle.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Config } from "../../../configs/config.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
+import { Creature } from "../gameObjects/creature.ts";
+import { CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
 
 export interface GameConfig{
     maxPlayers:number
@@ -215,7 +217,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             Explosion,
             Projectile,
             PlayerBody,
-            Vehicle
+            Vehicle,
+            Creature
         ])
         for(const i of LayersL){
             this.scene.objects.add_layer(i)
@@ -385,6 +388,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
     add_vehicle(position:Vec2,def:VehicleDef,layer:number=Layers.Normal):Vehicle{
         const v=this.scene.objects.add_object(new Vehicle(),layer,undefined,{position,def}) as Vehicle
         return v
+    }
+    
+    add_creature(position:Vec2,def:CreatureDef,layer:number=Layers.Normal):Creature{
+        const c=this.scene.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
+        return c
     }
     handleConnections(client:Client,username:string){
         let player:Player|undefined

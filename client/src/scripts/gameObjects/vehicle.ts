@@ -63,6 +63,7 @@ export class Vehicle extends ClientGameObject2D{
     override updateData(data: VehicleData): void {
         this.container.rotation=data.rotation
         this.container.position=data.position
+        this.manager.cells.updateObject(this)
         if(data.full){
             this.set_def(Vehicles.getFromNumber(data.full.def))
         }

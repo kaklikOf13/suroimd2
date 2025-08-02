@@ -1,7 +1,7 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts";
-import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D } from "./resources.ts";
-import { KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
+import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D, } from "./resources.ts";
+import { FrameDef, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 
 export abstract class Container2DObject {
@@ -299,9 +299,17 @@ export class Sprite2D extends Container2DObject{
             }else{
                 this.current_delay=0
                 this.current_frame=Numeric.loop(this.current_frame+1,0,this.frames.length)
-                this.frame=resources.get_sprite(this.frames[this.current_frame].image)
+                this.set_frame(this.frames[this.current_frame],resources)
             }
         }
+    }
+    
+    set_frame(frame:FrameDef,resources:ResourcesManager){
+        if(frame.scale)this.scale=v2.new(frame.scale,frame.scale)
+        if(frame.hotspot)this.hotspot=v2.duplicate(frame.hotspot)
+        if(frame.rotation)this.rotation=frame.rotation
+        this.frame=resources.get_sprite(frame.image)
+
     }
     override draw(renderer: Renderer): void {
         this.renderer=renderer

@@ -148,11 +148,6 @@ function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement) {
   
     return texture;
 }
-export interface FrameDef{
-    path:string
-    scale?:number
-    variations?:number
-}
 const default_sprite_src=
 `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAFACAYAAADNkKWqAAAACXBIWXMAAD5/AAA+fwFuH9ocAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAABEZJREFUeJzt1jERhFAUBMEPdSnSSBBKctIQADJeMN0KNpraba31LhhyHvf0BML26QEAUwQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIOt3Hvf0BsL+zzU9gTAPEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIGsD29rB4lxkNocAAAAAElFTkSuQmCC`
 export class ResourcesManager{
@@ -187,8 +182,6 @@ export class ResourcesManager{
             return await this.load_sprite(id,src)
         }else if(src.endsWith(".mp3")){
             return await this.load_audio(id,{src:src,volume:volume})
-        }else if(src.endsWith(".src")){
-            await this.load_folder(src)
         }
 
         return undefined
@@ -360,45 +353,6 @@ export class ResourcesManager{
                     break
             }
             delete this.sources[id]
-        }
-    }
-    async load_folder(folder:string,scale:number=1){
-        const foundeds:Record<string,string|FrameDef> = {};
-        try {
-            const response = await fetch(`${folder}`);
-            if (!response.ok) throw new Error(`Erro ao buscar a pasta: ${folder}`);
-
-            const files = await response.json() as {files:Record<string,string|FrameDef>,dir:string}
-
-            console.log("Loading: ",folder+",",'dir:',files.dir)
-
-            for (const file of Object.keys(files.files)) {
-                foundeds[file]=files.dir+"/"+files.files[file]
-            }
-        } catch (error) {
-            console.error(`Cant Load The Folder ${folder}: ${(error as Error).message}`);
-        }
-        for(const f of Object.keys(foundeds)){
-            if(typeof foundeds[f]==="string"){
-                this.unload(f)
-                await this.load_source(f,`${foundeds[f]}`,scale)
-            }else{
-                if((foundeds[f] as FrameDef).variations){
-                    const sca=((foundeds[f] as FrameDef).scale??1)*scale
-                    for(let i=0;i<(foundeds[f] as FrameDef).variations!;i++){
-                        const extF=(foundeds[f] as FrameDef).path.split(".")
-                        const ext=extF[extF.length-1]
-                        extF.length--
-                        const name=extF.join(".")
-                        const id=f+`_${i+1}`
-                        this.unload(id)
-                        await this.load_source(id,`${name}_${i+1}.${ext}`,sca)
-                    }
-                }else{
-                    this.unload(f)
-                    await this.load_source(f,`${(foundeds[f] as FrameDef).path}`,((foundeds[f] as FrameDef).scale??1)*scale)
-                }
-            }
         }
     }
 }

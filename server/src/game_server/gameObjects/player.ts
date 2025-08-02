@@ -8,7 +8,7 @@ import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
+import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../inventory/accesories.ts";
@@ -20,6 +20,7 @@ import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
+import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -204,12 +205,13 @@ export class Player extends ServerGameObject{
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.movement,this.reloading_input,dt)
         }else{
-            this.position=v2.maxDecimal(v2.clamp2(v2.add(this.position,v2.add(v2.scale(this.movement,5*speed*dt),v2.scale(this.push_vorce,dt))),NullVec2,this.game.map.size),3)
+            this.position=v2.add(this.position,v2.add(v2.scale(this.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
         }
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
             this.push_vorce=v2.scale(this.push_vorce,1/(1+dt*4))
+            this.game.map.clamp_hitbox(this.hb)
         }
 
         //Hand Use
@@ -236,8 +238,8 @@ export class Player extends ServerGameObject{
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
             let can_interact=this.interactionsEnabled
             for(const obj of objs){
-                if((obj as BaseGameObject2D).id===this.id)continue
-                switch((obj as BaseGameObject2D).stringType){
+                if(obj.id===this.id)continue
+                switch(obj.stringType){
                     case "obstacle":
                         if((obj as Obstacle).def.noCollision)break
                         if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
@@ -331,7 +333,7 @@ export class Player extends ServerGameObject{
 
         /*this.helmet=Armors.getFromString("tactical_helmet")
         this.vest=Armors.getFromString("tactical_vest")*/
-        //this.helmet=Armors.getFromString("basic_helmet")
+        //
         /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,120)
@@ -348,8 +350,8 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Consumibles.getFromString("soda") as unknown as GameItem,10)
         this.inventory.give_item(Consumibles.getFromString("blue_potion") as unknown as GameItem,5)*/
 
-        /*const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
-        v.seats[0].set_player(this)*/
+        const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
+        v.seats[0].set_player(this)
     }
     damageSplash?:DamageSplash
 
