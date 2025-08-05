@@ -11,10 +11,10 @@ import { GuiManager } from "../managers/guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
 import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
-import { DamageSplash } from "../gameObjects/damageSplash.ts";
+import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
 import { Debug } from "./config.ts";
-import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { type DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
@@ -159,7 +159,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplash,Decal,PlayerBody,Vehicle,Creature])
+    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
       this.scene.objects.add_layer(i)
     }
@@ -180,8 +180,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.grid_gfx)
     this.grid_gfx.zIndex=zIndexes.Grid
   }
-  add_damageSplash(position:Vec2,count:number,critical:boolean,shield:boolean){
-    this.scene.objects.add_object(new DamageSplash(),7,undefined,{position,count,critical,shield})
+  add_damageSplash(d:DamageSplash){
+    this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)
   }
   override on_stop(): void {
     super.on_stop()

@@ -430,7 +430,9 @@ export class GuiManager{
         this.set_boost(gui.boost,gui.max_boost,gui.boost_type)
 
         if(gui.damages){
-            this.game.add_damageSplash(gui.damages.position,gui.damages.count,gui.damages.critical,gui.damages.shield)
+            for(const ds of gui.damages){
+                this.game.add_damageSplash(ds)
+            }
         }
 
         if(gui.dirty.weapons){

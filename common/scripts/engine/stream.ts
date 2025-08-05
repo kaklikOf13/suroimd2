@@ -689,11 +689,11 @@ export class NetStream {
     }
 
     writeID(id: ID):this{
-        this.writeUint32(id);
+        this.writeUint24(id);
         return this;
     }
     readID(): ID {
-        return this.readUint32()
+        return this.readUint24()
     }
 
     writeRad(val: number):this{

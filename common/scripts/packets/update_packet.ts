@@ -6,9 +6,12 @@ import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
 export interface DamageSplash{
     count:number
-    critical:boolean
     position:Vec2
+    taker:number
+    taker_layer:number
     shield:boolean
+    critical:boolean
+    shield_break:boolean
 }
 export interface GuiUpdate{
     dirty:{
@@ -41,7 +44,7 @@ export interface GuiUpdate{
 
     ammos:Record<number,number>
 
-    damages?:DamageSplash
+    damages:DamageSplash[]
 }
 function encode_gui_packet(gui:GuiUpdate,stream:NetStream){
     stream.writeUint8(gui.health)
@@ -78,9 +81,13 @@ function encode_gui_packet(gui:GuiUpdate,stream:NetStream){
         stream.writeUint8(gui.action.type)
     }
     if(gui.damages){
-        stream.writeBooleanGroup(gui.damages.critical,gui.damages.shield)
-        stream.writeUint16(gui.damages.count)
-        stream.writePosition(gui.damages.position)
+        stream.writeArray(gui.damages,(d)=>{
+            stream.writeBooleanGroup(d.critical,d.shield,d.shield_break)
+            stream.writeUint16(d.count)
+            stream.writePosition(d.position)
+            stream.writeID(d.taker)
+            stream.writeUint8(d.taker_layer)
+        },1)
     }
 
     if(gui.dirty.ammos){
@@ -142,13 +149,18 @@ function decode_gui_packet(gui:GuiUpdate,stream:NetStream){
         }
     }
     if(hasDamages){
-        const boo=stream.readBooleanGroup()
-        gui.damages={
-            count:stream.readUint16(),
-            critical:boo[0],
-            shield:boo[1],
-            position:stream.readPosition()
-        }
+        gui.damages=stream.readArray(()=>{
+            const boo=stream.readBooleanGroup()
+            return {
+                count:stream.readUint16(),
+                critical:boo[0],
+                shield:boo[1],
+                shield_break:boo[2],
+                position:stream.readPosition(),
+                taker:stream.readID(),
+                taker_layer:stream.readInt8()
+            }
+        },1)
     }
     if(dirtyAmmos){
         const len=stream.readUint8()
@@ -186,7 +198,7 @@ export class UpdatePacket extends Packet{
             ammo:0,
             slot:0
         },
-        damages:undefined,
+        damages:[],
         inventory:undefined
     }
 

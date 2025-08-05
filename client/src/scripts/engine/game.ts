@@ -6,6 +6,7 @@ import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
 import { Camera2D, Container2D, Sprite2D } from "./container.ts";
 import { GameConsole } from "./console.ts";
+import { FrameDef } from "common/scripts/engine/definitions.ts";
 export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
@@ -32,7 +33,7 @@ export abstract class ClientParticle2D extends Particle2D{
     }
 }
 export interface ABParticle2Config{
-    sprite:string
+    frame:FrameDef
     position:Vec2
     speed:number
     direction:number
@@ -100,7 +101,7 @@ export class ABParticle2D extends ClientParticle2D{
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.frame=(this.manager.game as unknown as ClientGame2D).resources.get_sprite(this.config.sprite)
+        this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame2D).resources)
         this.container.add_child(this.sprite)
         this.container.visible=true
     }

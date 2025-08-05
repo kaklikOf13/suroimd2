@@ -40,44 +40,44 @@ export class KillFeedPacket extends Packet{
         switch(this.message.type){
             case KillFeedMessageType.kill:
             case KillFeedMessageType.down:
-                stream.writeUint32(this.message.killer.id)
+                stream.writeID(this.message.killer.id)
                 stream.writeUint8(this.message.killer.kills)
-                stream.writeUint32(this.message.victimId)
+                stream.writeID(this.message.victimId)
                 stream.writeUint16(this.message.used)
                 break
             case KillFeedMessageType.join:
-                stream.writeUint32(this.message.playerId)
+                stream.writeID(this.message.playerId)
                 stream.writeStringSized(28,this.message.playerName)
                 break
             case KillFeedMessageType.killleader_dead:
             case KillFeedMessageType.killleader_assigned:
-                stream.writeUint32(this.message.player.id)
+                stream.writeID(this.message.player.id)
                 stream.writeUint8(this.message.player.kills)
                 break
         }
     }
     decode(stream: NetStream): void {
         const msg={
-            type:stream.readUint8() as KillFeedMessageType,
+            type:stream.readID() as KillFeedMessageType,
         } as Record<string,unknown>
         switch(msg.type){
             case KillFeedMessageType.kill:
             case KillFeedMessageType.down:
                 msg["killer"]={
-                    id:stream.readUint32(),
+                    id:stream.readID(),
                     kills:stream.readUint8()
                 }
-                msg["victimId"]=stream.readUint32()
+                msg["victimId"]=stream.readID()
                 msg["used"]=stream.readUint16()
                 break
             case KillFeedMessageType.join:
-                msg["playerId"]=stream.readUint32()
+                msg["playerId"]=stream.readID()
                 msg["playerName"]=stream.readStringSized(28)
                 break
             case KillFeedMessageType.killleader_dead:
             case KillFeedMessageType.killleader_assigned:
                 msg["player"]={
-                    id:stream.readUint32(),
+                    id:stream.readID(),
                     kills:stream.readUint8()
                 }
                 break

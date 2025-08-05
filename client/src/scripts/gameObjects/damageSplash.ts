@@ -1,18 +1,26 @@
 import { ClientGameObject2D, Sprite2D } from "../engine/mod.ts";
-import {Vec2, v2 } from "common/scripts/engine/geometry.ts";
+import { v2 } from "common/scripts/engine/geometry.ts";
 import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { random } from "common/scripts/engine/random.ts";
-export class DamageSplash extends ClientGameObject2D{
+import { DamageSplash } from "common/scripts/packets/update_packet.ts";
+import { type Player } from "./player.ts";
+export class DamageSplashOBJ extends ClientGameObject2D{
     stringType:string="damage_splash"
     numberType: number=8
 
     sprite:Sprite2D
 
-    async create(args: {position: Vec2, count: number, critical: boolean, shield: boolean}): Promise<void> {
+    async create(args: DamageSplash): Promise<void> {
         const color = args.shield
             ? (args.critical ? "#0f9" : "#114")
             : (args.critical ? "#f00" : "#ff0")
+
+        
+        const player = this.manager.get_object(args.taker,args.taker_layer) as Player|undefined
+        if(player&&args.shield_break){
+            player.broke_shield()
+        }
 
         this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color)
         this.position = v2.duplicate(args.position)
@@ -51,7 +59,6 @@ export class DamageSplash extends ClientGameObject2D{
             })
         }
         oscillation()
-
         this.game.camera.addObject(this.sprite)
     }
 

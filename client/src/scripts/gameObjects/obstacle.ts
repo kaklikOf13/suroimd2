@@ -65,7 +65,9 @@ export class Obstacle extends ClientGameObject2D{
     }
     _add_own_particle(position:Vec2,force:number=1){
         const p=new ABParticle2D({
-            sprite:this.frame.particle,
+            frame:{
+                image:this.frame.particle
+            },
             position,
             speed:random.float(1,2)*force,
             angle:random.float(-3.1415,3.1415),
@@ -151,7 +153,9 @@ export class Obstacle extends ClientGameObject2D{
                 this.emitter_1=this.game.particles.add_emiter({
                     delay:0.3,
                     particle:()=>new ABParticle2D({
-                        sprite:"gas_smoke_particle",
+                        frame:{
+                            image:"gas_smoke_particle"
+                        },
                         position:this.position,
                         speed:random.float(0.7,1),
                         angle:0,

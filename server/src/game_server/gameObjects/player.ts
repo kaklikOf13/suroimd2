@@ -353,7 +353,7 @@ export class Player extends ServerGameObject{
         const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
         v.seats[0].set_player(this)
     }
-    damageSplash?:DamageSplash
+    damagesSplash:DamageSplash[]=[]
 
     splashDelay:number=0
 
@@ -371,9 +371,8 @@ export class Player extends ServerGameObject{
             up.gui.boost_type=this.BoostType
             up.gui.inventory=[]
             if(this.splashDelay<=0){
-                if(this.damageSplash)this.damageSplash.count=Math.ceil(this.damageSplash.count)
-                up.gui.damages=this.damageSplash
-                this.damageSplash=undefined
+                up.gui.damages=this.damagesSplash
+                this.damagesSplash=[]
             }else{
                 this.splashDelay--
             }
@@ -456,29 +455,42 @@ export class Player extends ServerGameObject{
         }else{
             params.amount=Math.min(this.health,params.amount)
         }
-        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id&&params.reason!==DamageReason.Bleend){
-            params.owner.status.damage+=params.amount
-            if(!params.owner.damageSplash){
-                params.owner.damageSplash={
-                    count:0,
-                    shield:false,
-                    critical:false,
-                    position:params.position
-                }
-                params.owner.splashDelay=2
-            }
-            if(params.critical){
-                params.owner.damageSplash.critical=true
-            }
-            params.owner.damageSplash.count+=params.amount
+        let d:DamageSplash={
+            count:Math.ceil(params.amount),
+            shield:false,
+            critical:params.critical,
+            shield_break:false,
+            position:params.position,
+            taker:this.id,
+            taker_layer:this.layer
         }
+        
         if(this.BoostType===BoostType.Shield&&this.boost>0){
             this.boost=Math.max(this.boost-params.amount,0)
             if(params.owner&&params.owner instanceof Player){
-                params.owner.damageSplash!.shield=true
+                d.shield=true
+                d.shield_break=this.boost===0
             }
         }else{
             this.health=Math.max(this.health-params.amount,0)
+        }
+        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id&&params.reason!==DamageReason.Bleend){
+            params.owner.status.damage+=params.amount
+            let ok=true
+            for(const ds of params.owner.damagesSplash){
+                if(ds.shield==d.shield){
+                    ds.critical===d.critical||ds.critical
+                    d=ds
+                    ok=false
+                    ds.count+=params.amount
+                    break
+                }
+            }
+            if(ok){
+                params.owner.damagesSplash.push(d)
+            }else{
+                params.owner.splashDelay=1
+            }
         }
         if(this.health===0){
             if(!this.downed&&this.game.modeManager.can_down(this)){

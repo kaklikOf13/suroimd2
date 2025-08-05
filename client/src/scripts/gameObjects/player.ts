@@ -293,7 +293,10 @@ export class Player extends GameObject{
                                 this.position,
                                 v2.mult(v2.from_RadAngle(this.rotation),d.caseParticle.position)
                             ),
-                            sprite:d.caseParticle.frame??"casing_"+d.ammoType,
+                            frame:{
+                                image:d.caseParticle.frame??"casing_"+d.ammoType,
+                                hotspot:v2.new(.5,.5)
+                            },
                             speed:random.float(3,4),
                             angle:0,
                             scale:1,
@@ -313,7 +316,11 @@ export class Player extends GameObject{
                                     this.position,
                                     v2.mult(v2.from_RadAngle(this.rotation),v2.new(d.lenght,d.lenght))
                                 ),
-                                sprite:"gas_smoke_particle",
+                                
+                                frame:{
+                                    image:"gas_smoke_particle",
+                                    hotspot:v2.new(.5,.5)
+                                },
                                 speed:random.float(d.gasParticles.speed.min,d.gasParticles.speed.max),
                                 scale:0.03,
                                 tint:ColorM.hex("#fff5"),
@@ -373,6 +380,46 @@ export class Player extends GameObject{
         }else{
             this.sprites!.backpack.frame=this.game.resources.get_sprite(this.backpack.idString+"_world")
         }
+    }
+    broke_shield(){
+        for(let p=0;p<12;p++){
+            const a=random.rad()
+            this.game.particles.add_particle(new ABParticle2D({
+                direction:random.rad(),
+                life_time:0.5,
+                position:this.position,
+                speed:6,
+                scale:1,
+                frame:{
+                    image:"shield_part"
+                },
+                angle:a,
+                tint:ColorM.rgba(255,255,255,255),
+                to:{
+                tint:ColorM.rgba(255,255,255,0),
+                    scale:0.3,
+                    angle:a*3,
+                    speed:5,
+                }
+            }))
+        }
+        
+        this.game.particles.add_particle(new ABParticle2D({
+            direction:0,
+            life_time:0.4,
+            position:this.position,
+            speed:0,
+            scale:0.1,
+            frame:{
+                image:"shockwave",
+                hotspot:v2.new(.5,.5)
+            },
+            tint:ColorM.rgba(255,255,255,255),
+            to:{
+            tint:ColorM.rgba(255,255,255,0),
+                scale:10,
+            }
+        }))
     }
     override updateData(data:PlayerData){
         if(data.dead&&!this.dead){

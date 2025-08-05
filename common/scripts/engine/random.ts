@@ -16,7 +16,7 @@ export const random=Object.freeze({
         return val[Math.floor(Math.random()*val.length)]
     },
     id():ID{
-        return Math.floor(Math.random() * 4294967296)
+        return Math.floor(Math.random() * 16777214)+1
     },
     rad():RadAngle{
         return Math.random()*(Math.PI-(-Math.PI))+(-Math.PI)
