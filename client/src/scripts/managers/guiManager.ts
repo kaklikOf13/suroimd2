@@ -56,7 +56,12 @@ export class GuiManager{
         weapon2:document.querySelector("#game-weapon-slot-01") as HTMLDivElement,
         weapon3:document.querySelector("#game-weapon-slot-02") as HTMLDivElement,
 
+        e_weapon1:document.querySelector("#game-weapon-slot-expanded-00") as HTMLDivElement,
+        e_weapon2:document.querySelector("#game-weapon-slot-expanded-01") as HTMLDivElement,
+        e_weapon3:document.querySelector("#game-weapon-slot-expanded-02") as HTMLDivElement,
+
         ammos:document.querySelector("#ammos-inventory") as HTMLDivElement,
+        ammos_all:document.querySelector("#all-inventory-ammos") as HTMLDivElement,
 
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
         
@@ -65,8 +70,12 @@ export class GuiManager{
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
 
         gui_items:document.querySelector("#gui-items") as HTMLSpanElement,
+        gui_items_all:document.querySelector("#all-inventory-items") as HTMLSpanElement,
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
+
+        all_inventory:document.querySelector("#all-inventory") as HTMLDivElement,
+        close_all_inventory:document.querySelector("#close-all-inventory") as HTMLButtonElement,
     }
     mobile_content={
         gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
@@ -136,6 +145,9 @@ export class GuiManager{
         this.content.weapon2.addEventListener("mouseup",dropW(1))
         this.content.weapon3.addEventListener("mouseup",dropW(2))
 
+        this.content.e_weapon2.addEventListener("mouseup",dropW(1))
+        this.content.e_weapon3.addEventListener("mouseup",dropW(2))
+
         this.content.weapon1.addEventListener("touchstart",selecW(0))
         this.content.weapon2.addEventListener("touchstart",selecW(1))
         this.content.weapon3.addEventListener("touchstart",selecW(2))
@@ -147,6 +159,19 @@ export class GuiManager{
         this.clear()
         this.content.gameD.style.display="none"
         this.content.menuD.style.display="unset"
+
+        this.content.close_all_inventory.addEventListener("click",this.set_all_inventory.bind(this,false))
+    }
+    all_inventory_enabled:boolean=false
+    set_all_inventory(enabled:boolean){
+        if(enabled){
+            this.content.all_inventory.style.display="unset"
+            this.content.all_inventory.style.pointerEvents="unset"
+        }else{
+            this.content.all_inventory.style.display="none"
+            this.content.all_inventory.style.pointerEvents="none"
+        }
+        this.all_inventory_enabled=enabled
     }
     mobile_init(){
         this.mobile_open()
@@ -197,15 +222,21 @@ export class GuiManager{
         if(this.game.client){
             this.game.client.on("gameover",this.show_game_over.bind(this))
         }
+        this.set_all_inventory(false)
     }
-    ammos_cache:Record<string,HTMLDivElement>={}
+    ammos_cache:{
+        normal:Record<string,HTMLDivElement>,
+        all:Record<string,HTMLDivElement>
+    }={normal:{},all:{}}
     update_ammos(ammos:Record<string,number>){
         const ak=Object.keys(ammos)
         const ack=Object.keys(this.ammos_cache)
         if(ack.length===ak.length){
             for(const a of ak){
-                const c=this.ammos_cache[a].querySelector(".count") as HTMLSpanElement
-                c.innerText=`${ammos[a]}`
+                const c1=this.ammos_cache.normal[a].querySelector(".count") as HTMLSpanElement
+                c1.innerText=`${ammos[a]}`
+                const c2=this.ammos_cache.all[a].querySelector(".slot-count") as HTMLSpanElement
+                c2.innerText=`${ammos[a]}`
             }
         }else{
             const dropA=(a:number)=>{
@@ -217,20 +248,32 @@ export class GuiManager{
                 }
             }
             this.content.ammos.innerHTML=""
-            this.ammos_cache={}
+            this.content.ammos_all.innerHTML=""
+            this.ammos_cache={all:{},normal:{}}
             for(const a of ak){
                 const def=Ammos.getFromString(a)
                 const htm=`<div class="ammo-slot" id="ammo-${a}">
                     <image class="icon" src="img/game/common/items/ammos/${a}.svg"></image>
                     <span class="count">${ammos[a]}</span>
                 </div>`
+                
+                const htm2=`<div class="inventory-item-slot" id="ammo-all-${a}">
+                    <img class="slot-image" src="img/game/common/items/ammos/${a}.svg"></img>
+                    <span class="slot-count">${ammos[a]}</span>
+                </div>`
 
+                const f=dropA(def.idNumber!)
                 this.content.ammos.insertAdjacentHTML("beforeend", htm);
-                this.ammos_cache[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
-                this.ammos_cache[a].addEventListener("mouseup",dropA(def.idNumber!))
+                this.content.ammos_all.insertAdjacentHTML("beforeend", htm2);
+                this.ammos_cache.normal[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
+                this.ammos_cache.normal[a].addEventListener("mouseup",f)
+                this.ammos_cache.all[a]=this.content.ammos_all.querySelector(`#ammo-all-${a}`) as HTMLDivElement
+                this.ammos_cache.all[a].addEventListener("mouseup",f)
             }
         }
     }
+    items_cache:Record<string,HTMLDivElement>={}
+    items?:Record<string,number>
     update_gui_items(slots:InventoryItemData[]){
         this.content.gui_items.innerHTML=""
         let i=0;
@@ -247,6 +290,7 @@ export class GuiManager{
                 this.game.action.use_slot=i
             }
         }
+        const items:Record<string,number>={}
         for(const s of slots){
             if(s.count>0){
                 const def=GameItems.valueNumber[s.idNumber]
@@ -258,6 +302,11 @@ export class GuiManager{
                 const vv=this.content.gui_items.querySelector(`#inventory-slot-${i}`) as HTMLDialogElement
                 vv.addEventListener("mouseup",Ic(i))
                 vv.addEventListener("click",Ic2(i))
+                if(items[def.idString]){
+                    items[def.idString]+=s.count
+                }else{
+                    items[def.idString]=s.count
+                }
             }else{
                 this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
                 <div class="slot-number">${i+4}</div>
@@ -265,6 +314,17 @@ export class GuiManager{
             }
             i++
         }
+        this.content.gui_items_all.innerHTML=""
+        this.items_cache={}
+        for(const i of Object.keys(items)){
+            this.items_cache[i]=document.createElement("div")
+            this.items_cache[i].classList.add("inventory-item-slot")
+            this.items_cache[i].insertAdjacentHTML("beforeend",`
+                <div class="slot-count">${items[i]}</div>
+                <img class="slot-image" src="${this.game.resources.get_sprite(i).src}">`)
+            this.content.gui_items_all.appendChild(this.items_cache[i])
+        }
+        this.items=items
     }
     players_name:Record<number,{name:string,badge:string}>={}
     process_joined_packet(jp:JoinedPacket){
@@ -376,36 +436,59 @@ export class GuiManager{
         if(gui.dirty.weapons){
             let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
             let img=this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
+
+            let name2=this.content.e_weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
+            let img2=this.content.e_weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.melee){
                 name.innerText=gui.weapons.melee.idString
-                img.src=this.game.resources.get_sprite(gui.weapons.melee.idString).src
+                name2.innerText=gui.weapons.melee.idString
+                const src=this.game.resources.get_sprite(gui.weapons.melee.idString).src
+                img.src=src
+                img2.src=src
                 this.weapons[0]=gui.weapons.melee
                 img.style.display="block"
+                img2.style.display="block"
             }else{
                 name.innerText=""
+                name2.innerText=""
             }
             name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
             img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
+            name2=this.content.e_weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
+            img2=this.content.e_weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.gun1){
                 name.innerText=gui.weapons.gun1.idString
-                img.src=this.game.resources.get_sprite(gui.weapons.gun1.idString).src
+                name2.innerText=gui.weapons.gun1.idString
+                const src=this.game.resources.get_sprite(gui.weapons.gun1.idString).src
+                img.src=src
+                img2.src=src
                 this.weapons[1]=gui.weapons.gun1
                 img.style.display="block"
+                img2.style.display="block"
             }else{
                 name.innerText=""
+                name2.innerText=""
                 img.style.display="none"
-            
+                img2.style.display="none"
             }
             name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
             img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
+            name2=this.content.e_weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
+            img2=this.content.e_weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
             if(gui.weapons.gun2){
                 name.innerText=gui.weapons.gun2.idString
-                img.src=this.game.resources.get_sprite(gui.weapons.gun2.idString).src
+                name2.innerText=gui.weapons.gun2.idString
+                const src=this.game.resources.get_sprite(gui.weapons.gun2.idString).src
+                img.src=src
+                img2.src=src
                 this.weapons[2]=gui.weapons.gun2
                 img.style.display="block"
+                img2.style.display="block"
             }else{
                 name.innerText=""
+                name2.innerText=""
                 img.style.display="none"
+                img2.style.display="none"
             }
         }
         if(gui.dirty.current_weapon&&gui.current_weapon){

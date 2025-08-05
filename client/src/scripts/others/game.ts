@@ -43,7 +43,7 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
-  scope_zoom:number=0.53
+  scope_zoom:number=0.78
   happening:boolean=false
 
   //0.14=l6 32x
@@ -115,6 +115,9 @@ export class Game extends ClientGame2D<GameObject>{
           break
         case "next_weapon":
           this.action.hand=Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)
+          break
+        case "expanded_inventory":
+          this.guiManager.set_all_inventory(!this.guiManager.all_inventory_enabled)
           break
       }
     })

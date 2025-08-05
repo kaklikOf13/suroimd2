@@ -21,7 +21,7 @@ export class DamageSplash extends ClientGameObject2D{
         this.sprite.scale.x = 0
         this.sprite.scale.y = 0
 
-        const s=random.float(1,1.3)+(args.critical?0.7:0)
+        const s=(random.float(1,1.3)+(args.critical?0.7:0))/this.game.camera.zoom
         this.game.addTween({
             duration: 0.4,
             target: this.sprite.scale,

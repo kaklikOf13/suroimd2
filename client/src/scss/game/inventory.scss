@@ -1,0 +1,86 @@
+@use "../palette.scss";
+@use "../fonts.scss";
+.inventory-item-slot {
+    position: relative;
+    background-color: #0004;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    font-family: "Russo-One", serif;
+
+    .slot-image {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        pointer-events: none;
+    }
+
+    .slot-count {
+        position: absolute;
+        bottom: 2px;
+        right: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 0 2px #000;
+    }
+
+    .slot-number {
+        position: absolute;
+        top: 2px;
+        left: 4px;
+        font-size: 12px;
+        color: #fff9;
+        text-shadow: 0 0 2px #000;
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        width: 23px;
+        height: 23px;
+        .slot-count{
+            font-size: 6px;
+        }
+        .slot-number{
+            font-size: 4px;
+        }
+        .slot-image {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+.weapon-slot {
+    width: 300px;
+    height: 90px;
+    background-color: #0003;
+    border-radius: 10px;
+    font-size: 20px;
+    font-family: "Russo-One", serif;
+
+    .weapon-slot-number {
+        position: relative;
+        top: 5px;
+        left: 93%;
+    }
+    .weapon-slot-name {
+        position: absolute;
+        bottom: 5px;
+        right: 10px;
+    }
+    .weapon-slot-image {
+        position: absolute;
+        top: 50%;
+        left: 5px;
+        width: 100px;
+        height: auto;
+        transform: translateY(-50%);
+    }
+}
+
+.weapon-slot-selected{
+    border: 3px solid #eee;
+}

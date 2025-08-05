@@ -99,6 +99,10 @@ export const ConfigDefaultActions={
     "next_weapon":{
       buttons:[GamepadButtonID.R1],
       keys:[]
+    },
+    "expanded_inventory":{
+      buttons:[GamepadButtonID.Y],
+      keys:[Key.I]
     }
 }
 export const Debug={
