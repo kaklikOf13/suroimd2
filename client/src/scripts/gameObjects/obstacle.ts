@@ -60,7 +60,10 @@ export class Obstacle extends ClientGameObject2D{
             }
         }
         if(this.sounds&&this.sounds.break){
-            this.game.sounds.play(this.sounds.break,{})
+            this.game.sounds.play(this.sounds.break,{
+                position:this.position,
+                max_distance:13
+            })
         }
     }
     _add_own_particle(position:Vec2,force:number=1){
@@ -88,7 +91,11 @@ export class Obstacle extends ClientGameObject2D{
     on_hitted(position:Vec2){
         if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Normal)this._add_own_particle(position)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
-            this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{},"obstacles")
+            this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{
+                volume:1,
+                position:this.position,
+                max_distance:14
+            },"obstacles")
         }
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {

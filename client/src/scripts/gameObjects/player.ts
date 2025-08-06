@@ -147,9 +147,12 @@ export class Player extends GameObject{
             if(sound){
                 if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.disconnect()
                 this.sound_animation.weapon.switch=this.game.sounds.play(sound,{
-                on_complete:()=>{
-                    this.sound_animation.weapon.switch=undefined
-                }
+                    on_complete:()=>{
+                        this.sound_animation.weapon.switch=undefined
+                    },
+                    volume:0.4,
+                    position:this.position,
+                    max_distance:5
                 },"players")
             }
         }
@@ -335,7 +338,11 @@ export class Player extends GameObject{
                 }
                 const sound=this.game.resources.get_audio(`${d.idString}_fire`)
                 if(sound){
-                    this.game.sounds.play(sound,{},"players")
+                    this.game.sounds.play(sound,{
+                        volume:0.4,
+                        position:this.position,
+                        max_distance:7
+                    },"players")
                 }
                 break
             }
@@ -346,10 +353,15 @@ export class Player extends GameObject{
                 const sound=this.game.resources.get_audio((d.reload?.reload_alt&&this.current_animation.alt_reload)?`${d.idString}_reload_alt`:`${d.idString}_reload`)
                 if(sound){
                     if(this.sound_animation.weapon.reload)this.sound_animation.weapon.reload.stop()
-                    this.sound_animation.weapon.reload=this.game.sounds.play(sound,{on_complete:()=>{
-                        this.current_animation=undefined
-                        this.sound_animation.weapon.reload=undefined
-                    }},"players")
+                    this.sound_animation.weapon.reload=this.game.sounds.play(sound,{
+                        on_complete:()=>{
+                            this.current_animation=undefined
+                            this.sound_animation.weapon.reload=undefined
+                        },
+                        position:this.position,
+                        max_distance:5,
+                        volume:0.4
+                    },"players")
                 }
                 break
             }
@@ -382,44 +394,47 @@ export class Player extends GameObject{
         }
     }
     broke_shield(){
-        for(let p=0;p<14;p++){
-            const a=random.rad()
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
+            for(let p=0;p<14;p++){
+                const a=random.rad()
+                this.game.particles.add_particle(new ABParticle2D({
+                    direction:random.rad(),
+                    life_time:0.5+(Math.random()*0.5),
+                    position:this.position,
+                    speed:7,
+                    scale:random.float(2,3),
+                    frame:{
+                        image:"shield_part"
+                    },
+                    angle:a,
+                    tint:ColorM.rgba(255,255,255,255),
+                    to:{
+                    tint:ColorM.rgba(255,255,255,0),
+                        scale:0.3,
+                        angle:random.float(-10,10),
+                        speed:5,
+                    }
+                }))
+            }
+        }
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Normal){
             this.game.particles.add_particle(new ABParticle2D({
-                direction:random.rad(),
-                life_time:0.5+(Math.random()*0.5),
+                direction:0,
+                life_time:0.4,
                 position:this.position,
-                speed:7,
-                scale:random.float(2,3),
+                speed:0,
+                scale:0.1,
                 frame:{
-                    image:"shield_part"
+                    image:"shockwave",
+                    hotspot:v2.new(.5,.5)
                 },
-                angle:a,
                 tint:ColorM.rgba(255,255,255,255),
                 to:{
                 tint:ColorM.rgba(255,255,255,0),
-                    scale:0.3,
-                    angle:random.float(-10,10),
-                    speed:5,
+                    scale:10,
                 }
             }))
         }
-        
-        this.game.particles.add_particle(new ABParticle2D({
-            direction:0,
-            life_time:0.4,
-            position:this.position,
-            speed:0,
-            scale:0.1,
-            frame:{
-                image:"shockwave",
-                hotspot:v2.new(.5,.5)
-            },
-            tint:ColorM.rgba(255,255,255,255),
-            to:{
-            tint:ColorM.rgba(255,255,255,0),
-                scale:10,
-            }
-        }))
     }
     override updateData(data:PlayerData){
         if(data.dead&&!this.dead){
@@ -464,6 +479,7 @@ export class Player extends GameObject{
 
         if(this.id===this.game.activePlayerId){
             this.game.update_camera()
+            this.game.sounds.listener_position=this.position
             this.sprites.parachute.tint=ColorM.rgba(255,255,255,100)
             if(data.full){
                 this.game.guiManager.update_equipaments()
