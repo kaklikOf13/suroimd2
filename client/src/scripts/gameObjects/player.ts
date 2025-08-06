@@ -435,6 +435,14 @@ export class Player extends GameObject{
                 }
             }))
         }
+        const sound=this.game.resources.get_audio(`shield_break`)
+        if(sound){
+            this.game.sounds.play(sound,{
+                volume:0.4,
+                position:this.position,
+                max_distance:7
+            },"players")
+        }
     }
     override updateData(data:PlayerData){
         if(data.dead&&!this.dead){
