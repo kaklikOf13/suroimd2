@@ -204,12 +204,12 @@ export class LocalizatorDefs{
         return this._get(val.split("."),this.language.value,val)
     }
 }
-export interface FrameDef{
-    image:string
+export interface FrameTransform{
     scale?:number
     hotspot?:Vec2
     rotation?:number
 }
+export type FrameDef={image:string}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef

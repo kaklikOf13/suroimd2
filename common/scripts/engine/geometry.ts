@@ -3,6 +3,7 @@ export interface Vec2{
     x:number
     y:number
 }
+export type Orientation=0|1|2|3
 export type RadAngle=number
 export type DegAngle=number
 function float32ToUint32(value: number): number {
@@ -34,6 +35,18 @@ export const v2 = Object.freeze({
     new(x:number, y:number): Vec2 {
         return {x, y}
     },
+    sided(side:Orientation):Vec2{
+        switch(side){
+            case 0:
+                return v2.new(1,1)
+            case 1:
+                return v2.new(-1,1)
+            case 2:
+                return v2.new(-1,-1)
+            case 3:
+                return v2.new(1,-1)
+        }
+    },
     /**
      * Return Random Vec2
      */
@@ -50,6 +63,30 @@ export const v2 = Object.freeze({
      */
     add(x:Vec2, y:Vec2):Vec2 {
         return this.new(x.x+y.x,x.y+y.y)
+    },
+    /**
+     * @param x `Vec21`
+     * @param y `Vec22`
+     * @returns A new `Vec2` With `x`+`y`
+     */
+    add_with_orientation(x:Vec2, y:Vec2,side:Orientation):Vec2 {
+        if (side === 0) return this.add(x, y);
+        let xOffset: number, yOffset: number;
+        switch (side) {
+            case 1:
+                xOffset = y.y;
+                yOffset = -y.x;
+                break;
+            case 2:
+                xOffset = -y.x;
+                yOffset = -y.y;
+                break;
+            case 3:
+                xOffset = -y.y;
+                yOffset = y.x;
+                break;
+        }
+        return this.add(x, v2.new(xOffset, yOffset));
     },
     /**
      * @param x `Vec21`
@@ -361,7 +398,7 @@ export const v2 = Object.freeze({
     },
     toString(Vec2:Vec2):string{
         return `{${Vec2.x},${Vec2.y}}`
-    }
+    },
 })
 export const NullVec2:Vec2=v2.new(0,0)
 export const Angle=Object.freeze({
@@ -435,3 +472,58 @@ export function SmoothShape2D(polygon: Vec2[], subdivisions: number = 8): Vec2[]
 
     return result;
 }
+
+export type OverlapCollision2D={
+    dir:Vec2
+    pen:number
+}|undefined|null
+export const Collision=Object.freeze({
+    circle_with_circle(circle_1_radius:number,circle_2_radius:number,circle_1_position:Vec2,circle_2_position:Vec2){
+        return v2.distance(circle_1_position,circle_2_position)<circle_1_radius+circle_2_radius
+    },
+    rect_with_rect(rect_1_min:Vec2,rect_2_min:Vec2,rect_1_max:Vec2,rect_2_max:Vec2){
+        return v2.greater(rect_1_max,rect_2_min)&&v2.less(rect_1_min,rect_2_max)
+    },
+    circle_with_rect(circle_position: Vec2, circle_radius: number, rect_min: Vec2, rect_max: Vec2): boolean {
+        const closest = v2.clamp2(circle_position, rect_min, rect_max);
+        const distSq = v2.distanceSquared(circle_position, closest);
+        return distSq <= (circle_radius * circle_radius);
+    },
+
+    circle_with_rect_ov(circle_pos: Vec2, radius: number, rect_min: Vec2, rect_max: Vec2) {
+        const closest = v2.clamp2(circle_pos, rect_min, rect_max);
+
+        const diff = v2.sub(circle_pos, closest);
+        const distSq = v2.squared(diff);
+        const radiusSq = radius * radius;
+
+        if (distSq <= radiusSq) {
+            const dist = Math.sqrt(distSq) || 0.000001;
+            const penetration = radius - dist;
+
+            const normal = v2.scale(diff, 1 / dist);
+
+            return {
+                dir: v2.scale(normal,-1),
+                pen: penetration
+            };
+        }
+        if (circle_pos.x >= rect_min.x && circle_pos.x <= rect_max.x &&
+            circle_pos.y >= rect_min.y && circle_pos.y <= rect_max.y) {
+
+            const left = circle_pos.x - rect_min.x;
+            const right = rect_max.x - circle_pos.x;
+            const top = circle_pos.y - rect_min.y;
+            const bottom = rect_max.y - circle_pos.y;
+
+            const minDist = Math.min(left, right, top, bottom);
+
+            if (minDist === left) return { dir: v2.new(1, 0), pen: radius - left };
+            if (minDist === right) return { dir: v2.new(-1, 0), pen: radius - right };
+            if (minDist === top) return { dir: v2.new(0, 1), pen: radius - top };
+            return { dir: v2.new(0, -1), pen: radius - bottom };
+        }
+
+        return undefined;
+    }
+})

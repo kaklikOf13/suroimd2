@@ -1,30 +1,20 @@
-import { NullVec2, type Vec2, v2 } from "./geometry.ts"
-import { type NetStream } from "./mod.ts";
+import { NullVec2, type Vec2, v2,Collision,OverlapCollision2D, Orientation } from "./geometry.ts"
+
 import { random, SeededRandom } from "./random.ts";
+import { NetStream } from "./stream.ts";
 import { Numeric } from "./utils.ts";
 
-export const Collision=Object.freeze({
-    circle_with_rect(hb1:CircleHitbox2D,hb2:RectHitbox2D):boolean{
-        const cp=v2.clamp2(hb1.position,hb2.min,hb2.max)
-        const dist=v2.distance(hb1.position,cp)
-        return (dist<hb1.radius*hb1.radius)||((hb1.position.x>=hb2.min.x&&hb1.position.x<=hb2.max.x)&&(hb1.position.y>=hb2.position.y&&hb1.position.y<=hb2.max.y))
-    },
-    circle_with_rect_ov(_hb1:CircleHitbox2D,_hb2:RectHitbox2D){
-        return null
-    },
-})
-
 export enum HitboxType2D{
-    circle=0,
-    rect=1,
-    null=2,
-    //group,
+    null=0,
+    circle,
+    rect,
+    group,
 }
 
 export interface Hitbox2DMapping {
     [HitboxType2D.circle]:CircleHitbox2D
     [HitboxType2D.rect]:RectHitbox2D
-    //[HitboxType2D.group]:HitboxGroup
+    [HitboxType2D.group]:HitboxGroup2D
     [HitboxType2D.null]:NullHitbox2D
 }
 export type Hitbox2D = Hitbox2DMapping[HitboxType2D]
@@ -38,10 +28,10 @@ export abstract class BaseHitbox2D{
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
     abstract toRect():RectHitbox2D
-    abstract transform(position?:Vec2,scale?:number):Hitbox2D
+    abstract transform(position?:Vec2,scale?:number,orientation?:Orientation):Hitbox2D
     abstract clone():Hitbox2D
     abstract readonly position:Vec2
-    abstract translate(position:Vec2):void
+    abstract translate(position:Vec2,orientation?:Orientation):void
     abstract clamp(min:Vec2,max:Vec2):void
     abstract encode(stream:NetStream):void
 
@@ -84,12 +74,11 @@ export class NullHitbox2D extends BaseHitbox2D{
         return true
     }
 
-    override transform(position?:Vec2,_scale?:number):Hitbox2D{
-        return new NullHitbox2D(position?v2.add(this.position,position):this.position)
+    override transform(position:Vec2=v2.new(0,0),_scale:number=1,orientation:Orientation=0):Hitbox2D{
+        return new NullHitbox2D(position?v2.add_with_orientation(this.position,position,orientation):this.position)
     }
-    override translate(position: Vec2): void {
-      this.position.x=position.x
-      this.position.y=position.y
+    override translate(position: Vec2,orientation:Orientation=0): void {
+      this.position=v2.add_with_orientation(this.position,position,orientation)
     }
     override clone():Hitbox2D{
         return new NullHitbox2D(this.position)
@@ -104,10 +93,6 @@ export class NullHitbox2D extends BaseHitbox2D{
         return new NullHitbox2D(stream.readPosition())
     }
 }
-export type OverlapCollision2D={
-    dir:Vec2
-    pen:number
-}|undefined|null
 export class CircleHitbox2D extends BaseHitbox2D{
     override readonly type = HitboxType2D.circle
     radius:number
@@ -122,7 +107,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
             case HitboxType2D.circle:
                 return v2.distance(this.position,other.position)<this.radius+other.radius
             case HitboxType2D.rect:
-                return Collision.circle_with_rect(this,other)
+                return Collision.circle_with_rect(this.position,this.radius,other.min,other.max)
         }
         return false
     }
@@ -141,15 +126,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
                         }
                         : undefined
                 }case HitboxType2D.rect: {
-                    const result = Collision.circle_with_rect_ov(this,other)
-                    if (result) {
-                        const pos=v2.normalizeSafe(v2.scale(result[0] as Vec2, (result[1] as number)*2))
-                        if(v2.is(pos,NullVec2)){
-                            break
-                        }
-                        return undefined
-                    }
-                    break
+                    return Collision.circle_with_rect_ov(this.position, this.radius, other.min, other.max);
                 }
             }
         }
@@ -197,20 +174,22 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override toRect():RectHitbox2D{
         return RectHitbox2D.positioned(this.position,v2.new(this.radius,this.radius))
     }
-    override transform(position?:Vec2,scale?:number):CircleHitbox2D{
+    override transform(position?:Vec2,scale?:number,orientation:Orientation=0):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D
         if(scale){
             ret.scale(scale)
         }
         if(position){
-            ret.position.x+=position.x
-            ret.position.y+=position.y
+            const p=v2.mult(position,v2.sided(orientation))
+            ret.position.x=p.x
+            ret.position.y=p.y
         }
         return ret
     }
-    override translate(position: Vec2): void {
-        this.position.x=position.x
-        this.position.y=position.y
+    override translate(position: Vec2,orientation:Orientation=0): void {
+        const p=v2.mult(position,v2.sided(orientation))
+        this.position.x=p.x
+        this.position.y=p.y
     }
     override clone():CircleHitbox2D{
         return new CircleHitbox2D(v2.duplicate(this.position),this.radius)
@@ -250,7 +229,7 @@ export class RectHitbox2D extends BaseHitbox2D{
                 case HitboxType2D.rect:
                     return (this.max.x>other.min.x&&this.min.x<other.max.x) && (this.max.y>other.min.y&&this.min.y<other.max.y)
                 case HitboxType2D.circle:
-                    return Collision.circle_with_rect(other,this)
+                    return Collision.circle_with_rect(other.position,other.radius,this.min,this.max)
             }
         }
         return false
@@ -274,15 +253,7 @@ export class RectHitbox2D extends BaseHitbox2D{
                     }
                     break
                 }case HitboxType2D.circle: {
-                    const result = Collision.circle_with_rect_ov(other,this)
-                    if (result) {
-                        const pos=v2.normalizeSafe(v2.scale(result[0] as Vec2, (result[1] as number)*-2))
-                        if(v2.is(pos,NullVec2)){
-                            break
-                        }
-                        return undefined
-                    }
-                    break
+                    return Collision.circle_with_rect_ov(other.position,other.radius,this.min,this.max)
                 }
             }
         }
@@ -310,22 +281,55 @@ export class RectHitbox2D extends BaseHitbox2D{
     override toRect():RectHitbox2D{
         return this
     }
-    override transform(position?:Vec2,scale?:number):RectHitbox2D{
-        const ret=this.clone()
-        if(scale){
-            ret.scale(scale)
+    override transform(
+        position: Vec2 = v2.new(0, 0),
+        scale: number = 1,
+        orientation: Orientation = 0
+    ): RectHitbox2D {
+        const size = v2.sub(this.max, this.min);
+        const scaledSize = v2.scale(size, scale);
+
+        let finalSize: Vec2;
+        switch (orientation) {
+            case 0:
+            case 2:
+                finalSize = scaledSize;
+                break;
+            case 1:
+            case 3:
+                finalSize = v2.new(scaledSize.y, scaledSize.x);
+                break;
+            default:
+                finalSize = scaledSize;
+                break;
         }
-        if(position){
-            ret.translate(position)
-        }
-        return ret
+
+        const min = v2.duplicate(position);
+        const max = v2.add(position, finalSize);
+
+        return new RectHitbox2D(min, max);
     }
-    translate(position: Vec2): void {
-        const size=v2.sub(this.max,this.min)
-        this.min.x=position.x
-        this.min.y=position.y
-        this.max.x=position.x+size.x
-        this.max.y=position.y+size.y
+
+    override translate(position: Vec2, orientation: Orientation = 0): void {
+        const size = v2.sub(this.max, this.min);
+
+        let finalSize: Vec2;
+        switch (orientation) {
+            case 0:
+            case 2:
+                finalSize = size;
+                break;
+            case 1:
+            case 3:
+                finalSize = v2.new(size.y, size.x);
+                break;
+            default:
+                finalSize = size;
+                break;
+        }
+
+        this.min = v2.duplicate(position);
+        this.max = v2.add(position, finalSize);
     }
     override clone():RectHitbox2D{
         return new RectHitbox2D(this.min,this.max)
@@ -342,6 +346,82 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override is_null(): boolean {
       return false
+    }
+}
+export class HitboxGroup2D extends BaseHitbox2D{
+    position:Vec2=v2.new(0,0)
+    hitboxes: Hitbox2D[];
+    constructor(...hitboxes: Hitbox2D[]) {
+        super();
+        this.hitboxes = hitboxes;
+    }
+    override readonly type = HitboxType2D.group
+    override collidingWith(that: Hitbox2D): boolean {
+        return this.hitboxes.some(hitbox => hitbox.collidingWith(that));
+    }
+    override pointInside(point:Vec2):boolean{
+        for (const hitbox of this.hitboxes) {
+            if(hitbox.pointInside(point)) return true;
+        }
+        return false;
+    }
+    override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
+        return undefined
+    }
+    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
+        return false
+    }
+
+    override center(): Vec2 {
+        return this.toRect().center();
+    }
+    override randomPoint(): Vec2 {
+        return this.hitboxes[random.int(0,this.hitboxes.length)].randomPoint()
+    }
+    override toRect():RectHitbox2D{
+        const min = v2.new(Number.MAX_VALUE, Number.MAX_VALUE);
+        const max = v2.new(0, 0);
+        for (const hitbox of this.hitboxes) {
+            const toRect = hitbox.toRect();
+            min.x = Numeric.min(min.x, toRect.min.x);
+            min.y = Numeric.min(min.y, toRect.min.y);
+            max.x = Numeric.max(max.x, toRect.max.x);
+            max.y = Numeric.max(max.y, toRect.max.y);
+        }
+
+        return new RectHitbox2D(min, max);
+    }
+    override scale(scale: number): void {
+        for(const hitbox of this.hitboxes){
+            hitbox.scale(scale);
+        }
+    }
+    override is_null():boolean{
+        return false
+    }
+    override transform(position:Vec2=v2.new(0,0),scale?:number,orientation?:Orientation): HitboxGroup2D {
+        this.position = position;
+
+        return new HitboxGroup2D(
+            ...this.hitboxes.map(hitbox => hitbox.transform(position, scale,orientation))
+        );
+    }
+    override translate(position: Vec2): void {
+        for(const hb of this.hitboxes){
+            hb.translate(position)
+        }
+    }
+    override clone(deep:boolean=true): HitboxGroup2D {
+        return new HitboxGroup2D(...(deep?this.hitboxes.map(hitbox => hitbox.clone(true)):this.hitboxes));
+    }
+    override clamp(min:Vec2,max:Vec2){
+        this.position=v2.clamp2(this.position,min,max)
+    }
+    override encode(stream:NetStream){
+        stream.writePosition(this.position)
+    }
+    static decode(stream:NetStream):NullHitbox2D{
+        return new NullHitbox2D(stream.readPosition())
     }
 }
 export function jaggedRectangle(

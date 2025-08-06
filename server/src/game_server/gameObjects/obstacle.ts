@@ -95,6 +95,7 @@ export class Obstacle extends ServerGameObject{
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0)
             const pos=v2.duplicate(this.position)
             this.hb=this.def.hitbox.transform(pos,this.scale)
+            this.dirty=true
         }
     }
     damage(params:DamageParams){

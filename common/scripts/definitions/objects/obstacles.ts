@@ -1,5 +1,5 @@
 import { v2 } from "../../engine/geometry.ts";
-import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2 } from "../../engine/mod.ts";
+import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2, FrameTransform } from "../../engine/mod.ts";
 import { zIndexes } from "../../others/constants.ts";
 import { RectHitbox2D } from "../../engine/hitbox.ts";
 
@@ -15,6 +15,7 @@ export interface ObstacleDef extends Definition{
         max?:number
         destroy?:number
     }
+    frame_transform?:FrameTransform
     frame?:{
         base?:string
         dead?:string
@@ -92,11 +93,14 @@ Obstacles.insert(
     {
         idString:"oak_tree",
         health:80,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.2),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
         scale:{
             destroy:0.9,
-            max:2.5,
-            min:2.3
+            max:1.2,
+            min:1
+        },
+        frame_transform:{
+            scale:2
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles4,
@@ -108,11 +112,13 @@ Obstacles.insert(
     {
         idString:"wood_crate",
         health:70,
-        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        hitbox:new RectHitbox2D(v2.new(-0.71,-0.71),v2.new(0.71,0.71)),
         scale:{
-            destroy:1,
-            min:1.6,
-            max:2,
+            destroy:0.6,
+        },
+        frame_transform:{
+            hotspot:v2.new(0,0),
+            scale:2
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
@@ -176,6 +182,9 @@ Obstacles.insert(
         noCollision:true,
         scale:{
             destroy:1
+        },
+        frame_transform:{
+            scale:1
         },
         particle:"leaf_green_particle",
         rotationMode:RotationMode.full,

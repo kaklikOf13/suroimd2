@@ -39,6 +39,7 @@ export class Obstacle extends ClientGameObject2D{
         if(this.emitter_1)this.emitter_1.destroyed=true
     }
     update_frame(){
+        if(this.def.frame_transform)this.sprite.transform_frame(this.def.frame_transform)
         if(this.dead){
             this.sprite.frame=this.game.resources.get_sprite(this.frame.dead)
             this.container.zIndex=zIndexes.DeadObstacles

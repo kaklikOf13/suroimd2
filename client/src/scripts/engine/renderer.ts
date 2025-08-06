@@ -371,7 +371,7 @@ void main() {
             x1, y2,
             x2, y1,
             x2, y2
-        ]), material,{position:v2.add(rect.position,offset),scale:v2.new(1,1),rotation:0});
+        ]), material,{position:v2.sub(rect.position,offset),scale:v2.new(1,1),rotation:0});
     }
 
     draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2, precision: number = 50): void {

@@ -1,7 +1,7 @@
 import { SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts";
 import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D, } from "./resources.ts";
-import { FrameDef, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
+import { FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 
 export abstract class Container2DObject {
@@ -118,7 +118,7 @@ function sutherlandHodgman(subject: Vec2[], clip: Vec2[]): Vec2[] {
 
     return output;
 }
-function cut(pathA: number[], pathB: number[]): number[] {
+/*function cut(pathA: number[], pathB: number[]): number[] {
     const polyA: Vec2[] = [];
     for (let i = 0; i < pathA.length; i += 2)
         polyA.push(v2.new(pathA[i], pathA[i + 1]));
@@ -141,8 +141,7 @@ function cut(pathA: number[], pathB: number[]): number[] {
     }
 
     return triangles;
-}
-
+}*/
 type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material2D }
   | { type: 'fillColor'; color:Color }
@@ -313,6 +312,13 @@ export class Sprite2D extends Container2DObject{
         if(frame.hotspot)this.hotspot=v2.duplicate(frame.hotspot)
         if(frame.rotation)this.rotation=frame.rotation
         this.frame=resources.get_sprite(frame.image)
+
+    }
+    
+    transform_frame(frame:FrameTransform){
+        if(frame.scale)this.scale=v2.new(frame.scale,frame.scale)
+        if(frame.hotspot)this.hotspot=v2.duplicate(frame.hotspot)
+        if(frame.rotation)this.rotation=frame.rotation
 
     }
     override draw(renderer: Renderer): void {
