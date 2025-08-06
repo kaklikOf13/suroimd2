@@ -13,7 +13,7 @@ export const Config:ConfigType={
         config:{
             deenable_feast:true,
             gameTps:100,
-            maxPlayers:10,
+            maxPlayers:70,
             netTps:60,
             teamSize:1
         },

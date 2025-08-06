@@ -58,7 +58,7 @@ export class KillFeedPacket extends Packet{
     }
     decode(stream: NetStream): void {
         const msg={
-            type:stream.readID() as KillFeedMessageType,
+            type:stream.readUint8() as KillFeedMessageType,
         } as Record<string,unknown>
         switch(msg.type){
             case KillFeedMessageType.kill:

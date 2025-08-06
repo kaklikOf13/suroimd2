@@ -276,6 +276,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     override on_run(): void {
         this.map.generate()
+        for(let i=0;i<40;i++){
+            this.add_bot(`bot#${i+1}`)
+        }
     }
     async add_player(client:Client,id:number,username:string,packet:JoinPacket,layer:number=Layers.Normal):Promise<Player>{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player
@@ -342,6 +345,25 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
         p.dirty=true
 
+        return p
+    }
+    add_npc(name:string,layer:number=Layers.Normal):Player{
+        const p=this.scene.objects.add_object(new Player(),layer) as Player
+        p.is_npc=true
+        p.pvpEnabled=true
+        p.username=""
+
+        p.name=name
+        return p
+    }
+    add_bot(name:string,layer?:number):Player{
+        const p=this.add_npc(name,layer)
+        p.is_npc=false
+        p.is_bot=true
+        p.name=name
+        this.players.push(p)
+        this.livingPlayers.push(p)
+        this.modeManager.on_player_join(p)
         return p
     }
     fineshed:boolean=false

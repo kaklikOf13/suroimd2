@@ -382,14 +382,14 @@ export class Player extends GameObject{
         }
     }
     broke_shield(){
-        for(let p=0;p<12;p++){
+        for(let p=0;p<14;p++){
             const a=random.rad()
             this.game.particles.add_particle(new ABParticle2D({
                 direction:random.rad(),
-                life_time:0.5,
+                life_time:0.5+(Math.random()*0.5),
                 position:this.position,
-                speed:6,
-                scale:1,
+                speed:7,
+                scale:random.float(2,3),
                 frame:{
                     image:"shield_part"
                 },
@@ -398,7 +398,7 @@ export class Player extends GameObject{
                 to:{
                 tint:ColorM.rgba(255,255,255,0),
                     scale:0.3,
-                    angle:a*3,
+                    angle:random.float(-10,10),
                     speed:5,
                 }
             }))

@@ -35,7 +35,8 @@ export class ActionPacket extends Packet{
         this.hand=0
     }
     encode(stream: NetStream): void {
-      stream.writePosition(this.Movement)
+      stream.writeFloat(this.Movement.x,-1,1,3)
+      stream.writeFloat(this.Movement.y,-1,1,3)
       stream.writeBooleanGroup(this.UsingItem,this.Reloading,this.cellphoneAction!==undefined,this.interact)
       stream.writeRad(this.angle)
       stream.writeInt8(this.hand)
@@ -55,7 +56,10 @@ export class ActionPacket extends Packet{
       }
     }
     decode(stream: NetStream): void {
-      this.Movement=stream.readPosition()
+      this.Movement={
+        x:stream.readFloat(-1,1,3),
+        y:stream.readFloat(-1,1,3)
+      }
       const b=stream.readBooleanGroup()
       this.UsingItem=b[0]
       this.Reloading=b[1]

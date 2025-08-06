@@ -5,6 +5,7 @@ import { zIndexes } from "common/scripts/others/constants.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { DamageSplash } from "common/scripts/packets/update_packet.ts";
 import { type Player } from "./player.ts";
+import { ease } from "common/scripts/engine/mod.ts";
 export class DamageSplashOBJ extends ClientGameObject2D{
     stringType:string="damage_splash"
     numberType: number=8
@@ -13,8 +14,8 @@ export class DamageSplashOBJ extends ClientGameObject2D{
 
     async create(args: DamageSplash): Promise<void> {
         const color = args.shield
-            ? (args.critical ? "#0f9" : "#114")
-            : (args.critical ? "#f00" : "#ff0")
+            ? (args.critical ? "#114e" : "#0f9e")
+            : (args.critical ? "#f00e" : "#ff0e")
 
         
         const player = this.manager.get_object(args.taker,args.taker_layer) as Player|undefined
@@ -31,34 +32,28 @@ export class DamageSplashOBJ extends ClientGameObject2D{
 
         const s=(random.float(1,1.3)+(args.critical?0.7:0))/this.game.camera.zoom
         this.game.addTween({
-            duration: 0.4,
+            duration: 1,
             target: this.sprite.scale,
-            to: v2.random(s,s)
+            to: v2.random(s,s),
+            ease:ease.cubicOut
         })
 
-        const basePosition = v2.duplicate(this.sprite.position)
-        const oscillation = (i=0) => {
-            if(this.dying||this.destroyed||i>15)return
-            const offset = v2.new(
-                (Math.random() - 0.5) * 0.15,
-                (Math.random() - 0.5) * 0.15-1
-            )
-            const rotation = (Math.random() - 0.5) * 0.3
-
-            this.game.addTween({
-                duration: 0.2,
-                target: this.sprite.position,
-                to: v2.add(basePosition, offset),
-            })
-
-            this.game.addTween({
-                duration: 0.2,
-                target: this.sprite,
-                to: { rotation },
-                onComplete: oscillation.bind(this,i+1),
-            })
-        }
-        oscillation()
+        
+        this.game.addTween({
+            duration: 0.4,
+            target: this.sprite.position,
+            to: v2.add(this.sprite.position, v2.dscale(v2.random2(v2.new(-0.2,-0.5),v2.new(0.3,-0.7)),this.game.camera.zoom*(args.critical?0.6:0.8))),
+        })
+        this.sprite.rotation=-0.1
+        this.game.addTween({
+            duration: args.critical?0.1:0.3,
+            target: this.sprite,
+            to: {rotation:0.1},
+            yoyo:true,
+            ease:ease.quadraticInOut,
+            infinite:true
+        })
+        
         this.game.camera.addObject(this.sprite)
     }
 

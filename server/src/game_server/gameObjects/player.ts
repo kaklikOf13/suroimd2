@@ -1,4 +1,4 @@
-import { BaseGameObject2D, CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { BaseGameObject2D, CircleHitbox2D, Client, cloneDeep, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
@@ -52,6 +52,8 @@ export class Player extends ServerGameObject{
     actions:ActionsManager<this>
 
     client?:Client
+    is_npc:boolean=false
+    is_bot:boolean=false
 
     inventory:GInventory
 
@@ -107,6 +109,9 @@ export class Player extends ServerGameObject{
 
     dead=false
     downed=false
+
+    invensibility_time:number=0
+    imortal:boolean=false
 
     downedBy?:Player
     downedBySource?:DamageSourceDef
@@ -268,6 +273,7 @@ export class Player extends ServerGameObject{
         }
         this.using_item_down=false
         this.interaction_input=false
+        this.invensibility_time-=dt
 
         this.actions.update(dt)
         this.inventory.update()
@@ -325,14 +331,14 @@ export class Player extends ServerGameObject{
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
 
         this.inventory.set_weapon(1,"spas12")
-        this.inventory.set_weapon(2,"kar98k")
+        this.inventory.set_weapon(2,"awp")
         this.inventory.set_current_weapon_index(1)
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
         this.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
 
-        /*this.helmet=Armors.getFromString("tactical_helmet")
-        this.vest=Armors.getFromString("tactical_vest")*/
+        this.helmet=Armors.getFromString("tactical_helmet")
+        this.vest=Armors.getFromString("tactical_vest")
         //
         /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
@@ -349,9 +355,11 @@ export class Player extends ServerGameObject{
         /*this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,30)
         this.inventory.give_item(Consumibles.getFromString("soda") as unknown as GameItem,10)
         this.inventory.give_item(Consumibles.getFromString("blue_potion") as unknown as GameItem,5)*/
+        /*const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
+        v.seats[0].set_player(this)*/
 
-        const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
-        v.seats[0].set_player(this)
+        this.boost=100
+        this.BoostType=BoostType.Shield
     }
     damagesSplash:DamageSplash[]=[]
 
@@ -362,7 +370,7 @@ export class Player extends ServerGameObject{
     camera_hb:RectHitbox2D=new RectHitbox2D(v2.new(0,0),v2.new(0,0))
     update2(){
         this.update_modifiers()
-        if(this.client&&this.client.opened){
+        if(this.client&&this.client.opened&&!this.is_npc&&!this.is_bot){
             const up=new UpdatePacket()
             up.gui.health=this.health
             up.gui.max_health=this.maxHealth
@@ -420,18 +428,18 @@ export class Player extends ServerGameObject{
                 ...Object.values(this.manager.objects[this.layer].objects),
             ]*/
             const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
-            const o=this.game.scene.objects.encode_list(objs,undefined,this.view_objects)
+            const o=this.game.scene.objects.encode_list(objs,2048*1024,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm
             this.client.emit(up)
         }
     }
     damage(params:DamageParams){
-        if(this.dead||!this.pvpEnabled||this.parachute)return
+        if(this.dead||!this.pvpEnabled||this.parachute||this.imortal||this.invensibility_time>0)return
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&((params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)||(params.owner.groupId!==undefined&&params.owner.groupId===this.groupId)))return
+            if(params.owner.id!==this.id&&!this.is_npc&&((params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)||(params.owner.groupId!==undefined&&params.owner.groupId===this.groupId)))return
             mod*=params.owner.modifiers.damage
         }
         if(this.vest){
@@ -470,6 +478,9 @@ export class Player extends ServerGameObject{
             if(params.owner&&params.owner instanceof Player){
                 d.shield=true
                 d.shield_break=this.boost===0
+                if(this.boost===0){
+                    this.invensibility_time=0.35
+                }
             }
         }else{
             this.health=Math.max(this.health-params.amount,0)
@@ -478,18 +489,21 @@ export class Player extends ServerGameObject{
             params.owner.status.damage+=params.amount
             let ok=true
             for(const ds of params.owner.damagesSplash){
-                if(ds.shield==d.shield){
+                if(ds.shield===d.shield&&ds.taker===d.taker){
                     ds.critical===d.critical||ds.critical
+                    if(ds.shield){
+                        ds.shield_break=ds.shield_break||this.boost===0
+                    }
                     d=ds
                     ok=false
                     ds.count+=params.amount
                     break
-                }
+               }
             }
             if(ok){
                 params.owner.damagesSplash.push(d)
             }else{
-                params.owner.splashDelay=1
+                params.owner.splashDelay=2
             }
         }
         if(this.health===0){
@@ -535,45 +549,47 @@ export class Player extends ServerGameObject{
         this.dead=true
         this.update2()
         this.inventory.drop_all();
-        this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
-        this.game.modeManager.on_player_die(this);
-
-        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
-            this.game.send_killfeed_message({
-                type:KillFeedMessageType.killleader_dead,
-                player:{
-                    id:this.id,
-                    kills:this.status.kills
-                }
-            })
-        }
-
-        if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)){
-                params.owner.status.kills++
-                params.owner.earned.coins+=3
-                params.owner.earned.xp+=1
-            }
-            this.game.send_killfeed_message({
-                killer:{
-                    id:params.owner.id,
-                    kills:params.owner.status.kills
-                },
-                victimId:this.id,
-                type:KillFeedMessageType.kill,
-                used:DamageSources.keysString[params.source!.idString]
-            })
-            if((!this.game.modeManager.kill_leader&&params.owner.status.kills>=3)||(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader.status.kills<params.owner.status.kills)){
-                this.game.modeManager.kill_leader=params.owner
+        if(!this.is_npc){
+            this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
+            this.game.modeManager.on_player_die(this);
+            if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
                 this.game.send_killfeed_message({
-                    type:KillFeedMessageType.killleader_assigned,
+                    type:KillFeedMessageType.killleader_dead,
                     player:{
-                        id:params.owner.id,
-                        kills:params.owner.status.kills
+                        id:this.id,
+                        kills:this.status.kills
                     }
                 })
             }
+
+            if(params.owner&&params.owner instanceof Player){
+                if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)){
+                    params.owner.status.kills++
+                    params.owner.earned.coins+=3
+                    params.owner.earned.xp+=1
+                }
+                this.game.send_killfeed_message({
+                    killer:{
+                        id:params.owner.id,
+                        kills:params.owner.status.kills
+                    },
+                    victimId:this.id,
+                    type:KillFeedMessageType.kill,
+                    used:DamageSources.keysString[params.source!.idString]
+                })
+                if((!this.game.modeManager.kill_leader&&params.owner.status.kills>=3)||(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader.status.kills<params.owner.status.kills)){
+                    this.game.modeManager.kill_leader=params.owner
+                    this.game.send_killfeed_message({
+                        type:KillFeedMessageType.killleader_assigned,
+                        player:{
+                            id:params.owner.id,
+                            kills:params.owner.status.kills
+                        }
+                    })
+                }
+            }
         }
+
         this.game.add_player_body(this,v2.lookTo(params.position,this.position))
         this.game.addTimeout(()=>{
             this.send_game_over(false)
@@ -583,6 +599,7 @@ export class Player extends ServerGameObject{
         this.status.rank=this.game.livingPlayers.length+1
     }
     send_game_over(win:boolean=false){
+        if(this.is_npc||!this.client||!this.client.opened||this.is_bot)return
         const p=new GameOverPacket()
         p.Kills=this.status.kills
         p.DamageDealth=this.status.damage

@@ -54,6 +54,7 @@ export abstract class BaseObject2D{
         stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3],bools[4])
         if(bools[0]||bools[1]||bools[2]){
             stream.writeID(this.id)
+            stream.writeInt8(this.layer)
             stream.writeUint8(this.numberType)
             if(bools[0]||bools[1]){
                 const data=this.getData()
@@ -259,10 +260,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects[layer] = { orden: [], objects: {} };
         this.layers.push(layer);
     }
-    process_object(layer:number,stream:NetStream){
+    process_object(stream:NetStream){
         const b=stream.readBooleanGroup()
         if(b[0]||b[1]||b[2]){
             const oid=stream.readID()
+            const layer=stream.readInt8()
+            if(!this.objects[layer]){
+                this.add_layer(layer)
+            }
             const tp=stream.readUint8()
             let obj=this.objects[layer].objects[oid]
             if(b[3]&&!obj&&!b[2]){
@@ -287,11 +292,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
    proccess_l(stream:NetStream,process_deletion:boolean=false){
         let os=stream.readUint16()
         for(let i=0;i<os;i++){
-            const layer=stream.readUint8()
-            if(!this.objects[layer]){
-                this.add_layer(layer)
-            }
-            this.process_object(layer,stream)
+            this.process_object(stream)
         }
         os=stream.readUint16()
         for(let i=0;i<os;i++){
@@ -307,7 +308,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             for(const c in encodeList){
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                stream.writeUint8(c)
                 stream.writeUint24(encodeList[c].length)
                 for(let j=0;j<encodeList[c].length;j++){
                     const o=encodeList[c][j]
@@ -318,7 +318,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }else{
             stream.writeUint16(this.layers.length)
             for(const c of this.layers){
-                stream.writeUint8(c)
                 stream.writeUint24(this.objects[c].orden.length)
                 for(let j=0;j<this.objects[c].orden.length;j++){
                     const o=this.objects[c].orden[j]
@@ -333,7 +332,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         const stream=new NetStream(new ArrayBuffer(size))
         stream.writeUint16(l.length)
         for(let i=0;i<l.length;i++){
-            stream.writeUint8(l[i].layer)
             l[i].encodeObject(!last_list.includes(l[i]),stream)
         }
         const deletions=last_list.filter(obj =>

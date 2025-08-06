@@ -137,7 +137,7 @@ export class Client{
      */
     emit(packet:Packet):void{
         if (this.ws.readyState !== WebSocket.OPEN) return;
-        if(this.ws.send)this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*10))).buffer as ArrayBuffer)
+        if(this.ws.send)this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*30))).buffer as ArrayBuffer)
     }
     /**
      * On Recev A `Packet` From `Server/Client`

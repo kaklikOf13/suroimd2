@@ -401,7 +401,6 @@ Guns.insert(
         reload:{
             delay:4.5,
             capacity:5,
-            shotsPerReload:5,
         },
         recoil:{
             duration:1.45,
@@ -431,7 +430,7 @@ Guns.insert(
                 criticalMult:1.2,
                 tracer:tracers.small
             },
-            count:10
+            count:9
         },
         reload:{
             delay:0.8,
@@ -465,10 +464,10 @@ Guns.insert(
                 speed:32,
                 range:54,
                 criticalMult:1.15,
-                falloff:0.8,
+                falloff:0.7,
                 tracer:tracers.small
             },
-            count:10
+            count:9
         },
         reload:{
             delay:0.6,
@@ -505,15 +504,15 @@ Guns.insert(
         fireMode:FireMode.Auto,
         bullet:{
             def:{
-                damage:1.4,
+                damage:2,
                 radius:0.01,
                 speed:25,
                 falloff:0.7,
-                range:23,
+                range:26,
                 criticalMult:1.2,
                 tracer:tracers.tiny
             },
-            count:16
+            count:14
         },
         reload:{
             delay:0.7,

@@ -50,6 +50,7 @@ export class Bullet extends ServerGameObject{
         this.manager.cells.updateObject(this)
         const objs=this.manager.cells.get_objects(this.hb,this.layer)
         for(const obj of objs){
+            if(this.destroyed)break
             switch(obj.stringType){
                 case "player":{
                     if((obj as Player).hb&&!(obj as Player).dead&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)&&!(obj as Player).parachute){

@@ -676,16 +676,28 @@ export class NetStream {
         };
     }
     
-    writePosition(vector: Vec2):this{
-        this.writeFloat32(vector.x);
-        this.writeFloat32(vector.y);
+    writePosition(vector: Vec2,big:boolean=false):this{
+        if(big){
+            this.writeFloat32(vector.x);
+            this.writeFloat32(vector.y);
+        }else{
+            this.writeFloat(vector.x,0,1200,2);
+            this.writeFloat(vector.y,0,1200,2);
+        }
         return this;
     }
-    readPosition(): Vec2 {
-        return {
-            x: this.readFloat32(),
-            y: this.readFloat32()
-        };
+    readPosition(big:boolean=false): Vec2 {
+        if(big){
+            return {
+                x: this.readFloat32(),
+                y: this.readFloat32()
+            };
+        }else{
+            return {
+                x:this.readFloat(0,1200,2),
+                y:this.readFloat(0,1200,2)
+            }
+        }
     }
 
     writeID(id: ID):this{
