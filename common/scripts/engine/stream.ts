@@ -1,5 +1,5 @@
 import { Vec2 } from "./geometry.ts";
-import { CircleHitbox2D, Hitbox2D, HitboxType2D, NullHitbox2D, RectHitbox2D } from "./hitbox.ts";
+import { CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "./hitbox.ts";
 import { ID } from "./utils.ts";
 //Thanks Suroi.io
 
@@ -726,6 +726,10 @@ export class NetStream {
                 return CircleHitbox2D.decode(this)
             case HitboxType2D.rect:
                 return RectHitbox2D.decode(this)
+            case HitboxType2D.group:
+                return HitboxGroup2D.decode(this)
+            case HitboxType2D.polygon:
+                return PolygonHitbox2D.decode(this)
             case HitboxType2D.null:
                 return NullHitbox2D.decode(this)
         }

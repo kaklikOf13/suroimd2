@@ -9,21 +9,23 @@ export enum HitboxType2D{
     circle,
     rect,
     group,
+    polygon
 }
 
 export interface Hitbox2DMapping {
+    [HitboxType2D.null]:NullHitbox2D
     [HitboxType2D.circle]:CircleHitbox2D
     [HitboxType2D.rect]:RectHitbox2D
     [HitboxType2D.group]:HitboxGroup2D
-    [HitboxType2D.null]:NullHitbox2D
+    [HitboxType2D.polygon]:PolygonHitbox2D
 }
 export type Hitbox2D = Hitbox2DMapping[HitboxType2D]
 export abstract class BaseHitbox2D{
     abstract type: HitboxType2D
     abstract collidingWith(other: Hitbox2D):boolean
     abstract overlapCollision(other:Hitbox2D):OverlapCollision2D
+    abstract colliding_with_line(a:Vec2,b:Vec2):boolean
     abstract pointInside(point:Vec2):boolean
-    abstract lineInside(x:Vec2,y:Vec2,width:number):boolean
     abstract center():Vec2
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
@@ -57,7 +59,7 @@ export class NullHitbox2D extends BaseHitbox2D{
     override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
         return undefined
     }
-    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
+    override colliding_with_line(_a:Vec2,_b:Vec2):boolean{
         return false
     }
     override center(): Vec2 {
@@ -135,7 +137,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override pointInside(point: Vec2): boolean {
       return v2.distance(this.position,point)<this.radius
     }
-    override lineInside(x:Vec2,y:Vec2,_width:number):boolean{
+    override colliding_with_line(x:Vec2,y:Vec2):boolean{
         let d = v2.sub(y, x)
         const len = Numeric.max(v2.length(d), 0.000001)
         d = v2.normalizeSafe(d)
@@ -262,9 +264,41 @@ export class RectHitbox2D extends BaseHitbox2D{
     override pointInside(point: Vec2): boolean {
         return (point.x>=this.max.x&&point.x<=this.min.x)&&(point.y>=this.max.y&&point.y<=this.min.y)
     }
-    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
-        return false
+    override colliding_with_line(a: Vec2, b: Vec2): boolean {
+        let tmin = 0;
+        let tmax = Number.MAX_VALUE;
+
+        const eps = 1e-8;
+        let d = v2.sub(b, a);
+        const dist = v2.length(d);
+
+        if (dist < eps) return this.pointInside(a);
+
+        d = v2.normalizeSafe(d);
+
+        if (Math.abs(d.x) < eps) {
+            if (a.x < this.min.x || a.x > this.max.x) return false;
+        } else {
+            const tx1 = (this.min.x - a.x) / d.x;
+            const tx2 = (this.max.x - a.x) / d.x;
+            tmin = Math.max(tmin, Math.min(tx1, tx2));
+            tmax = Math.min(tmax, Math.max(tx1, tx2));
+            if (tmin > tmax) return false;
+        }
+
+        if (Math.abs(d.y) < eps) {
+            if (a.y < this.min.y || a.y > this.max.y) return false;
+        } else {
+            const ty1 = (this.min.y - a.y) / d.y;
+            const ty2 = (this.max.y - a.y) / d.y;
+            tmin = Math.max(tmin, Math.min(ty1, ty2));
+            tmax = Math.min(tmax, Math.max(ty1, ty2));
+            if (tmin > tmax) return false;
+        }
+
+        return tmin <= dist && tmax >= 0;
     }
+
     override center(): Vec2 {
         return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))
     }
@@ -368,8 +402,8 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
         return undefined
     }
-    override lineInside(_x:Vec2,_y:Vec2,_width:number):boolean{
-        return false
+    override colliding_with_line(a:Vec2,b:Vec2):boolean{
+        return this.hitboxes.some(hitbox => hitbox.colliding_with_line(a,b));
     }
 
     override center(): Vec2 {
@@ -455,4 +489,186 @@ export function jaggedRectangle(
     }
 
     return points;
+}
+export class PolygonHitbox2D extends BaseHitbox2D {
+    override readonly type = HitboxType2D.polygon;
+    points: Vec2[];
+    position: Vec2;
+
+    constructor(points: Vec2[], center: Vec2 = v2.new(0, 0)) {
+        super();
+        this.points = points.map(p => v2.duplicate(p));
+        this.position = v2.duplicate(center);
+    }
+
+    override collidingWith(other: Hitbox2D): boolean {
+        switch (other.type) {
+            case HitboxType2D.rect: {
+                if (this.points.some(p => 
+                    p.x >= other.min.x && p.x <= other.max.x &&
+                    p.y >= other.min.y && p.y <= other.max.y
+                )) return true;
+
+                const rectPoints = [
+                    other.min,
+                    v2.new(other.max.x, other.min.y),
+                    other.max,
+                    v2.new(other.min.x, other.max.y)
+                ];
+                if (rectPoints.some(p => this.pointInside(p))) return true;
+
+                const polyEdges = this.getEdges();
+                const rectEdges = [
+                    [rectPoints[0], rectPoints[1]],
+                    [rectPoints[1], rectPoints[2]],
+                    [rectPoints[2], rectPoints[3]],
+                    [rectPoints[3], rectPoints[0]]
+                ];
+                for (const [a1, a2] of polyEdges) {
+                    for (const [b1, b2] of rectEdges) {
+                        if (Collision.line_intersects_line(a1, a2, b1, b2)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            case HitboxType2D.circle: {
+                if (this.points.some(p => v2.distance(p, other.position) <= other.radius))
+                    return true;
+                if (this.pointInside(other.position)) return true;
+
+                for (const [a, b] of this.getEdges()) {
+                    if (Collision.circle_with_line(other.position, other.radius, a, b))
+                        return true;
+                }
+                return false;
+            }
+            case HitboxType2D.polygon: {
+                // Teste ponto-ponto
+                if (this.points.some(p => other.pointInside(p))) return true;
+                if (other.points.some(p => this.pointInside(p))) return true;
+
+                // Teste aresta-aresta
+                for (const [a1, a2] of this.getEdges()) {
+                    for (const [b1, b2] of other.getEdges()) {
+                        if (Collision.line_intersects_line(a1, a2, b1, b2)) return true;
+                    }
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
+        return undefined;
+    }
+
+    override pointInside(point: Vec2): boolean {
+        let inside = false;
+        const count = this.points.length;
+        for (let i = 0, j = count - 1; i < count; j = i++) {
+            const pi = this.points[i];
+            const pj = this.points[j];
+            if ((pi.y > point.y) !== (pj.y > point.y) &&
+                point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+
+    override colliding_with_line(a: Vec2, b: Vec2): boolean {
+        for (const [p1, p2] of this.getEdges()) {
+            if (Collision.line_colliding_with_line(a, b, p1, p2)) return true;
+        }
+        return false;
+    }
+
+    override center(): Vec2 {
+        return this.position;
+    }
+
+    override scale(scale: number): void {
+        for (let i = 0; i < this.points.length; i++) {
+            const offset = v2.sub(this.points[i], this.position);
+            this.points[i] = v2.add(this.position, v2.scale(offset, scale));
+        }
+    }
+
+    override randomPoint(): Vec2 {
+        const rect = this.toRect();
+        let p: Vec2;
+        do {
+            p = rect.randomPoint();
+        } while (!this.pointInside(p));
+        return p;
+    }
+
+    override toRect(): RectHitbox2D {
+        const min = v2.new(Number.MAX_VALUE, Number.MAX_VALUE);
+        const max = v2.new(-Number.MAX_VALUE, -Number.MAX_VALUE);
+        for (const p of this.points) {
+            min.x = Math.min(min.x, p.x);
+            min.y = Math.min(min.y, p.y);
+            max.x = Math.max(max.x, p.x);
+            max.y = Math.max(max.y, p.y);
+        }
+        return new RectHitbox2D(min, max);
+    }
+
+    override transform(position: Vec2 = v2.new(0,0), scale = 1, orientation: Orientation = 0): PolygonHitbox2D {
+        const transformed = this.points.map(p => 
+            v2.add_with_orientation(position, v2.scale(p, scale), orientation)
+        );
+        const newCenter = v2.add_with_orientation(position, v2.scale(this.position, scale), orientation);
+        return new PolygonHitbox2D(transformed, newCenter);
+    }
+
+    override translate(position: Vec2, orientation: Orientation = 0): void {
+        const offset = v2.sided(orientation);
+        const dx = position.x * offset.x;
+        const dy = position.y * offset.y;
+        for (let i = 0; i < this.points.length; i++) {
+            this.points[i] = v2.add(this.points[i], v2.new(dx, dy));
+        }
+        this.position = v2.add(this.position, v2.new(dx, dy));
+    }
+
+    override clone(): PolygonHitbox2D {
+        return new PolygonHitbox2D(this.points, this.position);
+    }
+
+    override clamp(min: Vec2, max: Vec2): void {
+        const rect = this.toRect();
+        const move = v2.clamp2(rect.position, min, max);
+        this.translate(move);
+    }
+
+    override encode(stream: NetStream): void {
+        stream.writeUint16(this.points.length);
+        for (const p of this.points) {
+            stream.writePosition(p);
+        }
+        stream.writePosition(this.position);
+    }
+
+    static decode(stream: NetStream): PolygonHitbox2D {
+        const len = stream.readUint16();
+        const pts: Vec2[] = [];
+        for (let i = 0; i < len; i++) {
+            pts.push(stream.readPosition());
+        }
+        const center = stream.readPosition();
+        return new PolygonHitbox2D(pts, center);
+    }
+
+    private getEdges(): [Vec2, Vec2][] {
+        const edges: [Vec2, Vec2][] = [];
+        for (let i = 0; i < this.points.length; i++) {
+            edges.push([this.points[i], this.points[(i + 1) % this.points.length]]);
+        }
+        return edges;
+    }
 }

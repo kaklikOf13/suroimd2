@@ -3,6 +3,7 @@ import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts
 import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D, } from "./resources.ts";
 import { FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, HitboxType2D } from "common/scripts/engine/hitbox.ts";
 
 export abstract class Container2DObject {
     abstract object_type: string;
@@ -211,6 +212,25 @@ export class Graphics2D extends Container2DObject {
     }
     drawLine(a:Vec2,b:Vec2,width:number){
         this.command.push({type:"model",model:LineModel2D(a,b,width)})
+    }
+    set_hitbox(hb:Hitbox2D){
+        switch(hb.type){
+            case HitboxType2D.rect:
+                this.lineTo(hb.min.x,hb.min.y)
+                this.lineTo(hb.max.x,hb.min.y)
+                this.lineTo(hb.max.x,hb.max.y)
+                this.lineTo(hb.min.x,hb.max.y)
+                break
+            case HitboxType2D.null:
+            case HitboxType2D.circle:
+            case HitboxType2D.group:
+                break
+            case HitboxType2D.polygon:
+                for(const p of hb.points){
+                    this.lineTo(p.x+hb.position.x,p.y+hb.position.y)
+                }
+                break
+        }
     }
 
     override draw(renderer: Renderer): void {

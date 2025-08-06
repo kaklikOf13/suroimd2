@@ -21,6 +21,8 @@ export class Bullet extends GameObject{
     initialPosition!:Vec2
     maxDistance:number=1
 
+    old_position:Vec2=v2.new(0,0)
+
     sendDelete: boolean=true;
     sprite_trail:Sprite2D=new Sprite2D()
     sprite_projectile:Sprite2D=new Sprite2D()
@@ -60,25 +62,26 @@ export class Bullet extends GameObject{
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){
                     case "player":
-                        if((obj as Player).hb&&!(obj as Player).dead&&this.hb.collidingWith((obj as Player).hb)&&!(obj as Player).parachute){
+                        if((obj as Player).hb&&!(obj as Player).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))&&!(obj as Player).parachute){
                             (obj as Player).on_hitted(this.position)
                             this.dying=true
                         }
                         break
                     case "creature":
-                        if((obj as Creature).hb&&!(obj as Creature).dead&&this.hb.collidingWith(obj.hb)){
+                        if((obj as Creature).hb&&!(obj as Creature).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
                             this.dying=true
                         }
                         break
                     case "obstacle":
                         if((obj as Obstacle).def.noBulletCollision||(obj as Obstacle).dead)break
-                        if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
+                        if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
                             (obj as Obstacle).on_hitted(v2.duplicate(this.position))
                             this.dying=true
                         }
                         break
                 }
             }
+            this.old_position=v2.duplicate(this.position)
         }
 
         const traveledDistance = v2.distance(this.initialPosition, this.position)

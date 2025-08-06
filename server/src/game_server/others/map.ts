@@ -1,4 +1,4 @@
-import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
+import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, PolygonHitbox2D, RectHitbox2D, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { ObstacleDef, Obstacles } from "../../../../common/scripts/definitions/objects/obstacles.ts";
@@ -16,16 +16,11 @@ import { Layers } from "common/scripts/others/constants.ts";
 import { Creatures } from "../../../../common/scripts/definitions/objects/creatures.ts";
 
 export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRandom){
-    map.terrain.add_floor(def.terrain.base,[
-        v2.new(0,0),
-        v2.new(map.size.x,0),
-        v2.new(map.size.x,map.size.y),
-        v2.new(0,map.size.y),
-    ],undefined,false)
+    map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),undefined,false)
     let cp=0
     for(const f of def.terrain.floors.sort()){
         cp+=f.padding
-        map.terrain.add_floor(f.type,jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing,f.variation,random))
+        map.terrain.add_floor(f.type,new PolygonHitbox2D(jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing,f.variation,random)))
     }
 }
 

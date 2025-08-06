@@ -1,4 +1,5 @@
 import { Vec2 } from "../engine/geometry.ts";
+import { Hitbox2D } from "../engine/hitbox.ts";
 
 export enum FloorType{
     Grass=0,
@@ -23,11 +24,11 @@ export const Floors:Record<FloorType,FloorDef>={
 export interface Floor{
     type:FloorType
     smooth:boolean
-    vertex:Vec2[]
+    hb:Hitbox2D
 }
 export class TerrainManager{
     floors:Record<number,Floor[]>={0:[]}
-    add_floor(type:FloorType,vertex:Vec2[],layer:number=0,smooth:boolean=true){
-        this.floors[layer].push({type,vertex,smooth})
+    add_floor(type:FloorType,hb:Hitbox2D,layer:number=0,smooth:boolean=true){
+        this.floors[layer].push({type,hb,smooth})
     }
 }

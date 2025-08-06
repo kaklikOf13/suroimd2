@@ -525,5 +525,113 @@ export const Collision=Object.freeze({
         }
 
         return undefined;
-    }
+    },
+    distToSegmentSq(p: Vec2, a: Vec2, b: Vec2) {
+        const ab = v2.sub(b, a);
+        const c = v2.dot(v2.sub(p, a), ab) / v2.dot(ab, ab);
+        const d = v2.add(a, v2.scale(ab, Math.max(0, Math.min(1, c))));
+        const e = v2.sub(d, p);
+        return v2.dot(e, e);
+    },
+
+    distToPolygonSq(p: Vec2, poly: Vec2[]) {
+        let closestDistSq = Number.MAX_VALUE;
+        for (let i = 0; i < poly.length; i++) {
+            const a = poly[i];
+            const b = (i === poly.length - 1) ? poly[0] : poly[i + 1];
+            const distSq = Collision.distToSegmentSq(p, a, b);
+            if (distSq < closestDistSq) {
+                closestDistSq = distSq;
+            }
+        }
+        return closestDistSq;
+    },
+
+    distToPolygon(p: Vec2, poly: Vec2[]) {
+        return Math.sqrt(Collision.distToPolygonSq(p, poly));
+    },
+
+    rayIntersectsLine(origin: Vec2, direction: Vec2, a: Vec2, b: Vec2): number | null {
+        const ab = v2.sub(b, a);
+        const perp = v2.new(ab.y, -ab.x);
+        const perpDotDir = v2.dot(direction, perp);
+
+        if (Math.abs(perpDotDir) <= 1e-7) return null; // paralelo
+
+        const d = v2.sub(a, origin);
+        const distAlongRay = v2.dot(perp, d) / perpDotDir;
+        const distAlongLine = v2.dot(v2.new(direction.y, -direction.x), d) / perpDotDir;
+
+        return distAlongRay >= 0 && distAlongLine >= 0 && distAlongLine <= 1
+            ? distAlongRay
+            : null;
+    },
+
+    rayIntersectsPolygon(origin: Vec2, direction: Vec2, poly: Vec2[]): number | null {
+        let t = Number.MAX_VALUE;
+        let hit = false;
+
+        for (let i = 0, len = poly.length, j = len - 1; i < len; j = i++) {
+            const dist = Collision.rayIntersectsLine(origin, direction, poly[j], poly[i]);
+            if (dist !== null && dist < t) {
+                hit = true;
+                t = dist;
+            }
+        }
+        return hit ? t : null;
+    },
+
+    pointInPolygon(p: Vec2, poly: Vec2[]): boolean {
+        let inside = false;
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            const xi = poly[i].x, yi = poly[i].y;
+            const xj = poly[j].x, yj = poly[j].y;
+
+            const intersect = ((yi > p.y) !== (yj > p.y)) &&
+                            (p.x < (xj - xi) * (p.y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    },
+    polygon_with_point(poly: Vec2[], point: Vec2) {
+        return Collision.pointInPolygon(point, poly);
+    },
+
+    polygon_with_circle(poly: Vec2[], circlePos: Vec2, radius: number) {
+        if (Collision.pointInPolygon(circlePos, poly)) return true;
+
+        for (let i = 0; i < poly.length; i++) {
+            const a = poly[i];
+            const b = (i === poly.length - 1) ? poly[0] : poly[i + 1];
+            if (Collision.distToSegmentSq(circlePos, a, b) <= radius * radius) {
+                return true;
+            }
+        }
+        return false;
+    },
+
+    polygon_with_polygon(polyA: Vec2[], polyB: Vec2[]) {
+        for (const p of polyA) if (Collision.pointInPolygon(p, polyB)) return true;
+        for (const p of polyB) if (Collision.pointInPolygon(p, polyA)) return true;
+
+        for (let i = 0; i < polyA.length; i++) {
+            const a1 = polyA[i];
+            const a2 = polyA[(i + 1) % polyA.length];
+            for (let j = 0; j < polyB.length; j++) {
+                const b1 = polyB[j];
+                const b2 = polyB[(j + 1) % polyB.length];
+                if (Collision.segmentsIntersect(a1, a2, b1, b2)) return true;
+            }
+        }
+        return false;
+    },
+
+    segmentsIntersect(p1: Vec2, p2: Vec2, q1: Vec2, q2: Vec2) {
+        function ccw(a: Vec2, b: Vec2, c: Vec2) {
+            return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+        }
+        return ccw(p1, q1, q2) !== ccw(p2, q1, q2) &&
+            ccw(p1, p2, q1) !== ccw(p1, p2, q2);
+    },
+
 })

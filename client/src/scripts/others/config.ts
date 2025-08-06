@@ -106,5 +106,5 @@ export const ConfigDefaultActions={
     }
 }
 export const Debug={
-    hitbox:false,
+    hitbox:true,
 }

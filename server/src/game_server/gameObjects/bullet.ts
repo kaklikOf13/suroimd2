@@ -17,6 +17,8 @@ export class Bullet extends ServerGameObject{
     initialPosition!:Vec2
     maxDistance:number=0
 
+    old_position:Vec2=v2.new(0,0)
+
     owner?:Player
     angle:number=0
 
@@ -53,7 +55,7 @@ export class Bullet extends ServerGameObject{
             if(this.destroyed)break
             switch(obj.stringType){
                 case "player":{
-                    if((obj as Player).hb&&!(obj as Player).dead&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&this.hb.collidingWith((obj as Player).hb)&&!(obj as Player).parachute){
+                    if((obj as Player).hb&&!(obj as Player).dead&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))&&!(obj as Player).parachute){
                         const dmg:number=this.damage
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
                         *(this.critical?(this.defs.criticalMult??1.5):1);
@@ -97,6 +99,8 @@ export class Bullet extends ServerGameObject{
                     break
             }
         }
+        
+        this.old_position=v2.duplicate(this.position)
     }
     ammo:string=""
     create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:GameItem}): void {

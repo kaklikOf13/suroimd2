@@ -16,9 +16,7 @@ export class MapPacket extends Packet{
         stream.writeArray(this.map.terrain,(t)=>{
             stream.writeBooleanGroup(t.smooth)
             .writeUint8(t.type)
-            .writeArray(t.vertex,(p)=>{
-                stream.writePosition(p)
-            },2)
+            .writeHitbox(t.hb)
         },2)
         .writeUint16(this.map.size.x)
         .writeUint16(this.map.size.y)
@@ -29,9 +27,7 @@ export class MapPacket extends Packet{
             return {
                 type:stream.readUint8(),
                 smooth:bg[0],
-                vertex:stream.readArray(()=>{
-                    return stream.readPosition()
-                },2)
+                hb:stream.readHitbox()
             }
         },2)
         this.map.size=v2.new(stream.readUint16(),stream.readUint16())
