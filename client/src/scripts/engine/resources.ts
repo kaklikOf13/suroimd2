@@ -355,6 +355,12 @@ export class ResourcesManager{
             delete this.sources[id]
         }
     }
+    async load_group(path:string){
+        const files=await(await fetch(path)).json()
+        for(const f of Object.keys(files.files)){
+            await this.load_source(f,files.files[f])
+        }
+    }
 }
 export enum AudioState{
     finished,

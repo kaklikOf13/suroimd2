@@ -2,6 +2,7 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path, { resolve } from "node:path";
 import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin";
+import { AudiosLists } from "./plugins/audio_list.ts";
 const config: UserConfig = {
     build: {
         rollupOptions: {
@@ -44,6 +45,10 @@ const config: UserConfig = {
             {name:"high",scale:1},
             {name:"very-high",scale:2},
         ]),
+        AudiosLists([{
+            input:"public/sounds/game/common",
+            output:"sounds/game/common.json"
+        }])
     ],
 
     css: {

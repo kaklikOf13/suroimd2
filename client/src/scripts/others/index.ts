@@ -36,7 +36,7 @@ import { InputManager } from "../engine/keys.ts";
     menu_manager.start()
 
 
-    let loaded=true
+    let loaded=false
     let gs:OfflineGameServer|undefined
 
     let regions:Record<string,RegionDef>={}
@@ -65,7 +65,7 @@ import { InputManager } from "../engine/keys.ts";
     for(const s of spg[GameSave.get_variable("cv_graphics_resolution")]){
         await resources.load_spritesheet("",s)
     }
-    /*resources.load_folder("/common.src").then(()=>{
+    resources.load_group("/sounds/game/common.json").then(()=>{
         const lister=()=>{
             setTimeout(()=>{
                 if(app.game)return
@@ -75,7 +75,7 @@ import { InputManager } from "../engine/keys.ts";
             document.removeEventListener("mousedown",lister)
         }
         document.addEventListener("mousedown",lister)
-    })*/
+    })
 
     //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 

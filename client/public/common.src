@@ -1,7 +1,0 @@
-{
-    "files":{
-        "guns-sounds":"sounds/game/common/items/guns.src",
-        "obstacles-sounds":"sounds/game/common/objects/obstacles.src"
-    },
-    "dir":""
-}

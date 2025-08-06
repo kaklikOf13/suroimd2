@@ -35,6 +35,8 @@ vite.config.ts.timestamp-*
 
 .spritesheet-cache
 .spritesheet-cache/*
+.audios-cache
+.audios-cache/*
 
 database
 database/*
