@@ -87,4 +87,16 @@ export class SeededRandom {
     irandom1(val:Random1):number{
         return typeof val==="number"?val:this.getInt(val.min,val.max)
     }
+    weight(weights: number[]): number {
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        let r = this.get(0, totalWeight);
+        for (let i = 0; i < weights.length; i++) {
+        if (r < weights[i]) return i;
+        r -= weights[i];
+        }
+        return weights.length - 1;
+    }
+    choose<TP>(array:TP[]):TP{
+        return array[Numeric.clamp(this.getInt(0,array.length-1),0,array.length-1)]
+    }
 }

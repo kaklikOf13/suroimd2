@@ -2,7 +2,7 @@ import { LootTableItemRet, LootTablesDefs } from "../../engine/inventory.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 import { GameItems } from "../alldefs.ts";
 import { GunDef } from "../items/guns.ts";
-import { FloorType } from "../../others/terrain.ts";
+import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { Random1 } from "../../engine/random.ts";
 import { Vec2 } from "../../engine/geometry.ts";
 import { type Layers } from "../../others/constants.ts";
@@ -49,9 +49,15 @@ export interface IslandDef{
                 variation:number
                 spacing:number
             }[]
+            rivers?:{
+                defs:RiversDef[]
+                expansion?:number
+                spawn_floor:number
+                divisions:number
+            }
         },
         ground_loot?:{table:string,count:Random1,layer?:Layers}[],
-        spawn?:{id:string,count:Random1}[][]
+        spawn?:{id:string,count:Random1}[][],
     }
 }
 export const LootTables=new LootTablesDefs<GameItem,Aditional>(get_item)

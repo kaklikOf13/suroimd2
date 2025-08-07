@@ -1,4 +1,4 @@
-import { random } from "./random.ts"
+import { random, SeededRandom } from "./random.ts"
 export interface Vec2{
     x:number
     y:number
@@ -45,6 +45,18 @@ export const v2 = Object.freeze({
                 return v2.new(-1,-1)
             case 3:
                 return v2.new(1,-1)
+        }
+    },
+    orientation_random(side:Orientation,min:Vec2,max:Vec2,expansion:number,random:SeededRandom):Vec2{
+        switch(side){
+            case 0:
+                return v2.new(max.x+expansion,random.get(min.y,max.y))
+            case 1:
+                return v2.new(random.get(min.x,max.x),max.y+expansion)
+            case 2:
+                return v2.new(min.x-expansion,random.get(min.y,max.y))
+            case 3:
+                return v2.new(random.get(min.x,max.x),min.y-expansion)
         }
     },
     /**
@@ -633,5 +645,15 @@ export const Collision=Object.freeze({
         return ccw(p1, q1, q2) !== ccw(p2, q1, q2) &&
             ccw(p1, p2, q1) !== ccw(p1, p2, q2);
     },
+    point_on_segment(p: Vec2, a: Vec2, b: Vec2, epsilon = 1e-6): boolean {
+        const cross = (b.y - a.y) * (p.x - a.x) - (b.x - a.x) * (p.y - a.y);
+        if (Math.abs(cross) > epsilon) return false;
+
+        const dot = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
+        if (dot < 0) return false;
+
+        const lenSq = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+        return dot <= lenSq;
+    }
 
 })

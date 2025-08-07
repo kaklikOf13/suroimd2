@@ -232,7 +232,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false
 
-        this.map.generate(generation.island({
+        /*this.map.generate(generation.island({
             generation:{
                 size:v2.new(800,800),
                 ground_loot:[{count:900,table:"ground_loot"}],
@@ -258,6 +258,58 @@ export class Game extends ServerGame2D<ServerGameObject>{
                             padding:14,
                             type:FloorType.Grass,
                             spacing:0.3,
+                            variation:1.3,
+                        }
+                    ]
+                }
+            }
+        }))*/
+       this.map.generate(generation.island({
+            generation:{
+                size:v2.new(100,100),
+                ground_loot:[{count:20,table:"ground_loot"}],
+                spawn:[
+                    [
+                        {id:"oak_tree",count:40},
+                        {id:"stone",count:30},
+                        {id:"bush",count:20},
+                        {id:"wood_crate",count:10},
+                        {id:"barrel",count:5}
+                    ]
+                ],
+                terrain:{
+                    base:FloorType.Water,
+                    rivers:{
+                        divisions:10,
+                        spawn_floor:1,
+                        expansion:12,
+                        defs:[
+                            {
+                                rivers:[
+                                    {sub_river_width:2,width:2,width_variation:1,sub_river_chance:0.5},
+                                    {sub_river_width:1,width:3,width_variation:1,sub_river_chance:0.1},
+                                ],
+                                weight:10
+                            },
+                            {
+                                rivers:[
+                                    {sub_river_width:3,width:3,width_variation:1,sub_river_chance:0.9},
+                                ],
+                                weight:1
+                            }
+                        ]
+                    },
+                    floors:[
+                        {
+                            padding:15,
+                            type:FloorType.Sand,
+                            spacing:3,
+                            variation:1.3,
+                        },
+                        {
+                            padding:10,
+                            type:FloorType.Grass,
+                            spacing:3,
                             variation:1.3,
                         }
                     ]
@@ -309,9 +361,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
     }
     override on_run(): void {
-        for(let i=0;i<40;i++){
+        /*for(let i=0;i<40;i++){
             this.add_bot(`bot#${i+1}`)
-        }
+        }*/
     }
     async add_player(client:Client,id:number,username:string,packet:JoinPacket,layer:number=Layers.Normal):Promise<Player>{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player

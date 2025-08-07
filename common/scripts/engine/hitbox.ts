@@ -567,17 +567,27 @@ export class PolygonHitbox2D extends BaseHitbox2D {
 
     override pointInside(point: Vec2): boolean {
         let inside = false;
-        const count = this.points.length;
-        for (let i = 0, j = count - 1; i < count; j = i++) {
+        const n = this.points.length;
+
+        for (let i = 0, j = n - 1; i < n; j = i++) {
             const pi = this.points[i];
             const pj = this.points[j];
-            if ((pi.y > point.y) !== (pj.y > point.y) &&
-                point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x) {
-                inside = !inside;
+
+            // Verifica se o ponto está exatamente sobre a aresta
+            if (Collision.point_on_segment(point, pi, pj)) {
+                return true; // Considera como "dentro"
             }
+
+            // Ray casting: verifica se a linha horizontal do ponto cruza a aresta
+            const intersects = (pi.y > point.y) !== (pj.y > point.y) &&
+                point.x < ((pj.x - pi.x) * (point.y - pi.y)) / (pj.y - pi.y) + pi.x;
+
+            if (intersects) inside = !inside;
         }
+
         return inside;
     }
+
 
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
         for (const [p1, p2] of this.getEdges()) {

@@ -4,13 +4,9 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 
 import { IslandDef, LootTables } from "common/scripts/definitions/maps/base.ts"
-import { GameItem } from "common/scripts/definitions/utils.ts";
-import { Guns } from "common/scripts/definitions/items/guns.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
+import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Layers } from "common/scripts/others/constants.ts";
-import { Creatures } from "common/scripts/definitions/objects/creatures.ts";
-import { Loot } from "../gameObjects/loot.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export const generation={
@@ -20,10 +16,22 @@ export const generation={
             map.size=def.generation.size
             map.terrain.add_floor(def.generation.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),Layers.Normal,false)
             let cp=0
+            const hitboxes:Hitbox2D[]=[]
             for(const f of def.generation.terrain.floors.sort()){
                 cp+=f.padding
-                map.terrain.add_floor(f.type,new PolygonHitbox2D(jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing*(map.size.x/100),f.variation,random)),Layers.Normal)
+                const hb=new PolygonHitbox2D(jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing,f.variation,random))
+                hitboxes.push(hb)
+                map.terrain.add_floor(f.type,hb,Layers.Normal)
             }
+            if(def.generation.terrain.rivers){
+                const rivers=generate_rivers(hitboxes[def.generation.terrain.rivers.spawn_floor].toRect(),def.generation.terrain.rivers.defs,def.generation.terrain.rivers.divisions,random,def.generation.terrain.rivers.expansion,[
+                    {name:"main",padding:0}
+                ])
+                for(const r of rivers){
+                    map.terrain.add_floor(FloorType.Water,r.collisions.main,Layers.Normal)
+                }
+            }
+            //console.log(map.terrain.cells_to_string({"0":"g","1":"s","2":"w"}))
             for(const spawn of def.generation.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
