@@ -60,7 +60,7 @@ export class ParticlesManager2D<Particle extends Particle2D=Particle2D>{
                 i--
                 continue
             }
-            if(this.emitters[i].enabled){
+            if(this.emitters[i].enabled&&!this.emitters[i].destroyed){
                 if(this.emitters[i].current_delay<=0){
                     this.emitters[i].current_delay=this.emitters[i].delay
                     this.add_particle(this.emitters[i].particle())

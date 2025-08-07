@@ -7,7 +7,7 @@ import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts"
 import { Bullet } from "../gameObjects/bullet.ts"
 import { Obstacle } from "../gameObjects/obstacle.ts"
-import { GameMap } from "./map.ts"
+import { GameMap, generation } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
 import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
@@ -27,6 +27,7 @@ import { Config } from "../../../configs/config.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
+import { FloorType } from "common/scripts/others/terrain.ts";
 
 export interface GameConfig{
     maxPlayers:number
@@ -226,10 +227,43 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(800,800))
+        this.map=new GameMap(this)
         this.gamemode=DefaultGamemode
         this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false
+
+        this.map.generate(generation.island({
+            generation:{
+                size:v2.new(800,800),
+                ground_loot:[{count:900,table:"ground_loot"}],
+                spawn:[
+                    [
+                        {id:"oak_tree",count:4000},
+                        {id:"stone",count:3300},
+                        {id:"bush",count:2500},
+                        {id:"wood_crate",count:1200},
+                        {id:"barrel",count:1000}
+                    ]
+                ],
+                terrain:{
+                    base:FloorType.Water,
+                    floors:[
+                        {
+                            padding:25,
+                            type:FloorType.Sand,
+                            spacing:0.3,
+                            variation:1.3,
+                        },
+                        {
+                            padding:14,
+                            type:FloorType.Grass,
+                            spacing:0.3,
+                            variation:1.3,
+                        }
+                    ]
+                }
+            }
+        }))
     }
 
     override on_update(): void {
@@ -275,7 +309,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
     }
     override on_run(): void {
-        this.map.generate()
         for(let i=0;i<40;i++){
             this.add_bot(`bot#${i+1}`)
         }

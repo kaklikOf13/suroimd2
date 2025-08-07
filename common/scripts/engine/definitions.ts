@@ -22,11 +22,11 @@ export class DefinitionsSimple<Type,Base=null>{
         return this.did
     }
     getFromString(id:string):Type{
-        if(!this.value[id])console.log(`${id} Dont Exist In Definition`)
+        if(!this.value[id])throw `idString:${id} Dont Exist In Definition`
         return this.value[id]
     }
     getFromNumber(id:number):Type{
-        if(!this.valueNumber[id])console.log(`${id} Dont Exist In Definition`)
+        if(!this.valueNumber[id])throw `idNumber:${id} Dont Exist In Definition`
         return this.valueNumber[id]
     }
     exist(id:string):boolean{

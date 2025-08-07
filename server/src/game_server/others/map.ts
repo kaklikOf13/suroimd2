@@ -3,28 +3,61 @@ import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 
-import { IslandDef } from "common/scripts/definitions/maps/base.ts"
+import { IslandDef, LootTables } from "common/scripts/definitions/maps/base.ts"
 import { GameItem } from "common/scripts/definitions/utils.ts";
 import { Guns } from "common/scripts/definitions/items/guns.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 import { Creatures } from "common/scripts/definitions/objects/creatures.ts";
-
-export function SingleIslandGeneration(map:GameMap,def:IslandDef,random:SeededRandom){
-    map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),Layers.Normal,false)
-    let cp=0
-    for(const f of def.terrain.floors.sort()){
-        cp+=f.padding
-        map.terrain.add_floor(f.type,new PolygonHitbox2D(jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing*(map.size.x/100),f.variation,random)),Layers.Normal)
+import { Loot } from "../gameObjects/loot.ts";
+import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
+export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
+export const generation={
+    island:(def:IslandDef)=>{
+        return (map:GameMap,random:SeededRandom)=>{
+            //Terrain
+            map.size=def.generation.size
+            map.terrain.add_floor(def.generation.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),Layers.Normal,false)
+            let cp=0
+            for(const f of def.generation.terrain.floors.sort()){
+                cp+=f.padding
+                map.terrain.add_floor(f.type,new PolygonHitbox2D(jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing*(map.size.x/100),f.variation,random)),Layers.Normal)
+            }
+            for(const spawn of def.generation.spawn??[]){
+                for(const item of spawn){
+                    const count=random.irandom1(item.count)
+                    const def=Obstacles.getFromString(item.id)
+                    for(let idx=0;idx<count;idx++){
+                        const obj=map.generate_obstacle(def)
+                        if(!obj)break
+                    }
+                }
+            }
+            for(const l of def.generation.ground_loot??[]){
+                const count=random.irandom1(l.count)
+                const layer=l.layer??Layers.Normal
+                for(let idx=0;idx<count;idx++){
+                    const loot=LootTables.get_loot(l.table,{withammo:true})
+                    const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2.new(0,0),0.6),-1,layer,{
+                        type:SpawnModeType.blacklist,
+                        list:[FloorType.Water]
+                    })
+                    if(!pos)break
+                    for(const ll of loot){
+                        map.game.add_loot(pos,ll.item,ll.count)
+                    }
+                }
+            }
+        }
     }
 }
 
 export class GameMap{
-    readonly size:Vec2
+    size:Vec2
     game:Game
-    constructor(game:Game,size:Vec2,_seed:number=0){
-        this.size=size
+    constructor(game:Game,_seed:number=0){
+        this.size=v2.new(10,10)
         this.game=game
     }
     map_packet_stream:NetStream=new NetStream(new ArrayBuffer(10*1024))
@@ -36,7 +69,7 @@ export class GameMap{
             valid=(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>{
                 const objs=map.game.scene.objects.cells.get_objects(hitbox,layer)
                 for(const o of objs){
-                    if(!(o.id===id&&o.layer===layer)&&hb.collidingWith((o as Obstacle).spawnHitbox)){
+                    if(!(o.id===id&&o.layer===layer)&&hb.collidingWith((o as Obstacle).spawnHitbox??o.hb)){
                         return false
                     }
                 }
@@ -94,48 +127,9 @@ export class GameMap{
         o.manager.cells.updateObject(o)
         return o
     }
-    generate(){
-        SingleIslandGeneration(this,{
-            terrain:{
-                base:FloorType.Water,
-                floors:[
-                    {
-                        padding:25,
-                        type:FloorType.Sand,
-                        spacing:0.3,
-                        variation:1.3,
-                    },
-                    {
-                        padding:14,
-                        type:FloorType.Grass,
-                        spacing:0.3,
-                        variation:1.3,
-                    }
-                ]
-            }
-        },new SeededRandom(random.float(0,2314)))
-        for(let i=0;i<3000;i++){
-            this.generate_obstacle(Obstacles.getFromString("stone"))
-        }
-        for(let i=0;i<1500;i++){
-            this.generate_obstacle(Obstacles.getFromString("bush"))
-        }
-        for(let i=0;i<4000;i++){
-            this.generate_obstacle(Obstacles.getFromString("oak_tree"))
-        }
-        for(let i=0;i<1000;i++){
-            this.generate_obstacle(Obstacles.getFromString("barrel"))
-        }
-        for(let i=0;i<1200;i++){
-            this.generate_obstacle(Obstacles.getFromString("wood_crate"))
-        }
-        for(let i=0;i<Object.values(Guns.valueNumber).length;i++){
-            this.game.add_loot(v2.random2(NullVec2,this.size),Guns.getFromNumber(i) as unknown as GameItem,1)
-        }
-
-        for(let i=0;i<70;i++){
-            this.game.add_creature(v2.random2(NullVec2,this.size),Creatures.getFromString("pig"),Layers.Normal)
-        }
+    generate(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
+        const random=new SeededRandom(seed)
+        algorithm(this,random)
 
         this.game.clients.packets_manager.encode(this.encode(),this.map_packet_stream)
     }

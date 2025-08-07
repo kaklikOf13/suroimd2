@@ -3,6 +3,9 @@ import { GameItem, InventoryItemType } from "../utils.ts";
 import { GameItems } from "../alldefs.ts";
 import { GunDef } from "../items/guns.ts";
 import { FloorType } from "../../others/terrain.ts";
+import { Random1 } from "../../engine/random.ts";
+import { Vec2 } from "../../engine/geometry.ts";
+import { type Layers } from "../../others/constants.ts";
 
 export interface Aditional{
     withammo:boolean
@@ -36,14 +39,19 @@ export function get_item(item:string,count:number,_aditional:Aditional):LootTabl
     }
 }
 export interface IslandDef{
-    terrain:{
-        base:FloorType
-        floors:{
-            type:FloorType
-            padding:number
-            variation:number
-            spacing:number
-        }[]
+    generation:{
+        size:Vec2
+        terrain:{
+            base:FloorType
+            floors:{
+                type:FloorType
+                padding:number
+                variation:number
+                spacing:number
+            }[]
+        },
+        ground_loot?:{table:string,count:Random1,layer?:Layers}[],
+        spawn?:{id:string,count:Random1}[][]
     }
 }
 export const LootTables=new LootTablesDefs<GameItem,Aditional>(get_item)
@@ -148,6 +156,11 @@ LootTables.add_tables({
         {table:"backpacks",weight:1},
     ],
     //Loot Tables
+    "ground_loot":[
+        {weight:1.5,table:"ammos"},
+        {weight:1,table:"equipments"},
+        {weight:0.5,table:"guns"},
+    ],
     "wood_crate":{
         content:[
             {weight:2,table:"ammos"},

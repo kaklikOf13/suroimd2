@@ -216,14 +216,12 @@ export class OtherItem extends LItem{
 }
 export class MeleeItem extends LItem{
   def:MeleeDef
-  cap: number
   itemType: InventoryItemType.melee=InventoryItemType.melee
   use_delay:number=0
 
   type="melee"
   constructor(def:MeleeDef,droppable=true){
     super()
-    this.cap=def.size
     this.limit_per_slot=1
     this.def=def
     this.droppable=droppable
@@ -248,7 +246,7 @@ export class MeleeItem extends LItem{
           position:hb.position,
           reason:DamageReason.Player,
           owner:user,
-          source:this.def as unknown as GameItem
+          source:this.def
         })
       }else if(c.stringType==="player"&&c.id!==user.id){
         (c as Player).damage({
@@ -257,7 +255,7 @@ export class MeleeItem extends LItem{
           position:hb.position,
           reason:DamageReason.Player,
           owner:user,
-          source:this.def as unknown as GameItem
+          source:this.def
         })
       }
     }

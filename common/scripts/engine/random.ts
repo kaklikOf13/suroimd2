@@ -4,7 +4,11 @@ import { Numeric, type ID } from "./utils.ts";
 export interface WeightDefinition{
     weight:number
 }
-
+export interface MinMax1{
+    min:number
+    max:number
+}
+export type Random1=MinMax1|number
 export const random=Object.freeze({
     int(min:number,max:number):number{
         return Math.floor(Math.random()*(max-min)+min)
@@ -45,6 +49,12 @@ export const random=Object.freeze({
             }
             randomNum -= item.weight;
         }
+    },
+    random1(val:Random1):number{
+        return typeof val==="number"?val:this.float(val.min,val.max)
+    },
+    irandom1(val:Random1):number{
+        return typeof val==="number"?val:this.int(val.min,val.max)
     }
 })
 export class SeededRandom {
@@ -69,5 +79,12 @@ export class SeededRandom {
      */
     getInt(min = 0, max = 1): number {
         return Math.round(this.get(min, max));
+    }
+    
+    random1(val:Random1):number{
+        return typeof val==="number"?val:this.get(val.min,val.max)
+    }
+    irandom1(val:Random1):number{
+        return typeof val==="number"?val:this.getInt(val.min,val.max)
     }
 }
