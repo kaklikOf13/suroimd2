@@ -21,6 +21,7 @@ import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
 import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { Floor, Floors, FloorType } from "common/scripts/others/terrain.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -88,6 +89,8 @@ export class Player extends ServerGameObject{
     push_vorce:Vec2=v2.new(0,0)
 
     left_handed:boolean
+
+    current_floor:FloorType=0
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -170,6 +173,7 @@ export class Player extends ServerGameObject{
                   * (this.inventory.currentWeaponDef?.speed_mod??1)
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
+                  * (Floors[this.current_floor].speed_mult??1)
         if(this.recoil){
             this.recoil.delay-=dt
             this.current_animation=undefined
@@ -217,6 +221,7 @@ export class Player extends ServerGameObject{
             this.manager.cells.updateObject(this)
             this.push_vorce=v2.scale(this.push_vorce,1/(1+dt*4))
             this.game.map.clamp_hitbox(this.hb)
+            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,FloorType.Water)
         }
 
         //Hand Use

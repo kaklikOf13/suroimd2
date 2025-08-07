@@ -58,7 +58,7 @@ Armors.insert(
         position:v2.new(0,0)
     },
     {
-        idString:"soldier_vest",
+        idString:"tactical_vest",
         defence:0,
         level:3,
         reduction:0.2,

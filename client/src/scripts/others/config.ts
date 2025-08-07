@@ -25,86 +25,86 @@ export const ConfigDefaultValues={
 }
 export const ConfigDefaultActions={
     "fire":{
-      buttons:[GamepadButtonID.R2],
-      keys:[Key.Mouse_Left]
+        buttons:[GamepadButtonID.R2],
+        keys:[Key.Mouse_Left]
     },
     "reload":{
-      buttons:[GamepadButtonID.X],
-      keys:[Key.R]
+        buttons:[GamepadButtonID.X],
+        keys:[Key.R]
     },
     "interact":{
-      buttons:[GamepadButtonID.A],
-      keys:[Key.E]
+        buttons:[GamepadButtonID.A],
+        keys:[Key.E]
     },
     "move_up":{
-      buttons:[],
-      keys:[Key.W]
+        buttons:[],
+        keys:[Key.W]
     },
     "move_down":{
-      buttons:[],
-      keys:[Key.S]
+        buttons:[],
+        keys:[Key.S]
     },
     "move_left":{
-      buttons:[],
-      keys:[Key.A]
+        buttons:[],
+        keys:[Key.A]
     },
     "move_right":{
-      buttons:[],
-      keys:[Key.D]
+        buttons:[],
+        keys:[Key.D]
     },
     "weapon1":{
-        buttons:[],
-        keys:[Key.Number_1]
+          buttons:[],
+          keys:[Key.Number_1]
     },
     "weapon2":{
-        buttons:[],
-        keys:[Key.Number_2]
+          buttons:[],
+          keys:[Key.Number_2]
     },
     "weapon3":{
-        buttons:[],
-        keys:[Key.Number_3]
+          buttons:[],
+          keys:[Key.Number_3]
     },
     "use_item1":{
-        buttons:[],
-        keys:[Key.Number_4]
+          buttons:[],
+          keys:[Key.Number_4]
     },
     "use_item2":{
-        buttons:[],
-        keys:[Key.Number_5]
+          buttons:[],
+          keys:[Key.Number_5]
     },
     "use_item3":{
-        buttons:[],
-        keys:[Key.Number_6]
+          buttons:[],
+          keys:[Key.Number_6]
     },
     "use_item4":{
-        buttons:[],
-        keys:[Key.Number_7]
+          buttons:[],
+          keys:[Key.Number_7]
     },
     "use_item5":{
-        buttons:[],
-        keys:[Key.Number_8]
+          buttons:[],
+          keys:[Key.Number_8]
     },
     "use_item6":{
-        buttons:[],
-        keys:[Key.Number_9]
+          buttons:[],
+          keys:[Key.Number_9]
     },
     "use_item7":{
-        buttons:[],
-        keys:[Key.Number_0]
+          buttons:[],
+          keys:[Key.Number_0]
     },
     "previour_weapon":{
-      buttons:[GamepadButtonID.L1],
-      keys:[]
+        buttons:[GamepadButtonID.L1],
+        keys:[]
     },
     "next_weapon":{
-      buttons:[GamepadButtonID.R1],
-      keys:[]
+        buttons:[GamepadButtonID.R1],
+        keys:[]
     },
     "expanded_inventory":{
-      buttons:[GamepadButtonID.Y],
-      keys:[Key.I]
+        buttons:[GamepadButtonID.Y],
+        keys:[Key.I]
     }
 }
 export const Debug={
-    hitbox:true,
+    hitbox:false,
 }

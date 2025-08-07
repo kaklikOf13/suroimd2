@@ -226,7 +226,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.config=config
         this.clients
         this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this,v2.new(128,128))
+        this.map=new GameMap(this,v2.new(800,800))
         this.gamemode=DefaultGamemode
         this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false

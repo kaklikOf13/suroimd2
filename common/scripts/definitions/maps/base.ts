@@ -136,7 +136,7 @@ LootTables.add_tables({
 
         {item:"basic_helmet",weight:10},
         {item:"regular_helmet",weight:1},
-        {item:"soldier_helmet",weight:0.05},
+        {item:"tactical_helmet",weight:0.05},
     ],
     "backpacks":[
         {item:"basic_pack",weight:10},

@@ -2,7 +2,28 @@ import { v2 } from "../../engine/geometry.ts";
 import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2, FrameTransform } from "../../engine/mod.ts";
 import { zIndexes } from "../../others/constants.ts";
 import { RectHitbox2D } from "../../engine/hitbox.ts";
+import { FloorType } from "../../others/terrain.ts";
+export enum  SpawnModeType{
+    any,
+    blacklist,
+    whitelist
+}
+export type SpawnMode={
+    type:SpawnModeType.any
+}|{
+    type:SpawnModeType.blacklist|SpawnModeType.whitelist
+    list:FloorType[]
+}
 
+export const Spawn={
+    any:{
+        type:SpawnModeType.any,
+    },
+    grass:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Grass]
+    },
+}
 export interface ObstacleDef extends Definition{
     health:number
     hitbox?:Hitbox2D
@@ -33,6 +54,8 @@ export interface ObstacleDef extends Definition{
 
     interactDestroy?:boolean
     reflectBullets?:boolean
+
+    spawnMode:SpawnMode
 
     sounds?:{
         hit:string
@@ -75,7 +98,8 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
         material:"stone",
-        particle:"stone_particle"
+        particle:"stone_particle",
+        spawnMode:Spawn.grass
     },
     {
         idString:"barrel",
@@ -88,7 +112,8 @@ Obstacles.insert(
         zIndex:zIndexes.Obstacles1,
         onDestroyExplosion:"barrel_explosion",
         material:"metal",
-        reflectBullets:true
+        reflectBullets:true,
+        spawnMode:Spawn.grass
     },
     {
         idString:"oak_tree",
@@ -107,7 +132,8 @@ Obstacles.insert(
         material:"tree",
         frame:{
             particle:"oak_tree_particle"
-        }
+        },
+        spawnMode:Spawn.grass
     },
     {
         idString:"wood_crate",
@@ -125,7 +151,8 @@ Obstacles.insert(
         material:"tree",
 
         interactDestroy:true,
-        lootTable:"wood_crate"
+        lootTable:"wood_crate",
+        spawnMode:Spawn.grass
     },
     {
         idString:"copper_crate",
@@ -141,7 +168,8 @@ Obstacles.insert(
         reflectBullets:true,
 
         interactDestroy:true,
-        lootTable:"copper_crate"
+        lootTable:"copper_crate",
+        spawnMode:Spawn.grass
     },
     {
         idString:"iron_crate", //Airdrop
@@ -157,7 +185,8 @@ Obstacles.insert(
         reflectBullets:true,
 
         interactDestroy:true,
-        lootTable:"iron_crate"
+        lootTable:"iron_crate",
+        spawnMode:Spawn.grass
     },
     {
         idString:"gold_crate", //Gold Airdrop
@@ -173,7 +202,8 @@ Obstacles.insert(
         reflectBullets:true,
 
         interactDestroy:true,
-        lootTable:"gold_crate"
+        lootTable:"gold_crate",
+        spawnMode:Spawn.grass
     },
     {
         idString:"bush",
@@ -192,6 +222,7 @@ Obstacles.insert(
         material:"bush",
         frame:{
             particle:"leaf_01_particle_1"
-        }
+        },
+        spawnMode:Spawn.grass
     }
 )

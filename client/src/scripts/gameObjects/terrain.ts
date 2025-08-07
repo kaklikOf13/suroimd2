@@ -8,12 +8,12 @@ export class TerrainM extends TerrainManager{
     process_map(mp:MapConfig){
         this.map=mp
         for(const f of mp.terrain){
-            this.add_floor(f.type,f.hb,undefined,f.smooth)
+            this.add_floor(f.type,f.hb,f.layer,f.smooth)
         }
     }
 
     draw(graphic:Graphics2D,scale:number){
-        for(const f of this.floors[0]){
+        for(const f of this.floors){
             graphic.beginPath()
             graphic.set_hitbox(f.hb)
             if(f.smooth)graphic.smooth_shape()
