@@ -189,7 +189,7 @@ export function create_river_points(
 
         let w = def.width;
         if (def.width_variation) {
-            w += random.get(0, def.width_variation);
+            w = random.get(def.width, def.width*(1+def.width_variation))
         }
 
         points.push({ position: pos, width: w, branch: [] });

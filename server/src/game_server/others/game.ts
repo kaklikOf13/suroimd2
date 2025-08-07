@@ -280,7 +280,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 terrain:{
                     base:FloorType.Water,
                     rivers:{
-                        divisions:10,
+                        divisions:30,
                         spawn_floor:1,
                         expansion:12,
                         defs:[
@@ -293,7 +293,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                             },
                             {
                                 rivers:[
-                                    {sub_river_width:3,width:3,width_variation:1,sub_river_chance:0.9},
+                                    {sub_river_width:3,width:4,width_variation:1,sub_river_chance:0.9},
                                 ],
                                 weight:1
                             }
@@ -315,7 +315,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                     ]
                 }
             }
-        }))
+        }),3)
     }
 
     override on_update(): void {

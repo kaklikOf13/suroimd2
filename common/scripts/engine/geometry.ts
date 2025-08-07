@@ -68,6 +68,16 @@ export const v2 = Object.freeze({
     random2(min:Vec2, max:Vec2):Vec2 {
         return {x:random.float(min.x,max.x),y:random.float(min.y,max.y)}
     },
+    
+    /**
+     * Return Random Vec2
+     */
+    random_s(min:number, max:number,random:SeededRandom):Vec2 {
+        return {x:random.get(min,max),y:random.get(min,max)}
+    },
+    random2_s(min:Vec2, max:Vec2,random:SeededRandom):Vec2 {
+        return {x:random.get(min.x,max.x),y:random.get(min.y,max.y)}
+    },
     /**
      * @param x `Vec21`
      * @param y `Vec22`

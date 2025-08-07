@@ -1,4 +1,5 @@
-import { random, type WeightDefinition } from "./random.ts";
+import { v2 } from "./geometry.ts";
+import { random, SeededRandom, type WeightDefinition } from "./random.ts";
 import { Numeric, Tags, hasTag, hasTags } from "./utils.ts"
 
 export abstract class Item{

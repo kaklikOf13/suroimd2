@@ -43,7 +43,7 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
-  scope_zoom:number=0.14
+  scope_zoom:number=0.53
   happening:boolean=false
 
   //0.14=l6 32x

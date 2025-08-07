@@ -31,13 +31,12 @@ export const generation={
                     map.terrain.add_floor(FloorType.Water,r.collisions.main,Layers.Normal)
                 }
             }
-            //console.log(map.terrain.cells_to_string({"0":"g","1":"s","2":"w"}))
             for(const spawn of def.generation.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
                     const def=Obstacles.getFromString(item.id)
                     for(let idx=0;idx<count;idx++){
-                        const obj=map.generate_obstacle(def)
+                        const obj=map.generate_obstacle(def,random)
                         if(!obj)break
                     }
                 }
@@ -50,7 +49,7 @@ export const generation={
                     const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2.new(0,0),0.6),-1,layer,{
                         type:SpawnModeType.blacklist,
                         list:[FloorType.Water]
-                    })
+                    },random)
                     if(!pos)break
                     for(const ll of loot){
                         map.game.add_loot(pos,ll.item,ll.count)
@@ -70,7 +69,7 @@ export class GameMap{
     }
     map_packet_stream:NetStream=new NetStream(new ArrayBuffer(10*1024))
     terrain:TerrainManager=new TerrainManager()
-    getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
+    getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
         let pos:Vec2|undefined=undefined
         let attempt=0
         if(!valid){
@@ -99,7 +98,7 @@ export class GameMap{
         }
         if(!gp){
             gp=(_hitbox:Hitbox2D,map:GameMap)=>{
-                return v2.random2(NullVec2,map.size)
+                return v2.random2_s(NullVec2,map.size,random)
             }
         }
         const hb=hitbox.clone()
@@ -124,9 +123,9 @@ export class GameMap{
     clamp_hitbox(hb:Hitbox2D){
         hb.clamp(v2.new(0,0),this.size)
     }
-    generate_obstacle(def:ObstacleDef):Obstacle|undefined{
+    generate_obstacle(def:ObstacleDef,random:SeededRandom):Obstacle|undefined{
         const o=this.add_obstacle(def)
-        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.id,o.layer,o.def.spawnMode)
+        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.id,o.layer,o.def.spawnMode,random)
         if(!p){
             o.destroy()
             return undefined
