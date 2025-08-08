@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="202.75546"
-   height="202.75546"
-   viewBox="0 0 53.645712 53.645717"
+   width="529.13385"
+   height="529.13385"
+   viewBox="0 0 139.99999 140"
    version="1.1"
    id="svg5"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
@@ -25,9 +25,9 @@
      inkscape:document-units="px"
      showgrid="false"
      units="px"
-     inkscape:zoom="3.1037318"
-     inkscape:cx="104.39046"
-     inkscape:cy="183.1666"
+     inkscape:zoom="0.77593295"
+     inkscape:cx="-48.973304"
+     inkscape:cy="400.16344"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -60,12 +60,12 @@
        fy="10.583333"
        r="10.583333"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="scale(2.5344432)" />
+       gradientTransform="scale(6.6141737)" />
   </defs>
   <circle
-     style="fill:url(#radialGradient2);stroke-width:1.67425"
+     style="fill:url(#radialGradient2);stroke-width:4.36931"
      id="path1"
-     cx="26.822857"
-     cy="26.822857"
-     r="26.822857" />
+     cx="70"
+     cy="70"
+     r="70" />
 </svg>

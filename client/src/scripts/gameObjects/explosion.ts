@@ -13,6 +13,7 @@ export class Explosion extends GameObject{
     declare hb:CircleHitbox2D
 
     sprite:Sprite2D=new Sprite2D()
+    t:number=0
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(this.position,0)
         this.sprite.frame=this.game.resources.get_sprite("base_explosion")
@@ -20,15 +21,12 @@ export class Explosion extends GameObject{
     }
     update(dt:number): void {
         if(this.def){
-            if((this.hb as CircleHitbox2D).radius>=this.maxRadius){
-                if(this.sprite.tint.a>0){
-                    this.sprite.tint.a-=1*dt
-                }else{
-                    this.destroy() 
-                }
-            }else{
-                (this.hb as CircleHitbox2D).radius+=7*dt
-                this.sprite.scale=v2.new((this.hb as CircleHitbox2D).radius,(this.hb as CircleHitbox2D).radius)
+            this.sprite.tint.a=1-this.t
+            this.t+=3*dt;
+            (this.hb as CircleHitbox2D).radius=this.maxRadius*this.t
+            this.sprite.scale=v2.new((this.hb as CircleHitbox2D).radius,(this.hb as CircleHitbox2D).radius)
+            if(this.t>=1){
+                this.destroy()
             }
         }
     }
@@ -39,7 +37,7 @@ export class Explosion extends GameObject{
         super()
         this.sprite.visible=false
         this.sprite.hotspot=v2.new(.5,.5)
-        this.sprite.size=v2.new(400,400)
+        this.sprite.size=v2.new(200,200)
     }
     override updateData(data:ExplosionData){
         if(this.def)return

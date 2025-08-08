@@ -28,7 +28,7 @@ export class Bullet extends ServerGameObject{
     }
 
     critical:boolean=false
-    source?:GameItem
+    source?:DamageSourceDef
 
     damage:number=0
     tticks:number=0
@@ -103,12 +103,13 @@ export class Bullet extends ServerGameObject{
         this.old_position=v2.duplicate(this.position)
     }
     ammo:string=""
-    create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:GameItem}): void {
+    create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:DamageSourceDef}): void {
         this.defs=args.defs
         this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
         this.initialPosition=v2.duplicate(this.hb.position)
         this.maxDistance=this.defs.range/2.5
-        const ad=Ammos.getFromString(args.ammo)
+        
+        const ad=args.ammo?Ammos.getFromString(args.ammo):undefined
         this.tracerColor=this.defs.tracer.color??(ad?ad.defaultTrail:0xffffff)
         this.projColor=this.defs.tracer.proj.color??(ad?ad.defaultProj:0xffffff)
         this.owner=args.owner

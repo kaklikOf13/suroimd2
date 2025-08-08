@@ -465,7 +465,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.modeManager.on_finish()
         console.log(`Game ${this.id} Fineshed`)
     }
-    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:GameItem,layer:number=Layers.Normal):Bullet{
+    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal):Bullet{
         const b=this.scene.objects.add_object(new Bullet(),layer,undefined,{
             defs:def,
             position:v2.duplicate(position),

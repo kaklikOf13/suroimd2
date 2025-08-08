@@ -511,6 +511,7 @@ export class Player extends ServerGameObject{
                 params.owner.splashDelay=2
             }
         }
+        this.damagesSplash.push(d)
         if(this.health===0){
             if(!this.downed&&this.game.modeManager.can_down(this)){
                 this.down(params)
