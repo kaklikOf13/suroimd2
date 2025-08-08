@@ -1,4 +1,4 @@
-import { Config } from "../../configs/config.ts";
+import { ConfigType } from "../../configs/config.ts";
 import { Server } from "../engine/mod.ts";
 import { Cors } from "../engine/server.ts";
 import { DB } from "https://deno.land/x/sqlite/mod.ts";
@@ -17,20 +17,22 @@ export class ApiServer{
     }={
         skins:{}
     }
-    constructor(server:Server){
+    config:ConfigType
+    constructor(server:Server,config:ConfigType){
         this.server=server
+        this.config=config
         this.server.route("/get-regions",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
-            return Cors(new Response(JSON.stringify(Config.regions),{status:200}))
+            return Cors(new Response(JSON.stringify(this.config.regions),{status:200}))
         })
         this.server.route("/get-shop",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
-            return Cors(new Response(JSON.stringify(Config.shop),{status:200}))
+            return Cors(new Response(JSON.stringify(this.config.shop),{status:200}))
         })
-        if(Config.database.enabled)this.db_init()
-        this.shop.skins=Config.shop.skins
+        if(this.config.database.enabled)this.db_init()
+        this.shop.skins=this.config.shop.skins
     }
     db_init(){
         Deno.mkdir("database",{recursive:true})
-        this.accounts_db=new DB(Config.database.files.accounts)
+        this.accounts_db=new DB(this.config.database.files.accounts)
         this.accounts_db.execute(`
         CREATE TABLE IF NOT EXISTS players (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -181,7 +183,7 @@ export class ApiServer{
             const origin = req.headers.get("origin") ?? "";
             const apiKey = req.headers.get("x-api-key");
 
-            if (apiKey !== Config.database.api_key) {
+            if (apiKey !== this.config.database.api_key) {
                 return new Response("Unauthorized", { status: 403 });
             }
 

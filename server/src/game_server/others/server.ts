@@ -1,14 +1,15 @@
 import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
 import { Game, GameConfig } from "./game.ts"
 import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
-import { Config } from "../../../configs/config.ts";
+import { ConfigType } from "../../../configs/config.ts";
 import { v1 as uuid } from "https://deno.land/std@0.224.0/uuid/mod.ts"
 import { Layers } from "common/scripts/others/constants.ts";
 export class GameServer{
     server:Server
     games:Game[]
     game_handles:Record<ID,string>
-    constructor(server:Server){
+    config:ConfigType
+    constructor(server:Server,config:ConfigType){
         this.server=server
         this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
             const game=this.get_game()
@@ -19,7 +20,8 @@ export class GameServer{
         })
         this.games=[]
         this.game_handles={}
-        this.addGame(Config.game.config)
+        this.config=config
+        this.addGame(config.game.config)
         Deno.mkdirSync("database/games",{recursive:true})
     }
     get_game(config?:GameConfig):ID{
@@ -34,7 +36,7 @@ export class GameServer{
                 g--
             }
         }
-        if(this.games.length<Config.game.max_games){
+        if(this.games.length<this.config.game.max_games){
             const g=this.addGame(config)
             return g.id
         }
@@ -42,7 +44,7 @@ export class GameServer{
     }
     addGame(config?:GameConfig):Game{
         const id=this.games.length
-        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? Config.game.config))
+        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? this.config.game.config,this.config))
         this.games[id].mainloop()
         this.games[id].string_id=uuid.generate() as string
         const handler=(this.games[id].clients as ClientsManager).handler_log(()=>{
@@ -59,7 +61,7 @@ export class GameServer{
         this.game_handles[id]=`api/game/${id}`
         this.games[id].on_stop=()=>{
             Game.prototype.on_stop.call(this.games[id])
-            if(Config.database.enabled){
+            if(this.config.database.enabled){
                 const f=Deno.openSync(`database/games/game-${this.games[id].string_id}`,{write:true,create:true})
                 const encoder = new TextEncoder();
                 f.writeSync(encoder.encode(JSON.stringify(this.games[id].status)))
@@ -75,7 +77,7 @@ export class GameServer{
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "x-api-key": Config.database.api_key
+                        "x-api-key": this.config.database.api_key
                     },
                     body: JSON.stringify({
                         name: p.username,

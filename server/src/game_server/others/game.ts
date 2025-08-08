@@ -23,11 +23,11 @@ import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scr
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
-import { Config } from "../../../configs/config.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
+import { ConfigType } from "../../../configs/config.ts";
 
 export interface GameConfig{
     maxPlayers:number
@@ -208,8 +208,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
     }
     string_id=""
+    Config:ConfigType
 
-    constructor(clients:OfflineClientsManager,id:ID,config:GameConfig){
+    constructor(clients:OfflineClientsManager,id:ID,config:GameConfig,Config:ConfigType){
         super(config.gameTps,id,clients,PacketManager,[
             Player,
             Loot,
@@ -225,6 +226,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             this.scene.objects.add_layer(i)
         }
         this.config=config
+        this.Config=Config
         this.clients
         this.scene.objects.encoders=ObjectsE
         this.map=new GameMap(this)
@@ -381,12 +383,12 @@ export class Game extends ServerGame2D<ServerGameObject>{
         p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
 
         p.username=username
-        if(Config.database.enabled){
+        if(this.Config.database.enabled){
             let ff
             if(this.subscribe_db){
                 ff=this.subscribe_db[p.username]
             }else{
-                ff=await(await fetch(`http${Config.api.global}/get-status/${p.username}`)).json()
+                ff=await(await fetch(`http${this.Config.database.enabled}/get-status/${p.username}`)).json()
                 
             }
 

@@ -114,7 +114,7 @@ export class Obstacle extends ServerGameObject{
             this.game.add_explosion(this.hb.center(),Explosions.getFromString(this.def.onDestroyExplosion),params.owner,this.def)
         }
         for(const l of this.loot){
-            this.game.add_loot(this.position,l.item,l.count)
+            this.game.add_loot(this.hb.randomPoint(),l.item,l.count)
         }
 
         this.dirtyPart=true

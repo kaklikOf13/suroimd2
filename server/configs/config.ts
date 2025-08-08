@@ -1,65 +1,44 @@
 import { RegionDef } from "common/scripts/definitions/utils.ts";
 import { GameConfig } from "../src/game_server/others/game.ts";
 import { HostConfig } from "../src/engine/websockets.ts";
-export const Config:ConfigType={
-    api:{
-        host:{
-            port:8000,
-        },
-        global:"://localhost:8000"
-    },
-    game:{
-        max_games:5,
-        config:{
-            deenable_feast:true,
-            gameTps:100,
-            maxPlayers:70,
-            netTps:60,
-            teamSize:1
-        },
-        host:{
-            port:8080
-        }
-    },
-    regions:{
-        local:{
-            host:"localhost",
-            port:8080
-        },
-    },
-    database:{
-        enabled:false,
-        files:{
-            accounts:"database/accounts.db"
-        },
-        api_key:"your_api_key"
-    },
-    shop:{
-        skins:{
-            1:0,
-            2:0
-        }
-    }
+
+export interface ConfigType {
+  api: {
+    host: HostConfig;
+    global: string;
+  };
+  game: {
+    max_games: number;
+    config: GameConfig;
+    host: HostConfig;
+  };
+  regions: Record<string, RegionDef>;
+  database: {
+    enabled: boolean;
+    files: {
+      accounts: string;
+    };
+    api_key: string;
+  };
+  shop: {
+    skins: Partial<Record<number, number>>;
+  };
 }
-export interface ConfigType{
-    api:{
-        host:HostConfig
-        global:string
-    }
-    game:{
-        max_games:number
-        config:GameConfig
-        host:HostConfig
-    }
-    regions:Record<string,RegionDef>
-    database:{
-        enabled:boolean
-        files:{
-            accounts:string
-        }
-        api_key:string
-    }
-    shop:{
-        skins:Partial<Record<number,number>>
-    }
+
+export function loadConfigDeno(path: string): ConfigType {
+  const jsonText = Deno.readTextFileSync(path);
+  const parsed = JSON.parse(jsonText);
+  parsed.shop.skins = Object.fromEntries(
+    Object.entries(parsed.shop.skins).map(([k, v]) => [Number(k), v])
+  );
+  return parsed;
+}
+
+export async function loadConfigFetch(url: string): Promise<ConfigType> {
+  const res = await fetch(url);
+  const parsed = await res.json();
+  parsed.shop.skins = Object.fromEntries(
+    Object.entries(parsed.shop.skins).map(([k, v]) => [Number(k), v])
+  );
+  return parsed;
 }

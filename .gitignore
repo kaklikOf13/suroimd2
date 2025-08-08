@@ -40,3 +40,5 @@ vite.config.ts.timestamp-*
 
 database
 database/*
+
+go.sum

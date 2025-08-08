@@ -30,7 +30,7 @@ Explosions.insert(
             min:2,
             max:3
         },
-        damage:80,
+        damage:99,
         bullet:{
             def:{
                 damage:7,

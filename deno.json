@@ -2,10 +2,10 @@
   "tasks": {
     "dev": "deno task dev:client & deno task dev:server",
     "dev:client": "cd client && deno task dev",
-    "dev:server": "cd server && deno task dev",
+    "dev:game": "cd server && deno task dev:game",
     "dev:api": "cd server && deno task dev:api",
     "clear":"rm -rf dist",
-    "install":"cd client && deno task install"
+    "install":"cd client && deno task install && cd ../server && deno task install"
   },
   "lock": false,
   "importMap": "./common/config/deps.json",

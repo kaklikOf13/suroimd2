@@ -1,4 +1,4 @@
-import { BaseGameObject2D, CircleHitbox2D, Client, cloneDeep, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
@@ -20,8 +20,7 @@ import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
-import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
-import { Floor, Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
