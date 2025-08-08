@@ -111,6 +111,7 @@ export class Player extends ServerGameObject{
 
     dead=false
     downed=false
+    connected=false
 
     invensibility_time:number=0
     imortal:boolean=false

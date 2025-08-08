@@ -42,3 +42,4 @@ database
 database/*
 
 go.sum
+go.work.sum

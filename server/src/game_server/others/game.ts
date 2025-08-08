@@ -1,4 +1,4 @@
-import { ID, Numeric, ValidString, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -362,19 +362,13 @@ export class Game extends ServerGame2D<ServerGameObject>{
             this.nd-=this.dt
         }
     }
-    override on_run(): void {
-        /*for(let i=0;i<40;i++){
-            this.add_bot(`bot#${i+1}`)
-        }*/
-    }
-    async add_player(client:Client,id:number,username:string,packet:JoinPacket,layer:number=Layers.Normal):Promise<Player>{
+    add_player(id:number|undefined,username:string,packet:JoinPacket,layer:number=Layers.Normal,connected=true):Player{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player
-                (p as Player).client=client;
-                (p as Player).update2()
         if(ValidString.simple_characters(packet.PlayerName)){
             p.name=packet.PlayerName
         }else{
-            p.name=`${GameConstants.player.defaultName}#${this.players.length+1}`
+            //Round 6 Easter Egg
+            p.name=`${GameConstants.player.defaultName}#${Math.random()<=0.005?456:this.players.length+1}`
         }
         this.players.push(p)
         this.livingPlayers.push(p)
@@ -383,6 +377,23 @@ export class Game extends ServerGame2D<ServerGameObject>{
         p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
 
         p.username=username
+
+        if(connected){
+            this.send_killfeed_message({
+                type:KillFeedMessageType.join,
+                playerId:p.id,
+                playerName:p.name,
+            })
+            this.modeManager.on_player_join(p)
+        }
+        return p
+    }
+    async activate_player(username:string,packet:JoinPacket,client:Client){
+        const p=this.add_player(client.ID,username,packet) as Player;
+            p.client=client;
+            p.update2()
+        this.connectedPlayers[p.id]=p
+        p.connected=true
         if(this.Config.database.enabled){
             let ff
             if(this.subscribe_db){
@@ -422,35 +433,20 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
         client.emit(jp)
         client.sendStream(this.map.map_packet_stream)
-
-        this.modeManager.on_player_join(p)
-        this.send_killfeed_message({
-            type:KillFeedMessageType.join,
-            playerId:p.id,
-            playerName:p.name,
-        })
-
-        p.dirty=true
-
         return p
     }
-    add_npc(name:string,layer:number=Layers.Normal):Player{
-        const p=this.scene.objects.add_object(new Player(),layer) as Player
+    add_npc(name?:string,layer?:number):Player{
+        const p=this.add_player(undefined,"",new JoinPacket(name),layer,false)
         p.is_npc=true
-        p.pvpEnabled=true
-        p.username=""
-
-        p.name=name
+        p.connected=true
         return p
     }
-    add_bot(name:string,layer?:number):Player{
-        const p=this.add_npc(name,layer)
-        p.is_npc=false
+    add_bot(name?:string,layer?:number):Player{
+        const p=this.add_player(undefined,"",new JoinPacket(name),layer)
+        p.connected=true
         p.is_bot=true
-        p.name=name
         this.players.push(p)
         this.livingPlayers.push(p)
-        this.modeManager.on_player_join(p)
         return p
     }
     fineshed:boolean=false
@@ -458,6 +454,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
+        for(let i=0;i<40;i++){
+            this.add_bot()
+        }
         console.log(`Game ${this.id} Started`)
     }
     finish(){
@@ -507,8 +506,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         let player:Player|undefined
         client.on("join",async(packet:JoinPacket)=>{
             if (this.allowJoin&&!this.scene.objects.exist_all(client.ID,1)){
-                const p=await this.add_player(client,client.ID,username,packet)
-                this.connectedPlayers[p.id]=p
+                const p=await this.activate_player(username,packet,client)
                 player=p
                 console.log(`${p.name} Connected`)
             }
@@ -520,6 +518,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         })
         client.on(DefaultSignals.DISCONNECT,()=>{
             if(player){
+                player.connected=false
                 delete this.connectedPlayers[player.id]
                 console.log(`${player.name} Disconnected`)
             }
