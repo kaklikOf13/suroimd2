@@ -1,0 +1,114 @@
+import { Definitions,Definition } from "../../engine/mod.ts"
+import { ItemQuality } from "../../others/item.ts";
+import { GameItem, InventoryItemType } from "../utils.ts";
+
+export interface AmmoDef extends Definition{
+    size:number
+    tint:number
+    defaultTrail:number
+    strongTrail:number
+    defaultProj:number
+    strongProj:number
+    ammoType:string
+    drop_count?:number
+}
+export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
+    i.item_type=InventoryItemType.ammo
+    i.quality=ItemQuality.Common
+})
+Ammos.insert(
+    //Normals
+    {
+        idString:"12g",
+        ammoType:"12g",
+        defaultTrail:0xcfada0,
+        strongTrail:0xdb2218,
+        defaultProj:0xcfada0,
+        strongProj:0xdb2218,
+        tint:0xff0000,
+        size:0.01,
+        drop_count:15,
+    },
+    {
+        idString:"762mm",
+        ammoType:"762mm",
+        defaultTrail:0x6688ff,
+        strongTrail:0x0034f2,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0x0000ff,
+        size:0.0029,
+    },
+    {
+        idString:"556mm",
+        ammoType:"556mm",
+        defaultTrail:0x66ff88,
+        strongTrail:0x00a41c,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0x00ff00,
+        size:0.0029,
+    },
+    {
+        idString:"9mm",
+        ammoType:"9mm",
+        defaultTrail:0xefef9f,
+        strongTrail:0xefef33,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0xffff00,
+        size:0.0015,
+    },
+    {
+        idString:"22lr",
+        ammoType:"22lr",
+        defaultTrail:0xefefef,
+        strongTrail:0xefefff,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0xffffff,
+        size:0.001,
+    },
+    //Anothers
+    {
+        idString:"50cal",
+        ammoType:"50cal",
+        defaultTrail:0x555555,
+        strongTrail:0x000000,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0x000000,
+        size:0.013,
+    },
+    {
+        idString:"308sub",
+        ammoType:"308sub",
+        defaultTrail:0x222835,
+        strongTrail:0x0c1420,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0x001330,
+        size:0.08,
+        drop_count:10,
+    },
+    {
+        idString:"40mm",
+        ammoType:"40mm",
+        defaultTrail:0x889fcb,
+        strongTrail:0x009fcb,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0x001330,
+        size:0.09,
+    },
+    {
+        idString:"mana_mm",
+        ammoType:"mana",
+        defaultTrail:0x889fcb,
+        strongTrail:0x009fcb,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        tint:0x001330,
+        size:0.09,
+    }
+)

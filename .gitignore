@@ -32,3 +32,14 @@ package-lock.json
 package.json
 
 vite.config.ts.timestamp-*
+
+.spritesheet-cache
+.spritesheet-cache/*
+.audios-cache
+.audios-cache/*
+
+database
+database/*
+
+go.sum
+go.work.sum

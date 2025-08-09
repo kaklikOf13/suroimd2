@@ -1,10 +1,14 @@
 import { type DegAngle, type RadAngle } from "./geometry.ts";
-import { type ID } from "./utils.ts";
+import { Numeric, type ID } from "./utils.ts";
 
 export interface WeightDefinition{
     weight:number
 }
-
+export interface MinMax1{
+    min:number
+    max:number
+}
+export type Random1=MinMax1|number
 export const random=Object.freeze({
     int(min:number,max:number):number{
         return Math.floor(Math.random()*(max-min)+min)
@@ -16,7 +20,7 @@ export const random=Object.freeze({
         return val[Math.floor(Math.random()*val.length)]
     },
     id():ID{
-        return Math.floor(Math.random() * 4294967296)
+        return Math.floor(Math.random() * 16777214)+1
     },
     rad():RadAngle{
         return Math.random()*(Math.PI-(-Math.PI))+(-Math.PI)
@@ -45,5 +49,54 @@ export const random=Object.freeze({
             }
             randomNum -= item.weight;
         }
+    },
+    random1(val:Random1):number{
+        return typeof val==="number"?val:this.float(val.min,val.max)
+    },
+    irandom1(val:Random1):number{
+        return typeof val==="number"?val:this.int(val.min,val.max)
     }
 })
+export class SeededRandom {
+    private _rng = 0;
+
+    constructor(seed: number) {
+        this._rng = seed;
+    }
+
+    /**
+     * @param [min = 0] min value (included)
+     * @param [max = 1] max value (excluded)
+     */
+    get(min = 0, max = 1): number {
+        this._rng = this._rng * 16807 % 2147483647;
+        return Numeric.lerp(min, max, this._rng / 2147483647);
+    }
+
+    /**
+     * @param [min = 0] min value (included)
+     * @param [max = 1] max value (excluded)
+     */
+    getInt(min = 0, max = 1): number {
+        return Math.round(this.get(min, max));
+    }
+    
+    random1(val:Random1):number{
+        return typeof val==="number"?val:this.get(val.min,val.max)
+    }
+    irandom1(val:Random1):number{
+        return typeof val==="number"?val:this.getInt(val.min,val.max)
+    }
+    weight(weights: number[]): number {
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        let r = this.get(0, totalWeight);
+        for (let i = 0; i < weights.length; i++) {
+        if (r < weights[i]) return i;
+        r -= weights[i];
+        }
+        return weights.length - 1;
+    }
+    choose<TP>(array:TP[]):TP{
+        return array[Numeric.clamp(this.getInt(0,array.length-1),0,array.length-1)]
+    }
+}

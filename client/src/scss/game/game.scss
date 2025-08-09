@@ -2,6 +2,8 @@
 @use "../fonts.scss";
 @use "./cellphone.scss";
 @use "./gameOver.scss";
+@use "./inventory.scss";
+@use "./mobile.scss";
 #game {
     user-select: none;
     --webkit-user-select: none;
@@ -25,8 +27,6 @@
     bottom: 0px;
     left: 0px;
     right: 0px;
-    width: 100%;
-    height: 100%;
     z-index: -1;
     pointer-events: all;
 }
@@ -39,29 +39,36 @@
     transform-origin: 0 0;
     overflow: visible;
     z-index: 100;
+    pointer-events: none;
+    *{
+        pointer-events: auto;
+    }
 }
-
-#health-bar-container {
-    background: palette.$transparent_bg;
-    border-radius: 2px;
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    width: 330px;
-    height: 30px;
+#boost-bar-container,
+#health-bar-container{
     display: block;
     justify-content: space-between;
     align-items: center;
     overflow: visible;
+    position: absolute;
+    left: 5px;
+    background: palette.$transparent_bg;
+    border-radius: 2px;
+
+    width: 330px;
     transform: translateY(-100%),translateX(-100%);
-
-    @media screen and (max-width: palette.$screen_large) {
-        width: 230px;
-        height: 20px;
-        bottom: 5px;
-
-        border-width: 5px;
+    font-size: 20px;
+    font-family: "Russo-One", serif;
+    
+    @media screen and (max-width: palette.$screen_medium) {
+        width: 130px;
+        font-size: 10px;
     }
+    
+}
+#health-bar-container {
+    bottom: 5px;
+    height: 30px;
 
     #health-bar,
     #health-bar-animation {
@@ -87,41 +94,20 @@
     #health-bar-amount {
         position: absolute;
         color: #fff;
-        font-size: 20px;
         font-style: italic;
         z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
 
-        font-family: "Russo-One", serif;
-
-        @media screen and (max-width: palette.$screen_large) {
-            font-size: 10px;
-        };
     }
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 20px;
+    };
 }
 #boost-bar-container {
-    background: palette.$transparent_bg;
-    border-radius: 2px;
-    position: absolute;
     bottom: 40px;
-    left: 5px;
-    width: 330px;
     height: 10px;
-    display: block;
-    justify-content: space-between;
-    align-items: center;
-    overflow: visible;
-    transform: translateY(-100%),translateX(-100%);
-
-    @media screen and (max-width: palette.$screen_large) {
-        width: 230px;
-        height: 10px;
-        bottom: 30px;
-
-        border-width: 5px;
-    }
 
     #boost-bar {
         position: absolute;
@@ -137,27 +123,23 @@
     #boost-bar-amount {
         position: absolute;
         color: #fff;
-        font-size: 20px;
         font-style: italic;
         z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
-
-        font-family: "Russo-One", serif;
-
-        @media screen and (max-width: palette.$screen_large) {
-            font-size: 10px;
-        };
     }
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 10px;
+        bottom: 30px;
+    };
 }
 
 #bottom-center-container{
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 5px;
     background-color: #0002;
-    bottom: 5px;
+    bottom: 60px;
     width: 200px;
     height: 80px;
     span{
@@ -184,54 +166,63 @@
             height: 70px;
         }
     }
-}
-
-.inventory-slot{
-    background-color: #0002;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    img{
-        position: absolute;
-        -webkit-transform: translate(-50%,-50%) rotate(-30deg);
-        transform: rotate(-30deg);
-        width: 50px;
-        height: 50px;
+    @media screen and (max-width: palette.$screen_medium) {
+        bottom: 45px;
+        width: 100px;
+        height: 40px;
+        span{
+            font-size: 20px;
+        }
     }
 }
-.inventory-slot-selected{
-    border: 2px solid #0004;
-}
 
-#inventory{
-    position: absolute;
-    background-color: #0002;
-    bottom: 5px;
-    right: 5px;
-    height: 300px;
-    width: max-content;
-    overflow-y: auto;
-    overflow-x: hidden;
-
+#ammos-inventory{
     display: grid;
-    grid-template-columns: repeat(3, 60px);
-    grid-template-rows: repeat(22, 60px);
-    grid-gap: 5px;
-    padding: 10px;
-    padding-top: 10px;
-    .inventory-slot{
-        margin: 0%;
-        span{
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            font-family: "Russo-One";
-            z-index: 1;
+    grid-template-columns: repeat(auto, 5);
+    gap: 5px;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translate(0%, -50%);
+    justify-items: end;
+    pointer-events: none;
+    .ammo-slot{
+        background-color: #0003;
+        display: flex;
+        flex-direction: column;
+        border-radius: 5px;
+        pointer-events: auto;
+        .count {
+            font-family: "Russo-One", sans-serif;
+            text-align: center;
             font-size: 15px;
+            text-anchor: middle;
         }
+        .icon{
+            width: 30px;
+            height: 30px;
+            margin: auto;
+            padding-top: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            
+        }
+    }
+    
+    .ammo-slot:hover{
+        border: 2px solid #ccc;
+    }
+    @media screen and (max-width: palette.$screen_medium){
+        .ammo-slot{
+            .count{
+                font-size: 10px;
+            }
+            .icon{
+                width: 12px;
+                height: 12px;
+            }
+        }
+        left: 3px;
     }
 }
 #equipaments{
@@ -239,23 +230,169 @@
     background-color: #0002;
     top: 5px;
     right: 5px;
-    height: max-content;
-    width: max-content;
+    height: 150px;
+    width: 200px;
     overflow-y: hidden;
     overflow-x: hidden;
-
-    display: grid;
-    grid-template-columns: repeat(3, 60px);
-    grid-template-rows: repeat(2, 60px);
-    grid-gap: 5px;
-    padding: 10px;
-    padding-top: 10px;
-
-    .inventory-slot{
+    .skin-closeup{
+        position: absolute;
+        scale:30%;
+        transition: -50%,-50%;
+        left: 26%;
+        top: -26%;
+    }
+    .inventory-item-slot{
         margin: 0%;
         img{
             transform: unset;
             rotate: unset;
         }
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 60px;
+        width: 100px;
+        top: 3px;
+        right: 3px;
+        .skin-closeup{
+            scale:10%;
+            transition: -50%,-50%;
+            left: 0px;
+            top: -90px;
+        }
+    }
+}
+#gui-weapons{
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+
+    width: 32%;
+
+    .weapon-slot{
+        width: 100%;
+        display: block;
+        position: relative;
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        .weapon-slot{
+            height: 50px;
+            font-size: 7px;
+            .weapon-slot-image{
+                width: 30px;
+            }
+            .weapon-slot-number{
+                left:86%;
+            }
+            .weapon-slot-name{
+                bottom: 3px;
+                right: 3px;
+            }
+        }
+        
+    }
+}
+#killfeed-container{
+    position: absolute;
+    right: 300px;
+    top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    .killfeed-message{
+        background-color: #0003;
+        border-radius: 20px;
+        font-family: "Russo-One";
+        font-size: 18px;
+        img{align-self: center;
+        }
+    }
+}
+#information-killbox{
+    display: none;
+    width: fit-content;
+    font-family: "Russo-One";
+    font-size: 30px;
+    height: fit-content;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    top: 40%;
+    padding: 15px;
+    margin: auto;
+}
+#killeader-container{
+    #killeader-container-icon{
+        width: 30px;
+        height: 30px;
+        position: relative;
+        transform: translate(0%,25%);
+        left: 0px;
+    }
+    width: fit-content;
+    font-family: "Russo-One";
+    font-size: 15px;
+    height: fit-content;
+    position: absolute;
+    top: 140px;
+    right: 5px;
+    padding: 15px;
+    @media screen and (max-width: palette.$screen_medium) {
+        font-size: 5px;
+        top: 5px;
+        right: 5px;
+        #killeader-container-icon{
+            width: 10px;
+            height: 10px;
+        }
+    }
+}
+#gui-items{
+    position: absolute;
+    bottom: 105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    @media screen and (max-width: palette.$screen_medium) {
+        bottom: 65px;
+        gap: 2px;
+        .inventory-item-slot{
+            width: 23px;
+            height: 23px;
+            .slot-count{
+                font-size: 6px;
+            }
+            .slot-number{
+                font-size: 4px;
+            }
+            .slot-image {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+}
+#help-gui{
+    pointer-events: none;
+    display: flex;
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    flex-direction: column;
+    transform: translateY(-50%);
+    font-family: "Russo-One";
+    font-size: 20px;
+    @media screen and (max-width: palette.$screen_medium){
+        font-size: 10px;
     }
 }

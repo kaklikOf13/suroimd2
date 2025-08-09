@@ -3,16 +3,16 @@ import { type Hitbox2D, NullHitbox2D } from "./hitbox.ts"
 import { type ID } from "./utils.ts"
 import { NetStream } from "./stream.ts";
 import { random } from "./random.ts";
-import { ObjectsPacket } from "./packets.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     public hb:Hitbox2D
     public destroyed:boolean
     public id!:GameObjectID
-    public category!:number
+    public layer!:number
     public calldestroy:boolean=true
     public dirty:boolean=false
     public dirtyPart:boolean=false
+    public is_new:boolean=true
     abstract numberType:number
     abstract stringType:string
     // deno-lint-ignore no-explicit-any
@@ -21,8 +21,7 @@ export abstract class BaseObject2D{
         return this.hb.position
     }
     set position(val:Vec2){
-        this.hb.position.x=val.x
-        this.hb.position.y=val.y
+        this.hb.translate(val)
     }
     constructor(){
         this.hb=new NullHitbox2D(v2.new(0,0))
@@ -39,9 +38,6 @@ export abstract class BaseObject2D{
         this.destroyed=true
         this.manager.destroy_queue.push(this)
     }
-    get_key():ObjectKey{
-        return {category:this.category,id:this.id}
-    }
     netSync={
         deletion:true,
         dirty:true,
@@ -52,137 +48,124 @@ export abstract class BaseObject2D{
             (full||this.dirtyPart)&&this.netSync.dirty,//Dirty Part
             (full||this.dirty)&&this.netSync.dirty,//Dirty Full
             this.destroyed&&this.netSync.deletion,//Dirty Deletion
-            this.netSync.creation//Dirty Creation
+            this.netSync.creation,//Dirty Creation
+            this.is_new
         ]
-        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3])
+        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3],bools[4])
         if(bools[0]||bools[1]||bools[2]){
             stream.writeID(this.id)
-            stream.writeUint16(this.numberType)
+            stream.writeInt8(this.layer)
+            stream.writeUint8(this.numberType)
             if(bools[0]||bools[1]){
                 const data=this.getData()
                 const e=this.manager.encoders[this.stringType]
                 if(!e)return
                 e.encode(bools[1],data,stream)
-                if(!full){
-                    this.dirty=false
-                    this.dirtyPart=false
-                }
             }
         }
     }
 }
 
-export interface ObjectKey {category:number,id:GameObjectID}
-export interface Category2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[]}
-export class CellsManager2D<GameObject extends BaseObject2D=BaseObject2D>{
-    objects:Record<number,Record<GameObjectID,GameObject>>={}
-    categorys:number[]=[]
-    cellSize:number
-    cells:Record<number,Record<number,Record<number,Record<number,GameObject>>>>
-    objectCells:Record<number,Record<number,Vec2[]>>={}
-    constructor(cellSize:number=5){
-        this.cellSize=cellSize
-        this.cells={}
+export interface Layer2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[]}
+export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
+    cellSize: number;
+    cells: Map<number, Map<string, Set<GameObject>>> = new Map();
+    objectCells: Map<GameObject, { layer: number; keys: Set<string> }> = new Map();
+
+    constructor(cellSize = 5) {
+        this.cellSize = cellSize;
     }
 
-    registry(obj:GameObject){
-        if(!this.objects[obj.category]){
-            this.objects[obj.category]={}
-        }
-        if(this.objects[obj.category][obj.id]){
-            throw new Error(`Existent Object ${obj.id} In Cell`)
-        }
-        this.objects[obj.category][obj.id]=obj
-        this.updateObject(obj)
+    private key(x: number, y: number): string {
+        return `${x}:${y}`;
     }
-    unregistry(obj:ObjectKey){
-        if(!(this.objects[obj.category]&&this.objects[obj.category][obj.id])){
-            throw new Error(`Invalid Object ${obj}`)
-        }
-        this.removeObjectFromCells(obj)
-        delete this.objects[obj.category][obj.id]
-    }
-    private removeObjectFromCells(key:ObjectKey){
-        if(!this.objectCells[key.category][key.id])return
-        for(const c of this.objectCells[key.category][key.id]){
-            delete this.cells[key.category][c.y][c.x][key.id]
-        }
-        delete this.objectCells[key.category][key.id]
-    }
-    updateObject(obj:GameObject){
-        const k=obj.get_key()
-        this.removeObjectFromCells(k)
-        const cp=this.cellPos(obj.position)
-        if(!this.cells[k.category][cp.y]){
-            this.cells[k.category][cp.y]={}
-        }
-        if(!this.cells[k.category][cp.y][cp.x]){
-            this.cells[k.category][cp.y][cp.x]={}
-        }
-        this.cells[k.category][cp.y][cp.x][obj.id]=obj
 
-        //Objects
-        const rect=obj.hb.toRect()
-        let min = this.cellPos(rect.position)
-        let max = this.cellPos(v2.add(rect.position,rect.size))
-        if(v2.less(max,min)){
-            const m=min
-            min=max
-            max=m
+    private cellPos(pos: Vec2): Vec2 {
+        return v2.floor(v2.dscale(pos, this.cellSize));
+    }
+
+    registry(obj: GameObject) {
+        this.updateObject(obj);
+    }
+
+    unregistry(obj: GameObject) {
+        this.removeObjectFromCells(obj);
+    }
+
+    clear() {
+        this.cells.clear();
+        this.objectCells.clear();
+    }
+
+    private getLayerMap(layer: number): Map<string, Set<GameObject>> {
+        if (!this.cells.has(layer)) {
+            this.cells.set(layer, new Map());
         }
-        this.objectCells[k.category][k.id]=[]
-        for(let y=min.y;y<=max.y;y++){ 
-            if(!this.cells[k.category][y])this.cells[k.category][y]={}
-            for(let x=min.x;x<=max.x;x++){
-                if(!this.cells[k.category][y][x])this.cells[k.category][y][x]={}
-                this.cells[k.category][y][x][k.id]=obj
-                this.objectCells[k.category][k.id].push(v2.new(x,y))
+        return this.cells.get(layer)!;
+    }
+
+    private removeObjectFromCells(obj: GameObject) {
+        const entry = this.objectCells.get(obj);
+        if (!entry) return;
+
+        const layerMap = this.cells.get(entry.layer);
+        if (layerMap) {
+            for (const cellKey of entry.keys) {
+                const set = layerMap.get(cellKey);
+                if (set) {
+                    set.delete(obj);
+                    if (set.size === 0) layerMap.delete(cellKey);
+                }
             }
         }
+        this.objectCells.delete(obj);
     }
-    get_objects(hitbox:Hitbox2D,categorys:number[]):GameObject[]{
-        /*const rect=hitbox.toRect()
-        let min = this.cellPos(rect.position)
-        let max = this.cellPos(v2.add(rect.position,rect.size))
-        if(v2.less(max,min)){
-            const m=min
-            min=max
-            max=m
+
+    updateObject(obj: GameObject) {
+        this.removeObjectFromCells(obj);
+
+        const rect = obj.hb.toRect();
+        const min = this.cellPos(rect.min);
+        const max = this.cellPos(rect.max);
+
+        const layer = obj.layer;
+        const layerMap = this.getLayerMap(layer);
+        const occupiedKeys = new Set<string>();
+
+        for (let y = min.y; y <= max.y; y++) {
+            for (let x = min.x; x <= max.x; x++) {
+                const key = this.key(x, y);
+                if (!layerMap.has(key)) {
+                    layerMap.set(key, new Set());
+                }
+                layerMap.get(key)!.add(obj);
+                occupiedKeys.add(key);
+            }
         }
-        const objects:GameObject[] = []
-        for (const c of categorys) {
-            if(!this.cells[c])continue
-            for(let y=min.y;y<=max.y;y++){  
-                if(!this.cells[c][y])continue
-                    for(let x=min.x;x<=max.x;x++){
-                        if(!this.cells[c][y][x]){
-                            continue
-                        }
-                        objects.push(...this.cells[c][y][x])
+
+        this.objectCells.set(obj, { layer, keys: occupiedKeys });
+    }
+
+    get_objects(hitbox: Hitbox2D, layer: number): GameObject[] {
+        const rect = hitbox.toRect();
+        const min = this.cellPos(rect.min);
+        const max = this.cellPos(rect.max);
+
+        const results = new Set<GameObject>();
+        const layerMap = this.cells.get(layer);
+        if (!layerMap) return [];
+
+        for (let y = min.y; y <= max.y; y++) {
+            for (let x = min.x; x <= max.x; x++) {
+                const set = layerMap.get(this.key(x, y));
+                if (set) {
+                    for (const obj of set) {
+                        results.add(obj);
                     }
                 }
+            }
         }
-        return objects*/
-
-        const cp=this.cellPos(hitbox.position)
-        const objects:GameObject[] = []
-        for (const c of categorys) {
-            if(!(this.cells[c]&&this.cells[c][cp.y]&&this.cells[c][cp.y][cp.x]))continue
-            objects.push(...Object.values(this.cells[c][cp.y][cp.x]))
-        }
-        return objects
-    }
-    get_objects2(hitbox:Hitbox2D,category:number):GameObject[]{
-        const objects:GameObject[] = []
-        const cp=this.cellPos(hitbox.position)
-        if(!(this.cells[category]&&this.cells[category][cp.y]&&this.cells[category][cp.y][cp.x])){
-            return []
-        }
-        objects.push(...Object.values(this.cells[category][cp.y][cp.x]))
-        return objects
-    }
-    cellPos(pos:Vec2):Vec2{
-        return v2.floor(v2.dscale(pos,this.cellSize))
+        return [...results];
     }
 }
 export type EncodedData={
@@ -195,115 +178,136 @@ export interface ObjectEncoder{
 }
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
-    objects:Record<number,Category2D<GameObject>>={}
-    categorys:number[]=[]
+    objects:Record<number,Layer2D<GameObject>>={}
+    layers:number[]=[]
     encoders:Record<string,ObjectEncoder>={}
     ondestroy:(obj:GameObject)=>void=(_)=>{}
-    oncreate:(_key:ObjectKey,_type:number)=>GameObject|undefined
+    oncreate:(_id:number,_layer:number,_type:number)=>GameObject|undefined
     destroy_queue:GameObject[]=[]
-    constructor(cellsSize?:number,oncreate?:((_key:ObjectKey,_type:number)=>GameObject|undefined)){
+    new_objects:GameObject[]=[]
+    constructor(cellsSize?:number,oncreate?:((_id:number,_layer:number,_type:number)=>GameObject|undefined)){
         this.cells=new CellsManager2D(cellsSize)
         this.oncreate=oncreate??((_k,_t)=>{return undefined})
     }
     clear(){
-        for(const c in this.objects){
-            for(let j=0;j<this.objects[c].orden.length;j++){
-                const o=this.objects[c].orden[j]
-                this.unregister(this.objects[c].objects[o].get_key())
+        for(const l in this.objects){
+            for(let j=0;j<this.objects[l].orden.length;j++){
+                const o=this.objects[l].orden[j]
+                this.objects[l].objects[o].onDestroy()
             }
+            this.objects[l].orden.length=0
         }
         this.objects={}
+        this.layers=[]
+        this.new_objects=[]
+        this.destroy_queue=[]
+        this.cells.clear()
     }
 
-    // deno-lint-ignore no-explicit-any
-    add_object(obj:GameObject,category:number,id?:number,args?:Record<string,any>,sv:Record<string,any>={}):GameObject{
-        if(!this.objects[category]){
-            throw new Error(`Invalid Category ${category}`)
+    add_object(
+        obj: GameObject,
+        layer: number,
+        id?: number,
+        args?: Record<string, any>,
+        sv: Record<string, any> = {}
+    ): GameObject {
+        if (!this.objects[layer]) {
+            this.add_layer(layer);
         }
-        if(id===undefined){
-            while(id===undefined){
-                id=random.id()
-                if(this.objects[category].objects[id]){
-                    id=undefined
-                }
-            }
+        if (id === undefined) {
+            do {
+                id = random.id();
+            } while (this.objects[layer].objects[id]);
         }
-        obj.id=id
-        obj.category=category
-        obj.dirty=true
-        obj.dirtyPart=true
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
-        obj.manager=this
-        this.objects[category].objects[obj.id]=obj
-        this.objects[category].orden.push(obj.id)
-        for(const i in sv){
+        obj.id = id;
+        obj.layer = layer;
+        obj.dirty = true;
+        obj.dirtyPart = true;
+        obj.manager = this;
+
+        this.objects[layer].objects[obj.id] = obj;
+        this.objects[layer].orden.push(obj.id);
+
+        for (const key in sv) {
             // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
-            obj[i]=sv[i]
+            // @ts-ignore
+            obj[key] = sv[key];
         }
-        obj.create(args??{})
-        this.cells.registry(obj)
-        return obj
+        this.new_objects.push(obj);
+        obj.create(args ?? {});
+        this.cells.registry(obj);
+
+        return obj;
     }
-    get_object(obj:ObjectKey):GameObject{
-        return this.objects[obj.category].objects[obj.id]
+
+    get_object(id:number,layer:number):GameObject{
+        return this.objects[layer].objects[id]
     }
-    exist(obj:ObjectKey):boolean{
-        return Object.hasOwn(this.objects,obj.category)&&Object.hasOwn(this.objects[obj.category].objects,obj.id)
+    exist(id:number,layer:number):boolean{
+        return Object.hasOwn(this.objects,layer)&&Object.hasOwn(this.objects[layer].objects,id)
     }
-    alive_count(category:keyof typeof this.objects):number{
-        return this.objects[category].orden.length
+    exist_all(id:number,type:number):boolean{
+        for(const l of Object.values(this.objects)){
+            if(Object.hasOwn(l.objects,id)&&l.objects[id].numberType===type)return true
+        }
+        return false
     }
-    add_category(category:keyof typeof this.objects){
-        this.objects[category]={orden:[],objects:{}}
-        this.categorys.push(category)
-        this.cells.categorys.push(category)
-        this.cells.cells[category]={}
-        this.cells.objectCells[category]={}
+    alive_count(layer:keyof typeof this.objects):number{
+        return this.objects[layer].orden.length
     }
-    proccess(packet:ObjectsPacket){
-        const csize=packet.stream.readUint16()
-        for(let i=0;i<csize;i++){
-            const category=packet.stream.readUint8()
-            if(!this.objects[category]){
-                this.add_category(category)
+    add_layer(layer: number) {
+        if (this.objects[layer]) return;
+        this.objects[layer] = { orden: [], objects: {} };
+        this.layers.push(layer);
+    }
+    process_object(stream:NetStream){
+        const b=stream.readBooleanGroup()
+        if(b[0]||b[1]||b[2]){
+            const oid=stream.readID()
+            const layer=stream.readInt8()
+            if(!this.objects[layer]){
+                this.add_layer(layer)
             }
-            const osize=packet.stream.readUint24()
-            for(let j=0;j<osize;j++){
-                const b=packet.stream.readBooleanGroup()
-                if(b[0]||b[1]||b[2]){
-                    const oid=packet.stream.readID()
-                    const tp=packet.stream.readUint16()
-                    let obj=this.objects[category].objects[oid]
-                    if(b[3]&&!obj&&!b[2]){
-                        const obb=this.oncreate({category:category,id:oid},tp)
-                        if(!obb)break
-                        obj=obb
-                        this.add_object(obj,category,oid)
-                    }
-                    if(obj){
-                        if(b[0]||b[1]){
-                            const enc=this.encoders[obj.stringType]
-                            const data=enc.decode(b[1],packet.stream)
-                            obj.updateData(data)
-                        }
-                        if(b[2]){
-                            obj.destroy()
-                        }
-                    }
+            const tp=stream.readUint8()
+            let obj=this.objects[layer].objects[oid]
+            if(b[3]&&!obj&&!b[2]){
+                const obb=this.oncreate(oid,layer,tp)
+                if(!obb)return
+                obj=obb
+                this.add_object(obj,layer,oid)
+            }
+            obj.is_new=b[4]
+            if(obj){
+                if(b[0]||b[1]){
+                    const enc=this.encoders[obj.stringType]
+                    const data=enc.decode(b[1],stream)
+                    obj.updateData(data)
+                }
+                if(b[2]){
+                    obj.destroy()
                 }
             }
         }
+   }
+   proccess_l(stream:NetStream,process_deletion:boolean=false){
+        let os=stream.readUint16()
+        for(let i=0;i<os;i++){
+            this.process_object(stream)
+        }
+        os=stream.readUint16()
+        for(let i=0;i<os;i++){
+            const c=stream.readUint8()
+            const id=stream.readID()
+            if(process_deletion&&this.objects[c]&&this.objects[c].objects[id])this.objects[c].objects[id].destroy()
+        }
     }
-    encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):ObjectsPacket{
+    encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):NetStream{
         const stream=new NetStream(new ArrayBuffer(size))
         if(encodeList){
             stream.writeUint16(Object.keys(encodeList).length)
             for(const c in encodeList){
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                stream.writeUint8(c)
                 stream.writeUint24(encodeList[c].length)
                 for(let j=0;j<encodeList[c].length;j++){
                     const o=encodeList[c][j]
@@ -312,9 +316,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 }
             }
         }else{
-            stream.writeUint16(this.categorys.length)
-            for(const c of this.categorys){
-                stream.writeUint8(c)
+            stream.writeUint16(this.layers.length)
+            for(const c of this.layers){
                 stream.writeUint24(this.objects[c].orden.length)
                 for(let j=0;j<this.objects[c].orden.length;j++){
                     const o=this.objects[c].orden[j]
@@ -323,34 +326,61 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 }
             }
         }
-        const op=new ObjectsPacket()
-        op.stream=stream
-        op.size=stream.index
-        return op
+        return stream
+    }
+    encode_list(l:GameObject[],size:number=1024*1024,last_list:GameObject[]=[]):{last:GameObject[],strm:NetStream}{
+        const stream=new NetStream(new ArrayBuffer(size))
+        stream.writeUint16(l.length)
+        for(let i=0;i<l.length;i++){
+            l[i].encodeObject(!last_list.includes(l[i]),stream)
+        }
+        const deletions=last_list.filter(obj =>
+           !l.includes(obj)&&obj.netSync.deletion
+        );
+        stream.writeUint16(deletions.length)
+        for(let i=0;i<deletions.length;i++){
+            stream.writeUint8(deletions[i].layer)
+            stream.writeID(deletions[i].id)
+        }
+        return {strm:stream,last:l}
     }
     update(dt:number){
-        for(const c in this.objects){
-            for(let j=0;j<this.objects[c].orden.length;j++){
-                const o=this.objects[c].orden[j]
-                const obj=this.objects[c].objects[o]
+        for(const l in this.objects){
+            for(let j=0;j<this.objects[l].orden.length;j++){
+                const o=this.objects[l].orden[j]
+                const obj=this.objects[l].objects[o]
                 if(obj.destroyed)continue
                 obj.update(dt)
             }
         }
     }
+    update_to_net(){
+        for(const o of this.new_objects){
+            o.is_new=false
+        }
+        for(const l of this.layers){
+            for(let j=0;j<this.objects[l].orden.length;j++){
+                const idx=this.objects[l].orden[j]
+                this.objects[l].objects[idx].dirty=false
+                this.objects[l].objects[idx].dirtyPart=false
+            }
+        }
+        this.new_objects.length=0
+    }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){
-            this.unregister(obj.get_key())
-            delete this.objects[obj.category].objects[obj.id]
-            this.objects[obj.category].orden.splice(this.objects[obj.category].orden.indexOf(obj.id),1)
+            if(!this.objects[obj.layer]||!this.objects[obj.layer].objects[obj.id])continue
+            this.unregister(obj,true)
+            delete this.objects[obj.layer].objects[obj.id]
+            this.objects[obj.layer].orden.splice(this.objects[obj.layer].orden.indexOf(obj.id),1)
         }
         this.destroy_queue.length=0
     }
-    unregister(k:ObjectKey){
-        if(this.objects[k.category].objects[k.id].calldestroy){
-            this.ondestroy(this.objects[k.category].objects[k.id])
-            this.objects[k.category].objects[k.id].onDestroy()
+    unregister(obj:GameObject,force_destroy:boolean=false){
+        if(this.objects[obj.layer].objects[obj.id].calldestroy||force_destroy){
+            this.ondestroy(this.objects[obj.layer].objects[obj.id])
+            this.objects[obj.layer].objects[obj.id].onDestroy()
         }
-        this.cells.unregistry(this.objects[k.category].objects[k.id].get_key())
+        this.cells.unregistry(this.objects[obj.layer].objects[obj.id])
     }
 }

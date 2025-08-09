@@ -4,60 +4,74 @@ export { ActionPacket } from "../packets/action_packet.ts"
 export { GameOverPacket } from "../packets/gameOver.ts"
 import { JoinPacket } from "../packets/join_packet.ts"
 import { ActionPacket } from "../packets/action_packet.ts"
-import { GuiPacket } from "common/scripts/packets/gui_packet.ts"
 import { GameOverPacket } from "../packets/gameOver.ts"
+import { UpdatePacket } from "../packets/update_packet.ts";
+import { KillFeedPacket } from "../packets/killfeed_packet.ts";
+import { JoinedPacket } from "../packets/joined_packet.ts";
+import { MapPacket } from "../packets/map_packet.ts";
 
 export const GameConstants={
     player:{
         defaultName:"Player",
-        playerRadius:0.3,
+        playerRadius:0.4,
         max_name_size:25,
     },
     loot:{
-        velocityDecay:0.96,
+        velocityDecay:0.97,
         radius:{
-            ammo:0.3,
+            ammo:0.38,
+            gun:0.54,
+            consumible:0.4,
+            equipament:0.4,
+            skin:0.45
         }
     },
     tps:100,
     collision:{
         threads:2,
-        chunckSize:32
+        chunckSize:6
     }
 }
-export enum CATEGORYS{
-    PLAYERS=0,
-    LOOTS,
-    BULLETS,
-    OBSTACLES,
-    EXPLOSIONS,
-    PROJECTILES
+export enum Layers{
+    Normal=10
 }
-export const CATEGORYSL=[
-    CATEGORYS.PLAYERS,
-    CATEGORYS.LOOTS,
-    CATEGORYS.BULLETS,
-    CATEGORYS.OBSTACLES,
-    CATEGORYS.EXPLOSIONS,
-    CATEGORYS.PROJECTILES
+export const LayersL=[
+    Layers.Normal
 ]
+
 export const PacketManager:PacketsManager=new PacketsManager()
 PacketManager.add_packet(JoinPacket)
 PacketManager.add_packet(ActionPacket)
-PacketManager.add_packet(GuiPacket)
+PacketManager.add_packet(UpdatePacket)
 PacketManager.add_packet(GameOverPacket)
+PacketManager.add_packet(KillFeedPacket)
+PacketManager.add_packet(JoinedPacket)
+PacketManager.add_packet(MapPacket)
 
 export enum zIndexes{
-    Obstacles3=1,
-    Obstacles2,
-    Players,
-    Obstacles1,
-    Grid,
     Terrain,
+    Grid,
+    DeadObstacles,
+    Decals,
+    DeadCreatures,
+    PlayersBody,
+    Loots,
+    Bullets,
+    Obstacles1,
+    Obstacles2,
+    Vehicles,
+    Creatures,
+    Players,
+    Particles,
+    Obstacles3,
+    Obstacles4,
+    Explosions,
+    ParachutePlayers,
+    DamageSplashs
 }
 export enum ActionsType{
     Reload,
-    Healing
+    Consuming
 }
 
 export type PlayerModifiers={
@@ -68,4 +82,6 @@ export type PlayerModifiers={
     bullet_speed:number
     bullet_size:number
     critical_mult:number
+    luck:number
+    mana_consume:number
 }

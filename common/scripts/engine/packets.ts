@@ -19,7 +19,6 @@ export class PacketsManager{
         this.add_packet(ConnectPacket)
         this.add_packet(DisconnectPacket)
         this.add_packet(SteamPacket)
-        this.add_packet(ObjectsPacket)
     }
     encode(packet:Packet,stream:NetStream):NetStream{
         stream.writeUint16(packet.ID)
@@ -90,23 +89,6 @@ export class SteamPacket extends Packet{
     }
     decode(stream: NetStream): void {
         const size=stream.readUint32()
-        this.stream=new NetStream(stream.buffer,stream.index,size)
-    }
-}
-export class ObjectsPacket extends Packet{
-    readonly ID=65532
-    readonly Name="objects"
-    stream!:NetStream
-    size:number=0
-    constructor(){
-        super()
-    }
-    encode(stream: NetStream): void {
-        stream.writeUint32(this.size)
-        stream.writeStream(this.stream,0,this.size)
-    }
-    decode(stream: NetStream): void {
-        const size=stream.readUint32()
-        this.stream=new NetStream(stream.buffer,stream.index,size)
+        this.stream=new NetStream(stream.buffer as ArrayBuffer,stream.index,size)
     }
 }

@@ -1,0 +1,149 @@
+import { Definitions,Definition } from "../../engine/mod.ts"
+import { ItemQuality } from "../../others/item.ts";
+import { BoostType, GameItem, InventoryItemType } from "../utils.ts";
+
+export enum ConsumibleCondition{
+    UnfullHealth,
+    UnfullExtra
+}
+export interface ConsumibleDef extends Definition{
+    health?:number
+    boost?:number
+    boost_type?:BoostType
+    max_heal?:number
+    max_boost?:number
+    quality:ItemQuality
+    use_delay:number
+    condition?:ConsumibleCondition[]
+    parachute?:number
+}
+export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
+    i.item_type=InventoryItemType.consumible
+})
+Consumibles.insert(
+    {
+        idString:"gauze",
+        health:15,
+        max_heal:0.75,
+        use_delay:3,
+        quality:ItemQuality.Uncommon,
+        condition:[ConsumibleCondition.UnfullHealth]
+    },
+    {
+        idString:"medikit",
+        health:100,
+        use_delay:5.5,
+        quality:ItemQuality.Uncommon,
+        condition:[ConsumibleCondition.UnfullHealth]
+    },
+
+    //Adrenaline
+    {
+        idString:"soda",
+        boost:25,
+        use_delay:2.5,
+        boost_type:BoostType.Adrenaline,
+        quality:ItemQuality.Uncommon,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"inhaler",
+        boost:50,
+        use_delay:4.5,
+        boost_type:BoostType.Adrenaline,
+        quality:ItemQuality.Uncommon,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"yellow_pills",
+        boost:100,
+        use_delay:6,
+        boost_type:BoostType.Adrenaline,
+        quality:ItemQuality.Rare,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+
+    //Shield
+    {
+        idString:"small_blue_potion",
+        boost:25,
+        max_boost:0.5,
+        use_delay:2.5,
+        boost_type:BoostType.Shield,
+        quality:ItemQuality.Uncommon,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"blue_potion",
+        boost:50,
+        use_delay:4.5,
+        boost_type:BoostType.Shield,
+        quality:ItemQuality.Rare,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"blue_pills",
+        boost:100,
+        use_delay:6,
+        boost_type:BoostType.Shield,
+        quality:ItemQuality.Epic,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    //Mana
+    {
+        idString:"small_purple_potion",
+        boost:15,
+        use_delay:1.1,
+        boost_type:BoostType.Mana,
+        quality:ItemQuality.Rare,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"purple_potion",
+        boost:40,
+        use_delay:2.4,
+        boost_type:BoostType.Mana,
+        quality:ItemQuality.Epic,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"purple_pills",
+        boost:100,
+        use_delay:4.5,
+        boost_type:BoostType.Mana,
+        quality:ItemQuality.Legendary,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    //Addiction
+    {
+        idString:"small_red_crystal",
+        boost:25,
+        use_delay:1.5,
+        boost_type:BoostType.Addiction,
+        quality:ItemQuality.Epic,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"red_crystal",
+        boost:50,
+        use_delay:2.2,
+        boost_type:BoostType.Addiction,
+        quality:ItemQuality.Epic,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    {
+        idString:"red_pills",
+        boost:100,
+        use_delay:4.5,
+        boost_type:BoostType.Addiction,
+        quality:ItemQuality.Legendary,
+        condition:[ConsumibleCondition.UnfullExtra]
+    },
+    //Misc
+    {
+        idString:"pocket_portal",
+        use_delay:1.5,
+        parachute:1,
+        quality:ItemQuality.Mythic
+    },
+)

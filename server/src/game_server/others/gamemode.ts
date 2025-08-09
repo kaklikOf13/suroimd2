@@ -26,7 +26,7 @@ export const DefaultGamemode:Gamemode={
         boosts:{
             adrenaline:{
                 decay:0.35,
-                speed:0.0017,
+                speed:0.5,
                 regen:0.0112
             },
             mana:{
@@ -35,7 +35,7 @@ export const DefaultGamemode:Gamemode={
             addiction:{
                 decay:0.3,
                 damage:1,
-                speed:0.0029,
+                speed:1,
                 abstinence:0.009
             },
             default_boost:BoostType.Adrenaline

@@ -1,4 +1,5 @@
 import { Vec2 } from "./geometry.ts";
+import { CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "./hitbox.ts";
 import { ID } from "./utils.ts";
 //Thanks Suroi.io
 
@@ -12,6 +13,7 @@ export class NetStream {
     get buffer(): ArrayBufferLike { return this._view.buffer; }
 
     index = 0;
+    length = 0
 
     constructor(
         source: ArrayBuffer,
@@ -42,6 +44,7 @@ export class NetStream {
     writeUint8(value: number): this {
         this._view.setUint8(this.index, value);
         this.index += 1;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -65,6 +68,7 @@ export class NetStream {
     writeUint16(value: number): this {
         this._view.setUint16(this.index, value);
         this.index += 2;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -91,6 +95,7 @@ export class NetStream {
         this._view.setUint16(this.index, value >> 8);
         this.index += 2;
         this._view.setUint8(this.index++, value);
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -114,6 +119,7 @@ export class NetStream {
     writeUint32(value: number): this {
         this._view.setUint32(this.index, value);
         this.index += 4;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -135,6 +141,7 @@ export class NetStream {
     writeUint64(value: bigint): this {
         this._view.setBigUint64(this.index, value);
         this.index += 8;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -157,6 +164,7 @@ export class NetStream {
     writeInt8(value: number): this {
         this._view.setInt8(this.index, value);
         this.index += 1;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -180,6 +188,7 @@ export class NetStream {
     writeInt16(value: number): this {
         this._view.setInt16(this.index, value);
         this.index += 2;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -203,6 +212,7 @@ export class NetStream {
     writeInt32(value: number): this {
         this._view.setInt32(this.index, value);
         this.index += 4;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -222,6 +232,7 @@ export class NetStream {
     writeInt64(value: bigint): this {
         this._view.setBigInt64(this.index, value);
         this.index += 8;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -240,6 +251,7 @@ export class NetStream {
     writeFloat32(value: number): this {
         this._view.setFloat32(this.index, value);
         this.index += 4;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -249,6 +261,7 @@ export class NetStream {
     readFloat64(): number {
         const val = this._view.getFloat64(this.index);
         this.index += 8;
+        if(this.index>this.length)this.length=this.index
         return val;
     }
 
@@ -258,6 +271,7 @@ export class NetStream {
     writeFloat64(value: number): this {
         this._view.setFloat64(this.index, value);
         this.index += 8;
+        if(this.index>this.length)this.length=this.index
         return this;
     }
 
@@ -287,6 +301,7 @@ export class NetStream {
 
             chars[i++] = c;
         } while (i < bytes);
+        if(this.index>this.length)this.length=this.index
 
         return new TextDecoder().decode(new Uint8Array(chars));
     }
@@ -317,12 +332,14 @@ export class NetStream {
 
             if (val === 0) { break; }
         }
+        if(this.index>this.length)this.length=this.index
 
         return this;
     }
     writeString(string:string):this{
         this.writeUint24(string.length)
         this.writeStringSized(string.length,string)
+        if(this.index>this.length)this.length=this.index
         return this
     }
 
@@ -549,6 +566,7 @@ export class NetStream {
         for (let i = 0; i < length; i++) {
             elementWriter(source[i], this);
         }
+        if(this.index>this.length)this.length=this.index
 
         return this;
     }
@@ -585,7 +603,37 @@ export class NetStream {
     writeStream(src: NetStream, offset = 0, length = src.index - offset): this {
         this._u8Array.set(src._u8Array.slice(offset, offset + length), this.index);
         this.index += length;
+        if(this.index>this.length)this.length=this.index
         return this;
+    }
+    /**
+     * Copies a section of a stream into this one. By default, the entire source stream is read and copied
+     * @param src The ByteStream to copy from
+     * @param offset The offset to start copying from. Undefined behavior occurs if this is not a positive
+     * integer strictly less than the length of `src`'s buffer
+     * @param length How many bytes, starting from the given offset, to copy. Undefined behavior
+     * occurs if this is not a positive integer such that `offset + length` is smaller than the length of `src`'s buffer
+     */
+    writeStreamDynamic(src: NetStream): this {
+        this.writeUint24(src.length)
+        this._u8Array.set(src._u8Array.slice(0, src.length), this.index);
+        this.index += src.length;
+        if(this.index>this.length)this.length=this.index
+        return this;
+    }
+    /**
+     * Copies a section of a stream into this one. By default, the entire source stream is read and copied
+     * @param src The ByteStream to copy from
+     * @param offset The offset to start copying from. Undefined behavior occurs if this is not a positive
+     * integer strictly less than the length of `src`'s buffer
+     * @param length How many bytes, starting from the given offset, to copy. Undefined behavior
+     * occurs if this is not a positive integer such that `offset + length` is smaller than the length of `src`'s buffer
+     */
+    readStreamDynamic(): NetStream {
+        const len = this.readUint24();
+        const stream = new NetStream(this._view.buffer as ArrayBuffer, this.index, len);
+        this.index += len; // <== ESSENCIAL
+        return stream;
     }
 
     /**
@@ -628,24 +676,36 @@ export class NetStream {
         };
     }
     
-    writePosition(vector: Vec2):this{
-        this.writeFloat32(vector.x);
-        this.writeFloat32(vector.y);
+    writePosition(vector: Vec2,big:boolean=false):this{
+        if(big){
+            this.writeFloat32(vector.x);
+            this.writeFloat32(vector.y);
+        }else{
+            this.writeFloat(vector.x,0,1200,2);
+            this.writeFloat(vector.y,0,1200,2);
+        }
         return this;
     }
-    readPosition(): Vec2 {
-        return {
-            x: this.readFloat32(),
-            y: this.readFloat32()
-        };
+    readPosition(big:boolean=false): Vec2 {
+        if(big){
+            return {
+                x: this.readFloat32(),
+                y: this.readFloat32()
+            };
+        }else{
+            return {
+                x:this.readFloat(0,1200,2),
+                y:this.readFloat(0,1200,2)
+            }
+        }
     }
 
     writeID(id: ID):this{
-        this.writeUint32(id);
+        this.writeUint24(id);
         return this;
     }
     readID(): ID {
-        return this.readUint32()
+        return this.readUint24()
     }
 
     writeRad(val: number):this{
@@ -654,5 +714,24 @@ export class NetStream {
     }
     readRad(): ID {
         return this.readFloat((-Math.PI)*2,Math.PI*2,3);
+    }
+
+    writeHitbox(hb:Hitbox2D){
+        this.writeUint8(hb.type)
+        hb.encode(this)
+    }
+    readHitbox():Hitbox2D{
+        switch(this.readUint8() as HitboxType2D){
+            case HitboxType2D.circle:
+                return CircleHitbox2D.decode(this)
+            case HitboxType2D.rect:
+                return RectHitbox2D.decode(this)
+            case HitboxType2D.group:
+                return HitboxGroup2D.decode(this)
+            case HitboxType2D.polygon:
+                return PolygonHitbox2D.decode(this)
+            case HitboxType2D.null:
+                return NullHitbox2D.decode(this)
+        }
     }
 }

@@ -108,7 +108,7 @@ export class Clock {
             const currentTime = Date.now()
             const elapsedTime = currentTime - this.lastFrameTime
             this.lastFrameTime = Date.now()
-            this.callback(elapsedTime/1000)
+            this.callback((elapsedTime/1000)*this.timeScale)
         }, this.frameDuration)
     }
     public stop(){
@@ -411,11 +411,25 @@ export const Numeric={
     lerp(start:number,dest:number,inter:number):number{
         return  (start*(1-inter))+(dest*inter)
     },
+    lerp_rad(start: number, dest: number, inter: number): number {
+        const twoPi = Math.PI * 2;
+        let delta = (dest - start) % twoPi;
+        if (delta < -Math.PI) delta += twoPi;
+        else if (delta > Math.PI) delta -= twoPi;
+        return start + delta * inter;
+    },
+    normalize_rad(angle: number): number {
+        return Math.atan2(Math.sin(angle), Math.cos(angle))
+    },
     max(val1:number,val2:number):number{
         return val1<val2?val1:val2
     },
     min(val1:number,val2:number):number{
         return val1>val2?val1:val2
+    },
+    loop(value: number, min: number, max: number): number {
+        const range = max - min;
+        return ((value - min) % range + range) % range + min;
     }
 }
 

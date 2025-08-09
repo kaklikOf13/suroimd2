@@ -1,0 +1,40 @@
+{
+  "api": {
+    "host": {
+      "port": 8000
+    },
+    "global": "://localhost:8000"
+  },
+  "game": {
+    "max_games": 5,
+    "config": {
+      "deenable_feast": true,
+      "gameTps": 100,
+      "maxPlayers": 70,
+      "netTps": 60,
+      "teamSize": 1
+    },
+    "host": {
+      "port": 8080
+    }
+  },
+  "regions": {
+    "local": {
+      "host": "localhost",
+      "port": 8080
+    }
+  },
+  "database": {
+    "enabled": false,
+    "files": {
+      "accounts": "database/accounts.db"
+    },
+    "api_key": "your_api_key"
+  },
+  "shop": {
+    "skins": {
+      "1": 0,
+      "2": 0
+    }
+  }
+}

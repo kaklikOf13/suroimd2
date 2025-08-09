@@ -1,3 +1,4 @@
+import { Vec2 } from "./geometry.ts";
 import { mergeDeep, splitPath } from "./utils.ts";
 export interface Definition{
     idString:string,
@@ -21,9 +22,13 @@ export class DefinitionsSimple<Type,Base=null>{
         return this.did
     }
     getFromString(id:string):Type{
+        if(!this.value[id]){
+            console.log(`idString:${id} Dont Exist In Definition`)
+        }
         return this.value[id]
     }
     getFromNumber(id:number):Type{
+        if(!this.valueNumber[id])throw `idNumber:${id} Dont Exist In Definition`
         return this.valueNumber[id]
     }
     exist(id:string):boolean{
@@ -203,3 +208,12 @@ export class LocalizatorDefs{
         return this._get(val.split("."),this.language.value,val)
     }
 }
+export interface FrameTransform{
+    scale?:number
+    hotspot?:Vec2
+    rotation?:number
+}
+export type FrameDef={image:string}&FrameTransform
+export type KeyFrameSpriteDef={
+    delay:number
+}&FrameDef

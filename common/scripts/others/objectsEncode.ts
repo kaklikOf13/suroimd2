@@ -1,38 +1,67 @@
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
+export enum PlayerAnimationType{
+    Shooting,
+    Reloading,
+    Healing,
+}
+export type PlayerAnimation={
+}&({
+    type:PlayerAnimationType.Shooting
+}|{
+    type:PlayerAnimationType.Reloading
+    alt_reload:boolean
+}|{
+    type:PlayerAnimationType.Healing
+    item:number
+})
 export interface PlayerData extends EncodedData{
     full?:{
-        name:string
+        skin:number
         vest:number
         helmet:number
-        handItem?:number
+        backpack:number
+        current_weapon:number
+        animation?:PlayerAnimation
     }
     position:Vec2
     rotation:number
     using_item:boolean
     using_item_down:boolean
+    dead:boolean
+    left_handed:boolean
+    driving:boolean
+    parachute?:{
+        value:number
+    }
 }
 
 export interface LootData extends EncodedData{
-    // deno-lint-ignore ban-types
     full?:{
+        item:number
     }
     position:Vec2
 }
 
 export interface BulletData extends EncodedData{
-    // deno-lint-ignore ban-types
-    full?:{}
-    speed:number
-    angle:number
+    full?:{
+        speed:number
+        angle:number
 
-    tracerWidth:number
-    tracerHeight:number
-    tracerColor:number
+        tracerWidth:number
+        tracerHeight:number
+        tracerColor:number
 
-    radius:number
+        projWidth:number
+        projHeight:number
+        projColor:number
+        projIMG:number
+
+        radius:number
+        initialPos:Vec2
+        maxDistance:number
+    }
+    tticks:number
     position:Vec2
-    initialPos:Vec2
-    maxDistance:number
 }
 export interface ExplosionData extends EncodedData{
     // deno-lint-ignore ban-types
@@ -48,6 +77,8 @@ export interface ObstacleData extends EncodedData{
         rotation:number
         variation:number
     }
+    dead:boolean
+    health:number
     scale:number
 }
 export interface ProjectileData extends EncodedData{
@@ -58,6 +89,30 @@ export interface ProjectileData extends EncodedData{
     position:Vec2
     rotation:number
 }
+export interface PlayerBodyData extends EncodedData{
+    full?:{
+        name:string
+    }
+    position:Vec2
+}
+export interface VehicleData extends EncodedData{
+    full?:{
+        dead:boolean
+        def:number
+    }
+    direction:number
+    rotation:number
+    position:Vec2
+}
+export interface CreatureData extends EncodedData{
+    full?:{
+        def:number
+        dead:boolean
+    }
+    state:number
+    angle:number
+    position:Vec2
+}
 export const ObjectsE:Record<string,ObjectEncoder>={
     player:{
         decode:(full:boolean,stream:NetStream)=>{
@@ -67,17 +122,46 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 using_item:false,
                 using_item_down:false,
                 full:undefined,
+                dead:false,
+                left_handed:false,
+                driving:false
             }
             const bg1=stream.readBooleanGroup()
             ret.using_item=bg1[0]
             ret.using_item_down=bg1[1]
+            ret.dead=bg1[3]
+            ret.left_handed=bg1[4]
+            ret.driving=bg1[6]
+            if(bg1[5]){
+                ret.parachute={
+                    value:stream.readFloat(0,1,1)
+                }
+            }
             if(full){
-                const bgf1=stream.readBooleanGroup()
                 ret.full={
-                    name:stream.readString(),
                     vest:stream.readUint8(),
                     helmet:stream.readUint8(),
-                    handItem:bgf1[0]?stream.readUint24():undefined
+                    backpack:stream.readUint8(),
+                    skin:stream.readUint16(),
+                    current_weapon:stream.readInt16(),
+                }
+                if(bg1[2]){
+                    const tp=stream.readUint8() as PlayerAnimationType
+                    switch(tp){
+                        case PlayerAnimationType.Shooting:
+                            ret.full.animation={
+                                type:tp
+                            }
+                            break
+                        case PlayerAnimationType.Reloading:
+                            ret.full.animation={
+                                type:tp,
+                                alt_reload:!!stream.readUint8()
+                            }
+                            break
+                        case PlayerAnimationType.Healing:
+                            break
+                    }
                 }
             }
             return ret
@@ -87,14 +171,28 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:PlayerData,stream:NetStream){
             stream.writePosition(data.position)
             .writeRad(data.rotation)
-            .writeBooleanGroup(data.using_item,data.using_item_down)
+            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined,data.dead,data.left_handed,data.parachute!==undefined,data.driving)
+            if(data.parachute){
+                stream.writeFloat(data.parachute.value,0,1,1)
+            }
             if(full){
-                stream.writeBooleanGroup(data.full!.handItem!==undefined)
-                .writeString(data.full!.name)
-                .writeUint8(data.full!.vest)
+                stream.writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
-                if(data.full!.handItem)stream.writeUint24(data.full!.handItem)
-                
+                .writeUint8(data.full!.backpack)
+                .writeUint16(data.full!.skin)
+                .writeInt16(data.full!.current_weapon)
+                if(data.full!.animation!==undefined){
+                    stream.writeUint8(data.full!.animation.type)
+                    switch(data.full!.animation.type){
+                        case PlayerAnimationType.Shooting:
+                            break
+                        case PlayerAnimationType.Reloading:
+                            stream.writeUint8(data.full!.animation.alt_reload?1:0)
+                            break
+                        case PlayerAnimationType.Healing:
+                            break
+                    }
+                }
             }
         }
     },
@@ -106,7 +204,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             }
             if(full){
                 ret.full={
-
+                    item:stream.readUint16()
                 }
             }
             return ret
@@ -116,7 +214,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:LootData,stream:NetStream){
             stream.writePosition(data.position)
             if(full){
-                //
+                stream.writeUint16(data.full!.item)
             }
         }
     },
@@ -124,46 +222,63 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         decode:(full:boolean,stream:NetStream)=>{
             const ret:BulletData={
                 position:stream.readPosition(),
-                initialPos:stream.readPosition(),
-                maxDistance:stream.readFloat32(),
-                radius:stream.readFloat(0,2,2),
-                speed:stream.readFloat32(),
-                angle:stream.readRad(),
-                tracerWidth:stream.readFloat(0,3,2),
-                tracerHeight:stream.readFloat(0,3,2),
-                tracerColor:stream.readUint32()
+                tticks:stream.readFloat(0,60,2)
             }
             if(full){
-                //
+                ret.full={
+                    initialPos:stream.readPosition(),
+                    maxDistance:stream.readFloat32(),
+                    radius:stream.readFloat(0,2,2),
+                    speed:stream.readFloat32(),
+                    angle:stream.readRad(),
+                    tracerWidth:stream.readFloat(0,100,3),
+                    tracerHeight:stream.readFloat(0,6,2),
+                    tracerColor:stream.readUint32(),
+                    projWidth:stream.readFloat(0,6,2),
+                    projHeight:stream.readFloat(0,6,2),
+                    projColor:stream.readUint32(),
+                    projIMG:stream.readUint8()
+                }
             }
             return ret
         },
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
-        encode(_full:boolean,data:BulletData,stream:NetStream){
+        encode(full:boolean,data:BulletData,stream:NetStream){
             stream.writePosition(data.position)
-            .writePosition(data.initialPos)
-            .writeFloat32(data.maxDistance)
-            .writeFloat(data.radius,0,2,2)
-            .writeFloat32(data.speed)
-            .writeRad(data.angle)
-            .writeFloat(data.tracerWidth,0,3,2)
-            .writeFloat(data.tracerHeight,0,3,2)
-            .writeUint32(data.tracerColor)
+            .writeFloat(data.tticks,0,100,2)
+            if(full){
+                stream.writePosition(data.full!.initialPos)
+                .writeFloat32(data.full!.maxDistance)
+                .writeFloat(data.full!.radius,0,2,2)
+                .writeFloat32(data.full!.speed)
+                .writeRad(data.full!.angle)
+                .writeFloat(data.full!.tracerWidth,0,100,3)
+                .writeFloat(data.full!.tracerHeight,0,6,2)
+                .writeUint32(data.full!.tracerColor)
+                .writeFloat(data.full!.projWidth,0,6,2)
+                .writeFloat(data.full!.projHeight,0,6,2)
+                .writeUint32(data.full!.projColor)
+                .writeUint8(data.full!.projIMG)
+            }
         }
     },
     obstacle:{
+        //19 Full Alloc
         decode:(full:boolean,stream:NetStream)=>{
+            const bools=stream.readBooleanGroup()//1
             const ret:ObstacleData={
-                scale:stream.readFloat(0,3,3),
+                scale:stream.readFloat(0,3,3),//3
+                dead:bools[0],
+                health:stream.readFloat(0,1,1),
                 full:undefined
             }
             if(full){
                 ret.full={
-                    definition:stream.readUint24(),
-                    position:stream.readPosition(),
-                    rotation:stream.readRad(),
-                    variation:stream.readUint8()+1,
+                    definition:stream.readUint24(),//3
+                    position:stream.readPosition(),//8
+                    rotation:stream.readRad(),//3
+                    variation:stream.readUint8()+1,//1
                 }
             }
             return ret
@@ -171,12 +286,14 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         encode(full:boolean,data:ObstacleData,stream:NetStream){
-            stream.writeFloat(data.scale,0,3,3)
+            stream.writeBooleanGroup(data.dead)
+            .writeFloat(data.scale,0,3,3)
+            .writeFloat(data.health,0,1,1)
             if(full){
                 stream.writeUint24(data.full!.definition)
-                stream.writePosition(data.full!.position)
-                stream.writeRad(data.full!.rotation)
-                stream.writeUint8(data.full!.variation-1)
+                .writePosition(data.full!.position)
+                .writeRad(data.full!.rotation)
+                .writeUint8(data.full!.variation-1)
             }
         }
     },
@@ -222,6 +339,83 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeFloat(data.z,0,1,1)
             if(full){
                 stream.writeID(data.full!.definition)
+            }
+        }
+    },
+    player_body:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:PlayerBodyData={
+                position:stream.readPosition(),
+            }
+            if(full){
+                ret.full={
+                    name:stream.readStringSized(30)
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:PlayerBodyData,stream:NetStream){
+            stream.writePosition(data.position)
+            if(full){
+                stream.writeStringSized(30,data.full!.name)
+            }
+        }
+    },
+    vehicle:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:VehicleData={
+                position:stream.readPosition(),
+                rotation:stream.readRad(),
+                direction:stream.readRad()
+            }
+            if(full){
+                const bg=stream.readBooleanGroup()
+                ret.full={
+                    dead:bg[0],
+                    def:stream.readUint8()
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:VehicleData,stream:NetStream){
+            stream.writePosition(data.position) 
+            stream.writeRad(data.rotation)
+            stream.writeRad(data.direction)
+            if(full){
+                stream.writeBooleanGroup(data.full!.dead)
+                stream.writeUint8(data.full!.def)
+            }
+        }
+    },
+    creature:{
+        decode:(full:boolean,stream:NetStream)=>{
+            const ret:CreatureData={
+                position:stream.readPosition(),
+                angle:stream.readRad(),
+                state:stream.readUint8()
+            }
+            if(full){
+                const [dead]=stream.readBooleanGroup()
+                ret.full={
+                    def:stream.readUint16(),
+                    dead
+                }
+            }
+            return ret
+        },
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        encode(full:boolean,data:CreatureData,stream:NetStream){
+            stream.writePosition(data.position)
+            .writeRad(data.angle)
+            .writeUint8(data.state)
+            if(full){
+                stream.writeBooleanGroup(data.full!.dead)
+                stream.writeUint16(data.full!.def)
             }
         }
     },

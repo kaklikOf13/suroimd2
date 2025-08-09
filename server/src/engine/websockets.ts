@@ -1,71 +1,58 @@
 
-import { ConnectPacket, DisconnectPacket, PacketsManager,Packet, ID, random, NetStream } from "common/scripts/engine/mod.ts"
-import { Client } from "../../../client/src/scripts/engine/client.ts"
-import { DefaultSignals } from "./mod.ts";
-export * from "../../../client/src/scripts/engine/client.ts"
-export class ClientsManager{
-    clients:Map<ID,Client>
-    packets_manager:PacketsManager
-    onconnection:(client:Client)=>void
-
-    constructor(onconnection:(client:Client)=>void){
-        this.clients=new Map()
-        this.packets_manager=new PacketsManager()
-        this.onconnection=onconnection
+import { random } from "common/scripts/engine/mod.ts"
+import { OfflineClientsManager } from "common/scripts/engine/server_offline/offline_server.ts";
+export class ClientsManager extends OfflineClientsManager {
+    handler(IDGen?: () => number): (req: Request, url: string[], info: Deno.ServeHandlerInfo) => Response | null {
+        return this._createHandler(IDGen);
     }
 
-
-    private activate_ws(ws:WebSocket,id:number,ip:string):ID{
-        const client=new Client(ws,this.packets_manager,ip)
-        client.ID=id
-        client.on(DefaultSignals.DISCONNECT,(packet:DisconnectPacket)=>{
-            this.clients.delete(packet.client_id)
-        })
-        client.emit(new ConnectPacket(client.ID))
-        this.clients.set(client.ID,client)
-        this.onconnection(client)
-        return client.ID
+    handler_log(IDGen?: () => number): (req: Request, url: string[], info: Deno.ServeHandlerInfo) => Response | null {
+        return this._createHandler(IDGen, true);
     }
 
-    emit(packet: Packet) {
-        for (const client of this.clients.values()) {
-            try {
-                client.emit(packet);
-            } catch (error) {
-                console.error("Error emitting packet to client:", error);
-            }
-        }
-    }
-    sendStream(stream:NetStream){
-        for (const client of this.clients.values()) {
-            client.sendStream(stream)
-        }
-    }
-    
-    handler(IDGen?:()=>number):(req:Request,url:string[],info:Deno.ServeHandlerInfo)=>Response|null{
-        if(!IDGen){
-            IDGen=()=>{
-                let id:number=random.id()
-                while(this.clients.get(id)){
-                    id=random.id()
+    private _createHandler(IDGen?: () => number, checkLogin: boolean = false) {
+        if (!IDGen) {
+            IDGen = () => {
+                let id: number = random.id();
+                while (this.clients.get(id)) {
+                    id = random.id();
                 }
-                return id
-            }
+                return id;
+            };
         }
-        return (req:Request,url:string[],info:Deno.ServeHandlerInfo)=>{
-            if(url.length>1&&url[url.length-1]!="index.html"){
-                return null
+
+        return (req: Request, url: string[], info: Deno.ServeHandlerInfo) => {
+            if (url.length > 1 && url[url.length - 1] != "index.html") {
+                return null;
             }
 
-            const upgrade = req.headers.get("upgrade") || ""
+            const upgrade = req.headers.get("upgrade") || "";
             if (upgrade.toLowerCase() != "websocket") {
-                return new Response("request isn't trying to upgrade to websocket.",{status:406})
+                return new Response("Request isn't trying to upgrade to WebSocket.", { status: 406 });
             }
-            
-            const { socket, response } = Deno.upgradeWebSocket(req)
-            socket.onopen = () => {this.activate_ws(socket,IDGen(),info.remoteAddr.hostname)}
-            return response
-        }
+
+            let username: string | null = null;
+
+            if (checkLogin) {
+                const cookie = req.headers.get("cookie") ?? "";
+                const match = cookie.match(/user=([^;]+)/);
+                if (match) {
+                    username = decodeURIComponent(match[1]);
+                } else {
+                    username = "";
+                }
+            }
+
+            const { socket, response } = Deno.upgradeWebSocket(req);
+            // deno-lint-ignore ban-ts-comment
+            //@ts-ignore
+            socket.onopen = () => {
+                const id = IDGen!();
+                this.activate_ws(socket, id, info.remoteAddr, username);
+            };
+
+            return response;
+        };
     }
 }
 //Definitions

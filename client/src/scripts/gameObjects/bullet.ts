@@ -1,110 +1,148 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { Sprite } from "../engine/mod.ts";
-import { Angle, BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
-import { CATEGORYS } from "common/scripts/others/constants.ts";
+import { Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
+import { BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
-import { Player } from "./player.ts";
-import { ClientGameObject2D } from "../engine/game.ts";
-import { Camera2D, Color, ColorM, Renderer } from "../engine/renderer.ts";
+import { type Player } from "./player.ts";
+import { ColorM, Renderer } from "../engine/renderer.ts";
+import { GameObject } from "../others/gameObject.ts";
 import { Debug } from "../others/config.ts";
-export class Bullet extends ClientGameObject2D{
+import { Creature } from "./creature.ts";
+const images=[
+    "bullet_normal"
+]
+export class Bullet extends GameObject{
     stringType:string="bullet"
     numberType: number=3
     name:string=""
     velocity:Vec2=v2.new(0,0)
-    angle:number=0
     speed:number=0
 
     initialPosition!:Vec2
-    maxDistance:number=1000
+    maxDistance:number=1
+
+    old_position:Vec2=v2.new(0,0)
 
     sendDelete: boolean=true;
-    spr!:Sprite
+    sprite_trail:Sprite2D=new Sprite2D()
+    sprite_projectile:Sprite2D=new Sprite2D()
+    container:Container2D=new Container2D()
+
     create(_args: Record<string, void>) {
-        this.spr=this.game.resources.get_sprite("base_trail")
+        this.sprite_trail.frame=this.game.resources.get_sprite("base_trail")
+        this.game.camera.addObject(this.container)
+    }
+    override onDestroy(): void {
+      this.container.destroy()
     }
 
-    length:number=0
     maxLength:number=0.3
-    tracerH:number=0
 
     dying:boolean=false
-    tint!:Color
 
     dts:Vec2=v2.new(0,0)
 
-    render(camera: Camera2D, renderer: Renderer,_dt:number): void {
-        if(this.spr){ 
-            renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(Math.max(this.length,0),this.tracerH),Angle.rad2deg(this.angle),v2.new(1,0.5),this.tracerH,this.tint,v2.new(400,10))
-            if(Debug.hitbox){
-                renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.position)
-            }
-        }
-    }
     private tticks:number=0
-
     update(dt:number): void {
         this.dts=v2.scale(this.velocity,dt)
         if(this.dying||v2.distance(this.initialPosition,this.position)>this.maxDistance){
             this.dying=true
-            if(this.length<=0){
-                this.destroy()
-            }
-        }else{
-            this.manager.cells.updateObject(this)
-            this.hb.position=v2.add(this.hb.position,this.dts)
-        }
-
-        const traveledDistance = v2.distance(this.initialPosition, this.position)
-
-        if(this.dying){
-            this.tticks-=dt*2.5
+            this.tticks-=dt
+            this.sprite_projectile.visible=false
             if(this.tticks<=0){
                 this.destroy()
             }
         }else{
-            this.tticks+=dt/2
+            if(this.sprite_trail.scale.x<this.maxLength)this.tticks+=dt
+            this.manager.cells.updateObject(this)
+            this.position=v2.add(this.hb.position,this.dts)
+
+            const objs=this.manager.cells.get_objects(this.hb,this.layer)
+            for(const obj of objs){
+                if(this.dying)break
+                switch((obj as BaseGameObject2D).stringType){
+                    case "player":
+                        if((obj as Player).hb&&!(obj as Player).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))&&!(obj as Player).parachute){
+                            (obj as Player).on_hitted(this.position)
+                            this.dying=true
+                        }
+                        break
+                    case "creature":
+                        if((obj as Creature).hb&&!(obj as Creature).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
+                            this.dying=true
+                        }
+                        break
+                    case "obstacle":
+                        if((obj as Obstacle).def.noBulletCollision||(obj as Obstacle).dead)break
+                        if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
+                            (obj as Obstacle).on_hitted(v2.duplicate(this.position))
+                            this.dying=true
+                        }
+                        break
+                }
+            }
+            this.old_position=v2.duplicate(this.position)
         }
-        this.length=Math.min(
+
+        const traveledDistance = v2.distance(this.initialPosition, this.position)
+
+        this.sprite_trail.scale.x=Math.min(
             Math.min(
                 this.speed * this.tticks,
                 traveledDistance
             ),
             this.maxLength
         );
-        
-        const objs=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
-        for(const obj of objs){
-            if(this.dying)break
-            switch((obj as BaseGameObject2D).stringType){
-                case "player":
-                    if((obj as Player).hb&&this.hb.collidingWith((obj as Player).hb)){
-                        this.dying=true
-                    }
-                    break
-                case "obstacle":
-                    if((obj as Obstacle).def.noBulletCollision)break
-                    if((obj as Obstacle).hb&&this.hb.collidingWith((obj as Obstacle).hb)){
-                        (obj as Obstacle).on_hitted(v2.duplicate(this.position))
-                        this.dying=true
-                    }
-                    break
-            }
-        }
     }
     constructor(){
         super()
+        this.sprite_trail.size=v2.new(200,10)
+        this.sprite_trail.hotspot=v2.new(1,.5)
+        this.sprite_trail.zIndex=1
+        this.sprite_trail.position.x=0
+        this.sprite_trail.position.y=0
+        this.container.visible=false
+        this.sprite_projectile.hotspot=v2.new(.5,.5)
+        this.sprite_projectile.zIndex=2
+        this.sprite_projectile.position.x=0
+        this.sprite_projectile.position.y=0
+        this.container.add_child(this.sprite_trail)
+        this.container.add_child(this.sprite_projectile)
+        this.container.updateZIndex()
+        this.container.zIndex=zIndexes.Bullets
+        this.sprite_projectile.visible=false
     }
-    updateData(data:BulletData){
+    override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
+      if(Debug.hitbox){
+            renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.visual_position)
+        }
+    }
+    override updateData(data:BulletData){
         this.position=data.position
-        this.initialPosition=data.initialPos
-        this.maxDistance=data.maxDistance
-        this.hb=new CircleHitbox2D(data.position,data.radius)
-        this.speed=data.speed
-        this.angle=data.angle
-        this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(this.angle),this.speed),4)
-        this.tracerH=data.tracerHeight
-        this.maxLength=data.tracerWidth
-        this.tint=ColorM.number(data.tracerColor)
+        this.tticks=data.tticks
+        if(data.full){
+            this.initialPosition=data.full.initialPos
+            this.maxDistance=data.full.maxDistance
+            this.hb=new CircleHitbox2D(data.position,data.full.radius)
+            this.speed=data.full.speed
+            this.container.rotation=data.full.angle
+            this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(data.full.angle),this.speed),4)
+            this.sprite_trail.scale!.y=data.full.tracerHeight
+            this.maxLength=data.full.tracerWidth
+            this.sprite_trail.tint=ColorM.number(data.full.tracerColor)
+
+            this.container.position=this.position
+            this.sprite_trail.scale.x=0
+
+            this.sprite_projectile.scale.x=data.full.projWidth
+            this.sprite_projectile.scale.y=data.full.projHeight
+    
+            this.sprite_projectile.tint=ColorM.number(data.full.projColor)
+            if(data.full.projIMG){
+                this.sprite_projectile.frame=this.game.resources.get_sprite(images[data.full.projIMG-1])
+                this.sprite_projectile.visible=true
+            }
+            this.container.visible=true
+        }
     }
 }

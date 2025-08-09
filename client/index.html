@@ -15,54 +15,21 @@
     <title>Suroimd.io 2</title>
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   </head>
   <body>
     <script src="scripts/extra_elements.js"></script>
     <link rel="stylesheet" href="scripts/extra_elements.css">
     <div id="game" style="display: none;">
       <div id="game-gui">
-        <div id="bars-container">
-          <div id="health-bar-container">
-            <div id="health-bar-animation"></div>
-            <div id="health-bar"></div>
-            <span id="health-bar-amount">100/100</span>
-          </div>
-          <div id="boost-bar-container">
-            <div id="boost-bar"></div>
-            <span id="boost-bar-amount">100/100</span>
-          </div>
+        <div id="game-mobile-gui" style="display: none; pointer-events: none;">
+          <kl-joystick id="left-joystick"></kl-joystick>
+          <kl-joystick id="right-joystick"></kl-joystick>
+          <button id="btn-mobile-interact" class="btn-green"><span>E</span></button>
+          <button id="btn-mobile-inventory" class="btn-green"><span>I</span></button>
+          <button id="btn-mobile-reload" class="btn-green"><span>R</span></button>
         </div>
-        <div id="bottom-center-container">
-          <span id="hand-info-count">5/5</span>
-          <div id="action-info">
-            <span id="action-info-delay">1s</span>
-          </div>
-          <div id="current-item-slot" class="inventory-slot">
-            <img id="current-item-image" alt="Current item">
-          </div>
-        </div>
-        <div id="inventory-container">
-          <div id="equipaments">
-            <div class="inventory-slot">
-              <img id="helmet-slot" src="img/game/common/icons/helmet.svg" alt="Helmet slot">
-            </div>
-            <div class="inventory-slot">
-              <img id="vest-slot" src="img/game/common/icons/vest.svg" alt="Vest slot">
-            </div>
-            <div class="inventory-slot">
-              <img id="backpack-slot" src="img/game/common/icons/bag.svg" alt="Backpack slot">
-            </div>
-            <div class="inventory-slot">
-              <img id="accessory-slot-1" src="img/game/common/icons/accessory.svg" alt="Accessory slot 1">
-            </div>
-            <div class="inventory-slot">
-              <img id="accessory-slot-2" src="img/game/common/icons/accessory.svg" alt="Accessory slot 2">
-            </div>
-            <div class="inventory-slot">
-              <img id="accessory-slot-3" src="img/game/common/icons/accessory.svg" alt="Accessory slot 3">
-            </div>
-          </div>
-          <div id="inventory"></div>
+        <div id="help-gui">
         </div>
         <div id="gameover-container" class="background-menu">
           <span id="gameover-status">Winner Winner Chicken Dinner!</span>
@@ -82,23 +49,160 @@
             #2
           </tab>
         </tabs-container>
+        <div id="bars-container">
+          <div id="health-bar-container">
+            <div id="health-bar-animation"></div>
+            <div id="health-bar"></div>
+            <span id="health-bar-amount">100/100</span>
+          </div>
+          <div id="boost-bar-container">
+            <div id="boost-bar"></div>
+            <span id="boost-bar-amount">100/100</span>
+          </div>
+        </div>
+        <div id="bottom-center-container">
+          <span id="hand-info-count">5/5</span>
+          <div id="action-info">
+            <span id="action-info-delay">1s</span>
+          </div>
+          <!--<div id="current-item-slot" class="inventory-slot">
+            <img id="current-item-image" alt="Current item">
+          </div>-->
+        </div>
+        <div id="information-container">
+          <div id="killfeed-container"></div>
+          <div id="information-killbox" class="background-menu">
+          </div>
+          <div id="killeader-container">
+            <img width="30" height="30" src="img/menu/icons/aim.svg" id="killeader-container-icon"><img>
+            <span id="killeader-text">Waiting For The Killleader</span>
+          </div>
+        </div>
+        <div id="inventory-container">
+          <div id="equipaments">
+            <div class="skin-closeup">
+              <div class="body" style="background-image:url(/img/menu/skin_closeup/skins/default_skin_closeup.svg)"></div>
+              <div class="mounth" style="background-image:url(img/menu/skin_closeup/utils/mounth_1.svg)"></div>
+            </div>
+          </div>
+            <!--<div class="inventory-slot">
+              <img id="helmet-slot" src="img/game/common/icons/helmet.svg" alt="Helmet slot">
+            </div>
+            <div class="inventory-slot">
+              <img id="vest-slot" src="img/game/common/icons/vest.svg" alt="Vest slot">
+            </div>
+            <div class="inventory-slot">
+              <img id="backpack-slot" src="img/game/common/icons/bag.svg" alt="Backpack slot">
+            </div>
+            <div class="inventory-slot">
+              <img id="accessory-slot-1" src="img/game/common/icons/accessory.svg" alt="Accessory slot 1">
+            </div>
+            <div class="inventory-slot">
+              <img id="accessory-slot-2" src="img/game/common/icons/accessory.svg" alt="Accessory slot 2">
+            </div>
+            <div class="inventory-slot">
+              <img id="accessory-slot-3" src="img/game/common/icons/accessory.svg" alt="Accessory slot 3">
+            </div>-->
+          <div id="gui-items">
+          </div>
+          <div id="gui-weapons">
+            <div class="weapon-slot" id="game-weapon-slot-00">
+              <span class="weapon-slot-number">1</span>
+              <span class="weapon-slot-name">fists</span>
+              <img class="weapon-slot-image"></img>
+            </div>
+            <div class="weapon-slot" id="game-weapon-slot-01">
+              <div class="weapon-slot-number">2</div>
+              <span class="weapon-slot-name">m870</span>
+              <img class="weapon-slot-image"></img>
+            </div>
+            <div class="weapon-slot" id="game-weapon-slot-02">
+              <div class="weapon-slot-number">3</div>
+              <span class="weapon-slot-name">m870</span>
+              <img class="weapon-slot-image"></img>
+            </div>
+            <!--<div class="weapon-slot" id="game-weapon-slot-03">
+              <div class="weapon-slot-number">4</div>
+            </div>-->
+          </div>
+          <div id="ammos-inventory">
+          </div>
+        </div>
+          <div id="all-inventory" class="background-menu">
+            <button class="btn-red" id="close-all-inventory">X</button>
+            <span class="span">Weapons</span>
+            <div class="all-inventory-b" id="all-inventory-weapons">
+              <div class="weapon-slot-2" id="game-weapon-slot-expanded-00">
+                <div class="weapon-slot-number">1</div>
+                <span class="weapon-slot-name">m870</span>
+                <img class="weapon-slot-image"></img>
+              </div>
+              <div class="weapon-slot-2" id="game-weapon-slot-expanded-01">
+                <div class="weapon-slot-number">2</div>
+                <span class="weapon-slot-name">m870</span>
+                <img class="weapon-slot-image"></img>
+              </div>
+              <div class="weapon-slot-2" id="game-weapon-slot-expanded-02">
+                <div class="weapon-slot-number">3</div>
+                <span class="weapon-slot-name">m870</span>
+                <img class="weapon-slot-image"></img>
+              </div>
+            </div>
+            <span class="span">Ammos</span>
+            <div id="all-inventory-ammos" class="all-inventory-b">
+            </div>
+            <span class="span">Items</span>
+            <div id="all-inventory-items" class="all-inventory-b">
+            </div>
+          </div>
       </div>
       <canvas id="game-canvas"></canvas>
     </div>
+    <tabs-container id="settings-tabs" class="background-menu">
+      <tab text="Graphics">
+        <div>
+          <span>Textures</span>
+          <select class="select-blue" id="settings-graphics-texture">
+            <option value="very-low">Very Low</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="very-high">Very High</option>
+          </select>
+        </div>
+
+        <div>
+          <span>Particles</span>
+          <select class="select-blue" id="settings-graphics-particles">
+            <option value="0">No</option>
+            <option value="1">Normal</option>
+            <option value="2">Advanced</option>
+          </select>
+        </div>
+      </tab>
+      <tab text="Sounds">
+
+      </tab>
+    </tabs-container>
     <div id="menu">
       <img id="title-section" src="img/menu/logos/title.png"></img>
 
+      <div id="account-status" class="background-menu-green">
+      </div>
       <div id="updates-section" class="background-menu">
         <h2>Updates</h2>
+      </div>
+
+      <div id="top-left-section">
+        <button id="btn-settings" class="btn-green">Settings</button>
       </div>
 
       <div id="main-section" class="background-menu">
         <div id="character-info">
           <input type="text" id="insert-name" class="text-input" placeholder="NAME">
-          <div id="character-visual" class="character">
-            <div class="body" id="character-body" style="background-image:url(/img/game/common/skins/default/body.svg)"></div>
-            <div class="fist-left" id="character-fist-left" style="background-image:url(/img/game/common/skins/default/fist.svg)"></div>
-            <div class="fist-right" id="character-fist-right" style="background-image:url(/img/game/common/skins/default/fist.svg)"></div>
+          <div class="skin-closeup">
+            <div class="body" style="background-image:url(/img/menu/skin_closeup/skins/default_skin_closeup.svg)"></div>
+            <div class="mounth" style="background-image:url(img/menu/skin_closeup/utils/mounth_1.svg)"></div>
           </div>
         </div>
         <div id="gamemode-info">
@@ -130,6 +234,27 @@
           </a>-->
         </div>
       </div>
+      
+      <tabs-container id="sections-tabs" class="background-menu">
+        <tab text="Login">
+            <div id="registry-div" class="entry-tab">
+              <span>Login</span>
+              <input class="text-input" id="input-login-name" placeholder="Username">
+              <input class="text-input" id="input-login-password" type="password" placeholder="Password">
+              <button class="btn-green" id="btn-login">Login</button>
+            </div>
+        </tab>
+        <tab text="Registry">
+            <div id="registry-div" class="entry-tab">
+              <span>Registry</span>
+              <input class="text-input" id="input-register-name" placeholder="Username">
+              <input class="text-input" id="input-register-password" type="password" placeholder="Password">
+              <input class="text-input" id="input-register-confirm-password" type="password" placeholder="Confirm Password">
+              <button class="btn-green" id="btn-register">Registry</button>
+            </div>
+        </tab>
+      </tabs-container>
+
     </div>
     <script type="module" src="./src/scripts/others/index.ts" async></script>
   </body>

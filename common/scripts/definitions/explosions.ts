@@ -1,5 +1,6 @@
 import { Definitions,Definition } from "../engine/mod.ts"
-import { BulletDef, tracers } from "common/scripts/definitions/utils.ts";
+import { tracers } from "../others/item.ts";
+import { BulletDef } from "./utils.ts";
 
 export type ExplosionDef={
     size:{
@@ -24,29 +25,29 @@ export const Explosions=new Definitions<ExplosionDef,null>((_v)=>{})
 Explosions.insert(
     {
         idString:"barrel_explosion",
-        tint:"#fff",
+        tint:"#445",
         size:{
-            min:0.5,
-            max:0.7
+            min:2,
+            max:3
         },
-        damage:80,
+        damage:99,
         bullet:{
             def:{
                 damage:7,
-                radius:0.0125,
+                radius:0.02,
                 speed:20,
-                range:10,
-                tracer:tracers.medium
+                range:25,
+                tracer:tracers.black_projectile
             },
-            count:5
+            count:6
         }
     },
     {
         idString:"frag_grenade_explosion",
         tint:"#355",
         size:{
-            min:0.5,
-            max:0.6
+            min:1.5,
+            max:2
         },
         damage:110,
         bullet:{
@@ -64,8 +65,8 @@ Explosions.insert(
         idString:"mirv_grenade_explosion",
         tint:"#09e",
         size:{
-            min:0.5,
-            max:0.6
+            min:1.6,
+            max:2.2
         },
         damage:110,
         bullet:{

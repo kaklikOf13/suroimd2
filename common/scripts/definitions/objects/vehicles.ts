@@ -1,0 +1,109 @@
+import { Definition, Definitions } from "../../engine/definitions.ts";
+import { v2, Vec2 } from "../../engine/geometry.ts";
+
+export interface VehicleDef extends Definition{
+    frame:{
+        base?:string
+        base_scale?:number
+    }
+    movimentation:{
+        acceleration:number
+        angle_acceleration:number
+        final_speed:number
+        back_walk_mult:number
+        desacceleration:number
+    }
+    pillot_seat:{
+        position:Vec2
+        leave:Vec2
+    }
+    seats?:{
+        position:Vec2
+        leave:Vec2
+    }[]
+    wheels:{
+        defs:{
+            movable:boolean
+            position:Vec2
+            scale:number
+        }[]
+        frame?:string
+    }
+}
+
+
+export const Vehicles=new Definitions<VehicleDef,null>((g)=>{
+})
+
+Vehicles.insert(
+    {
+        idString:"bike",
+        frame:{
+            base_scale:2.5
+        },
+        movimentation:{
+            acceleration:13000,
+            angle_acceleration:4000,
+            final_speed:15,
+            back_walk_mult:0.25,
+            desacceleration:9000
+        },
+        pillot_seat:{
+            position:v2.new(0,0),
+            leave:v2.new(0,-1)
+        },
+        wheels:{
+            defs:[
+                {
+                    movable:true,
+                    position:v2.new(.5,0),
+                    scale:2.5
+                }
+            ]
+        }
+    },
+    {
+        idString:"jeep",
+        frame:{
+            base_scale:4
+        },
+        movimentation:{
+            acceleration:9000,
+            angle_acceleration:8000,
+            final_speed:9,
+            back_walk_mult:0.5,
+            desacceleration:7000
+        },
+        pillot_seat:{
+            position:v2.new(0,-0.7),
+            leave:v2.new(0,-3)
+        },
+        seats:[
+            {position:v2.new(0,0.7),leave:v2.new(0,3)}
+        ],
+        wheels:{
+            defs:[
+                {
+                    movable:true,
+                    position:v2.new(.4,-1.4),
+                    scale:2.5
+                },
+                {
+                    movable:true,
+                    position:v2.new(.4,1.4),
+                    scale:2.5
+                },
+                {
+                    movable:false,
+                    position:v2.new(-1.5,-1.4),
+                    scale:2.5
+                },
+                {
+                    movable:false,
+                    position:v2.new(-1.5,1.4),
+                    scale:2.5
+                }
+            ]
+        }
+    },
+)

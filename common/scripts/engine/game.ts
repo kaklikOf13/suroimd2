@@ -95,17 +95,17 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     reset(){
         this.objects.clear()
         // deno-lint-ignore no-explicit-any
-        this.objects.add_object=(obj: DefaultGameObject, category: number, id?: number | undefined, args?: Record<string, any> | undefined, sv?: Record<string, any>)=>{
+        this.objects.add_object=(obj: DefaultGameObject, layer: number, id?: number | undefined, args?: Record<string, any> | undefined, sv?: Record<string, any>)=>{
             obj.game=this.game
-            return GameObjectManager2D.prototype.add_object.call(this.objects,obj,category,id,args,sv)
+            return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args,sv)
         }
-        this.objects.oncreate=(_k,t)=>{
+        this.objects.oncreate=(_id:number,_layer:number,t)=>{
             if(!this.game.objects.getFromNumber(t))return undefined
             return new (this.game.objects.getFromNumber(t))()
         }
         for(const c in this.scene.objects){
             const cc=typeof c==="string"?parseInt(c):c
-            this.objects.add_category(cc)
+            this.objects.add_layer(cc)
             for(const o of this.scene.objects[c]){
                 const obj=this.objects.add_object(new (this.game.objects.getFromString(o.type))(),cc,o.id,o.vals,{"game":this.game})
                 if(o.position)obj.position=cloneDeep(o.position as Vec2)
@@ -113,25 +113,28 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 }
+
 export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D,Events extends DefaultEvents=DefaultEvents,Map extends DefaultEventsMap2D=DefaultEventsMap2D>{
     readonly tps:number
 
-    private readonly clock:Clock
+    readonly clock:Clock
     running:boolean=true
     readonly events:EventsManager<Events,Map>
     scene:Scene2DInstance<DefaultGameObject,Events,Map>
     destroy_queue:boolean=true
+    new_list:boolean=true
     objects:DefinitionsSimple<new()=>DefaultGameObject>=new DefinitionsSimple()
 
     timeouts:{c:()=>void,delay:number}[]=[]
 
     request_animation_frame:boolean=false
+
     constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.events=new EventsManager()
         this.clock=new Clock(tps,1,this.update.bind(this))
         for(const o of objects){
-            const oi= new o()
+            const oi=new o()
             this.objects.set(o,oi.stringType,oi.numberType)
         }
         this.scene=new Scene2DInstance<DefaultGameObject,Events,Map>({objects:{}},this)
@@ -166,6 +169,9 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(!this.running){
             this.clock.stop()
             this.on_stop()
+        }
+        if(this.new_list){
+            this.scene.objects.update_to_net()
         }
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()

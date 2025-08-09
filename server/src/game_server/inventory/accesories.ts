@@ -1,4 +1,4 @@
-import { type AccessorieDef } from "common/scripts/definitions/equipaments.ts";
+import { type AccessorieDef } from "common/scripts/definitions/items/equipaments.ts";
 import { type Player } from "../gameObjects/player.ts";
 
 export interface AccessoriesSlot{
