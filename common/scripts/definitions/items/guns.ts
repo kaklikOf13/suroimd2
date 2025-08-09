@@ -415,7 +415,7 @@ Guns.insert(
         lenght:0.7,
         ammoType:"12g",
         ammoSpawnAmount:10,
-        jitterRadius:0.27,
+        jitterRadius:0.5,
         size:4.3,
         fireMode:FireMode.Single,
         class:GunClasses.Shotgun,
