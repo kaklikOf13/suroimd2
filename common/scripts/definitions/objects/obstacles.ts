@@ -91,9 +91,12 @@ Obstacles.insert(
     {
         idString:"stone",
         health:150,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.45),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.65),
         scale:{
             destroy:0.7
+        },
+        frame_transform:{
+            scale:1.5
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,

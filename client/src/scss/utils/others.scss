@@ -54,6 +54,9 @@
     color: #eee;
     font-size: 30px;
     font-family: "Russo-One",Arial;
+    @media screen and (max-width: palette.$screen_medium) {
+        font-size: 15px;
+    }
 }
 .skin-closeup{
     position: relative;

@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, Client, NullVec2, Numeric, random, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
@@ -21,6 +21,7 @@ import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -324,6 +325,9 @@ export class Player extends ServerGameObject{
             case 3:
                 this.inventory.drop_slot(action.drop)
                 break
+            case 4:
+                this.inventory.drop_item(action.drop)
+                break
         }
         /*
         if(action.cellphoneAction){
@@ -335,36 +339,33 @@ export class Player extends ServerGameObject{
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
 
-        this.inventory.set_weapon(1,"spas12")
-        this.inventory.set_weapon(2,"awp")
+        this.inventory.set_weapon(1,random.choose(["hp18","m870","spas12","uzi","vector"]))
+        this.inventory.set_weapon(2,random.choose(["awp","awms","kar98k","mp5","ak47","ar15"]))
         this.inventory.set_current_weapon_index(1)
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
-        this.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
 
-        this.helmet=Armors.getFromString("tactical_helmet")
-        this.vest=Armors.getFromString("tactical_vest")
+        if(Math.random()<=0.75)this.inventory.set_backpack(Backpacks.getFromString(random.choose(["tactical_pack","regular_pack","basic_pack"])))
+        if(Math.random()<=0.75)this.helmet=Armors.getFromString(random.choose(["tactical_helmet","basic_helmet","regular_helmet"]))
+        if(Math.random()<=0.75)this.vest=Armors.getFromString(random.choose(["tactical_vest","basic_vest","regular_vest"]))
+        
+        this.skin=Skins.getFromString(random.choose(["default_skin","widower","kaklik","kitty"]))
         //
-        /*this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,100)
-        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,100)
-        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,120)
-        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,15)
-        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,10)*/
 
-        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,300)
-        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,300)
-        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,400)
-        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,90)
-        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,40)
+        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,random.choose([100,200,300]))
+        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,random.choose([100,200,300]))
+        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,random.choose([120,240,400]))
+        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,random.choose([15,30,60,90]))
+        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,random.choose([10,20,30]))
 
-        /*this.inventory.give_item(Consumibles.getFromString("gauze") as unknown as GameItem,30)
-        this.inventory.give_item(Consumibles.getFromString("soda") as unknown as GameItem,10)
-        this.inventory.give_item(Consumibles.getFromString("blue_potion") as unknown as GameItem,5)*/
-        /*const v=this.game.add_vehicle(v2.new(20,20),Vehicles.getFromString("bike"))
-        v.seats[0].set_player(this)*/
+        this.inventory.give_item(Consumibles.getFromString(random.choose(["gauze","medikit"])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose(["soda","inhaler","yellow_pills"])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_blue_potion","blue_potion","blue_pills"])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_purple_potion","purple_potion","purple_pills"])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_red_crystal","red_crystal","red_pills"])) as unknown as GameItem,4)
 
         this.boost=100
-        this.BoostType=BoostType.Shield
+        this.BoostType=random.choose([BoostType.Shield,BoostType.Adrenaline])
     }
     damagesSplash:DamageSplash[]=[]
 

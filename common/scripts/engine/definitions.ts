@@ -22,7 +22,9 @@ export class DefinitionsSimple<Type,Base=null>{
         return this.did
     }
     getFromString(id:string):Type{
-        if(!this.value[id])throw `idString:${id} Dont Exist In Definition`
+        if(!this.value[id]){
+            console.log(`idString:${id} Dont Exist In Definition`)
+        }
         return this.value[id]
     }
     getFromNumber(id:number):Type{

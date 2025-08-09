@@ -2,6 +2,88 @@ const newsS=document.querySelector("#updates-section") as HTMLDivElement
 
 const news=[
     {
+      "title":"Alpha 1.1.0",
+      "content":`
+<h2 id="news">News</h2>
+<hr>
+<h3 id="mains">Mains</h3>
+<ul>
+<li>Player Graphics</li>
+<li>Settings</li>
+<li>Spritesheets</li>
+<li>2D Sounds</li>
+<li>Guns Sounds And Animations</li>
+<li>Unfineshed Mobile Suport</li>
+<li>Keybinds</li>
+<li>Control Support</li>
+<li>Terrain</li>
+<li>Offline Version</li>
+<li>Creatures And Animals</li>
+<li>Bots</li>
+<li>Vehicles</li>
+<li>Golang API</li>
+<li>Unfineshed Accounts System</li>
+<li>Killleader</li>
+<li>Killfeed</li>
+<li>Expanded Inventory</li>
+</ul>
+<hr>
+<h3 id="obstacles">Obstacles</h3>
+<ul>
+<li>Crate</li>
+<li>Obstacles Residues</li>
+</ul>
+<hr>
+<h3 id="guns">Guns</h3>
+<ul>
+<li>AR15 - 556mm Automatic</li>
+<li>MP5 - 9mm Automatic</li>
+<li>Uzi - 9mm Automatic</li>
+<li>Bullet Image</li>
+</ul>
+<hr>
+<h3 id="player">Player</h3>
+<ul>
+<li>Skins And Animations</li>
+<li>Shield Break Animation</li>
+</ul>
+<hr>
+<h3 id="melees">Melees</h3>
+<ul>
+<li>Survival Knife</li>
+</ul>
+<hr>
+<h3 id="eastereggs">Eastereggs</h3>
+<ul>
+<li>Squid Game Easteregg</li>
+<li>You Died Easteregg</li>
+</ul>
+<hr>
+<h3 id="others">Others</h3>
+<ul>
+<li>Explosions Sprite</li>
+<li>Loot Physics</li>
+</ul>
+<hr>
+<h2 id="changes">Changes</h2>
+<hr>
+<ul>
+<li>Particles Sprites</li>
+<li>Vector Redesign</li>
+<li>Collisions And Physics</li>
+<li>Inventory System</li>
+<li>Renderer</li>
+</ul>
+<hr>
+<h3 id="others">Others</h3>
+<ul>
+<li>Bullet Through Obstacles</li>
+<li>Loot Tables</li>
+</ul>
+<hr>
+      `
+    },
+    {
         "title":"Alpha 1.0.0",
         "content":
 `<h2>News</h2>

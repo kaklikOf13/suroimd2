@@ -43,12 +43,17 @@ import { InputManager } from "../engine/keys.ts";
     const gui=new GuiManager()
 
     if(offline){
+        //@ts-ignore
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
             deenable_feast:true,
             gameTps:100,
             maxPlayers:10,
             teamSize:1,
             netTps:30
+        },{
+            database:{
+                enabled:false
+            }
         })
         gs.mainloop()
         gs.subscribe_db={

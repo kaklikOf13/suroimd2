@@ -129,9 +129,15 @@ function decode_gui_packet(gui:GuiUpdate,stream:NetStream){
         },1)
     }
     if(dirtyWeapons){
-        gui.weapons.melee=Melees.getFromNumber(stream.readInt16())
-        gui.weapons.gun1=Guns.getFromNumber(stream.readInt16())
-        gui.weapons.gun2=Guns.getFromNumber(stream.readInt16())
+        const melee=stream.readInt16()
+        const gun1=stream.readInt16()
+        const gun2=stream.readInt16()
+        if(melee!==-1)gui.weapons.melee=Melees.getFromNumber(melee)
+        else gui.weapons.melee=undefined
+        if(gun1!==-1)gui.weapons.gun1=Guns.getFromNumber(gun1)
+        else gui.weapons.gun1=undefined
+        if(gun2!==-1)gui.weapons.gun2=Guns.getFromNumber(gun2)
+        else gui.weapons.gun2=undefined
     }
     if(dirtyCurrentWeapon){
         gui.current_weapon={

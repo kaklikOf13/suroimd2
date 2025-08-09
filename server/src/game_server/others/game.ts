@@ -22,7 +22,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
+import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
@@ -388,6 +388,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
         return p
     }
+    override on_run(): void {
+        for(let i=0;i<9;i++){
+            this.add_bot()
+        }
+    }
     async activate_player(username:string,packet:JoinPacket,client:Client){
         const p=this.add_player(client.ID,username,packet) as Player;
             p.client=client;
@@ -433,6 +438,12 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
         client.emit(jp)
         client.sendStream(this.map.map_packet_stream)
+
+        if(Math.random()<=0.5){
+            const vehicle=this.add_vehicle(p.position,Vehicles.getFromString(random.choose(["bike","jeep"])))
+            vehicle.seats[0].set_player(p)
+            p.dirty=true
+        }
         return p
     }
     add_npc(name?:string,layer?:number):Player{
@@ -454,9 +465,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
-        for(let i=0;i<40;i++){
-            this.add_bot()
-        }
         console.log(`Game ${this.id} Started`)
     }
     finish(){

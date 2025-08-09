@@ -1,5 +1,5 @@
 import { type GameConsole } from "../engine/console.ts";
-import { isMobile } from "../engine/game.ts";
+import { HideElement, ShowElement } from "../engine/utils.ts";
 import { api_server, offline } from "../others/config.ts";
 
 export class MenuManager{
@@ -94,8 +94,8 @@ export class MenuManager{
         this.content.settings.graphics_particles.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
         })
-        this.content.settings_tabs.style.display="none"
-        this.content.section_tabs.style.display="none"
+        HideElement(this.content.settings_tabs)
+        HideElement(this.content.section_tabs)
 
         if(!offline)this.accounts_system_init()
     }
@@ -105,7 +105,7 @@ export class MenuManager{
         btn.classList.add("btn-green")
         btn.innerText="Account"
         btn.addEventListener("click",()=>{
-            this.content.section_tabs.style.display="unset"
+            ShowElement(this.content.section_tabs)
         })
         this.content.ac_status.appendChild(btn)
     }
@@ -118,7 +118,7 @@ export class MenuManager{
                 console.log("not-logged")
                 return
             }
-            this.content.section_tabs.style.display="none"
+            HideElement(this.content.section_tabs)
             this.content.ac_status.innerHTML=`
                 <h1>${aa.user.name}</h1>
                 <span>Coins:${aa.user.coins}</span>
@@ -126,10 +126,9 @@ export class MenuManager{
                 XP:${aa.user.xp}</span>
                 <span>Coins:Score:${aa.user.score}</span>
             `
-            this.content.section_tabs.style.display="none"
         })
     }
     game_start(){
-        this.content.settings_tabs.style.display="none"
+        HideElement(this.content.settings_tabs)
     }
 }

@@ -2,7 +2,7 @@ import { Casters } from "../engine/console.ts";
 import { GamepadButtonID, Key, Server } from "../engine/mod.ts";
 
 export const api_server=new Server("localhost",8000,false)
-export const offline=false
+export const offline=true
 export enum GraphicsParticlesConfig {
     None=0,
     Normal,
@@ -107,4 +107,5 @@ export const ConfigDefaultActions={
 }
 export const Debug={
     hitbox:false,
+    force_mobile:false
 }

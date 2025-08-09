@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="24.000299mm"
-   height="33.760502mm"
-   viewBox="0 0 24.0003 33.760502"
+   width="15mm"
+   height="21.10005mm"
+   viewBox="0 0 15 21.10005"
    version="1.1"
    id="svg5"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="purple_potion.svg"
    inkscape:export-filename="purple_potion.png"
    inkscape:export-xdpi="96"
@@ -47,7 +47,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-131.60498,-137.46762)">
+     transform="matrix(0.62499219,0,0,0.62499219,-82.252085,-85.916188)">
     <g
        id="g1"
        transform="matrix(0.85491267,0,0,1.007174,20.932821,-0.88202875)"

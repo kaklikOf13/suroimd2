@@ -490,7 +490,7 @@ export class InputManager {
         }
     }
 
-    private emit(type: "actiondown" | "actionup", action: string) {
+    emit(type: "actiondown" | "actionup", action: string) {
         const event: ActionEvent = { action };
         for (const callback of this.callbacks[type]) {
             callback(event);
@@ -507,3 +507,9 @@ export class InputManager {
         }
     }
 }
+export type JoystickEvent={
+    detail:{
+        x:number
+        y:number
+    }
+}&Event

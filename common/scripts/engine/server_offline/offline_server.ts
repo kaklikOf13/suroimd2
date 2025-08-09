@@ -97,6 +97,7 @@ export class Client{
     IP:string // Clinet IP
     protected signals:SignalManager
     onopen?:()=>void
+    show_errors:boolean=true
     constructor(websocket:BasicSocket,packet_manager:PacketsManager,ip:string=""){
         this.ws=websocket
         this.opened=false
@@ -109,8 +110,8 @@ export class Client{
             this.opened=false
             this.signals.emit(DefaultSignals.DISCONNECT,new DisconnectPacket(this.ID))
         }
-        this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
-            try{
+        if(this.show_errors){
+            this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
                 if (msg.data instanceof ArrayBuffer){
                     const packet=this.manager.decode(new NetStream(msg.data))
                     this.signals.emit(packet.Name,packet)
@@ -118,10 +119,23 @@ export class Client{
                     const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
                     this.signals.emit(packet.Name,packet)
                 }
-            }catch(error){
-                console.error("decode Message Error:",error)
+            }
+        }else{
+            this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
+                try{
+                    if (msg.data instanceof ArrayBuffer){
+                        const packet=this.manager.decode(new NetStream(msg.data))
+                        this.signals.emit(packet.Name,packet)
+                    }else if(msg.data instanceof Blob){
+                        const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
+                        this.signals.emit(packet.Name,packet)
+                    }
+                }catch(error){
+                    console.error("decode Message Error:",error)
+                }
             }
         }
+        
         this.IP=ip
         if(ip==""){
             this.on(DefaultSignals.CONNECT,(packet:ConnectPacket)=>{

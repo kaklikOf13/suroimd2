@@ -2,7 +2,6 @@ import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { Player } from "./player.ts";
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
-import { Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { Obstacle } from "./obstacle.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts";

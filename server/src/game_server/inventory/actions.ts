@@ -40,6 +40,9 @@ export class ReloadAction extends Action<Player>{
         if(consumed+this.item.ammo>this.item.def.reload!.capacity){
             consumed=this.item.def.reload!.capacity-this.item.ammo
         }
+        if(consumed>user.inventory.ammos[def.ammoType]){
+            consumed=user.inventory.ammos[def.ammoType]
+        }
         this.item.ammo+=user.inventory.consume_ammo(def.ammoType,consumed)
         user.privateDirtys.current_weapon=true
         user.privateDirtys.inventory=true

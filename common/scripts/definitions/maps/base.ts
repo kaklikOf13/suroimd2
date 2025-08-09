@@ -170,6 +170,7 @@ LootTables.add_tables({
     "wood_crate":{
         content:[
             {weight:2,table:"ammos"},
+            {weight:2,table:"consumibles"},
             {weight:1,table:"equipments"},
             {weight:0.5,table:"guns"},
         ],

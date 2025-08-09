@@ -485,10 +485,14 @@ export function applyShadow(elem: HTMLElement) {
 export function fullCanvas(elem: HTMLCanvasElement) {
     const ratio = self.devicePixelRatio || 1;
 
-    elem.width  = Math.floor(self.innerWidth  * ratio);
-    elem.height = Math.floor(self.innerHeight * ratio);
+    elem.width  = self.innerWidth  * ratio;
+    elem.height = self.innerHeight * ratio;
 
-    // Mas para não esticar na tela:
-    elem.style.width  = self.innerWidth + "px";
-    elem.style.height = self.innerHeight + "px";
+    elem.style.width  = `${self.innerWidth}px`;
+    elem.style.height = `${self.innerHeight}px`;
+
+    const ctx = elem.getContext("2d");
+    if (ctx) {
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
 }

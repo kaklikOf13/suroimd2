@@ -12,6 +12,9 @@ import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from 
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { type Player } from "../gameObjects/player.ts";
 import { isMobile } from "../engine/game.ts";
+import { Debug } from "../others/config.ts";
+import { HideElement, ShowElement } from "../engine/utils.ts";
+import { JoystickEvent } from "../engine/keys.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -81,6 +84,10 @@ export class GuiManager{
         gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
         left_joystick:document.querySelector("#left-joystick") as HTMLDivElement,
         right_joystick:document.querySelector("#right-joystick") as HTMLDivElement,
+
+        btn_interact:document.querySelector("#btn-mobile-interact") as HTMLButtonElement,
+        btn_inventory:document.querySelector("#btn-mobile-inventory") as HTMLButtonElement,
+        btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
     }
 
     weapons:{
@@ -102,7 +109,7 @@ export class GuiManager{
     }
     constructor(){
         this.set_health(100,100)
-        this.content.cellphone_actions.style.display="none"
+        HideElement(this.content.cellphone_actions)
         this.content.gameOver.style.opacity="0%"
 
         //Cellphone
@@ -136,17 +143,24 @@ export class GuiManager{
                 }
             }
         }
+
+        const dropW2=(w:number)=>{
+            return ()=>{
+                this.game.action.drop=w
+                this.game.action.drop_kind=1
+            }
+        }
         
         const selecW=(w:number)=>{
-            return (e:TouchEvent)=>{
+            return ()=>{
                 this.game.action.hand=w
             }
         }
         this.content.weapon2.addEventListener("mouseup",dropW(1))
         this.content.weapon3.addEventListener("mouseup",dropW(2))
 
-        this.content.e_weapon2.addEventListener("mouseup",dropW(1))
-        this.content.e_weapon3.addEventListener("mouseup",dropW(2))
+        this.content.e_weapon2.addEventListener("click",dropW2(1))
+        this.content.e_weapon3.addEventListener("click",dropW2(2))
 
         this.content.weapon1.addEventListener("touchstart",selecW(0))
         this.content.weapon2.addEventListener("touchstart",selecW(1))
@@ -157,34 +171,35 @@ export class GuiManager{
         ])
         document.addEventListener("contextmenu", e => e.preventDefault());
         this.clear()
-        this.content.gameD.style.display="none"
-        this.content.menuD.style.display="unset"
+        HideElement(this.content.gameD)
+        ShowElement(this.content.menuD)
 
         this.content.close_all_inventory.addEventListener("click",this.set_all_inventory.bind(this,false))
     }
     all_inventory_enabled:boolean=false
     set_all_inventory(enabled:boolean){
         if(enabled){
-            this.content.all_inventory.style.display="unset"
-            this.content.all_inventory.style.pointerEvents="unset"
+            ShowElement(this.content.all_inventory)
         }else{
-            this.content.all_inventory.style.display="none"
-            this.content.all_inventory.style.pointerEvents="none"
+            HideElement(this.content.all_inventory)
         }
         this.all_inventory_enabled=enabled
     }
     mobile_init(){
         this.mobile_open()
-        this.mobile_content.left_joystick.addEventListener("joystickmove",(e)=>{
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        this.mobile_content.left_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             this.game.action.Movement.x=e.detail.x
             this.game.action.Movement.y=e.detail.y
         })
-        this.mobile_content.left_joystick.addEventListener("joystickend",(e)=>{
+        this.mobile_content.left_joystick.addEventListener("joystickend",()=>{
             this.game.action.Movement.x=0
             this.game.action.Movement.y=0
         })
-        
-        this.mobile_content.right_joystick.addEventListener("joystickmove",(e)=>{
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             this.game.action.angle=Math.atan2(e.detail.y,e.detail.x);
             if(this.game.activePlayer&&!this.game.activePlayer.driving){
                 (this.game.activePlayer as Player).container.rotation=this.game.action.angle
@@ -196,27 +211,34 @@ export class GuiManager{
                 }
             }
         })
-        this.mobile_content.right_joystick.addEventListener("joystickend",(e)=>{
+        this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
             this.game.action.UsingItem=false
         })
+        this.mobile_content.btn_interact.addEventListener("click",()=>{
+            this.game.input_manager.emit("actiondown","interact")
+        })
+        this.mobile_content.btn_inventory.addEventListener("click",()=>{
+            this.set_all_inventory(!this.all_inventory_enabled)
+        })
+        this.mobile_content.btn_reload.addEventListener("click",()=>{
+            this.game.input_manager.emit("actiondown","reload")
+        })
+
     }
     mobile_close(){
-        this.mobile_content.gui.style.display="none"
-        this.mobile_content.gui.style.pointerEvents="none"
-        this.content.help_gui.style.display="unset"
+        HideElement(this.mobile_content.gui)
+        ShowElement(this.content.help_gui)
     }
     mobile_open(){
-        this.mobile_content.gui.style.display="block"
-        this.mobile_content.gui.style.pointerEvents="auto"
-        this.content.help_gui.style.display="none"
+        ShowElement(this.mobile_content.gui)
+        HideElement(this.content.help_gui)
     }
     init(game:Game){
-        if(isMobile){
+        this.game=game
+        if(isMobile||Debug.force_mobile){
             this.mobile_init()
         }
-        this.game=game
         this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
-        
     }
     start(){
         if(this.game.client){
@@ -247,6 +269,12 @@ export class GuiManager{
                     }
                 }
             }
+            const dropA2=(a:number)=>{
+                return ()=>{
+                    this.game.action.drop=a
+                    this.game.action.drop_kind=2
+                }
+            }
             this.content.ammos.innerHTML=""
             this.content.ammos_all.innerHTML=""
             this.ammos_cache={all:{},normal:{}}
@@ -262,13 +290,12 @@ export class GuiManager{
                     <span class="slot-count">${ammos[a]}</span>
                 </div>`
 
-                const f=dropA(def.idNumber!)
                 this.content.ammos.insertAdjacentHTML("beforeend", htm);
                 this.content.ammos_all.insertAdjacentHTML("beforeend", htm2);
                 this.ammos_cache.normal[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
-                this.ammos_cache.normal[a].addEventListener("mouseup",f)
+                this.ammos_cache.normal[a].addEventListener("mouseup",dropA(def.idNumber!))
                 this.ammos_cache.all[a]=this.content.ammos_all.querySelector(`#ammo-all-${a}`) as HTMLDivElement
-                this.ammos_cache.all[a].addEventListener("mouseup",f)
+                this.ammos_cache.all[a].addEventListener("click",dropA2(def.idNumber!))
             }
         }
     }
@@ -286,8 +313,15 @@ export class GuiManager{
             }
         }
         const Ic2=(i:number)=>{
-            return (e:MouseEvent)=>{
+            return ()=>{
                 this.game.action.use_slot=i
+            }
+        }
+        
+        const Ic3=(i:number)=>{
+            return ()=>{
+                this.game.action.drop=i
+                this.game.action.drop_kind=4
             }
         }
         const items:Record<string,number>={}
@@ -322,6 +356,7 @@ export class GuiManager{
             this.items_cache[i].insertAdjacentHTML("beforeend",`
                 <div class="slot-count">${items[i]}</div>
                 <img class="slot-image" src="${this.game.resources.get_sprite(i).src}">`)
+            this.items_cache[i].addEventListener("click",Ic3(GameItems.keysString[i]))
             this.content.gui_items_all.appendChild(this.items_cache[i])
         }
         this.items=items
@@ -337,8 +372,8 @@ export class GuiManager{
                 player:jp.kill_leader
             })
         }
-        this.content.gameD.style.display="unset"
-        this.content.menuD.style.display="none"
+        ShowElement(this.content.gameD)
+        HideElement(this.content.menuD)
     }
     state?:HelpGuiState
     update_hint(state:HelpGuiState){
@@ -368,8 +403,9 @@ export class GuiManager{
         this.content.killeader_span.innerText="Waiting For A Kill Leader"
         this.content.help_gui.innerText=""
 
-        this.content.gameD.style.display="none"
-        this.content.menuD.style.display="unset"
+        ShowElement(this.content.menuD)
+        HideElement(this.content.gameD)
+        HideElement(this.content.gameOver)
     }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={
@@ -393,9 +429,9 @@ export class GuiManager{
                 elem.innerHTML=`${this.players_name[msg.killer.id].name} Killed ${this.players_name[msg.victimId].name} With ${dsd.idString}`
                 if(msg.killer.id===this.game.activePlayer!.id){
                     this.content.information_killbox.innerText=`${msg.killer.kills} Kills`
-                    this.content.information_killbox.style.display="block"
+                    ShowElement(this.content.information_killbox)
                     this.game.addTimeout(()=>{
-                        this.content.information_killbox.style="none"
+                        HideElement(this.content.information_killbox)
                     },2)
                 }
                 if(this.killleader&&msg.killer.id===this.killleader.id){
@@ -544,7 +580,7 @@ export class GuiManager{
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return
         this.game.gameOver=true
-        this.content.gameOver.style.opacity="100%"
+        ShowElement(this.content.gameOver)
         if(g.Win){
             this.content.gameOver_status.innerText=`Winner Winner Chicken Dinner!`
             this.content.gameOver_status.style.color="#fe3"
@@ -583,13 +619,14 @@ export class GuiManager{
     update(){
         if(this.action){
             const w=(Date.now()-this.action.start)/1000
-            
             if(w<this.action.delay){
-                this.content.action_info.style.opacity="100%"
+                ShowElement(this.content.action_info)
                 this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay-w,1)}s`
+            }else{
+                this.action=undefined
             }
         }else{
-            this.content.action_info.style.opacity="0%"
+            HideElement(this.content.action_info)
         }
     }
     set_health(health:number,max_health:number){

@@ -424,6 +424,14 @@ export class GInventory extends Inventory<LItem>{
       this.owner.privateDirtys.inventory=true
     }
   }
+  drop_item(id:number,count:number=5){
+    for(const s in this.slots){
+      if(this.slots[s].item&&GameItems.keysString[this.slots[s].item.def.idString]===id){
+        this.drop_slot(s as unknown as number,count)
+        break
+      }
+    }
+  }
   consume_ammo(a:string,val:number):number{
     this.owner.privateDirtys.ammos=true
     if(this.ammos[a]){

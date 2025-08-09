@@ -25,7 +25,30 @@
         <div id="game-mobile-gui" style="display: none; pointer-events: none;">
           <kl-joystick id="left-joystick"></kl-joystick>
           <kl-joystick id="right-joystick"></kl-joystick>
+          <button id="btn-mobile-interact" class="btn-green"><span>E</span></button>
+          <button id="btn-mobile-inventory" class="btn-green"><span>I</span></button>
+          <button id="btn-mobile-reload" class="btn-green"><span>R</span></button>
         </div>
+        <div id="help-gui">
+        </div>
+        <div id="gameover-container" class="background-menu">
+          <span id="gameover-status">Winner Winner Chicken Dinner!</span>
+          <span id="gameover-kills">Kills:</span>
+          <span id="gameover-damaged">Damage Dealth:</span>
+          <span id="gameover-score">Score:</span>
+
+          <button id="gameover-menu-btn" class="btn-green"><span translation="return_to_menu">Return To Menu</span></button>
+        </div>
+        <tabs-container id="cellphone-actions" header-position="bottom" class="background-menu">
+          <tab text="Give Item" id="cellphone-give-item-tab">
+            <input type="text" id="cellphone-insert-item-id" class="text-input" placeholder="Item-ID">
+            <input type="text" id="cellphone-insert-item-count" class="text-input" placeholder="Item-Count">
+            <button class="btn-blue" id="cellphone-give-item-button">Give Item</button>
+          </tab>
+          <tab text="Spawn Obstacle">
+            #2
+          </tab>
+        </tabs-container>
         <div id="bars-container">
           <div id="health-bar-container">
             <div id="health-bar-animation"></div>
@@ -80,7 +103,6 @@
             <div class="inventory-slot">
               <img id="accessory-slot-3" src="img/game/common/icons/accessory.svg" alt="Accessory slot 3">
             </div>-->
-          </div>
           <div id="gui-items">
           </div>
           <div id="gui-weapons">
@@ -105,6 +127,7 @@
           </div>
           <div id="ammos-inventory">
           </div>
+        </div>
           <div id="all-inventory" class="background-menu">
             <button class="btn-red" id="close-all-inventory">X</button>
             <span class="span">Weapons</span>
@@ -132,27 +155,6 @@
             <div id="all-inventory-items" class="all-inventory-b">
             </div>
           </div>
-        </div>
-        <div id="gameover-container" class="background-menu">
-          <span id="gameover-status">Winner Winner Chicken Dinner!</span>
-          <span id="gameover-kills">Kills:</span>
-          <span id="gameover-damaged">Damage Dealth:</span>
-          <span id="gameover-score">Score:</span>
-
-          <button id="gameover-menu-btn" class="btn-green"><span translation="return_to_menu">Return To Menu</span></button>
-        </div>
-        <div id="help-gui">
-        </div>
-        <tabs-container id="cellphone-actions" header-position="bottom" class="background-menu">
-          <tab text="Give Item" id="cellphone-give-item-tab">
-            <input type="text" id="cellphone-insert-item-id" class="text-input" placeholder="Item-ID">
-            <input type="text" id="cellphone-insert-item-count" class="text-input" placeholder="Item-Count">
-            <button class="btn-blue" id="cellphone-give-item-button">Give Item</button>
-          </tab>
-          <tab text="Spawn Obstacle">
-            #2
-          </tab>
-        </tabs-container>
       </div>
       <canvas id="game-canvas"></canvas>
     </div>
