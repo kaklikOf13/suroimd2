@@ -14,13 +14,13 @@ async function renderPost(post: any, comments: any[]) {
   comments = Array.isArray(comments) ? comments : [];
   postView.innerHTML = `
     <h2 class="text">${post.title || "Untitled"}</h2>
-    <div class="meta">by ${post.author || "Unknow"} • ${post.created_at || ""}</div>
+    <div class="meta">by ${`<a href="/user/?user=${post.author}">${post.author}</a>` || "Unknow"} • ${post.created_at || ""}</div>
     <div class="post-body">${formatToHtml(post.body || "")}</div>
     ${post.author === currentUser ? `<button id="delete-post" class="delete-post btn-red">Delete Post</button>` : ""}
     <div class="comments"><h3>Comments</h3>${
       comments.map(c => `
         <div class="comment">
-          <div class="meta">${c.author || "Anonimous"} • ${c.created_at || ""} 
+          <div class="meta">${`<a href="/user/?user=${c.author}">${c.author}</a>` || "Anonimous"} • ${c.created_at || ""} 
           ${c.author === currentUser ? `<button data-id="${c.id}" class="delete-comment btn-red">Delete</button>` : ""}
           </div>
           <div>${formatToHtml(c.body || "")}</div>
@@ -82,7 +82,7 @@ function showCreatePostForm() {
     postsListEl.innerHTML = posts.map((p: any) =>
       `<div class="post-item" data-id="${p.id}">
           <b>${p.title}</b>
-          <div class="meta">${p.author} • ${p.created_at}</div>
+          <div class="meta"><a href="/user/?user=${p.autor}">${p.author}</a> • ${p.created_at}</div>
        </div>`
     ).join("");
     postsListEl.querySelectorAll(".post-item").forEach(el => {

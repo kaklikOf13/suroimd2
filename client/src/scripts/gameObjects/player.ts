@@ -334,7 +334,7 @@ export class Player extends GameObject{
                             })
                             this.game.particles.add_particle(p)
                         }
-                }
+                    }
                 }
                 const sound=this.game.resources.get_audio(`${d.idString}_fire`)
                 if(sound){

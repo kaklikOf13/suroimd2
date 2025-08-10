@@ -404,8 +404,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             if(this.subscribe_db){
                 ff=this.subscribe_db[p.username]
             }else{
-                ff=await(await fetch(`http${this.Config.database.enabled}/get-status/${p.username}`)).json()
-                
+                ff=await(await fetch(`http${this.Config.api.global}/get-status/${p.username}`)).json()
             }
 
             if(ff.user){

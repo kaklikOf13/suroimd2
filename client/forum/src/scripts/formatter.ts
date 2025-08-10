@@ -2,7 +2,6 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// suporte: headings (# ...), bold **text**, italic *text*, inline `code`, links [text](url), simple lists (- item)
 export function formatToHtml(src: string): string {
   const lines = src.split("\n");
   const out: string[] = [];

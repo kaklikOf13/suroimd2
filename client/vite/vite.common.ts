@@ -10,6 +10,7 @@ const config: UserConfig = {
             input: {
                 main: resolve(__dirname, "../index.html"),
                 forum: resolve(__dirname, "../forum/index.html"),
+                user: resolve(__dirname, "../user/index.html"),
             },
             output: {
                 assetFileNames(assetInfo) {
