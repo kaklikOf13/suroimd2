@@ -4,6 +4,15 @@ import { SignalManager } from "../utils.ts"
 import { NetStream } from "../stream.ts"
 import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D } from "../game.ts";
 import { random } from "../random.ts";
+
+//Definitions
+export interface HostConfig{
+    port:number,
+    name?:string,
+    https?:boolean,
+    cert?:string,
+    key?:string,
+}
 export class BasicSocket{
     readyState = 1;
     binaryType = "";

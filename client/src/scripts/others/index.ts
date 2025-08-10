@@ -1,18 +1,18 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api_server, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline } from "./config.ts";
+import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
-import { BasicSocket, Client, OfflineClientsManager, v2 } from "common/scripts/engine/mod.ts";
+import { BasicSocket, Client, IPLocation, OfflineClientsManager } from "common/scripts/engine/mod.ts";
+import {RegionDef} from "common/scripts/config/config.ts"
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
-import { RegionDef } from "common/scripts/definitions/utils.ts";
-import { Server } from "../engine/mod.ts";
 import { InputManager } from "../engine/keys.ts";
+import { HideElement } from "../engine/utils.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100);
@@ -35,7 +35,6 @@ import { InputManager } from "../engine/keys.ts";
     const menu_manager=new MenuManager(GameSave)
     menu_manager.start()
 
-
     let loaded=false
     let gs:OfflineGameServer|undefined
 
@@ -43,6 +42,7 @@ import { InputManager } from "../engine/keys.ts";
     const gui=new GuiManager()
 
     if(offline){
+        // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
             deenable_feast:true,
@@ -61,8 +61,9 @@ import { InputManager } from "../engine/keys.ts";
                 skins:[1,2]
             }
         }
-    }else{
-        regions=await(await fetch(`http${api_server.toString()}/get-regions`)).json()
+    }
+    if(api){
+        regions=await(await fetch(`${API_BASE}/get-regions`)).json()
     }
     const current_region="local"
     
@@ -105,9 +106,9 @@ import { InputManager } from "../engine/keys.ts";
             if(offline){
                 socket=gs?.clients.fake_connect(1) as BasicSocket
             }else{
-                const ser=new Server(regions[current_region].host,regions[current_region].port)
-                const ghost=await((await fetch(`http${ser.toString()}/api/get-game`)).text())
-                socket=new WebSocket("ws"+ser.toString()+"/api/"+ghost+"/ws") as BasicSocket
+                const ser=new IPLocation(regions[current_region].host,regions[current_region].port)
+                const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())
+                socket=new WebSocket(ser.toString("ws") + "/api/" + ghost + "/ws") as unknown as BasicSocket
             }
             sounds.set_music(null)
             const c=new Client(socket!,PacketManager)
@@ -121,7 +122,7 @@ import { InputManager } from "../engine/keys.ts";
             menu_manager.update_account()
             this.game.scene.objects.clear()
             this.game.guiManager.clear()
-            this.game.guiManager.content.gameOver.style.display="none"
+            HideElement(this.game.guiManager.content.gameOver)
             this.game.happening=false
         }
 

@@ -50,7 +50,7 @@ export class MenuManager{
             });
 
             if (res.status === 201) {
-                const res = await fetch(`http${api_server.toString()}/login`, {
+                const res = await fetch(`${api_server.toString("http")}/login`, {
                     method: "POST",
                     mode:"no-cors",
                     credentials: "include",
@@ -67,7 +67,7 @@ export class MenuManager{
         this.content.login.btn.addEventListener("click",async()=>{
             const password=this.content.login.password.value
             const name=this.content.login.name.value
-            const res = await fetch(`http${api_server.toString()}/login`, {
+            const res = await fetch(`${api_server.toString("http")}/login`, {
                 method: "POST",
                 mode:"no-cors",
                 credentials: "include",
@@ -111,10 +111,10 @@ export class MenuManager{
     }
     logged(name:string){
         this.content.ac_status.innerHTML=`
-            <button class="btn-blue"><a href="/user/?user=${name}">My Status</a></button>`
+            <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`
     }
     update_account(){
-        fetch(`http${api_server.toString()}/get-your-status`,{
+        fetch(`${api_server.toString("http")}/get-your-status`,{
             credentials: "include",
         }).then((a)=>a.json()).then((aa)=>{
             if(!aa.user){

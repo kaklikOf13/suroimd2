@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	config, err := api.LoadConfig("configs/config.json")
+	config, err := api.LoadConfig("../common/scripts/config/config.json")
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
@@ -23,7 +23,16 @@ func main() {
 
 	addr := fmt.Sprintf(":%d", config.API.Host.Port)
 	log.Printf("API server listening on %s", addr)
-	err = http.ListenAndServe(addr, nil)
+
+	if config.API.Host.UseHTTPS {
+		if config.API.Host.CertFile == "" || config.API.Host.KeyFile == "" {
+			log.Fatal("HTTPS enabled but no cert_file or key_file specified in config")
+		}
+		err = http.ListenAndServeTLS(addr, config.API.Host.CertFile, config.API.Host.KeyFile, nil)
+	} else {
+		err = http.ListenAndServe(addr, nil)
+	}
+
 	if err != nil {
 		log.Fatalf("Server error: %v", err)
 	}

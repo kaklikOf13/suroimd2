@@ -25,18 +25,11 @@ import { Vehicle } from "../gameObjects/vehicle.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Creature } from "../gameObjects/creature.ts";
-import { CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
+import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
-import { ConfigType } from "../../../configs/config.ts";
 import { SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
+import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
 
-export interface GameConfig{
-    maxPlayers:number
-    gameTps:number
-    teamSize:number
-    netTps:number
-    deenable_feast:boolean
-}
 export interface GameStatus{
     players:{
         name:string
@@ -412,7 +405,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             if(this.subscribe_db){
                 ff=this.subscribe_db[p.username]
             }else{
-                ff=await(await fetch(`http${this.Config.api.global}/get-status/${p.username}`)).json()
+                ff=await(await fetch(`${this.Config.api.global}/get-status/${p.username}`)).json()
             }
 
             if(ff.user){

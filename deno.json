@@ -10,7 +10,7 @@
     "install":"cd client && deno task install && cd ../server && deno task install"
   },
   "lock": false,
-  "importMap": "./common/config/deps.json",
+  "importMap": "./common/deps.json",
   "compilerOptions": {
     "lib": ["dom", "deno.ns"]
   }

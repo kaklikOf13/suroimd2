@@ -7,5 +7,5 @@
     "install":"go get github.com/mattn/go-sqlite3 & go install github.com/cespare/reflex@latest",
     "build": "deno compile ./src/others/main.ts"
   },
-  "importMap": "../common/config/deps.json"
+  "importMap": "../common/deps.json"
 }

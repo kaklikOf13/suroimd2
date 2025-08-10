@@ -1,6 +1,5 @@
+import { API_BASE } from "../../../src/scripts/others/config.ts";
 
-import {api_server} from "../../../src/scripts/others/config.ts"
-export const API_BASE="http"+api_server.toString()
 export interface Post{
   id:number
   author:string

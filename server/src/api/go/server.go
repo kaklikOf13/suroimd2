@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -115,24 +116,31 @@ func (s *ApiServer) corsHeaders(w http.ResponseWriter, origin string) {
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 }
 func (apiServer *ApiServer) HandleFunctions() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/get-regions", apiServer.handleGetRegions)
-	mux.HandleFunc("/get-shop", apiServer.handleGetShop)
-	mux.HandleFunc("/register", apiServer.handleRegister)
-	mux.HandleFunc("/login", apiServer.handleLogin)
-	mux.HandleFunc("/get-your-status", apiServer.handleGetYourStatus)
-	mux.HandleFunc("/get-status/", apiServer.handleGetStatus)
-	mux.HandleFunc("/internal/update-user", apiServer.handleUpdateUser)
-	mux.HandleFunc("/buy-skin/", apiServer.handleBuySkin)
-	mux.HandleFunc("/leaderboard/", apiServer.handleLeaderboard)
+	r := mux.NewRouter()
 
-	mux.HandleFunc("/forum/create-post", apiServer.handleCreatePost)
-	mux.HandleFunc("/forum/posts/", apiServer.handleListPosts)
-	mux.HandleFunc("/forum/post/", apiServer.handlePost)
-	mux.HandleFunc("/forum/delete-post/", apiServer.handleDeletePost)
-	mux.HandleFunc("/forum/delete-comment/", apiServer.handleDeleteComment)
+	api_r := r.PathPrefix("/").Subrouter()
+	api_r.HandleFunc("/get-regions", apiServer.handleGetRegions)
+	api_r.HandleFunc("/get-shop", apiServer.handleGetShop)
+	api_r.HandleFunc("/register", apiServer.handleRegister)
+	api_r.HandleFunc("/login", apiServer.handleLogin)
+	api_r.HandleFunc("/get-your-status", apiServer.handleGetYourStatus)
+	api_r.HandleFunc("/get-status/{id}", apiServer.handleGetStatus)
+	api_r.HandleFunc("/internal/update-user", apiServer.handleUpdateUser)
+	api_r.HandleFunc("/buy-skin/{id}", apiServer.handleBuySkin)
+	api_r.HandleFunc("/leaderboard", apiServer.handleLeaderboard)
 
-	handler := apiServer.rateLimitMiddleware(mux)
+	forum_r := r.PathPrefix("/forum").Subrouter()
+	forum_r.HandleFunc("/create-post", apiServer.handleCreatePost)
+	forum_r.HandleFunc("/posts", apiServer.handleListPosts)
+	forum_r.HandleFunc("/post/{id}", apiServer.handlePost)
+	forum_r.HandleFunc("/delete-post/{id}", apiServer.handleDeletePost)
+	forum_r.HandleFunc("/delete-comment/{id}", apiServer.handleDeleteComment)
+
+	var handler http.Handler = r
+	handler = apiServer.rateLimitMiddleware(handler)
 	handler = apiServer.limitBodySizeMiddleware(handler)
-	http.Handle("/", apiServer.corsMiddleware(handler))
+	handler = logURLMiddleware(handler)
+	handler = apiServer.corsMiddleware(handler)
+
+	http.Handle("/", handler)
 }

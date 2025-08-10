@@ -3,7 +3,7 @@
     "host": {
       "port": 8000
     },
-    "global": "://localhost:8000"
+    "global": "http://localhost:8000"
   },
   "game": {
     "max_games": 5,
