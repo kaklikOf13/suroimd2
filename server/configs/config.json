@@ -25,9 +25,10 @@
     }
   },
   "database": {
-    "enabled": false,
+    "enabled": true,
     "files": {
-      "accounts": "database/accounts.db"
+      "accounts": "database/accounts.db",
+      "forum":"database/forum.db"
     },
     "api_key": "your_api_key"
   },

@@ -44,13 +44,13 @@
 }
 .btn-red {
     @extend .btn-blue;
-    background: linear-gradient(135deg, #b01c41 0%, #75042b 100%);
-    border: 2px solid #40041e;
+    background: linear-gradient(135deg, #b01c4166 0%, #75042b66 100%);
+    border: 2px solid #40041e88;
     
     &:hover {
-        background: linear-gradient(135deg, #bd2a4e 0%, #a31244 100%);
-        border-color: #40041e;
-        box-shadow: 0 0 20px #40041e;
+        background: linear-gradient(135deg, #bd2a4e66 0%, #a3124466 100%);
+        border-color: #40041e88;
+        box-shadow: 0 0 20px #40041e44;
     }
 }
 

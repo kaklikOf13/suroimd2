@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forum</title>
+  <link rel="stylesheet" href="src/scss/main.css" />
+</head>
+<body>
+  <div id="app">
+    <div class="forum">
+      <aside class="sidebar">
+        <button id="btn-menu" class="btn-blue" style="font-size: 20px; margin-bottom: 5px;"><a href="/">Back To Main Menu</a></button>
+        <button id="new-post-btn" class="btn-blue">New Post</button>
+        <div id="posts-list"></div>
+      </aside>
+      <main class="content">
+        <div id="post-view">
+          <p>Select a post</p>
+        </div>
+
+        <section id="create-post-section" class="hidden">
+          <h2 class="text">New Post</h2>
+          <input class="text-input" id="post-title" placeholder="Title" />
+          <textarea id="post-body" class="text-input" placeholder="Write here (mini markdown)"></textarea>
+          <button class="btn-green" id="create-post">Create</button>
+          <button id="cancel-create-post" class="btn-red">Cancel</button>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="src/scripts/main.ts" type="module"></script>
+</body>
+</html>

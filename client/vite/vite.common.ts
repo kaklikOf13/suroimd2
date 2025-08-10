@@ -9,6 +9,7 @@ const config: UserConfig = {
             chunkSizeWarningLimit: 2000,
             input: {
                 main: resolve(__dirname, "../index.html"),
+                forum: resolve(__dirname, "../forum/index.html"),
             },
             output: {
                 assetFileNames(assetInfo) {

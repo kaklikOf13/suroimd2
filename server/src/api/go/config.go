@@ -31,6 +31,7 @@ type RegionDef struct {
 
 type DatabaseFiles struct {
 	Accounts string `json:"accounts"`
+	Forum string `json:"forum"`
 }
 
 type DatabaseConfig struct {

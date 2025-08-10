@@ -17,6 +17,7 @@ export interface ConfigType {
     enabled: boolean;
     files: {
       accounts: string;
+      forum: string;
     };
     api_key: string;
   };
