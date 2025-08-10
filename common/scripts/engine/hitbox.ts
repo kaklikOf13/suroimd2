@@ -473,7 +473,7 @@ export function jaggedRectangle(
     const points: Vec2[] = [];
 
     variation = variation / 2;
-    const getVariation = (): number => random.get(-variation, variation);
+    const getVariation = (): number => random.float(-variation, variation);
 
     for (let x = topLeft.x + spacing; x < topRight.x; x += spacing) {
         points.push(v2.new(x, topLeft.y + getVariation()));

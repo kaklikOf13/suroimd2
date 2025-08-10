@@ -7,7 +7,12 @@ import (
 )
 
 type HostConfig struct {
-	Port int `json:"port"`
+    Port int    `json:"port"`
+    Name string `json:"name,omitempty"`
+    HTTPS bool  `json:"https,omitempty"`
+    CertFile string `json:"cert,omitempty"`
+    KeyFile  string `json:"key,omitempty"`
+    CAFile   string `json:"ca,omitempty"`
 }
 
 type GameConfigInner struct {
@@ -31,6 +36,7 @@ type RegionDef struct {
 
 type DatabaseFiles struct {
 	Accounts string `json:"accounts"`
+	Forum    string `json:"forum"`
 }
 
 type DatabaseConfig struct {

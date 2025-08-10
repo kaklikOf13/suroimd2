@@ -1,14 +1,25 @@
+import { IPLocation } from "common/scripts/engine/utils.ts";
 import { Casters } from "../engine/console.ts";
-import { GamepadButtonID, Key, Server } from "../engine/mod.ts";
+import { GamepadButtonID, Key } from "../engine/mod.ts";
 
-export const api_server=new Server("localhost",8000,false)
+/*
+* LOCAL SERVER
+export const api_server=new IPLocation("localhost",3000,false,false,"api")
+*/
+/*
+* GLOBAL SERVER
+export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
+*/
+export const api_server=new IPLocation("localhost",3000,false,false,"api")
+export const API_BASE=api_server.toString("http")
 export const offline=true
+export const api=true
+export const forum=true
 export enum GraphicsParticlesConfig {
     None=0,
     Normal,
     Advanced,
 }
-
 
 export const ConfigCasters=Object.freeze({
     cv_loadout_name:Casters.toString,

@@ -68,7 +68,7 @@ export class SeededRandom {
      * @param [min = 0] min value (included)
      * @param [max = 1] max value (excluded)
      */
-    get(min = 0, max = 1): number {
+    float(min = 0, max = 1): number {
         this._rng = this._rng * 16807 % 2147483647;
         return Numeric.lerp(min, max, this._rng / 2147483647);
     }
@@ -77,19 +77,19 @@ export class SeededRandom {
      * @param [min = 0] min value (included)
      * @param [max = 1] max value (excluded)
      */
-    getInt(min = 0, max = 1): number {
-        return Math.round(this.get(min, max));
+    int(min = 0, max = 1): number {
+        return Math.round(this.float(min, max));
     }
     
     random1(val:Random1):number{
-        return typeof val==="number"?val:this.get(val.min,val.max)
+        return typeof val==="number"?val:this.float(val.min,val.max)
     }
     irandom1(val:Random1):number{
-        return typeof val==="number"?val:this.getInt(val.min,val.max)
+        return typeof val==="number"?val:this.int(val.min,val.max)
     }
     weight(weights: number[]): number {
         const totalWeight = weights.reduce((a, b) => a + b, 0);
-        let r = this.get(0, totalWeight);
+        let r = this.float(0, totalWeight);
         for (let i = 0; i < weights.length; i++) {
         if (r < weights[i]) return i;
         r -= weights[i];
@@ -97,6 +97,6 @@ export class SeededRandom {
         return weights.length - 1;
     }
     choose<TP>(array:TP[]):TP{
-        return array[Numeric.clamp(this.getInt(0,array.length-1),0,array.length-1)]
+        return array[Numeric.clamp(this.int(0,array.length-1),0,array.length-1)]
     }
 }

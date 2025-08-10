@@ -6,10 +6,11 @@
     "dev:game": "cd server && deno task dev:game",
     "dev:api": "cd server && deno task dev:api",
     "clear":"rm -rf dist",
+    "build:app":"deno run --allow-read --allow-write app.ts",
     "install":"cd client && deno task install && cd ../server && deno task install"
   },
   "lock": false,
-  "importMap": "./common/config/deps.json",
+  "importMap": "./common/deps.json",
   "compilerOptions": {
     "lib": ["dom", "deno.ns"]
   }

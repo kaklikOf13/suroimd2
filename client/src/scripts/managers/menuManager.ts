@@ -1,6 +1,6 @@
 import { type GameConsole } from "../engine/console.ts";
-import { HideElement, ShowElement } from "../engine/utils.ts";
-import { api_server, offline } from "../others/config.ts";
+import { HideElement, ShowElement, ToggleElement } from "../engine/utils.ts";
+import { api_server, forum, offline } from "../others/config.ts";
 
 export class MenuManager{
     save:GameConsole
@@ -33,7 +33,7 @@ export class MenuManager{
     constructor(save:GameConsole){
         this.save=save
         this.content.btn_settings.addEventListener("click",()=>{
-            this.content.settings_tabs.style.display=this.content.settings_tabs.style.display==="none"?"block":'none'
+            ToggleElement(this.content.settings_tabs)
         })
     }
     accounts_system_init(){
@@ -50,7 +50,7 @@ export class MenuManager{
             });
 
             if (res.status === 201) {
-                const res = await fetch(`http${api_server.toString()}/login`, {
+                const res = await fetch(`${api_server.toString("http")}/login`, {
                     method: "POST",
                     mode:"no-cors",
                     credentials: "include",
@@ -67,7 +67,7 @@ export class MenuManager{
         this.content.login.btn.addEventListener("click",async()=>{
             const password=this.content.login.password.value
             const name=this.content.login.name.value
-            const res = await fetch(`http${api_server.toString()}/login`, {
+            const res = await fetch(`${api_server.toString("http")}/login`, {
                 method: "POST",
                 mode:"no-cors",
                 credentials: "include",
@@ -97,7 +97,7 @@ export class MenuManager{
         HideElement(this.content.settings_tabs)
         HideElement(this.content.section_tabs)
 
-        if(!offline)this.accounts_system_init()
+        if(!offline||forum)this.accounts_system_init()
     }
     no_logged(){
         this.content.ac_status.innerHTML=""
@@ -109,8 +109,12 @@ export class MenuManager{
         })
         this.content.ac_status.appendChild(btn)
     }
+    logged(name:string){
+        this.content.ac_status.innerHTML=`
+            <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`
+    }
     update_account(){
-        fetch(`http${api_server.toString()}/get-your-status`,{
+        fetch(`${api_server.toString("http")}/get-your-status`,{
             credentials: "include",
         }).then((a)=>a.json()).then((aa)=>{
             if(!aa.user){
@@ -119,13 +123,7 @@ export class MenuManager{
                 return
             }
             HideElement(this.content.section_tabs)
-            this.content.ac_status.innerHTML=`
-                <h1>${aa.user.name}</h1>
-                <span>Coins:${aa.user.coins}</span>
-                <span>
-                XP:${aa.user.xp}</span>
-                <span>Coins:Score:${aa.user.score}</span>
-            `
+            this.logged(aa.user.name)
         })
     }
     game_start(){

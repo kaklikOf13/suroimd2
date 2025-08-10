@@ -1,19 +1,6 @@
 import { Numeric } from "common/scripts/engine/utils.ts";
 import { type ClientGame2D } from "./game.ts";
 
-export class Server{
-    IP:string
-    Port:number
-    HTTP:boolean
-    constructor(IP:string,Port:number,HTTP:boolean=false){
-        this.IP=IP
-        this.Port=Port
-        this.HTTP=HTTP
-    }
-    toString():string{
-        return `${this.HTTP ? "s" : ""}://${this.IP}:${this.Port}`
-    }
-}
 export interface TweenOptions<T>{
     target: T
     to: Partial<T>

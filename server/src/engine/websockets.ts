@@ -55,11 +55,3 @@ export class ClientsManager extends OfflineClientsManager {
         };
     }
 }
-//Definitions
-export interface HostConfig{
-    port:number,
-    name?:string,
-    https?:boolean,
-    cert?:string,
-    key?:string,
-}

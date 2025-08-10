@@ -69,8 +69,3 @@ export enum BoostType{
     Mana,
     Addiction
 }
-export interface RegionDef{
-    host:string
-    port:number
-    ssh?:boolean
-}

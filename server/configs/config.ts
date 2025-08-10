@@ -1,29 +1,4 @@
-import { RegionDef } from "common/scripts/definitions/utils.ts";
-import { GameConfig } from "../src/game_server/others/game.ts";
-import { HostConfig } from "../src/engine/websockets.ts";
-
-export interface ConfigType {
-  api: {
-    host: HostConfig;
-    global: string;
-  };
-  game: {
-    max_games: number;
-    config: GameConfig;
-    host: HostConfig;
-  };
-  regions: Record<string, RegionDef>;
-  database: {
-    enabled: boolean;
-    files: {
-      accounts: string;
-    };
-    api_key: string;
-  };
-  shop: {
-    skins: Partial<Record<number, number>>;
-  };
-}
+import { ConfigType } from "common/scripts/config/config.ts";
 
 export function loadConfigDeno(path: string): ConfigType {
   const jsonText = Deno.readTextFileSync(path);

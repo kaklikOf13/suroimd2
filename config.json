@@ -1,9 +1,13 @@
 {
   "api": {
     "host": {
-      "port": 8000
+      "port": 8000,
+      "https":false,
+      "cert":"./private/certificate.crt",
+      "key":"./private/private.key",
+      "ca": "./private/ca_bundle.crt"
     },
-    "global": "://localhost:8000"
+    "global": "http://localhost:8000"
   },
   "game": {
     "max_games": 5,
@@ -25,9 +29,10 @@
     }
   },
   "database": {
-    "enabled": false,
+    "enabled": true,
     "files": {
-      "accounts": "database/accounts.db"
+      "accounts": "database/accounts.db",
+      "forum":"database/forum.db"
     },
     "api_key": "your_api_key"
   },

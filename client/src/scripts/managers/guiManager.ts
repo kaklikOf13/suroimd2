@@ -110,7 +110,7 @@ export class GuiManager{
     constructor(){
         this.set_health(100,100)
         HideElement(this.content.cellphone_actions)
-        this.content.gameOver.style.opacity="0%"
+        HideElement(this.content.gameOver)
 
         //Cellphone
 
@@ -173,6 +173,7 @@ export class GuiManager{
         this.clear()
         HideElement(this.content.gameD)
         ShowElement(this.content.menuD)
+        HideElement(this.content.information_killbox)
 
         this.content.close_all_inventory.addEventListener("click",this.set_all_inventory.bind(this,false))
     }
@@ -432,7 +433,7 @@ export class GuiManager{
                     ShowElement(this.content.information_killbox)
                     this.game.addTimeout(()=>{
                         HideElement(this.content.information_killbox)
-                    },2)
+                    },3)
                 }
                 if(this.killleader&&msg.killer.id===this.killleader.id){
                     this.killleader.kills=msg.killer.kills

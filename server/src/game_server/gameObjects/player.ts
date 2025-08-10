@@ -72,6 +72,7 @@ export class Player extends ServerGameObject{
     earned={
         coins:0,
         xp:0,
+        score:0,
     }
     username:string=""
     
@@ -570,10 +571,11 @@ export class Player extends ServerGameObject{
             }
 
             if(params.owner&&params.owner instanceof Player){
-                if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)){
+                if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username||this.is_bot)){
                     params.owner.status.kills++
                     params.owner.earned.coins+=3
                     params.owner.earned.xp+=1
+                    params.owner.earned.score+=5
                 }
                 this.game.send_killfeed_message({
                     killer:{

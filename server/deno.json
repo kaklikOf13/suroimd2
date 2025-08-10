@@ -3,9 +3,11 @@
     "dev:game": "deno run --watch -A ./src/game_server/others/main.ts",
     "dev:api:deno": "deno run --watch -A ./src/api/api.ts",
     "dev:api":"go run src/api/main.go",
+    "build:api":"go build -o dist/main.exe src/api/main.go",
+    "prod_l:api":"sudo /usr/local/go/bin/go run src/api/main.go",
     "dev": "deno task dev:game & deno task dev:api",
     "install":"go get github.com/mattn/go-sqlite3 & go install github.com/cespare/reflex@latest",
     "build": "deno compile ./src/others/main.ts"
   },
-  "importMap": "../common/config/deps.json"
+  "importMap": "../common/deps.json"
 }
