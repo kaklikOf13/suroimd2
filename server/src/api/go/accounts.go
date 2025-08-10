@@ -325,3 +325,63 @@ func (s *ApiServer) handleBuySkin(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("Skin purchased"))
 }
+func (s *ApiServer) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(204)
+		return
+	}
+
+	page := 1
+	limit := 10
+
+	if p := r.URL.Query().Get("page"); p != "" {
+		if pi, err := strconv.Atoi(p); err == nil && pi > 0 {
+			page = pi
+		}
+	}
+
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if li, err := strconv.Atoi(l); err == nil && li > 0 && li <= 100 {
+			limit = li
+		}
+	}
+
+	offset := (page - 1) * limit
+
+	rows, err := s.accounts_db.Query(`
+        SELECT name, score, coins, xp
+        FROM players
+        ORDER BY score DESC
+        LIMIT ? OFFSET ?
+    `, limit, offset)
+	if err != nil {
+		http.Error(w, "Database error", 500)
+		return
+	}
+	defer rows.Close()
+
+	type Player struct {
+		Name  string `json:"name"`
+		Score int    `json:"score"`
+		Coins int    `json:"coins"`
+		XP    int    `json:"xp"`
+	}
+
+	leaderboard := []Player{}
+
+	for rows.Next() {
+		var p Player
+		if err := rows.Scan(&p.Name, &p.Score, &p.Coins, &p.XP); err != nil {
+			http.Error(w, "Database error", 500)
+			return
+		}
+		leaderboard = append(leaderboard, p)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"page":        page,
+		"limit":       limit,
+		"leaderboard": leaderboard,
+	})
+}

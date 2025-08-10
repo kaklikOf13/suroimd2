@@ -82,7 +82,7 @@ function showCreatePostForm() {
     postsListEl.innerHTML = posts.map((p: any) =>
       `<div class="post-item" data-id="${p.id}">
           <b>${p.title}</b>
-          <div class="meta"><a href="/user/?user=${p.autor}">${p.author}</a> • ${p.created_at}</div>
+          <div class="meta"><a href="/user/?user=${p.author}">${p.author}</a> • ${p.created_at}</div>
        </div>`
     ).join("");
     postsListEl.querySelectorAll(".post-item").forEach(el => {

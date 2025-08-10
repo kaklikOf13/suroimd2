@@ -28,6 +28,7 @@ import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { ConfigType } from "../../../configs/config.ts";
+import { SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
 
 export interface GameConfig{
     maxPlayers:number
@@ -276,7 +277,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                         {id:"stone",count:30},
                         {id:"bush",count:20},
                         {id:"wood_crate",count:10},
-                        {id:"barrel",count:5}
+                        {id:"barrel",count:8}
                     ]
                 ],
                 terrain:{
@@ -378,6 +379,13 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
         p.username=username
 
+        const pos=this.map.getRandomPosition(p.hb,p.id,p.layer,{
+            type:SpawnModeType.whitelist,
+            list:[FloorType.Grass],
+        },this.map.random)
+        if(pos)p.position=pos
+        p.manager.cells.updateObject(p)
+
         if(connected){
             this.send_killfeed_message({
                 type:KillFeedMessageType.join,
@@ -452,11 +460,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return p
     }
     add_bot(name?:string,layer?:number):Player{
-        const p=this.add_player(undefined,"",new JoinPacket(name),layer)
+        const p=this.add_player(undefined,"",new JoinPacket(name),layer,true)
         p.connected=true
         p.is_bot=true
-        this.players.push(p)
-        this.livingPlayers.push(p)
+        p.is_npc=false
         return p
     }
     fineshed:boolean=false

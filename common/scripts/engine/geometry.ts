@@ -50,13 +50,13 @@ export const v2 = Object.freeze({
     orientation_random(side:Orientation,min:Vec2,max:Vec2,expansion:number,random:SeededRandom):Vec2{
         switch(side){
             case 0:
-                return v2.new(max.x+expansion,random.get(min.y,max.y))
+                return v2.new(max.x+expansion,random.float(min.y,max.y))
             case 1:
-                return v2.new(random.get(min.x,max.x),max.y+expansion)
+                return v2.new(random.float(min.x,max.x),max.y+expansion)
             case 2:
-                return v2.new(min.x-expansion,random.get(min.y,max.y))
+                return v2.new(min.x-expansion,random.float(min.y,max.y))
             case 3:
-                return v2.new(random.get(min.x,max.x),min.y-expansion)
+                return v2.new(random.float(min.x,max.x),min.y-expansion)
         }
     },
     /**
@@ -73,10 +73,10 @@ export const v2 = Object.freeze({
      * Return Random Vec2
      */
     random_s(min:number, max:number,random:SeededRandom):Vec2 {
-        return {x:random.get(min,max),y:random.get(min,max)}
+        return {x:random.float(min,max),y:random.float(min,max)}
     },
     random2_s(min:Vec2, max:Vec2,random:SeededRandom):Vec2 {
-        return {x:random.get(min.x,max.x),y:random.get(min.y,max.y)}
+        return {x:random.float(min.x,max.x),y:random.float(min.y,max.y)}
     },
     /**
      * @param x `Vec21`

@@ -69,6 +69,7 @@ export class GameMap{
     }
     map_packet_stream:NetStream=new NetStream(new ArrayBuffer(10*1024))
     terrain:TerrainManager=new TerrainManager()
+    random!:SeededRandom
     getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
         let pos:Vec2|undefined=undefined
         let attempt=0
@@ -136,6 +137,7 @@ export class GameMap{
     }
     generate(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
         const random=new SeededRandom(seed)
+        this.random=random
         algorithm(this,random)
 
         this.game.clients.packets_manager.encode(this.encode(),this.map_packet_stream)

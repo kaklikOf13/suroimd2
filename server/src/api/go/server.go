@@ -124,14 +124,15 @@ func (apiServer *ApiServer) HandleFunctions() {
 	mux.HandleFunc("/get-status/", apiServer.handleGetStatus)
 	mux.HandleFunc("/internal/update-user", apiServer.handleUpdateUser)
 	mux.HandleFunc("/buy-skin/", apiServer.handleBuySkin)
+	mux.HandleFunc("/leaderboard/", apiServer.handleLeaderboard)
 
 	mux.HandleFunc("/forum/create-post", apiServer.handleCreatePost)
-	mux.HandleFunc("/forum/posts", apiServer.handleListPosts)
+	mux.HandleFunc("/forum/posts/", apiServer.handleListPosts)
 	mux.HandleFunc("/forum/post/", apiServer.handlePost)
 	mux.HandleFunc("/forum/delete-post/", apiServer.handleDeletePost)
 	mux.HandleFunc("/forum/delete-comment/", apiServer.handleDeleteComment)
 
-	handler := apiServer.rateLimitMiddleware(mux) 
+	handler := apiServer.rateLimitMiddleware(mux)
 	handler = apiServer.limitBodySizeMiddleware(handler)
 	http.Handle("/", apiServer.corsMiddleware(handler))
 }

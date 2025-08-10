@@ -70,10 +70,10 @@ export class GameServer{
             const ln:string[]=[]
             for(const p of this.games[id].players){
                 if(ln.includes(p.username))continue
-                if(p.earned.coins>0||p.earned.xp>0){
+                if(p.earned.coins>0||p.earned.xp>0||p.earned.score>0){
                     ln.push(p.username)
                 }
-                fetch("http://localhost:8000/internal/update-user", {
+                fetch(`http${this.config.api.global}/internal/update-user`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -83,7 +83,7 @@ export class GameServer{
                         name: p.username,
                         coins: p.earned.coins,
                         xp: p.earned.coins,
-                        score: 0,
+                        score: p.earned.score,
                     })
                 });
             }

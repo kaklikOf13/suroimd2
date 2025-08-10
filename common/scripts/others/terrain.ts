@@ -155,7 +155,7 @@ export function generate_rivers(
     const defs = random.weight(rivers.map(g => g.weight));
 
     for (const r of rivers[defs].rivers) {
-        const s_orientation = random.get(0, 1) <= 0.5 ? 0 : 2;
+        const s_orientation = random.float(0, 1) <= 0.5 ? 0 : 2;
         const e_orientation =
             s_orientation === 0
                 ? random.choose([2, 1, 3])
@@ -189,14 +189,14 @@ export function create_river_points(
 
         let w = def.width;
         if (def.width_variation) {
-            w = random.get(def.width, def.width*(1+def.width_variation))
+            w = random.float(def.width, def.width*(1+def.width_variation))
         }
 
         points.push({ position: pos, width: w, branch: [] });
     }
 
-    if (def.sub_river_chance && random.get(0, 1) < def.sub_river_chance && depth < 1) {
-        const idx = Numeric.clamp(random.getInt(1, points.length - 2), 0, points.length - 1);
+    if (def.sub_river_chance && random.float(0, 1) < def.sub_river_chance && depth < 1) {
+        const idx = Numeric.clamp(random.int(1, points.length - 2), 0, points.length - 1);
         const branchStart = points[idx].position;
 
         const branchEnd = v2.orientation_random(
