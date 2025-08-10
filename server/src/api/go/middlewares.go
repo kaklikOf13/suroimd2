@@ -83,8 +83,8 @@ func (s *ApiServer) rateLimitMiddleware(next http.Handler) http.Handler {
 }
 func logURLMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		urlStr := r.URL.String() // converte para string
-		fmt.Println("URL acessada:", urlStr)
+		urlStr := r.URL.String()
+		fmt.Println("Request:", urlStr)
 
 		next.ServeHTTP(w, r)
 	})
