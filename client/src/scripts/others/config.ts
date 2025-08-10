@@ -2,7 +2,15 @@ import { IPLocation } from "common/scripts/engine/utils.ts";
 import { Casters } from "../engine/console.ts";
 import { GamepadButtonID, Key } from "../engine/mod.ts";
 
-export const api_server=new IPLocation("localhost",8000,false,false,"/api")
+/*
+* LOCAL SERVER
+export const api_server=new IPLocation("localhost",3000,false,false,"api")
+*/
+/*
+* GLOBAL SERVER
+export const api_server=new IPLocation("na.suroimd.io",8000,true,true,"")
+*/
+export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString()
 export const offline=true
 export const api=true
@@ -12,7 +20,6 @@ export enum GraphicsParticlesConfig {
     Normal,
     Advanced,
 }
-
 
 export const ConfigCasters=Object.freeze({
     cv_loadout_name:Casters.toString,

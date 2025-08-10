@@ -2,6 +2,25 @@ const newsS=document.querySelector("#updates-section") as HTMLDivElement
 
 const news=[
     {
+      "title":"Alpha 1.2.0",
+      content:`
+<h2 id="news">News</h2>
+<hr>
+<h3 id="main">Main</h3>
+<ul>
+<li>Forum</li>
+<li>Users View</li>
+</ul>
+<hr>
+<h2 id="fixes">Fixes</h2>
+<hr>
+<ul>
+<li>Game Over</li>
+<li>Settings</li>
+</ul>
+      `
+    },
+    {
       "title":"Alpha 1.1.0",
       "content":`
 <h2 id="news">News</h2>
