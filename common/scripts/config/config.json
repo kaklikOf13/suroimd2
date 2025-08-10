@@ -1,7 +1,10 @@
 {
   "api": {
     "host": {
-      "port": 8000
+      "port": 8000,
+      "user_https":false,
+      "cert_file":"private/certificate.crt",
+      "key_file":"private/private.key"
     },
     "global": "http://localhost:8000"
   },

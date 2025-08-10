@@ -1,6 +1,4 @@
-import { RegionDef } from "common/scripts/definitions/utils.ts";
-import { GameConfig } from "../src/game_server/others/game.ts";
-import { HostConfig } from "../src/engine/websockets.ts";
+import { ConfigType } from "common/scripts/config/config.ts";
 
 export function loadConfigDeno(path: string): ConfigType {
   const jsonText = Deno.readTextFileSync(path);
