@@ -7,10 +7,12 @@ import (
 )
 
 type HostConfig struct {
-	Port     int    `json:"port"`
-	UseHTTPS bool   `json:"use_https"`
-	CertFile string `json:"cert_file"`
-	KeyFile  string `json:"key_file"`
+    Port int    `json:"port"`
+    Name string `json:"name,omitempty"`
+    HTTPS bool  `json:"https,omitempty"`
+    CertFile string `json:"cert,omitempty"`
+    KeyFile  string `json:"key,omitempty"`
+    CAFile   string `json:"ca,omitempty"`
 }
 
 type GameConfigInner struct {

@@ -13,7 +13,7 @@ function new_server_from_hc(hc:HostConfig):Server{
 // Game Server
 function hostGame(){
   return new Promise(()=>{
-    const Config=loadConfigDeno("../common/scripts/config/config.json")
+    const Config=loadConfigDeno("../config.json")
     if(Config.game.host){
       const server=new GameServer(new_server_from_hc(Config.game.host),Config)
       server.run()
