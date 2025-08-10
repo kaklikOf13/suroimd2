@@ -6,13 +6,15 @@ import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D } from "../
 import { random } from "../random.ts";
 
 //Definitions
-export interface HostConfig{
-    port:number,
-    name?:string,
-    https?:boolean,
-    cert?:string,
-    key?:string,
+export interface HostConfig {
+  port: number;
+  name?: string;
+  https?: boolean;
+  cert?: string;    // Certificado público
+  key?: string;     // Chave privada
+  ca?: string;      // Arquivo CA (opcional)
 }
+
 export class BasicSocket{
     readyState = 1;
     binaryType = "";

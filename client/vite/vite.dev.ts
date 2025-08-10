@@ -3,7 +3,7 @@ import { mergeConfig, type UserConfig } from "vite";
 import common from "./vite.common.ts";
 
 import { ConfigType } from "common/scripts/config/config.ts";
-const con=require("../../common/scripts/config/config.json") as ConfigType
+const con=require("../../config.json") as ConfigType
 const config: UserConfig = {
     server: {
         port: 3000,
