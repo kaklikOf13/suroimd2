@@ -2,7 +2,7 @@ import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts
 export enum PlayerAnimationType{
     Shooting,
     Reloading,
-    Healing,
+    Consuming,
 }
 export type PlayerAnimation={
 }&({
@@ -11,7 +11,7 @@ export type PlayerAnimation={
     type:PlayerAnimationType.Reloading
     alt_reload:boolean
 }|{
-    type:PlayerAnimationType.Healing
+    type:PlayerAnimationType.Consuming
     item:number
 })
 export interface PlayerData extends EncodedData{
@@ -159,7 +159,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                                 alt_reload:!!stream.readUint8()
                             }
                             break
-                        case PlayerAnimationType.Healing:
+                        case PlayerAnimationType.Consuming:
+                            ret.full.animation={
+                                type:tp,
+                                item:stream.readUint16()
+                            }
                             break
                     }
                 }
@@ -189,7 +193,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                         case PlayerAnimationType.Reloading:
                             stream.writeUint8(data.full!.animation.alt_reload?1:0)
                             break
-                        case PlayerAnimationType.Healing:
+                        case PlayerAnimationType.Consuming:
+                            stream.writeUint16(data.full!.animation.item)
                             break
                     }
                 }

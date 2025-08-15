@@ -39,7 +39,7 @@ export class Game extends ClientGame2D<GameObject>{
 
   gameOver:boolean=false
 
-  terrain:TerrainM=new TerrainM()
+  terrain:TerrainM=new TerrainM(this)
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()

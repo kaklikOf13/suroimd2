@@ -73,7 +73,7 @@ export class GameServer{
                 if(p.earned.coins>0||p.earned.xp>0||p.earned.score>0){
                     ln.push(p.username)
                 }
-                fetch(`http${this.config.api.global}/internal/update-user`, {
+                fetch(`${this.config.api.global}/internal/update-user`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

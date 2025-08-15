@@ -16,6 +16,9 @@ export interface ConsumibleDef extends Definition{
     use_delay:number
     condition?:ConsumibleCondition[]
     parachute?:number
+    sounds?:{
+        using?:string
+    }
 }
 export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
     i.item_type=InventoryItemType.consumible
@@ -68,10 +71,13 @@ Consumibles.insert(
         idString:"small_blue_potion",
         boost:25,
         max_boost:0.5,
-        use_delay:2.5,
+        use_delay:2.65,
         boost_type:BoostType.Shield,
         quality:ItemQuality.Uncommon,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        sounds:{
+            using:"using_small_potion"
+        }
     },
     {
         idString:"blue_potion",
@@ -79,7 +85,10 @@ Consumibles.insert(
         use_delay:4.5,
         boost_type:BoostType.Shield,
         quality:ItemQuality.Rare,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        sounds:{
+            using:"using_potion"
+        }
     },
     {
         idString:"blue_pills",
@@ -92,19 +101,25 @@ Consumibles.insert(
     //Mana
     {
         idString:"small_purple_potion",
-        boost:15,
-        use_delay:1.1,
+        boost:50,
+        use_delay:2.6,
         boost_type:BoostType.Mana,
         quality:ItemQuality.Rare,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        sounds:{
+            using:"using_small_potion"
+        }
     },
     {
         idString:"purple_potion",
         boost:40,
-        use_delay:2.4,
+        use_delay:4.5,
         boost_type:BoostType.Mana,
         quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        sounds:{
+            using:"using_potion"
+        }
     },
     {
         idString:"purple_pills",

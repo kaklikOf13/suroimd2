@@ -12,7 +12,7 @@ export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
 */
 export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
-export const offline=true
+export const offline=false
 export const api=true
 export const forum=true
 export enum GraphicsParticlesConfig {

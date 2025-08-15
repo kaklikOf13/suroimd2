@@ -82,6 +82,9 @@ export class GamemodeManager{
             this.game.finish()
         }
     }
+    is_ally(_a:Player,_b:Player):boolean{
+        return false
+    }
 }
 export class TeamsGamemodeManager extends GamemodeManager{
     teamsManager:TeamsManager
@@ -97,6 +100,8 @@ export class TeamsGamemodeManager extends GamemodeManager{
             let t=this.teamsManager.get_perfect_team(this.team_size,p.groupId)
             if(!t){
                 t=this.teamsManager.add_team()
+            }else if(t.players.length>0){
+                p.position=random.choose(t.players).position
             }
             t.add_player(p)
         }
@@ -116,6 +121,9 @@ export class TeamsGamemodeManager extends GamemodeManager{
         if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }
+    }
+    override is_ally(a:Player,b:Player):boolean{
+        return a.teamId===b.teamId
     }
 }
 export class GroupGamemodeManager extends TeamsGamemodeManager{
@@ -156,6 +164,9 @@ export class GroupGamemodeManager extends TeamsGamemodeManager{
         if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }
+    }
+    override is_ally(a:Player,b:Player):boolean{
+        return a.groupId===b.groupId
     }
 }
 export class Game extends ServerGame2D<ServerGameObject>{
@@ -391,7 +402,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     override on_run(): void {
         for(let i=0;i<9;i++){
-            this.add_bot()
+            //this.add_bot()
         }
     }
     async activate_player(username:string,packet:JoinPacket,client:Client){

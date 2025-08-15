@@ -78,6 +78,8 @@ export class ConsumingAction extends Action<Player>{
             }
             user.seat?.clear_player()
         }
+        user.current_animation=undefined
+        user.dirty=true
         this.item.inventory.consume(this.item,1)
         user.privateDirtys.inventory=true
     }

@@ -86,7 +86,7 @@ export class GunItem extends LItem{
           if(this.def.spread){
             ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
           }
-          const b=user.game.add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet.def,user,this.def.ammoType,this.def as unknown as GameItem)
+          const b=user.game.add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet.def,user,this.def.ammoType,this.def)
           b.modifiers={
             speed:user.modifiers.bullet_speed,
             size:user.modifiers.bullet_size,
@@ -174,6 +174,11 @@ export class ConsumibleItem extends LItem{
             break
         }
       }
+      user.current_animation={
+        type:PlayerAnimationType.Consuming,
+        item:this.def.idNumber!
+      }
+      user.dirty=true
     }
     user.privateDirtys.action=true
     user.actions.play(new ConsumingAction(this))

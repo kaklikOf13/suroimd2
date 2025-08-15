@@ -1,5 +1,5 @@
 import { CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
-import { SourceType, type Frame } from "./resources.ts";
+import { Model2D, SourceType, type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
 import { type Camera2D } from "./container.ts";
 export interface Transform2D{
@@ -211,12 +211,13 @@ export class Material2D<MaterialArgs=any>{
         this.factory=factory
     }
 }
+export type Mat2DFunc<MatArgs>=(factory:Material2DFactory<MatArgs>,args:MatArgs,m:Model2D,trans:Transform2D,mode:number)=>void
 // deno-lint-ignore no-explicit-any
 export class Material2DFactory<MaterialArgs=any>{
-    on_execute:(factory:Material2DFactory<MaterialArgs>,args:MaterialArgs,vertex:Float32Array,trans:Transform2D,mode:number)=>void
+    on_execute:Mat2DFunc<MaterialArgs>
     gl:WebGLRenderingContext
     program:WebGLProgram
-    constructor(gl:WebGLRenderingContext,program:WebGLProgram,on_execute:(factory:Material2DFactory<MaterialArgs>,args:MaterialArgs,vertex:Float32Array,trans:Transform2D,mode:number)=>void){
+    constructor(gl:WebGLRenderingContext,program:WebGLProgram,on_execute:Mat2DFunc<MaterialArgs>){
         this.on_execute=on_execute
         this.gl=gl
         this.program=program
@@ -226,12 +227,14 @@ export class Material2DFactory<MaterialArgs=any>{
         ret.args=args
         return ret
     }
-}export class WebglRenderer extends Renderer {
+}
+export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext;
     projectionMatrix!: Float32Array;
     readonly tex_program:WebGLProgram
     readonly factorys2D:{
         simple:Material2DFactory<Color>
+        texture:Material2DFactory<Frame>
     }
     readonly factorys2D_consts:Record<string,Record<string,number|WebGLUniformLocation>>={}
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white) {
@@ -261,10 +264,10 @@ void main() {
     gl_FragColor = u_Color;
 }
 `
-            ),(factory:Material2DFactory<Color>,args:Color,vertices:Float32Array,trans:Transform2D,mode:number)=>{
+            ),(factory:Material2DFactory<Color>,args:Color,model:Model2D,trans:Transform2D,mode:number)=>{
                 const vertexBuffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, model.vertices, this.gl.STATIC_DRAW);
                 this.gl.useProgram(factory.program);
 
                 const positionAttributeLocation = this.factorys2D_consts["simple"]["position"] as number;
@@ -278,16 +281,83 @@ void main() {
 
                 this.gl.uniformMatrix4fv(this.factorys2D_consts["simple"]["proj"], false, this.projectionMatrix);
 
-                this.gl.drawArrays(mode, 0, vertices.length / 2);
+                this.gl.drawArrays(mode, 0, model.vertices.length / 2);
+            }),
+            "texture":new Material2DFactory<Frame>(gl!,this.createProgram(
+`
+attribute vec2 a_Position;
+attribute vec2 a_TexCoord;
+    
+uniform mat4 u_ProjectionMatrix;
+uniform vec2 u_Translation;
+
+varying highp vec2 vTextureCoord;
+
+void main(void) {
+    gl_Position = u_ProjectionMatrix*vec4(a_Position+u_Translation.xy,0.0,1.0);
+    vTextureCoord = a_TexCoord;
+}`,
+`
+precision mediump float;
+
+varying highp vec2 vTextureCoord;
+uniform sampler2D u_Texture;
+uniform vec4 u_Tint;
+
+void main(void) {
+    vec2 flippedCoord = vec2(vTextureCoord.x, 1.0 - vTextureCoord.y);
+    gl_FragColor = texture2D(u_Texture, flippedCoord)*u_Tint;
+}`
+            ),(factory:Material2DFactory<Frame>,args:Frame,model:Model2D,trans:Transform2D,mode:number)=>{
+                const vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, model.vertices, this.gl.STATIC_DRAW);
+
+                const textureCoordBuffer = this.gl.createBuffer()
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, model.tex_coords, this.gl.STATIC_DRAW)
+                this.gl.useProgram(factory.program);
+
+                const positionAttributeLocation = this.factorys2D_consts["texture"]["position"] as number;
+                this.gl.enableVertexAttribArray(positionAttributeLocation);
+                this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
+
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
+                this.gl.enableVertexAttribArray(this.factorys2D_consts["texture"]["coord"] as number);
+                this.gl.vertexAttribPointer(this.factorys2D_consts["texture"]["coord"] as number, 2, this.gl.FLOAT, false, 0, 0)
+
+                this.gl.uniform2f(this.factorys2D_consts["texture"]["translation"], trans.position.x, trans.position.y);
+                this.gl.uniform2f(this.factorys2D_consts["texture"]["scale"], trans.scale.x, trans.scale.y);
+
+                this.gl.uniformMatrix4fv(this.factorys2D_consts["texture"]["proj"], false, this.projectionMatrix);
+
+                this.gl.activeTexture(this.gl.TEXTURE0);
+                this.gl.bindTexture(this.gl.TEXTURE_2D, args.texture);
+                this.gl.uniform1i(this.factorys2D_consts["texture"]["texture"] as WebGLUniformLocation, 0)
+
+                this.gl.drawArrays(mode, 0, model.vertices.length / 2);
+
+
             }),
         }
-        const factory=this.factorys2D.simple
+        let factory=this.factorys2D.simple
         this.factorys2D_consts["simple"]={
             "position":this.gl.getAttribLocation(factory.program, "a_Position"),
             "color":this.gl.getUniformLocation(factory.program, "u_Color")!,
             "translation":this.gl.getUniformLocation(factory.program, "u_Translation")!,
             "scale":this.gl.getUniformLocation(factory.program, "u_Scale")!,
             "proj":this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")!,
+        }
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        factory=this.factorys2D.texture
+        this.factorys2D_consts["texture"]={
+            "position":this.gl.getAttribLocation(factory.program, "a_Position"),
+            "translation":this.gl.getUniformLocation(factory.program, "u_Translation")!,
+            "scale":this.gl.getUniformLocation(factory.program, "u_Scale")!,
+            "proj":this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")!,
+            "coord":this.gl.getAttribLocation(factory.program, "a_TexCoord"),
+            "texture":this.gl.getUniformLocation(factory.program, "u_Texture")!,
         }
 
         //Tex Program
@@ -297,7 +367,7 @@ void main() {
         this.tex_program = tex_program!
         gl!.linkProgram(this.tex_program)
         
-        this.factorys2D_consts["texture"]={
+        this.factorys2D_consts["texture_ADV"]={
             "position":this.gl.getAttribLocation(this.tex_program, "a_Position"),
             "coord":this.gl.getAttribLocation(this.tex_program, "a_TexCoord"),
             "color":this.gl.getUniformLocation(this.tex_program, "u_Color")!,
@@ -355,8 +425,8 @@ void main() {
         this.gl.linkProgram(p!)
         return p!
     }
-    _draw_vertices(vertices:Float32Array,material:Material2D,trans:Transform2D,mode:number=this.gl.TRIANGLES){
-        material.factory.on_execute(material.factory,material.args,vertices,trans,mode)
+    draw_vertices(model:Model2D,material:Material2D,trans:Transform2D,mode:number=this.gl.TRIANGLES){
+        material.factory.on_execute(material.factory,material.args,model,trans,mode)
     }
     draw_rect2D(rect: RectHitbox2D, material: Material2D,offset:Vec2=NullVec2) {
         const x1 = 0
@@ -364,14 +434,14 @@ void main() {
         const x2 = rect.max.x-rect.min.x
         const y2 = rect.max.x-rect.min.x
 
-        this._draw_vertices(new Float32Array([
+        this.draw_vertices({vertices:new Float32Array([
             x1, y1,
             x2, y1,
             x1, y2,
             x1, y2,
             x2, y1,
             x2, y2
-        ]), material,{position:v2.sub(rect.position,offset),scale:v2.new(1,1),rotation:0});
+        ]),tex_coords:new Float32Array([])}, material,{position:v2.sub(rect.position,offset),scale:v2.new(1,1),rotation:0});
     }
 
     draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2, precision: number = 50): void {
@@ -389,7 +459,7 @@ void main() {
             const y = centerY + radius * Math.sin(angle)
             vertices.push(x, y)
         }
-        this._draw_vertices(new Float32Array(vertices), material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0},this.gl.TRIANGLE_FAN);
+        this.draw_vertices({vertices:new Float32Array(vertices),tex_coords:new Float32Array()}, material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0},this.gl.TRIANGLE_FAN);
     }
 
     draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset:Vec2=NullVec2): void {
@@ -419,30 +489,30 @@ void main() {
         this.gl.useProgram(program);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
-        this.gl.enableVertexAttribArray(this.factorys2D_consts["texture"]["position"] as number)
-        this.gl.vertexAttribPointer(this.factorys2D_consts["texture"]["position"] as number, 2, this.gl.FLOAT, false, 0, 0)
+        this.gl.enableVertexAttribArray(this.factorys2D_consts["texture_ADV"]["position"] as number)
+        this.gl.vertexAttribPointer(this.factorys2D_consts["texture_ADV"]["position"] as number, 2, this.gl.FLOAT, false, 0, 0)
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
-        this.gl.enableVertexAttribArray(this.factorys2D_consts["texture"]["coord"] as number);
-        this.gl.vertexAttribPointer(this.factorys2D_consts["texture"]["coord"] as number, 2, this.gl.FLOAT, false, 0, 0)
+        this.gl.enableVertexAttribArray(this.factorys2D_consts["texture_ADV"]["coord"] as number);
+        this.gl.vertexAttribPointer(this.factorys2D_consts["texture_ADV"]["coord"] as number, 2, this.gl.FLOAT, false, 0, 0)
 
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, image.texture);
-        this.gl.uniform1i(this.factorys2D_consts["texture"]["texture"] as WebGLUniformLocation, 0)
+        this.gl.uniform1i(this.factorys2D_consts["texture_ADV"]["texture_ADV"] as WebGLUniformLocation, 0)
 
-        this.gl.uniformMatrix4fv(this.factorys2D_consts["texture"]["proj"], false, this.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.factorys2D_consts["texture_ADV"]["proj"], false, this.projectionMatrix);
 
-        this.gl.uniform2f(this.factorys2D_consts["texture"]["translation"],position.x,position.y)
+        this.gl.uniform2f(this.factorys2D_consts["texture_ADV"]["translation"],position.x,position.y)
 
-        this.gl.uniform4f(this.factorys2D_consts["texture"]["tint"],tint.r,tint.g,tint.b,tint.a)
+        this.gl.uniform4f(this.factorys2D_consts["texture_ADV"]["tint"],tint.r,tint.g,tint.b,tint.a)
 
         this.gl.drawArrays(this.gl.TRIANGLES, 0, model.length / 2)
     }
 
     clear() {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.gl.clearColor(this.background.r, this.background.g, this.background.b, 1);
-        this.canvas.style.backgroundColor=`rgb(${this.background.r*255},${this.background.g*255},${this.background.b*255})`
+        this.gl.clearColor(0, 0, 0, 1);
+        this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
         
         this.gl.enable(this.gl.DEPTH_TEST)

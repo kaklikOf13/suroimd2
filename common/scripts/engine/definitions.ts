@@ -212,8 +212,30 @@ export interface FrameTransform{
     scale?:number
     hotspot?:Vec2
     rotation?:number
+    position?:Vec2
+    visible?:boolean
+    zIndex?:number
 }
 export type FrameDef={image:string}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef
+export interface AKeyFrameSpriteAction extends FrameTransform {
+    type: "sprite"
+    image?: string
+    fuser?: string
+}
+
+export interface AKeyFrameTweenAction {
+    type: "tween"
+    duration: number
+    easing?: string
+    to: FrameTransform
+}
+export type AKeyFrameAction =
+    | AKeyFrameSpriteAction
+    | AKeyFrameTweenAction
+export interface AKeyFrame{
+    actions:AKeyFrameAction[]
+    time:number
+}

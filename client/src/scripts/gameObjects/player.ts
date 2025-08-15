@@ -4,17 +4,18 @@ import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { type Camera2D, Container2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
+import { AnimatedContainer2D, type Camera2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
 import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
-import { ABParticle2D } from "../engine/game.ts";
+import { ABParticle2D, ClientGame2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { DefaultFistRig } from "common/scripts/others/item.ts";
+import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -30,16 +31,16 @@ export class Player extends GameObject{
     parachute:boolean=false
 
     skin!:string
-    container:Container2D=new Container2D()
-    sprites={
-        body:new Sprite2D(),
-        helmet:new Sprite2D(),
-        backpack:new Sprite2D(),
-        left_arm:new Sprite2D(),
-        right_arm:new Sprite2D(),
-        weapon:new Sprite2D(),
-        muzzle_flash:new Sprite2D(),
-        parachute:new Sprite2D(),
+    container!:AnimatedContainer2D
+    sprites!:{
+        body:Sprite2D,
+        helmet:Sprite2D,
+        backpack:Sprite2D,
+        left_arm:Sprite2D,
+        right_arm:Sprite2D,
+        weapon:Sprite2D,
+        muzzle_flash:Sprite2D,
+        parachute:Sprite2D,
     }
     anims:{
         fire?:{
@@ -49,8 +50,8 @@ export class Player extends GameObject{
         }
     }={}
     sound_animation:{
+        animation?:SoundInstance
         weapon:{
-            reload?:SoundInstance
             switch?:SoundInstance
         }
     }={weapon:{}}
@@ -204,6 +205,21 @@ export class Player extends GameObject{
 
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),GameConstants.player.playerRadius)
+        this.container=new AnimatedContainer2D(this.game as unknown as ClientGame2D)
+        //#region AA
+        this.sprites={
+            body:this.container.add_animated_sprite("body"),
+            backpack:this.container.add_animated_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34}),
+            helmet:this.container.add_animated_sprite("helmet"),
+            left_arm:this.container.add_animated_sprite("left_arm"),
+            right_arm:this.container.add_animated_sprite("right_arm"),
+            muzzle_flash:this.container.add_animated_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
+            parachute:this.container.add_animated_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5)}),
+            weapon:this.container.add_animated_sprite("weapon")
+        }
+        this.container.zIndex=zIndexes.Players
+        this.container.add_child(this.sprites.muzzle_flash)
+        //#endregion
         this.game.camera.addObject(this.container)
         this.sprites.parachute.frame=this.game.resources.get_sprite("parachute")
         this.set_skin(Skins.getFromString("default_skin"))
@@ -224,27 +240,12 @@ export class Player extends GameObject{
     }
     constructor(){
         super()
-        this.container.add_child(this.sprites.body)
-        this.container.add_child(this.sprites.backpack)
-        this.container.zIndex=zIndexes.Players
-        this.container.add_child(this.sprites.left_arm)
-        this.container.add_child(this.sprites.right_arm)
-        this.container.add_child(this.sprites.helmet)
-        this.container.add_child(this.sprites.weapon)
-        this.container.add_child(this.sprites.parachute)
-        this.sprites.muzzle_flash.visible=false
-        this.sprites.muzzle_flash.hotspot=v2.new(0,.5)
-        this.sprites.muzzle_flash.zIndex=6
-        this.sprites.parachute.zIndex=7
-        this.sprites.parachute.hotspot=v2.new(0.5,0.5)
-        this.sprites.backpack.position=v2.new(-0.27,0)
-        this.sprites.backpack.scale=v2.new(1.34,1.34)
-        this.container.add_child(this.sprites.muzzle_flash)
     }
     play_animation(animation:PlayerAnimation){
         if(this.current_animation!==undefined)return
         this.current_animation=animation
         this.sprites.muzzle_flash.visible=false
+        if(this.sound_animation.animation)this.sound_animation.animation.stop()
         switch(this.current_animation.type){
             case PlayerAnimationType.Shooting:{
                 if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined;break}
@@ -352,11 +353,11 @@ export class Player extends GameObject{
                 
                 const sound=this.game.resources.get_audio((d.reload?.reload_alt&&this.current_animation.alt_reload)?`${d.idString}_reload_alt`:`${d.idString}_reload`)
                 if(sound){
-                    if(this.sound_animation.weapon.reload)this.sound_animation.weapon.reload.stop()
-                    this.sound_animation.weapon.reload=this.game.sounds.play(sound,{
+                    if(this.sound_animation.animation)this.sound_animation.animation.stop()
+                    this.sound_animation.animation=this.game.sounds.play(sound,{
                         on_complete:()=>{
                             this.current_animation=undefined
-                            this.sound_animation.weapon.reload=undefined
+                            this.sound_animation.animation=undefined
                         },
                         position:this.position,
                         max_distance:5,
@@ -365,7 +366,21 @@ export class Player extends GameObject{
                 }
                 break
             }
-            case PlayerAnimationType.Healing:
+            case PlayerAnimationType.Consuming:{
+                const def=Consumibles.getFromNumber(this.current_animation.item)
+                const sound=this.game.resources.get_audio((def.sounds?.using)??`using_${def.idString}`)
+                if(sound){
+                    this.sound_animation.animation=this.game.sounds.play(sound,{
+                        on_complete:()=>{
+                            this.sound_animation.animation=undefined
+                        },
+                        position:this.position,
+                        max_distance:5,
+                        volume:0.7
+                    },"players")
+                }
+                break
+            }
         }
     }
     set_helmet(helmet:number){

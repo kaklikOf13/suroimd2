@@ -51,12 +51,12 @@ export function ImageModel2D(scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,
         verticesR[3].x, verticesR[3].y
     ])
 }
-export function LineModel2D(start: Vec2, end: Vec2, width: number): Float32Array {
+export function LineModel2D(start: Vec2, end: Vec2, width: number): Model2D {
     const dx = end.x - start.x;
     const dy = end.y - start.y;
 
     const len = Math.sqrt(dx * dx + dy * dy);
-    if (len === 0) return new Float32Array(0);
+    if (len === 0) return {vertices:new Float32Array(0),tex_coords:new Float32Array([])};
 
     const angle = Math.atan2(dy, dx);
     const halfW = width / 2;
@@ -75,7 +75,7 @@ export function LineModel2D(start: Vec2, end: Vec2, width: number): Float32Array
         y: v.y + start.y
     }));
 
-    return new Float32Array([
+    return {vertices:new Float32Array([
         verticesTranslated[0].x, verticesTranslated[0].y,
         verticesTranslated[1].x, verticesTranslated[1].y,
         verticesTranslated[2].x, verticesTranslated[2].y,
@@ -83,7 +83,7 @@ export function LineModel2D(start: Vec2, end: Vec2, width: number): Float32Array
         verticesTranslated[2].x, verticesTranslated[2].y,
         verticesTranslated[1].x, verticesTranslated[1].y,
         verticesTranslated[3].x, verticesTranslated[3].y
-    ]);
+    ]),tex_coords:new Float32Array()};
 }
 export class Frame{
     source:HTMLImageElement
@@ -369,4 +369,8 @@ export enum AudioState{
     failed,
     inited,
     interrupt
+}
+export interface Model2D{
+    vertices:Float32Array
+    tex_coords:Float32Array
 }

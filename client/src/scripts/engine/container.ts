@@ -1,9 +1,10 @@
 import { SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D } from "./renderer.ts";
-import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D, } from "./resources.ts";
-import { FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
+import { type ResourcesManager, type Frame, ImageModel2D, LineModel2D, Model2D, } from "./resources.ts";
+import { AKeyFrame, FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 import { Hitbox2D, HitboxType2D } from "common/scripts/engine/hitbox.ts";
+import { ClientGame2D } from "./game.ts";
 
 export abstract class Container2DObject {
     abstract object_type: string;
@@ -60,13 +61,31 @@ export abstract class Container2DObject {
 
     abstract draw(renderer: Renderer): void;
 }
-function triangulateConvex(polygon: Vec2[]): number[] {
-    const tris: number[] = [];
+export function triangulateConvex(
+    polygon: Vec2[],
+    texSize: number = 32
+): Model2D {
+    const vertices: number[] = [];
+    const tex_coords: number[] = [];
+
     for (let i = 1; i < polygon.length - 1; i++) {
-        tris.push(polygon[0].x,polygon[0].y, polygon[i].x,polygon[i].y, polygon[i + 1].x,polygon[i + 1].y);
+        const tri = [polygon[0], polygon[i], polygon[i + 1]];
+
+        for (const v of tri) {
+            vertices.push(v.x, v.y);
+
+            const u = v.x / texSize;
+            const vv = v.y / texSize;
+            tex_coords.push(u, vv);
+        }
     }
-    return tris;
+
+    return {
+        vertices: new Float32Array(vertices),
+        tex_coords: new Float32Array(tex_coords)
+    };
 }
+
 function isInside(p: Vec2, edgeStart: Vec2, edgeEnd: Vec2): boolean {
     return (edgeEnd.x - edgeStart.x) * (p.y - edgeStart.y) -
            (edgeEnd.y - edgeStart.y) * (p.x - edgeStart.x) >= 0;
@@ -147,14 +166,16 @@ type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material2D }
   | { type: 'fillColor'; color:Color }
   | { type: 'fill' }
-  | { type: 'path'; path:Float32Array }
-  | { type: 'model'; model:Float32Array }
+  | { type: 'path'; path:Model2D }
+  | { type: 'model'; model:Model2D }
 
 export class Graphics2D extends Container2DObject {
     object_type = "graphics2d";
 
     current_path:Vec2[]=[]
     current_position:Vec2=v2.new(0,0)
+
+    repeat_size:number=1
 
     private command: Graphics2DCommand[] = [];
     paths:number[][]=[]
@@ -173,7 +194,7 @@ export class Graphics2D extends Container2DObject {
     }
 
     endPath():this{
-        this.command.push({type:"path",path:new Float32Array(triangulateConvex(this.current_path))})
+        this.command.push({type:"path",path:triangulateConvex(this.current_path,this.repeat_size)})
         this.current_path=[]
         return this
     }
@@ -237,7 +258,7 @@ export class Graphics2D extends Container2DObject {
         const gl = renderer as WebglRenderer;
 
         let currentMat: Material2D=gl.factorys2D.simple.create_material({r:0,g:0,b:0,a:1});
-        let currentModel:Float32Array
+        let currentModel:Model2D
 
         for (const cmd of this.command) {
             switch (cmd.type) {
@@ -248,14 +269,14 @@ export class Graphics2D extends Container2DObject {
                     currentMat=gl.factorys2D.simple.create_material(cmd.color)
                     break
                 case "fill":
-                    gl._draw_vertices(currentModel!,currentMat,{
+                    gl.draw_vertices(currentModel!,currentMat,{
                         position:this._real_position,
                         rotation:this._real_rotation,
                         scale:this._real_scale
                     })
                     break
                 case "model": {
-                    gl._draw_vertices(cmd.model,currentMat,{
+                    gl.draw_vertices(cmd.model,currentMat,{
                         position:this._real_position,
                         scale:v2.new(1,1),
                         rotation:0
@@ -269,7 +290,6 @@ export class Graphics2D extends Container2DObject {
         }
     }
 }
-
 export class Sprite2D extends Container2DObject{
     object_type:string="sprite2d"
     _frame?:Frame
@@ -331,6 +351,9 @@ export class Sprite2D extends Container2DObject{
         if(frame.scale)this.scale=v2.new(frame.scale,frame.scale)
         if(frame.hotspot)this.hotspot=v2.duplicate(frame.hotspot)
         if(frame.rotation)this.rotation=frame.rotation
+        if(frame.visible)this.visible=frame.visible
+        if(frame.zIndex)this.zIndex=frame.zIndex
+        if(frame.position)this.position=frame.position
         this.frame=resources.get_sprite(frame.image)
 
     }
@@ -339,7 +362,9 @@ export class Sprite2D extends Container2DObject{
         if(frame.scale)this.scale=v2.new(frame.scale,frame.scale)
         if(frame.hotspot)this.hotspot=v2.duplicate(frame.hotspot)
         if(frame.rotation)this.rotation=frame.rotation
-
+        if(frame.visible)this.visible=frame.visible
+        if(frame.zIndex)this.zIndex=frame.zIndex
+        if(frame.position)this.position=frame.position
     }
     override draw(renderer: Renderer): void {
         this.renderer=renderer
@@ -376,6 +401,30 @@ export class Container2D extends Container2DObject{
     }
     constructor(){
         super()
+    }
+}
+export class AnimatedContainer2D extends Container2D{
+    objects=new Map<string,Sprite2D>()
+
+    current_animations:{
+        current_kf:number
+        current_delay:number
+        keyframes:AKeyFrame[]
+    }[]=[]
+    game:ClientGame2D
+    constructor(game:ClientGame2D){
+        super()
+        this.game=game
+    }
+    add_animated_sprite(id:string,def?:FrameTransform):Sprite2D{
+        const spr=new Sprite2D()
+        this.objects.set(id,spr)
+        if(def)spr.transform_frame(def)
+        this.add_child(spr)
+        return spr
+    }
+    get_spr(id:string):Sprite2D{
+        return this.objects.get(id)!
     }
 }
 export class Camera2D{

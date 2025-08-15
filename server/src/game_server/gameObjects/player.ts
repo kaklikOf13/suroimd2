@@ -92,6 +92,8 @@ export class Player extends ServerGameObject{
     left_handed:boolean
 
     current_floor:FloorType=0
+
+    friendly_fire:boolean=true
     constructor(){
         super()
         this.movement=v2.new(0,0)
@@ -446,7 +448,11 @@ export class Player extends ServerGameObject{
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&!this.is_npc&&((params.owner.teamId!==undefined&&params.owner.teamId===this.teamId)||(params.owner.groupId!==undefined&&params.owner.groupId===this.groupId)))return
+            const is_ally=this.game.modeManager.is_ally(this,params.owner)
+            if(
+                params.owner.id!==this.id&&
+                (this.game.modeManager.team_size>1&&is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
+            )return
             mod*=params.owner.modifiers.damage
         }
         if(this.vest){
@@ -571,7 +577,7 @@ export class Player extends ServerGameObject{
             }
 
             if(params.owner&&params.owner instanceof Player){
-                if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username||this.is_bot)){
+                if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username||this.is_bot)&&!this.game.modeManager.is_ally(this,params.owner)){
                     params.owner.status.kills++
                     params.owner.earned.coins+=3
                     params.owner.earned.xp+=1
