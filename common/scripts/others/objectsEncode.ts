@@ -92,7 +92,10 @@ export interface ProjectileData extends EncodedData{
 export interface PlayerBodyData extends EncodedData{
     full?:{
         name:string
+        gore_type:number
+        gore_id:number
     }
+    moving:boolean
     position:Vec2
 }
 export interface VehicleData extends EncodedData{
@@ -351,10 +354,13 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         decode:(full:boolean,stream:NetStream)=>{
             const ret:PlayerBodyData={
                 position:stream.readPosition(),
+                moving:stream.readBooleanGroup()[0]
             }
             if(full){
                 ret.full={
-                    name:stream.readStringSized(30)
+                    name:stream.readStringSized(30),
+                    gore_type:stream.readUint8(),
+                    gore_id:stream.readUint8(),
                 }
             }
             return ret
@@ -363,8 +369,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         //@ts-ignore
         encode(full:boolean,data:PlayerBodyData,stream:NetStream){
             stream.writePosition(data.position)
+            .writeBooleanGroup(data.moving)
             if(full){
                 stream.writeStringSized(30,data.full!.name)
+                stream.writeUint8(data.full!.gore_type)
+                stream.writeUint8(data.full!.gore_id)
             }
         }
     },

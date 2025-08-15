@@ -208,15 +208,17 @@ Consumibles.insert(
         use_delay:1.5,
         boost_type:BoostType.Addiction,
         quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        animation:ConsumiblesAnimations.drinking("small_red_crystal",1.4),
     },
     {
         idString:"red_crystal",
         boost:50,
-        use_delay:2.2,
+        use_delay:3,
         boost_type:BoostType.Addiction,
         quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        animation:ConsumiblesAnimations.drinking("red_crystal",2.9),
     },
     {
         idString:"red_pills",

@@ -46,8 +46,8 @@ export const WeaponsArmRig={
             rotation:0.35,
         },
         right:{
-            position:v2.new(0.5,0),
-            rotation:-0.2,
+            position:v2.new(0.53,0.07),
+            rotation:-0.3,
         }
     },
     1:{

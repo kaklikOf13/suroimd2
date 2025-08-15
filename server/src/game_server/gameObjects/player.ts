@@ -94,6 +94,8 @@ export class Player extends ServerGameObject{
 
     current_floor:FloorType=0
 
+    boost_t:number=0
+
     friendly_fire:boolean=true
     constructor(){
         super()
@@ -198,12 +200,17 @@ export class Player extends ServerGameObject{
             case BoostType.Addiction:{
                 speed*=1+(gamemode.player.boosts.addiction.speed*(this.boost/this.maxBoost))
                 this.boost=Math.max(this.boost-gamemode.player.boosts.addiction.decay*dt,0)
-                this.piercingDamage({
-                    amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence*dt)*50,
-                    reason:DamageReason.Abstinence,
-                    position:v2.duplicate(this.position),
-                    critical:false,
-                })
+                if(this.boost_t<=0){
+                    this.boost_t=3
+                    this.piercingDamage({
+                        amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence)*100,
+                        reason:DamageReason.Abstinence,
+                        position:v2.duplicate(this.position),
+                        critical:false,
+                    })
+                }else{
+                    this.boost_t-=dt
+                }
                 break
             }
         }
@@ -229,6 +236,7 @@ export class Player extends ServerGameObject{
             this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,FloorType.Water)
         }
 
+        
         //Hand Use
         if(this.downed){
             this.piercingDamage({
@@ -349,7 +357,7 @@ export class Player extends ServerGameObject{
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
 
-        if(Math.random()<=0.75)this.inventory.set_backpack(Backpacks.getFromString(random.choose(["tactical_pack","regular_pack","basic_pack"])))
+        if(Math.random()<=0.75)this.inventory.set_backpack(Backpacks.getFromString(random.choose(["tactical_pack"/*,"regular_pack","basic_pack"*/])))
         if(Math.random()<=0.75)this.helmet=Armors.getFromString(random.choose(["tactical_helmet","basic_helmet","regular_helmet"]))
         if(Math.random()<=0.75)this.vest=Armors.getFromString(random.choose(["tactical_vest","basic_vest","regular_vest"]))
         
@@ -606,7 +614,10 @@ export class Player extends ServerGameObject{
             }
         }
 
-        this.game.add_player_body(this,v2.lookTo(params.position,this.position))
+        this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
+        for(let i=0;i<3;i++){
+            this.game.add_player_gore(this,undefined,this.layer)
+        }
         this.game.addTimeout(()=>{
             this.send_game_over(false)
         },2)

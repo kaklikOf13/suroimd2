@@ -270,6 +270,7 @@ export class Player extends GameObject{
         if(this.sound_animation.animation)this.sound_animation.animation.stop()
         this.sound_animation.animation=undefined
         this.anims.consumible_particles!.enabled=false
+        this.container.stop_all_animations()
     }
     play_animation(animation:PlayerAnimation){
         if(this.current_animation!==undefined)return

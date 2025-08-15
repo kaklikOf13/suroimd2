@@ -32,7 +32,7 @@ export const Boosts={
         type:BoostType.Mana
     },
     [BoostType.Addiction]:{
-        name:"mana",
+        name:"addiction",
         color:"#e13",
         type:BoostType.Addiction
     }
