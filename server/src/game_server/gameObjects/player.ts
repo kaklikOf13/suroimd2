@@ -363,9 +363,9 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,random.choose([10,20,30]))
 
         this.inventory.give_item(Consumibles.getFromString(random.choose(["gauze","medikit"])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["soda","inhaler","yellow_pills"])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_blue_potion","blue_potion","blue_pills"])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_purple_potion","purple_potion","purple_pills"])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose(["soda",/*"inhaler","yellow_pills"*/])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose([/*"small_blue_potion",*/"blue_potion"/*,"blue_pills"*/])) as unknown as GameItem,4)
+        this.inventory.give_item(Consumibles.getFromString(random.choose([/*"small_purple_potion",*/"purple_potion"/*,"purple_pills"*/])) as unknown as GameItem,4)
         this.inventory.give_item(Consumibles.getFromString(random.choose(["small_red_crystal","red_crystal","red_pills"])) as unknown as GameItem,4)
 
         this.boost=100

@@ -94,7 +94,7 @@ export class Player extends GameObject{
         this.driving=true
     }
 
-    set_current_weapon(def?:WeaponDef,force:boolean=false){
+    set_current_weapon(def?:WeaponDef,force:boolean=false,reset:boolean=true){
         if((this.current_weapon===def&&!force)||this.driving)return
         if(!def||this.parachute){
             this.current_weapon=undefined
@@ -136,6 +136,7 @@ export class Player extends GameObject{
         if(def?.image){
             this.sprites.weapon.frame=this.game.resources.get_sprite((def as unknown as GameItem).item_type===InventoryItemType.melee?def.idString:`${def.idString}_world`)
             this.sprites.weapon.visible=true
+            this.sprites.weapon.scale=v2.new(1,1)
             this.sprites.weapon.position=v2.duplicate(def.image.position)
             this.sprites.weapon.rotation=def.image.rotation
             if(this.left_handed&&def.image.left_handed_suport){
@@ -147,7 +148,7 @@ export class Player extends GameObject{
         }else{
             this.sprites.weapon.visible=false
         }
-        if(Math.random()<=0.5){
+        if(Math.random()<=0.5&&!force){
             const sound=this.game.resources.get_audio(`${def.idString}_switch`)
             if(sound){
                 if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.disconnect()
@@ -161,7 +162,7 @@ export class Player extends GameObject{
                 },"players")
             }
         }
-        this.reset_anim()
+        if(reset)this.reset_anim()
         this.container.updateZIndex()
     }
 
@@ -186,8 +187,8 @@ export class Player extends GameObject{
         this.sprites.backpack.hotspot=v2.new(1,0.5)
         this.sprites.weapon.hotspot=v2.new(0.5,0.5)
 
-        this.sprites.left_arm.hotspot=v2.new(0.9,0.5)
-        this.sprites.right_arm.hotspot=v2.new(0.9,0.5)
+        this.sprites.left_arm.hotspot=v2.new(1,0.5)
+        this.sprites.right_arm.hotspot=v2.new(1,0.5)
 
         this.sprites.backpack.zIndex=3
         this.sprites.body.zIndex=4
@@ -414,6 +415,9 @@ export class Player extends GameObject{
                     this.anims.consumible_particle="healing_particle"
                 }
                 this.anims.consumible_particles!.enabled=true
+                if(def.animation){
+                    this.container.play_animation(def.animation,this.set_current_weapon.bind(this,this.current_weapon,true,false))
+                }
                 break
             }
         }

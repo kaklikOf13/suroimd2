@@ -5,6 +5,7 @@ import { AKeyFrame, FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/s
 import { Numeric } from "common/scripts/engine/mod.ts";
 import { Hitbox2D, HitboxType2D } from "common/scripts/engine/hitbox.ts";
 import { ClientGame2D } from "./game.ts";
+import { type Tween } from "./utils.ts";
 
 export abstract class Container2DObject {
     abstract object_type: string;
@@ -353,9 +354,8 @@ export class Sprite2D extends Container2DObject{
         if(frame.rotation)this.rotation=frame.rotation
         if(frame.visible)this.visible=frame.visible
         if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.position)this.position=frame.position
-        this.frame=resources.get_sprite(frame.image)
-
+        if(frame.position)this.position=v2.duplicate(frame.position)
+        if(frame.image)this.frame=resources.get_sprite(frame.image)
     }
     
     transform_frame(frame:FrameTransform){
@@ -364,7 +364,8 @@ export class Sprite2D extends Container2DObject{
         if(frame.rotation)this.rotation=frame.rotation
         if(frame.visible)this.visible=frame.visible
         if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.position)this.position=frame.position
+        if(frame.position)this.position=v2.duplicate(frame.position)
+        this.update_model()
     }
     override draw(renderer: Renderer): void {
         this.renderer=renderer
@@ -410,11 +411,90 @@ export class AnimatedContainer2D extends Container2D{
         current_kf:number
         current_delay:number
         keyframes:AKeyFrame[]
+        on_complete?:()=>void
+        tweens:Tween<any>[]
     }[]=[]
     game:ClientGame2D
     constructor(game:ClientGame2D){
         super()
         this.game=game
+    }
+    stop_all_animations(){
+      for(const a of this.current_animations){
+        for(const t of a.tweens){
+            t.kill()
+        }
+      }
+        this.current_animations=[]
+    }
+    play_animation(anim:AKeyFrame[],on_complete?:()=>void){
+        const a={
+            current_kf:-1,
+            current_delay:0,
+            keyframes:anim,
+            on_complete:on_complete,
+            tweens:[]
+        }
+        this.current_animations.push(a)
+    }
+    override update(dt: number, resources: ResourcesManager): void {
+      super.update(dt,resources)
+      for(let i=0;i<this.current_animations.length;i++){
+        const a=this.current_animations[i]
+        a.current_delay-=dt
+        if(a.current_delay<=0){
+            a.current_kf++
+            if(a.current_kf>=a.keyframes.length){
+                if(a.on_complete)a.on_complete()
+                this.current_animations.splice(i,1)
+                i--
+                continue
+            }else{
+                a.tweens.length=0
+                const nd=a.keyframes[a.current_kf].time
+                a.current_delay=nd
+                for(const action of a.keyframes[a.current_kf].actions){
+                    switch(action.type){
+                        case "sprite":
+                            this.get_spr(action.fuser).set_frame(action,this.game.resources)
+                            break
+                        case "tween":{
+                            const fuser=this.get_spr(action.fuser)
+                            if(nd>0){
+                                if(action.to.position){
+                                    this.current_animations[i].tweens.push(this.game.addTween({
+                                        duration:nd,
+                                        target:fuser.position,
+                                        ease:action.ease,
+                                        to:action.to.position
+                                    }))
+                                }
+                                if(action.to.hotspot){
+                                    this.current_animations[i].tweens.push(this.game.addTween({
+                                        duration:nd,
+                                        target:fuser.hotspot,
+                                        ease:action.ease,
+                                        to:action.to.hotspot
+                                    }))
+                                }
+                                if(action.to.rotation){
+                                    this.current_animations[i].tweens.push(this.game.addTween({
+                                        duration:nd,
+                                        target:fuser,
+                                        ease:action.ease,
+                                        to:{rotation:action.to.rotation}
+                                    }))
+                                }
+                            }else{
+                                fuser.transform_frame(action.to)
+                            }
+                            break
+                        }
+                    }
+                }
+            }
+        }
+      }
     }
     add_animated_sprite(id:string,def?:FrameTransform):Sprite2D{
         const spr=new Sprite2D()

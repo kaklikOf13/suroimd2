@@ -1,5 +1,5 @@
 import { Vec2 } from "./geometry.ts";
-import { mergeDeep, splitPath } from "./utils.ts";
+import { EaseFunction, mergeDeep, splitPath } from "./utils.ts";
 export interface Definition{
     idString:string,
     idNumber?:number
@@ -216,20 +216,20 @@ export interface FrameTransform{
     visible?:boolean
     zIndex?:number
 }
-export type FrameDef={image:string}&FrameTransform
+export type FrameDef={image?:string}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef
 export interface AKeyFrameSpriteAction extends FrameTransform {
     type: "sprite"
     image?: string
-    fuser?: string
+    fuser: string
 }
 
 export interface AKeyFrameTweenAction {
     type: "tween"
-    duration: number
-    easing?: string
+    ease?:EaseFunction
+    fuser:string
     to: FrameTransform
 }
 export type AKeyFrameAction =
