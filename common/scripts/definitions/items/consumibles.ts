@@ -1,6 +1,7 @@
 import { Definitions,Definition } from "../../engine/mod.ts"
 import { ItemQuality } from "../../others/item.ts";
-import { BoostType, GameItem, InventoryItemType } from "../utils.ts";
+import { BoostType } from "../player/boosts.ts";
+import { GameItem, InventoryItemType } from "../utils.ts";
 
 export enum ConsumibleCondition{
     UnfullHealth,
@@ -16,6 +17,9 @@ export interface ConsumibleDef extends Definition{
     use_delay:number
     condition?:ConsumibleCondition[]
     parachute?:number
+    frame?:{
+        using_particle:string
+    }
     sounds?:{
         using?:string
     }
@@ -30,7 +34,10 @@ Consumibles.insert(
         max_heal:0.75,
         use_delay:3,
         quality:ItemQuality.Uncommon,
-        condition:[ConsumibleCondition.UnfullHealth]
+        condition:[ConsumibleCondition.UnfullHealth],
+        frame:{
+            using_particle:"healing_particle"
+        }
     },
     {
         idString:"medikit",

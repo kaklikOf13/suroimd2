@@ -7,7 +7,7 @@ import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/u
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
@@ -22,6 +22,7 @@ import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
+import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 
 export class Player extends ServerGameObject{
     movement:Vec2
@@ -48,7 +49,7 @@ export class Player extends ServerGameObject{
 
     boost:number=0
     maxBoost:number=100
-    BoostType:BoostType=BoostType.Null
+    boost_def:BoostDef=Boosts[BoostType.Null]
 
     actions:ActionsManager<this>
 
@@ -146,7 +147,7 @@ export class Player extends ServerGameObject{
     update_modifiers(){
         this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
         const gamemode=this.game.gamemode
-        if(this.BoostType===BoostType.Addiction){
+        if(this.boost_def.type===BoostType.Addiction){
             this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
         }
 
@@ -183,7 +184,7 @@ export class Player extends ServerGameObject{
             this.current_animation=undefined
             if(this.recoil.delay<=0)this.recoil=undefined
         }
-        switch(this.BoostType){
+        switch(this.boost_def.type){
             case BoostType.Shield:
                 break
             case BoostType.Adrenaline:
@@ -368,7 +369,7 @@ export class Player extends ServerGameObject{
         this.inventory.give_item(Consumibles.getFromString(random.choose(["small_red_crystal","red_crystal","red_pills"])) as unknown as GameItem,4)
 
         this.boost=100
-        this.BoostType=random.choose([BoostType.Shield,BoostType.Adrenaline])
+        this.boost_def=Boosts[random.choose([BoostType.Shield,BoostType.Adrenaline])]
     }
     damagesSplash:DamageSplash[]=[]
 
@@ -385,7 +386,7 @@ export class Player extends ServerGameObject{
             up.gui.max_health=this.maxHealth
             up.gui.boost=this.boost
             up.gui.max_boost=this.maxBoost
-            up.gui.boost_type=this.BoostType
+            up.gui.boost_type=this.boost_def.type
             up.gui.inventory=[]
             if(this.splashDelay<=0){
                 up.gui.damages=this.damagesSplash
@@ -471,7 +472,7 @@ export class Player extends ServerGameObject{
         this.piercingDamage(params)
     }
     piercingDamage(params:DamageParams){
-        if(this.BoostType===BoostType.Shield&&this.boost>0){
+        if(this.boost_def.type===BoostType.Shield&&this.boost>0){
             params.amount=Math.min(this.boost,params.amount)
         }else{
             params.amount=Math.min(this.health,params.amount)
@@ -486,7 +487,7 @@ export class Player extends ServerGameObject{
             taker_layer:this.layer
         }
         
-        if(this.BoostType===BoostType.Shield&&this.boost>0){
+        if(this.boost_def.type===BoostType.Shield&&this.boost>0){
             this.boost=Math.max(this.boost-params.amount,0)
             if(params.owner&&params.owner instanceof Player){
                 d.shield=true

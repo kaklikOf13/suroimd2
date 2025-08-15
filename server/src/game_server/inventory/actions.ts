@@ -3,6 +3,7 @@ import { type Player } from "../gameObjects/player.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type ConsumibleItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
+import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 
 export class ReloadAction extends Action<Player>{
     delay:number
@@ -65,8 +66,8 @@ export class ConsumingAction extends Action<Player>{
             user.health=Math.min(user.health+def.health,user.maxHealth*(def.max_heal??1))
         }
         if(def.boost){
-            if(def.boost_type!==undefined&&def.boost_type!==user.BoostType){
-                user.BoostType=def.boost_type
+            if(def.boost_type!==undefined&&def.boost_type!==user.boost_def.type){
+                user.boost_def=Boosts[def.boost_type]
                 user.boost=def.boost
             }else{
                 user.boost=Math.min(user.boost+def.boost,user.maxBoost*(def.max_boost??1))

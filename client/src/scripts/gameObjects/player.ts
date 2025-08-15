@@ -9,13 +9,15 @@ import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
-import { ABParticle2D, ClientGame2D } from "../engine/game.ts";
+import { ABParticle2D, ClientGame2D, type ClientParticle2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { DefaultFistRig } from "common/scripts/others/item.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
+import { ParticlesEmitter2D, ParticlesManager2D } from "common/scripts/engine/particles.ts";
+import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -47,8 +49,10 @@ export class Player extends GameObject{
             left_arm?:Tween<Vec2>
             right_arm?:Tween<Vec2>
             weapon?:Tween<Vec2>
-        }
-    }={}
+        },
+        consumible_particle:string
+        consumible_particles?:ParticlesEmitter2D<ClientParticle2D>
+    }={consumible_particle:"healing_particle"}
     sound_animation:{
         animation?:SoundInstance
         weapon:{
@@ -157,7 +161,7 @@ export class Player extends GameObject{
                 },"players")
             }
         }
-        this.current_animation=undefined
+        this.reset_anim()
         this.container.updateZIndex()
     }
 
@@ -217,6 +221,23 @@ export class Player extends GameObject{
             parachute:this.container.add_animated_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5)}),
             weapon:this.container.add_animated_sprite("weapon")
         }
+        this.anims.consumible_particles=this.game.particles.add_emiter({
+            delay:0.5,
+            particle:()=>new ABParticle2D({
+                direction:-3.141592/2,
+                frame:{
+                    image:this.anims.consumible_particle,
+                },
+                life_time:random.float(2,3),
+                position:v2.add(this.position,v2.new(random.float((this.hb as CircleHitbox2D).radius*-0.8,(this.hb as CircleHitbox2D).radius*0.8),0)),
+                speed:1,
+                scale:2,
+                to:{
+                    tint:{r:1,g:1,b:1,a:0}
+                }
+            }),
+            enabled:false
+        })
         this.container.zIndex=zIndexes.Players
         this.container.add_child(this.sprites.muzzle_flash)
         //#endregion
@@ -231,6 +252,7 @@ export class Player extends GameObject{
         this.container.position=this.position
     }
     override onDestroy(): void {
+        this.anims.consumible_particles!.destroyed=true
         this.container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
@@ -241,11 +263,17 @@ export class Player extends GameObject{
     constructor(){
         super()
     }
+    reset_anim(){
+        this.sprites.muzzle_flash.visible=false
+        this.current_animation=undefined
+        if(this.sound_animation.animation)this.sound_animation.animation.stop()
+        this.sound_animation.animation=undefined
+        this.anims.consumible_particles!.enabled=false
+    }
     play_animation(animation:PlayerAnimation){
         if(this.current_animation!==undefined)return
+        this.reset_anim()
         this.current_animation=animation
-        this.sprites.muzzle_flash.visible=false
-        if(this.sound_animation.animation)this.sound_animation.animation.stop()
         switch(this.current_animation.type){
             case PlayerAnimationType.Shooting:{
                 if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined;break}
@@ -356,8 +384,7 @@ export class Player extends GameObject{
                     if(this.sound_animation.animation)this.sound_animation.animation.stop()
                     this.sound_animation.animation=this.game.sounds.play(sound,{
                         on_complete:()=>{
-                            this.current_animation=undefined
-                            this.sound_animation.animation=undefined
+                            this.reset_anim()
                         },
                         position:this.position,
                         max_distance:5,
@@ -371,14 +398,22 @@ export class Player extends GameObject{
                 const sound=this.game.resources.get_audio((def.sounds?.using)??`using_${def.idString}`)
                 if(sound){
                     this.sound_animation.animation=this.game.sounds.play(sound,{
-                        on_complete:()=>{
-                            this.sound_animation.animation=undefined
-                        },
                         position:this.position,
                         max_distance:5,
-                        volume:0.7
+                        volume:0.7,
+                        on_complete:()=>{
+                            this.reset_anim()
+                        }
                     },"players")
                 }
+                if(def.frame?.using_particle){
+                    this.anims.consumible_particle=def.frame.using_particle
+                }if(def.boost_type){
+                    this.anims.consumible_particle=`boost_${Boosts[def.boost_type].name}_particle`
+                }else if(def.health){
+                    this.anims.consumible_particle="healing_particle"
+                }
+                this.anims.consumible_particles!.enabled=true
                 break
             }
         }

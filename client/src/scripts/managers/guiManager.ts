@@ -1,11 +1,12 @@
 import { Game } from "../others/game.ts";
-import { BoostType, InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
 import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
-import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts";
-import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { BoostType,Boosts } from "common/scripts/definitions/player/boosts.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
@@ -15,6 +16,7 @@ import { isMobile } from "../engine/game.ts";
 import { Debug } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
+
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -640,13 +642,6 @@ export class GuiManager{
         const p=boost/max_boost
         this.content._bar_interior.style.width =`${p*100}%`
         this.content._bar_amount.innerText=`${boost}/${max_boost}`
-        this.content._bar_interior.style.backgroundColor=BoostsColors[_type]
+        this.content._bar_interior.style.backgroundColor=Boosts[_type].color
     }
-}
-const BoostsColors:Record<BoostType,string>={
-    [BoostType.Null]:"#fff",
-    [BoostType.Adrenaline]:"#ff0",
-    [BoostType.Shield]:"#08f",
-    [BoostType.Mana]:"#92a",
-    [BoostType.Addiction]:"#e13"
 }

@@ -1,4 +1,4 @@
-import { BoostType } from "common/scripts/definitions/utils.ts";
+import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 
 export interface Gamemode{
     player:{

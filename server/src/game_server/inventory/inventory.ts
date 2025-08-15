@@ -2,7 +2,7 @@ import { type Player } from "../gameObjects/player.ts";
 import { Angle, CircleHitbox2D, Definition, getPatterningShape, Numeric, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
 import { Inventory, Item, Slot, SlotCap } from "common/scripts/engine/inventory.ts";
-import { BoostType, DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ConsumingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 import { ConsumibleCondition, ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
@@ -17,6 +17,7 @@ import { Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
 import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
+import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 export abstract class LItem extends Item{
   abstract on_use(user:Player,slot?:LItem):void
   abstract update(user:Player):void
@@ -52,7 +53,7 @@ export class GunItem extends LItem{
       }
     }
     has_mana(user:Player){
-      return user.BoostType===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
+      return user.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
     }
     reload(user:Player){
       if(!this.def.reload||this.use_delay>0||user.downed)return
@@ -170,7 +171,7 @@ export class ConsumibleItem extends LItem{
             if(user.health>=user.maxHealth*(this.def.max_heal??1))return
             break
           case ConsumibleCondition.UnfullExtra:
-            if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.BoostType!==this.def.boost_type))return
+            if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.boost_def.type!==this.def.boost_type))return
             break
         }
       }
