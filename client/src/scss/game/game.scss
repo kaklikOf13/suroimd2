@@ -395,3 +395,16 @@
         font-size: 10px;
     }
 }
+#vignetting-gfx{
+    position: absolute;
+    background-image: url("/img/menu/background/vignetting.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    pointer-events: none;
+}

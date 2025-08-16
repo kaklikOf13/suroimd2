@@ -313,6 +313,7 @@ export class GInventory extends Inventory<LItem>{
     while(this.slots.length<backpack.slots){
       this.slots.push(new Slot<LItem>())
     }
+    this.owner.privateDirtys.inventory=true
   }
 
   constructor(owner:Player,default_melee:string="survival_knife"){
