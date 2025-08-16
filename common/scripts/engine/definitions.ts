@@ -34,8 +34,8 @@ export class DefinitionsSimple<Type,Base=null>{
     exist(id:string):boolean{
         return Object.hasOwn(this.value,id)
     }
-    extends(extend:string,val:Type,id:string){
-        this.set(mergeDeep<Type>(val,this.getFromString(extend)!),id)
+    extends(extend:string,val:Partial<Type>,id:string){
+        this.set(mergeDeep<Type>(this.getFromString(extend)!,val),id)
     }
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{

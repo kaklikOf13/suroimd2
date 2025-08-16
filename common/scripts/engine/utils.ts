@@ -128,9 +128,6 @@ export interface Cloneable<T> {
 }
 // deno-lint-ignore no-explicit-any
 export type Func = (...args: any[]) => unknown;
-export type DeepPartial<T> = {
-    [K in keyof T]?: DeepPartial<T[K]>;
-};
 
 export function cloneDeep<T>(object: T): T {
     const clonedNodes = new Map<unknown, unknown>();
@@ -202,33 +199,56 @@ export function cloneDeep<T>(object: T): T {
     })(object)
 }
 
-export function mergeDeep<T>(target:T,...sources: Array<DeepPartial<T>>):T{
-    if(!sources.length)return target
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
 
-    const[source,...rest]=sources
+export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
+  if (!sources.length) return target;
 
-    type StringKeys=keyof T&string
-    type SymbolKeys=keyof T&symbol
+  const source = sources.shift();
+  if (!source) return target;
 
-    for (
-        const key of (
-            Object.keys(source) as Array<StringKeys|SymbolKeys>
-        ).concat(Object.getOwnPropertySymbols(source) as SymbolKeys[])
-    ) {
-        const [sourceProp,targetProp]=[source[key],target[key]]
-        if (typeof sourceProp==="object"&&!Array.isArray(sourceProp)){
-            if(typeof targetProp==="object"&&!Array.isArray(sourceProp)){
-                mergeDeep(targetProp!,sourceProp as DeepPartial<T[keyof T]&object>)
-            }else{
-                target[key]=cloneDeep(sourceProp)as T[StringKeys]&T[SymbolKeys]
-            }
-            continue
-        }
-        target[key]=sourceProp as T[StringKeys]&T[SymbolKeys]
+  for (const key of [
+    ...Object.keys(source),
+    ...Object.getOwnPropertySymbols(source) as (keyof T & symbol)[]
+  ]) {
+    const srcVal = source[key];
+    const tgtVal = (target as any)[key];
+
+    // null/undefined just overwrite
+    if (srcVal === null || srcVal === undefined) {
+      (target as any)[key] = srcVal;
+      continue;
     }
 
-    return mergeDeep(target,...rest)
+    // arrays: choose strategy (replace by default, or concat if desired)
+    if (Array.isArray(srcVal)) {
+      if (Array.isArray(tgtVal)) {
+        (target as any)[key] = [...tgtVal, ...srcVal] as any;
+      } else {
+        (target as any)[key] = [...srcVal] as any;
+      }
+      continue;
+    }
+
+    // objects
+    if (typeof srcVal === "object") {
+      if (typeof tgtVal === "object" && tgtVal !== null && !Array.isArray(tgtVal)) {
+        mergeDeep(tgtVal, srcVal as any);
+      } else {
+        (target as any)[key] = cloneDeep(srcVal);
+      }
+      continue;
+    }
+
+    // primitives just overwrite
+    (target as any)[key] = srcVal as any;
+  }
+
+  return mergeDeep(target, ...sources);
 }
+
 type NameGenerator<T extends string> = `${T}In` | `${T}Out` | `${T}InOut`
 function generatePolynomialEasingTriplet<T extends string>(degree: number, type: T): { readonly [K in NameGenerator<T>]: (t: number) => number } {
     const coeffCache = 2 ** (degree - 1);

@@ -8,7 +8,7 @@ import { AnimatedContainer2D, type Camera2D, type Renderer, Sprite2D, type Tween
 import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
 import { ABParticle2D, ClientGame2D, type ClientParticle2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
@@ -41,6 +41,7 @@ export class Player extends GameObject{
         left_arm:Sprite2D,
         right_arm:Sprite2D,
         weapon:Sprite2D,
+        weapon2:Sprite2D,
         muzzle_flash:Sprite2D,
         parachute:Sprite2D,
     }
@@ -97,6 +98,7 @@ export class Player extends GameObject{
     set_current_weapon(def?:WeaponDef,force:boolean=false,reset:boolean=true){
         if((this.current_weapon===def||this.driving)&&!force)return
         if(reset)this.reset_anim()
+        this.sprites.weapon2.visible=false
         if(!def||this.parachute){
             this.current_weapon=undefined
             this.sprites.left_arm.visible=false
@@ -135,7 +137,6 @@ export class Player extends GameObject{
             this.sprites.right_arm.visible=false
         }
         if(def?.image){
-            this.sprites.weapon.frame=this.game.resources.get_sprite((def as unknown as GameItem).item_type===InventoryItemType.melee?def.idString:`${def.idString}_world`)
             this.sprites.weapon.visible=true
             this.sprites.weapon.scale=v2.new(1,1)
             this.sprites.weapon.position=v2.duplicate(def.image.position)
@@ -146,6 +147,29 @@ export class Player extends GameObject{
             }
             this.sprites.weapon.zIndex=def.image.zIndex??2
             this.sprites.weapon.hotspot=def.image.hotspot??v2.new(.5,.5)
+            if((def as GunDef).dual_from&&(def as unknown as GameItem).item_type===InventoryItemType.gun){
+                const df=Guns.getFromString((def as GunDef).dual_from!)
+                this.sprites.weapon2.visible=true
+                this.sprites.weapon2.scale=v2.new(1,1)
+                this.sprites.weapon2.position=v2.duplicate(def.image.position)
+                this.sprites.weapon2.rotation=def.image.rotation
+                this.sprites.weapon2.zIndex=def.image.zIndex??2
+                this.sprites.weapon2.hotspot=def.image.hotspot??v2.new(.5,.5)
+                this.sprites.weapon.position.y+=(def as GunDef).dual_offset!
+
+                this.sprites.left_arm.visible=true
+                this.sprites.right_arm.visible=true
+                this.sprites.left_arm.position=v2.new(DefaultFistRig.left!.position.x,-(def as GunDef).dual_offset!)
+                this.sprites.right_arm.position=v2.new(DefaultFistRig.right!.position.x,(def as GunDef).dual_offset!)
+                this.sprites.left_arm.rotation=0
+                this.sprites.right_arm.rotation=0
+
+                this.sprites.weapon2.position.y-=(def as GunDef).dual_offset!
+                this.sprites.weapon.frame=this.game.resources.get_sprite(`${df.idString}_world`)
+                this.sprites.weapon2.frame=this.game.resources.get_sprite(`${df.idString}_world`)
+            }else{
+                this.sprites.weapon.frame=this.game.resources.get_sprite((def as unknown as GameItem).item_type===InventoryItemType.melee?def.idString:`${def.idString}_world`)
+            }
         }else{
             this.sprites.weapon.visible=false
         }
@@ -221,7 +245,8 @@ export class Player extends GameObject{
             right_arm:this.container.add_animated_sprite("right_arm"),
             muzzle_flash:this.container.add_animated_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
             parachute:this.container.add_animated_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5)}),
-            weapon:this.container.add_animated_sprite("weapon")
+            weapon:this.container.add_animated_sprite("weapon"),
+            weapon2:this.container.add_animated_sprite("weapon2")
         }
         this.anims.consumible_particles=this.game.particles.add_emiter({
             delay:0.5,
@@ -368,7 +393,7 @@ export class Player extends GameObject{
                         }
                     }
                 }
-                const sound=this.game.resources.get_audio(`${d.idString}_fire`)
+                const sound=this.game.resources.get_audio(`${d.dual_from??d.idString}_fire`)
                 if(sound){
                     this.game.sounds.play(sound,{
                         volume:0.4,

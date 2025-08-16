@@ -1,5 +1,6 @@
 import { v2, Vec2 } from "../../engine/geometry.ts";
-import { Definitions,Definition } from "../../engine/mod.ts";
+import { Definitions,Definition, DeepPartial } from "../../engine/mod.ts";
+import { mergeDeep } from "../../engine/utils.ts";
 import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../../others/item.ts";
 import { type BulletDef, GameItem, InventoryItemType } from "../utils.ts";
 export enum FireMode{
@@ -20,11 +21,12 @@ export interface GasParticle{
     direction_variation:number
 }
 export enum GunClasses{
+    Pistol,
     Shotgun,
     Sniper,
     Automatic,
     SMG,
-    Magic
+    Magic,
 }
 export interface MuzzleFlash{
     sprite:string
@@ -34,7 +36,7 @@ export const MuzzleFlash={
         sprite:"muzzle_flash_1",
     }
 }
-export interface GunDef extends Definition{
+export type GunDef={
     bullet?:{
         def:BulletDef
         count?:number
@@ -81,10 +83,21 @@ export interface GunDef extends Definition{
         frame?:string
     }
     gasParticles?:GasParticle
-}
+    dual?:DeepPartial<GunDef>&{dual_offset:number}
+}&({
+    dual_from?:undefined
+}|{
+    dual_from:string
+    dual_offset:number
+})&Definition
 
 export const Guns=new Definitions<GunDef,GameItem>((g)=>{
     g.item_type=InventoryItemType.gun
+    if(g.dual&&!g.dual_from){
+        const dd=mergeDeep({},g,g.dual,{dual_from:g.idString}) as GunDef
+        dd.idString="dual_"+dd.idString
+        Guns.insert(dd)
+    }
 })
 
 export const GasParticles={
@@ -126,10 +139,109 @@ export const GasParticles={
         },
         life_time:0.7,
         direction_variation:0.2
+    } satisfies GasParticle,
+    pistols:{
+        count:1,
+        size:{
+            min:0.7,
+            max:0.8
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:0.7,
+        direction_variation:0.2
     } satisfies GasParticle
 }
 
 Guns.insert(
+    {
+        idString:"m9",
+        fireDelay:0.3,
+        spread:0.7,
+        lenght:0.8,
+        size:6,
+        ammoType:"9mm",
+        fireMode:FireMode.Single,
+        class:GunClasses.Pistol,
+        quality:ItemQuality.Common,
+        ammoSpawnAmount:25,
+        bullet:{
+            def:{
+                damage:9,
+                radius:0.02,
+                range:100,
+                falloff:0.8,
+                speed:25,
+                obstacleMult:1.2,
+                tracer:tracers.small
+            }
+        },
+        reload:{
+            delay:2.5,
+            capacity:15,
+        },
+        recoil:{
+            duration:0.34,
+            speed:0.8
+        },
+        speed_mod:0.98,
+        arms:WeaponsArmRig[3],
+        muzzleFlash:MuzzleFlash.normal,
+        image:WeaponsRig[0],
+        dual:{
+            dual_offset:0.2,
+            fireDelay:0.15,
+            reload:{
+                capacity:30,
+                delay:4
+            }
+        }
+    },
+    {
+        idString:"pfeifer_zeliska",
+        fireDelay:1.4,
+        spread:0.7,
+        lenght:0.8,
+        size:6,
+        ammoType:"308sub",
+        fireMode:FireMode.Single,
+        class:GunClasses.Pistol,
+        quality:ItemQuality.Legendary,
+        ammoSpawnAmount:25,
+        bullet:{
+            def:{
+                damage:60,
+                radius:0.02,
+                range:230,
+                falloff:0.7,
+                speed:38,
+                obstacleMult:1.7,
+                tracer:tracers.large
+            }
+        },
+        reload:{
+            delay:4,
+            capacity:5,
+        },
+        recoil:{
+            duration:1.45,
+            speed:0.25
+        },
+        speed_mod:0.9,
+        arms:WeaponsArmRig[3],
+        muzzleFlash:MuzzleFlash.normal,
+        image:WeaponsRig[0],
+        dual:{
+            dual_offset:0.2,
+            fireDelay:0.8,
+            reload:{
+                capacity:10,
+                delay:7
+            }
+        }
+    },
     {
         idString:"ak47",
         fireDelay:0.1,

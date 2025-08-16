@@ -42,6 +42,8 @@ export class GunItem extends LItem{
     }
     reloading=false
     itemType=InventoryItemType.gun
+
+    dd:boolean=false
     is(other: LItem): boolean {
       return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
@@ -77,8 +79,14 @@ export class GunItem extends LItem{
       if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
       const position=v2.add(
         user.position,
-        v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.lenght,this.def.lenght))
+        v2.rotate_RadAngle(v2.new(
+          this.def.lenght,
+          this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0
+        ),user.rotation)
       )
+      if(this.def.dual_from){
+        this.dd=!this.dd
+      }
       if(this.def.bullet){
         const bc=this.def.bullet.count??1
         const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
@@ -361,20 +369,36 @@ export class GInventory extends Inventory<LItem>{
     if(slot===this.weaponIdx){this.weaponIdx=-1;this.set_current_weapon_index(slot)}
   }
   give_gun(id:string=""):boolean{
+      const dd=Guns.getFromString(id)
       if(!this.weapons[1])this.set_weapon(1,id)
       else if(!this.weapons[2])this.set_weapon(2,id)
-      else{
-      this.set_weapon(this.weaponIdx as keyof typeof this.weapons,id)
+      else if(dd.dual&&!dd.dual_from){
+          if(this.weapons[1]?.def.idString==dd.idString)this.set_weapon(1,"dual_"+id)
+          else if(this.weapons[2]?.def.idString==dd.idString)this.set_weapon(2,"dual_"+id)
+          else return false
       }
-    return true
+      else if(this.weaponIdx>0){
+          this.set_weapon(this.weaponIdx as keyof typeof this.weapons,id)
+      }else{
+          return false
+      }
+      return true
   }
   drop_weapon(slot:keyof typeof this.weapons=0,normal:boolean=true){
     if(!this.weapons[slot])return
-    this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
-    //l.velocity.x=-3
-    if(this.weapons[slot].itemType===InventoryItemType.gun&&this.weapons[slot].ammo>0){
-      this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
+    if(this.weapons[slot].itemType===InventoryItemType.gun){
+        if(this.weapons[slot].ammo>0){
+            this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
+        }
+        if(this.weapons[slot].def.dual_from){
+            for(let i=0;i<2;i++)this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
+        }else{
+            this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+        }
+    }else{
+        this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
     }
+    //l.velocity.x=-3
     this.weapons[slot]=undefined
     this.owner.actions.cancel()
     this.owner.privateDirtys.weapons=true
