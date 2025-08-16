@@ -412,7 +412,7 @@ Guns.insert(
         idString:"m870",
         fireDelay:0.8,
         spread:6,
-        lenght:0.7,
+        lenght:0.9,
         ammoType:"12g",
         ammoSpawnAmount:10,
         jitterRadius:0.5,
@@ -441,8 +441,17 @@ Guns.insert(
             duration:1,
             speed:0.55
         },
-        speed_mod:1,
-        gasParticles:GasParticles.shotgun
+        speed_mod:0.95,
+        gasParticles:GasParticles.shotgun,
+        arms:WeaponsArmRig[0],
+        image:{
+            position:v2.new(0.5,0),
+            rotation:0
+        },
+        caseParticle:{
+            position:v2.new(0.8,0.3)
+        },
+        muzzleFlash:MuzzleFlash.normal
     },
     {
         idString:"spas12",

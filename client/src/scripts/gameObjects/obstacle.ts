@@ -43,6 +43,7 @@ export class Obstacle extends ClientGameObject2D{
         if(this.dead){
             this.sprite.frame=this.game.resources.get_sprite(this.frame.dead)
             this.container.zIndex=zIndexes.DeadObstacles
+            if(this.emitter_1)this.emitter_1.destroyed=true
         }else{
             this.sprite.frame=this.game.resources.get_sprite(this.frame.base)
             this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
@@ -158,24 +159,26 @@ export class Obstacle extends ClientGameObject2D{
             this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
 
             if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
-                this.emitter_1=this.game.particles.add_emiter({
-                    delay:0.3,
-                    particle:()=>new ABParticle2D({
-                        frame:{
-                            image:"gas_smoke_particle"
-                        },
-                        position:this.position,
-                        speed:random.float(0.7,1),
-                        angle:0,
-                        direction:random.float(-1.45,-1.65),
-                        life_time:random.float(1.7,3),
-                        zIndex:zIndexes.Particles,
-                        scale:0,
-                        tint:ColorM.hex("#ffffffdd"),
-                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#ffffff00")}
-                    }),
-                    enabled:data.health<=0.35,
-                })
+                if(!this.emitter_1){
+                    this.emitter_1=this.game.particles.add_emiter({
+                        delay:0.3,
+                        particle:()=>new ABParticle2D({
+                            frame:{
+                                image:"gas_smoke_particle"
+                            },
+                            position:this.position,
+                            speed:random.float(0.7,1),
+                            angle:0,
+                            direction:random.float(-1.45,-1.65),
+                            life_time:random.float(1.7,3),
+                            zIndex:zIndexes.Particles,
+                            scale:0,
+                            tint:ColorM.hex("#ffffffdd"),
+                            to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#ffffff00")}
+                        }),
+                        enabled:data.health<=0.35,
+                    })
+                }
             }
         }
         if(data.dead){

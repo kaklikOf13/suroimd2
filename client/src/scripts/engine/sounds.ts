@@ -24,6 +24,8 @@ export class SoundInstance{
     volume:number=1
     volumeOld!: number
 
+    delay:number=0
+
     pan = 0
     panOld!: number
 

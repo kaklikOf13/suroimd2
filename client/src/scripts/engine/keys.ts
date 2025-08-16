@@ -217,7 +217,14 @@ export class KeyListener{
             this.listener.emit(KeyEvents.KeyDown,KeyNames[e.keyCode])
         })
         elem.addEventListener("keyup",(e:KeyboardEvent)=>{
-            this.keysup.push(e.keyCode)
+            this.keysup.push(e.keyCode)    
+            for(const i of this.keysup){
+                let index=this.keys.indexOf(i)
+                while(index!=-1){
+                    this.keys.splice(index,1)
+                    index=this.keys.indexOf(i)
+                }
+            }
             this.listener.emit(KeyEvents.KeyUp,KeyNames[e.keyCode])
         })
         elem.addEventListener("mousedown",(e:MouseEvent)=>{
@@ -232,16 +239,8 @@ export class KeyListener{
             this.listener.emit(KeyEvents.KeyUp,KeyNames[e.button+300])
         })
     }
-    //to work
     tick(){
         this.keysdown=[]
-        for(const i of this.keysup){
-            let index=this.keys.indexOf(i)
-            while(index!=-1){
-                this.keys.splice(index,1)
-                index=this.keys.indexOf(i)
-            }
-        }
         this.keysup=[]
     }
     keyPress(key:Key):boolean{
@@ -414,7 +413,7 @@ export class InputManager {
 
     actions: Map<string, InputAction> = new Map();
     private activeActions: Set<string> = new Set();
-    private pressedButtons: Set<number> = new Set(); // <-- NOVO
+    private pressedButtons: Set<number> = new Set();
 
     private callbacks: Record<"actiondown" | "actionup", ((event: ActionEvent) => void)[]> = {
         actiondown: [],
@@ -426,15 +425,12 @@ export class InputManager {
         this.mouse = new MousePosListener(meterSize);
         this.keys = new KeyListener();
 
-        // Captura eventos do controle e atualiza estado
         this.gamepad.listener.on(GamepadManagerEvent.buttondown, (e: { button: number }) => {
             this.pressedButtons.add(e.button);
-            this.handleInput(e.button, true);
         });
 
         this.gamepad.listener.on(GamepadManagerEvent.buttonup, (e: { button: number }) => {
             this.pressedButtons.delete(e.button);
-            this.handleInput(e.button, false);
         });
     }
 
@@ -454,20 +450,6 @@ export class InputManager {
     unregisterAction(name: string) {
         this.actions.delete(name);
         this.activeActions.delete(name);
-    }
-
-    private handleInput(code: number, isDown: boolean) {
-        for (const [action, { keys, buttons }] of this.actions.entries()) {
-            const match = keys.includes(code) || buttons.includes(code);
-
-            if (match && isDown && !this.activeActions.has(action)) {
-                this.activeActions.add(action);
-                this.emit("actiondown", action);
-            } else if (match && !isDown && this.activeActions.has(action)) {
-                this.activeActions.delete(action);
-                this.emit("actionup", action);
-            }
-        }
     }
 
     tick() {
@@ -507,6 +489,7 @@ export class InputManager {
         }
     }
 }
+
 export type JoystickEvent={
     detail:{
         x:number

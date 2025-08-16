@@ -95,7 +95,8 @@ export class Player extends GameObject{
     }
 
     set_current_weapon(def?:WeaponDef,force:boolean=false,reset:boolean=true){
-        if((this.current_weapon===def&&!force)||this.driving)return
+        if((this.current_weapon===def||this.driving)&&!force)return
+        if(reset)this.reset_anim()
         if(!def||this.parachute){
             this.current_weapon=undefined
             this.sprites.left_arm.visible=false
@@ -148,21 +149,21 @@ export class Player extends GameObject{
         }else{
             this.sprites.weapon.visible=false
         }
-        if(Math.random()<=0.5&&!force){
+        if(!force){
             const sound=this.game.resources.get_audio(`${def.idString}_switch`)
+            if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.stop()
             if(sound){
-                if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.disconnect()
                 this.sound_animation.weapon.switch=this.game.sounds.play(sound,{
                     on_complete:()=>{
                         this.sound_animation.weapon.switch=undefined
                     },
                     volume:0.4,
                     position:this.position,
+                    delay:400,
                     max_distance:5
                 },"players")
             }
         }
-        if(reset)this.reset_anim()
         this.container.updateZIndex()
     }
 
@@ -404,7 +405,7 @@ export class Player extends GameObject{
                         max_distance:5,
                         volume:0.7,
                         on_complete:()=>{
-                            this.reset_anim()
+                            this.set_current_weapon(this.current_weapon,true)
                         }
                     },"players")
                 }
@@ -417,7 +418,10 @@ export class Player extends GameObject{
                 }
                 this.anims.consumible_particles!.enabled=true
                 if(def.animation){
-                    this.container.play_animation(def.animation,this.set_current_weapon.bind(this,this.current_weapon,true,false))
+                    this.container.play_animation(def.animation,()=>{
+                        this.current_animation=undefined
+                        this.set_current_weapon.bind(this,this.current_weapon,true,!sound)
+                    })
                 }
                 break
             }
