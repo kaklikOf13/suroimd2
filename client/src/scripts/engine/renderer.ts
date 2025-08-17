@@ -341,8 +341,6 @@ create(glr: WebglRenderer, fac: GLMaterial2DFactory<GL2D_TexMatArgs>) {
 }
 export type GL2D_LightMatArgs = {
     color: Color
-    radius: number
-    intensity: number
 }
 
 export const GLF_Light: GLMaterial2DFactoryCall<GL2D_LightMatArgs> = {
@@ -369,9 +367,6 @@ void main() {
     create(gl, fac) {
         const aPositionLoc = gl.gl.getAttribLocation(fac.program, "a_Position");
         const uColorLoc     = gl.gl.getUniformLocation(fac.program, "u_Color")!;
-        const uRadiusLoc    = gl.gl.getUniformLocation(fac.program, "u_Radius")!;
-        const uIntensityLoc = gl.gl.getUniformLocation(fac.program, "u_Intensity")!;
-        const uLightPosLoc  = gl.gl.getUniformLocation(fac.program, "u_LightPos")!;
         const uTranslationLoc = gl.gl.getUniformLocation(fac.program, "u_Translation")!;
         const uScaleLoc = gl.gl.getUniformLocation(fac.program, "u_Scale")!;
         const uProjectionMatrixLoc = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!;
@@ -393,16 +388,10 @@ void main() {
             gl.gl.enableVertexAttribArray(aPositionLoc)
             gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
 
-            const radiusPx  = scale.x > 0 ? scale.x : mat.radius
-            const intensity = scale.y > 0 ? scale.y : mat.intensity
-
             gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
-            gl.gl.uniform1f(uRadiusLoc, radiusPx)
-            gl.gl.uniform1f(uIntensityLoc, intensity)
-            //gl.gl.uniform2f(uLightPosLoc, position.x, position.y)
 
             gl.gl.uniform2f(uTranslationLoc, position.x, position.y)
-            gl.gl.uniform2f(uScaleLoc, radiusPx, radiusPx)
+            gl.gl.uniform2f(uScaleLoc, scale.x, scale.y)
             gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
 
             gl.gl.drawArrays(gl.gl.TRIANGLES, 0, model.vertices.length / 2)

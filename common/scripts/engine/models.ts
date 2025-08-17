@@ -2,6 +2,14 @@ import { RadAngle, v2, Vec2 } from "./geometry.ts";
 
 export type Matrix=Float32Array
 export const matrix4={
+    identity(): Matrix {
+        return new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]);
+    },
     projection(size:Vec2,depth:number):Matrix{
         return new Float32Array([
            2 / size.x, 0, 0, 0,

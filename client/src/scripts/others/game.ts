@@ -182,7 +182,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
     this.camera.addObject(this.light_map)
-    this.light_map.ambient=0
+    this.light_map.ambient=0.5
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
   }
@@ -199,13 +199,8 @@ export class Game extends ClientGame2D<GameObject>{
   clear(){
     this.scene.reset()
   }
-  a=true
   override on_render(_dt:number):void{
     this.light_map.render(this.renderer as WebglRenderer,this.camera)
-    if(this.a){
-      this.light_map.addRadialLight(v2.new(7,7),10,1,ColorM.rgba(255,0,0,200))
-      this.a=false
-    }
   }
   override on_run(): void {
     

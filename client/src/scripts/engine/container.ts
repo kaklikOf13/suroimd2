@@ -509,7 +509,6 @@ export class AnimatedContainer2D extends Container2D{
 type LightInstance = {
     mat: GLMaterial2D<GL2D_LightMatArgs>
     pos: Vec2
-    radius: number
     model: Model2D
     destroyed: boolean
 };
@@ -522,13 +521,14 @@ export class Lights2D extends Container2DObject {
     private lightTexture!: WebGLTexture;
     private lights: LightInstance[] = [];
     downscale = 1.0;
-    clearColor: Color = { r: 0, g: 0, b: 0, a: 1 };
+    ambientColor: Color = { r: 1, g: 1, b: 1, a: 1 };
 
-    _ambient: number = 0;
-    get ambient() { return this._ambient; }
+    ambient_light?:GLMaterial2D<GL2D_LightMatArgs>
+    get ambient() {
+        return 1-this.ambientColor.a
+    }
     set ambient(v: number) {
-        this._ambient = v;
-        this.clearColor.a = 1-v;
+        this.ambientColor.a=1-v
     }
 
     private initFramebuffer(w: number, h: number) {
@@ -550,9 +550,15 @@ export class Lights2D extends Container2DObject {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
-    addRadialLight(pos: Vec2, radius: number, intensity = 1.0, color: Color = { r: 1, g: 1, b: 1, a: 1 }) {
+    /*addRadialLight(pos: Vec2, radius: number, intensity = 1.0, color: Color = { r: 1, g: 1, b: 1, a: 1 }) {
         const mat = this.renderer.factorys2D.light.create({ color, radius, intensity});
         const inst: LightInstance = { mat, pos: v2.duplicate(pos), radius, model:model2d.rect(v2.new(-radius,-radius),v2.new(radius,radius)), destroyed: false };
+        this.lights.push(inst);
+        return inst;
+    }*/
+    addLight(pos: Vec2, model:Model2D, color: Color = { r: 1, g: 1, b: 1, a: 1 }) {
+        const mat = this.renderer.factorys2D.light.create({ color});
+        const inst: LightInstance = { mat, pos: v2.duplicate(pos), model, destroyed: false };
         this.lights.push(inst);
         return inst;
     }
@@ -576,20 +582,19 @@ export class Lights2D extends Container2DObject {
 
         gl.viewport(0, 0, w, h);
         gl.disable(gl.BLEND);
-        //gl.clearColor(0, 0, 0, 0);
-        gl.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE);
 
+        if(!this.ambient_light)this.ambient_light=renderer.factorys2D.light.create({color:this.ambientColor})
+        this.ambient_light!.color=this.ambientColor
+        renderer.draw(this.screenModel,this.ambient_light,camera.projectionMatrix,camera.visual_position,v2.new(1,1))
         for (let i = 0; i < this.lights.length; i++) {
             const L = this.lights[i];
             if (L.destroyed) { this.lights.splice(i, 1); i--; continue; }
             renderer.draw(L.model, L.mat,camera.projectionMatrix, L.pos, v2.new(1,1));
         }
-        
-        /*gl.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
-        gl.clear(gl.COLOR_BUFFER_BIT);*/
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         this.updateScreenModel(v2.new(camera.width,camera.height), camera.meter_size)

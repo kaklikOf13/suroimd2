@@ -1,5 +1,5 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, model2d, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
@@ -340,7 +340,7 @@ export class Player extends GameObject{
                 if(d.muzzleFlash&&!this.sprites.muzzle_flash.visible){
                     this.sprites.muzzle_flash.frame=this.game.resources.get_sprite(d.muzzleFlash.sprite)
                     if(this.anims.muzzle_flash_light)this.anims.muzzle_flash_light.destroyed=true
-                    this.anims.muzzle_flash_light=this.game.light_map.addRadialLight(this.position,1,1,ColorM.hex("#ff0"))
+                    this.anims.muzzle_flash_light=this.game.light_map.addLight(this.sprites.muzzle_flash._real_position,model2d.circle(1),ColorM.hex("#ff0"))
                     this.sprites.muzzle_flash.position=v2.new(d.lenght,0)
                     
                     this.sprites.muzzle_flash.visible=true
