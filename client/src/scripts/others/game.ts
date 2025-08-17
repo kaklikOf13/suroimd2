@@ -1,4 +1,4 @@
-import { ClientGame2D, ResourcesManager, Renderer, ColorM, WebglRenderer, InputManager} from "../engine/mod.ts"
+import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
 import { Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -22,11 +22,12 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
 import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Graphics2D } from "../engine/container.ts";
+import { Graphics2D, Lights2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
+import { WebglRenderer } from "../engine/renderer.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -45,6 +46,8 @@ export class Game extends ClientGame2D<GameObject>{
   grid_gfx=new Graphics2D()
   scope_zoom:number=0.53
   happening:boolean=false
+
+  light_map=new Lights2D()
 
   //0.14=l6 32x
   //0.27=l5 16x
@@ -169,15 +172,18 @@ export class Game extends ClientGame2D<GameObject>{
 
     if(Debug.hitbox){
       const hc=ColorM.hex("#ee000099")
-      this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      /*this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_loot",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
-      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))*/
     }
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
+    this.camera.addObject(this.light_map)
+    this.light_map.ambient=0
+    this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
   }
   add_damageSplash(d:DamageSplash){
@@ -193,7 +199,13 @@ export class Game extends ClientGame2D<GameObject>{
   clear(){
     this.scene.reset()
   }
+  a=true
   override on_render(_dt:number):void{
+    this.light_map.render(this.renderer as WebglRenderer,this.camera)
+    if(this.a){
+      this.light_map.addRadialLight(v2.new(7,7),10,1,ColorM.rgba(255,0,0,200))
+      this.a=false
+    }
   }
   override on_run(): void {
     
@@ -210,8 +222,8 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.drop=-1
       this.action.drop_kind=0
     }
-    this.renderer.fullCanvas(this.camera)
-    this.camera.resize()
+    this.renderer.fullCanvas()
+    //this.camera.resize()
     this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/1920)
     
   }
@@ -259,7 +271,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.guiManager.players_name={}
     this.guiManager.start()
     this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/300)
-    this.renderer.fullCanvas(this.camera)
+    this.renderer.fullCanvas()
   }
   init_gui(gui:GuiManager){
     this.guiManager=gui

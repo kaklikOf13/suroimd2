@@ -389,6 +389,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         },this.map.random)
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
+        p.position.x=0
+        p.position.y=0
 
         if(connected){
             this.send_killfeed_message({

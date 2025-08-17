@@ -1,12 +1,8 @@
-import { CircleHitbox2D, Hitbox2D, HitboxType2D, NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
-import { Model2D, SourceType, type Frame } from "./resources.ts";
+import { NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
+import { type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
+import { Matrix, model2d, Model2D } from "common/scripts/engine/models.ts";
 import { type Camera2D } from "./container.ts";
-export interface Transform2D{
-    position:Vec2
-    scale:Vec2
-    rotation:number
-}
 export interface Color {
     r: number; // Red
     g: number; // Green
@@ -153,27 +149,20 @@ export const ColorM={
     },
 }
 export type RGBAT={r: number, g: number, b: number, a?: number}
+export type Material2D=GLMaterial2D
 export abstract class Renderer {
     canvas: HTMLCanvasElement
-    readonly meter_size: number
     background: Color = ColorM.default.white;
     constructor(canvas: HTMLCanvasElement, meter_size: number = 100) {
         this.canvas = canvas
-        this.meter_size = meter_size
     }
-    // deno-lint-ignore no-explicit-any
-    abstract draw_rect2D(rect: RectHitbox2D,material:Material2D<any>,offset?:Vec2): void
-    abstract draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset?:Vec2, precision?: number): void
-    abstract draw_image2D(image: Frame,position: Vec2,model:Float32Array,tint?:Color): void
-    abstract draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset?:Vec2): void
+    abstract draw_image2D(image: Frame,position: Vec2,model:Float32Array,matrix:Matrix,tint?:Color): void
+    abstract draw(model:Model2D,material:Material2D,matrix:Matrix,position:Vec2,scale:Vec2):void
 
     abstract clear(): void
 
-    abstract resize(camera:Camera2D,depth?:number):void
-
-    fullCanvas(camera:Camera2D,depth:number=500){
+    fullCanvas(){
         fullCanvas(this.canvas)
-        this.resize(camera,depth)
     }
 }
 
@@ -203,49 +192,21 @@ void main(void) {
     gl_FragColor = texture2D(u_Texture, flippedCoord)*u_Tint;
 }`;
 // deno-lint-ignore no-explicit-any
-export class Material2D<MaterialArgs=any>{
-    factory:Material2DFactory<MaterialArgs>
-    args!:MaterialArgs
-    resourceType=SourceType.Material
-    constructor(factory:Material2DFactory<MaterialArgs>){
-        this.factory=factory
-    }
-}
-export type Mat2DFunc<MatArgs>=(factory:Material2DFactory<MatArgs>,args:MatArgs,m:Model2D,trans:Transform2D,mode:number)=>void
-// deno-lint-ignore no-explicit-any
-export class Material2DFactory<MaterialArgs=any>{
-    on_execute:Mat2DFunc<MaterialArgs>
-    gl:WebGLRenderingContext
+export type GLMaterial2D<MaterialArgs=any>={
+    factory:GLMaterial2DFactory<MaterialArgs>
+    draw:(mat:GLMaterial2D<MaterialArgs>,matrix:Matrix,model:Model2D,position:Vec2,scale:Vec2)=>void
+}&MaterialArgs
+export interface GLMaterial2DFactory<MaterialArgs>{
+    create:(arg:MaterialArgs)=>GLMaterial2D<Material2D>
     program:WebGLProgram
-    constructor(gl:WebGLRenderingContext,program:WebGLProgram,on_execute:Mat2DFunc<MaterialArgs>){
-        this.on_execute=on_execute
-        this.gl=gl
-        this.program=program
-    }
-    create_material(args:MaterialArgs):Material2D<MaterialArgs>{
-        const ret=new Material2D(this)
-        ret.args=args
-        return ret
-    }
 }
-export class WebglRenderer extends Renderer {
-    readonly gl: WebGLRenderingContext;
-    projectionMatrix!: Float32Array;
-    readonly tex_program:WebGLProgram
-    readonly factorys2D:{
-        simple:Material2DFactory<Color>
-        texture:Material2DFactory<Frame>
-    }
-    readonly factorys2D_consts:Record<string,Record<string,number|WebGLUniformLocation>>={}
-    constructor(canvas: HTMLCanvasElement, meter_size: number = 100, background: Color = ColorM.default.white) {
-        super(canvas, meter_size);
-        const gl = this.canvas.getContext("webgl", { antialias: true });
-        this.background = background;
-        this.gl = gl!;
+export type GLMaterial2DFactoryCall<MaterialArgs>={vertex:string,frag:string,create:(gl:WebglRenderer,fac:GLMaterial2DFactory<MaterialArgs>)=>(arg:MaterialArgs)=>GLMaterial2D<Material2D>}
 
-        this.factorys2D={
-            simple:new Material2DFactory<Color>(gl!,this.createProgram(
-`
+export type GL2D_SimpleMatArgs={
+    color:Color
+}
+export const GLF_Simple:GLMaterial2DFactoryCall<GL2D_SimpleMatArgs>={
+    vertex:`
 attribute vec2 a_Position;
 uniform mat4 u_ProjectionMatrix;
 uniform vec2 u_Translation;
@@ -253,7 +214,7 @@ uniform vec2 u_Scale;
 void main() {
     gl_Position = u_ProjectionMatrix * vec4((a_Position*u_Scale)+u_Translation, 0.0, 1.0);
 }`,
-`
+    frag:`
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -262,42 +223,61 @@ uniform vec4 u_Color;
 
 void main() {
     gl_FragColor = u_Color;
+    //gl_FragColor = vec4(u_Color.rgb*u_Color.a,u_Color.a);
+}`,
+create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
+    const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
+    const uColorLoc=gl.gl.getUniformLocation(fac.program, "u_Color")!
+    const uTranslationLoc=gl.gl.getUniformLocation(fac.program, "u_Translation")!
+    const uScaleLoc=gl.gl.getUniformLocation(fac.program, "u_Scale")!
+    const uProjectionMatrixLoc=gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+
+    const vertexBuffer = gl.gl.createBuffer();
+    const draw=(mat:GLMaterial2D<GL2D_SimpleMatArgs>,matrix:Matrix,model:Model2D,position:Vec2,scale:Vec2)=>{
+        gl.gl.useProgram(fac.program)
+
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bufferData(gl.gl.ARRAY_BUFFER, model.vertices, gl.gl.STATIC_DRAW)
+
+        gl.gl.enableVertexAttribArray(aPositionLoc)
+        gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
+
+        gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
+        gl.gl.uniform2f(uTranslationLoc, position.x, position.y)
+        gl.gl.uniform2f(uScaleLoc, scale.x, scale.y)
+        gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
+        gl.gl.drawArrays(gl.gl.TRIANGLES, 0, model.vertices.length / 2)
+    }
+    return (arg:GL2D_SimpleMatArgs)=>{
+        return {
+            ...arg,
+            factory:fac,
+            draw:draw
+        }
+    }
 }
-`
-            ),(factory:Material2DFactory<Color>,args:Color,model:Model2D,trans:Transform2D,mode:number)=>{
-                const vertexBuffer = this.gl.createBuffer();
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-                this.gl.bufferData(this.gl.ARRAY_BUFFER, model.vertices, this.gl.STATIC_DRAW);
-                this.gl.useProgram(factory.program);
+}
 
-                const positionAttributeLocation = this.factorys2D_consts["simple"]["position"] as number;
-                this.gl.enableVertexAttribArray(positionAttributeLocation);
-                this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
-
-                this.gl.uniform4f(this.factorys2D_consts["simple"]["color"], args.r, args.g, args.b, args.a);
-
-                this.gl.uniform2f(this.factorys2D_consts["simple"]["translation"], trans.position.x, trans.position.y);
-                this.gl.uniform2f(this.factorys2D_consts["simple"]["scale"], trans.scale.x, trans.scale.y);
-
-                this.gl.uniformMatrix4fv(this.factorys2D_consts["simple"]["proj"], false, this.projectionMatrix);
-
-                this.gl.drawArrays(mode, 0, model.vertices.length / 2);
-            }),
-            "texture":new Material2DFactory<Frame>(gl!,this.createProgram(
-`
+export type GL2D_TexMatArgs={
+    texture:WebGLTexture
+    tint:Color
+}
+export const GLF_Texture:GLMaterial2DFactoryCall<GL2D_TexMatArgs>={
+    vertex:`
 attribute vec2 a_Position;
 attribute vec2 a_TexCoord;
     
 uniform mat4 u_ProjectionMatrix;
 uniform vec2 u_Translation;
+uniform vec2 u_Scale;
 
 varying highp vec2 vTextureCoord;
 
 void main(void) {
-    gl_Position = u_ProjectionMatrix*vec4(a_Position+u_Translation.xy,0.0,1.0);
+    gl_Position = u_ProjectionMatrix*vec4((a_Position*u_Scale)+u_Translation,0.0,1.0);
     vTextureCoord = a_TexCoord;
 }`,
-`
+    frag:`
 precision mediump float;
 
 varying highp vec2 vTextureCoord;
@@ -307,65 +287,172 @@ uniform vec4 u_Tint;
 void main(void) {
     vec2 flippedCoord = vec2(vTextureCoord.x, 1.0 - vTextureCoord.y);
     gl_FragColor = texture2D(u_Texture, flippedCoord)*u_Tint;
-}`
-            ),(factory:Material2DFactory<Frame>,args:Frame,model:Model2D,trans:Transform2D,mode:number)=>{
-                const vertexBuffer = this.gl.createBuffer();
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-                this.gl.bufferData(this.gl.ARRAY_BUFFER, model.vertices, this.gl.STATIC_DRAW);
+}`,
+create(glr: WebglRenderer, fac: GLMaterial2DFactory<GL2D_TexMatArgs>) {
+    const gl = glr.gl
+    const aPositionLoc = gl.getAttribLocation(fac.program, "a_Position")
+    const aTexCoordLoc = gl.getAttribLocation(fac.program, "a_TexCoord")
+    const uTintLoc = gl.getUniformLocation(fac.program, "u_Tint")!
+    const uTranslationLoc = gl.getUniformLocation(fac.program, "u_Translation")!
+    const uScaleLoc = gl.getUniformLocation(fac.program, "u_Scale")!
+    const uProjectionMatrixLoc = gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+    const uTextureLoc = gl.getUniformLocation(fac.program, "u_Texture")!
 
-                const textureCoordBuffer = this.gl.createBuffer()
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
-                this.gl.bufferData(this.gl.ARRAY_BUFFER, model.tex_coords, this.gl.STATIC_DRAW)
-                this.gl.useProgram(factory.program);
+    const vertexBuffer = gl.createBuffer()!
+    const textureCoordBuffer = gl.createBuffer()!
 
-                const positionAttributeLocation = this.factorys2D_consts["texture"]["position"] as number;
-                this.gl.enableVertexAttribArray(positionAttributeLocation);
-                this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
+    const draw = (mat: GLMaterial2D<GL2D_TexMatArgs>, matrix: Matrix, model: Model2D, position: Vec2, scale: Vec2) => {
+        gl.useProgram(fac.program)
 
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
-                this.gl.enableVertexAttribArray(this.factorys2D_consts["texture"]["coord"] as number);
-                this.gl.vertexAttribPointer(this.factorys2D_consts["texture"]["coord"] as number, 2, this.gl.FLOAT, false, 0, 0)
+        // Vertex buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, model.vertices, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(aPositionLoc)
+        gl.vertexAttribPointer(aPositionLoc, 2, gl.FLOAT, false, 0, 0)
 
-                this.gl.uniform2f(this.factorys2D_consts["texture"]["translation"], trans.position.x, trans.position.y);
-                this.gl.uniform2f(this.factorys2D_consts["texture"]["scale"], trans.scale.x, trans.scale.y);
+        // TexCoord buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, model.tex_coords, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(aTexCoordLoc)
+        gl.vertexAttribPointer(aTexCoordLoc, 2, gl.FLOAT, false, 0, 0)
 
-                this.gl.uniformMatrix4fv(this.factorys2D_consts["texture"]["proj"], false, this.projectionMatrix);
+        // Texture
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, mat.texture)
+        gl.uniform1i(uTextureLoc, 0)
 
-                this.gl.activeTexture(this.gl.TEXTURE0);
-                this.gl.bindTexture(this.gl.TEXTURE_2D, args.texture);
-                this.gl.uniform1i(this.factorys2D_consts["texture"]["texture"] as WebGLUniformLocation, 0)
+        // Uniforms
+        gl.uniform4f(uTintLoc, mat.tint.r, mat.tint.g, mat.tint.b, mat.tint.a)
+        gl.uniform2f(uTranslationLoc, position.x, position.y)
+        gl.uniform2f(uScaleLoc, scale.x, scale.y)
+        gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
 
-                this.gl.drawArrays(mode, 0, model.vertices.length / 2);
+        // Draw
+        gl.drawArrays(gl.TRIANGLES, 0, model.vertices.length / 2)
+    }
 
 
-            }),
-        }
-        let factory=this.factorys2D.simple
-        this.factorys2D_consts["simple"]={
-            "position":this.gl.getAttribLocation(factory.program, "a_Position"),
-            "color":this.gl.getUniformLocation(factory.program, "u_Color")!,
-            "translation":this.gl.getUniformLocation(factory.program, "u_Translation")!,
-            "scale":this.gl.getUniformLocation(factory.program, "u_Scale")!,
-            "proj":this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")!,
+    return (arg: GL2D_TexMatArgs) => ({
+        ...arg,
+        factory: fac,
+        draw
+    })
+}
+}
+export type GL2D_LightMatArgs = {
+    color: Color
+    radius: number
+    intensity: number
+}
+
+export const GLF_Light: GLMaterial2DFactoryCall<GL2D_LightMatArgs> = {
+    vertex: `
+attribute vec2 a_Position;
+uniform mat4 u_ProjectionMatrix;
+uniform vec2 u_Translation;
+uniform vec2 u_Scale;
+void main() {
+    gl_Position = u_ProjectionMatrix * vec4((a_Position * u_Scale) + u_Translation, 0.0, 1.0);
+}`,
+    frag: `
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec4 u_Color;
+
+void main() {
+    //gl_FragColor = u_Color;
+    gl_FragColor = vec4(u_Color.rgb*u_Color.a,u_Color.a);
+}`,
+
+    create(gl, fac) {
+        const aPositionLoc = gl.gl.getAttribLocation(fac.program, "a_Position");
+        const uColorLoc     = gl.gl.getUniformLocation(fac.program, "u_Color")!;
+        const uRadiusLoc    = gl.gl.getUniformLocation(fac.program, "u_Radius")!;
+        const uIntensityLoc = gl.gl.getUniformLocation(fac.program, "u_Intensity")!;
+        const uLightPosLoc  = gl.gl.getUniformLocation(fac.program, "u_LightPos")!;
+        const uTranslationLoc = gl.gl.getUniformLocation(fac.program, "u_Translation")!;
+        const uScaleLoc = gl.gl.getUniformLocation(fac.program, "u_Scale")!;
+        const uProjectionMatrixLoc = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!;
+
+        const vertexBuffer = gl.gl.createBuffer();
+
+        const draw = (
+            mat: GLMaterial2D<GL2D_LightMatArgs>,
+            matrix: Matrix,
+            model: Model2D,
+            position: Vec2,
+            scale: Vec2
+        ) => {
+            gl.gl.useProgram(fac.program)
+
+            gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer)
+            gl.gl.bufferData(gl.gl.ARRAY_BUFFER, model.vertices, gl.gl.STATIC_DRAW)
+
+            gl.gl.enableVertexAttribArray(aPositionLoc)
+            gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
+
+            const radiusPx  = scale.x > 0 ? scale.x : mat.radius
+            const intensity = scale.y > 0 ? scale.y : mat.intensity
+
+            gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
+            gl.gl.uniform1f(uRadiusLoc, radiusPx)
+            gl.gl.uniform1f(uIntensityLoc, intensity)
+            //gl.gl.uniform2f(uLightPosLoc, position.x, position.y)
+
+            gl.gl.uniform2f(uTranslationLoc, position.x, position.y)
+            gl.gl.uniform2f(uScaleLoc, radiusPx, radiusPx)
+            gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
+
+            gl.gl.drawArrays(gl.gl.TRIANGLES, 0, model.vertices.length / 2)
+        };
+
+        return (arg: GL2D_LightMatArgs) => ({
+            ...arg,
+            factory: fac,
+            draw
+        });
+    }
+};
+export class WebglRenderer extends Renderer {
+    readonly gl: WebGLRenderingContext;
+    readonly tex_program:WebGLProgram
+    readonly factorys2D:{
+        simple:GLMaterial2DFactory<GL2D_SimpleMatArgs>,
+        texture:GLMaterial2DFactory<GL2D_TexMatArgs>,
+        light:GLMaterial2DFactory<GL2D_LightMatArgs>
+    }
+    proccess_factory<T>(fac_def:GLMaterial2DFactoryCall<T>):GLMaterial2DFactory<T>{
+        const prog=this.createProgram(fac_def.vertex,fac_def.frag)
+        const fac={
+            program:prog
         }
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
-        factory=this.factorys2D.texture
-        this.factorys2D_consts["texture"]={
-            "position":this.gl.getAttribLocation(factory.program, "a_Position"),
-            "translation":this.gl.getUniformLocation(factory.program, "u_Translation")!,
-            "scale":this.gl.getUniformLocation(factory.program, "u_Scale")!,
-            "proj":this.gl.getUniformLocation(factory.program, "u_ProjectionMatrix")!,
-            "coord":this.gl.getAttribLocation(factory.program, "a_TexCoord"),
-            "texture":this.gl.getUniformLocation(factory.program, "u_Texture")!,
-        }
-
+        fac.create=fac_def.create(this,fac)
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        return fac
+    }
+    factorys2D_consts:Record<string,Record<string,WebGLUniformLocation|number>>={}
+    constructor(canvas: HTMLCanvasElement, background: Color = ColorM.default.white) {
+        super(canvas);
+        const gl = this.canvas.getContext("webgl", { antialias: true });
+        this.background = background;
+        this.gl = gl!;
         //Tex Program
         const tex_program = gl!.createProgram();
         gl!.attachShader(tex_program!, this.createShader(texVertexShaderSource, gl!.VERTEX_SHADER))
         gl!.attachShader(tex_program!, this.createShader(texFragmentShaderSource, gl!.FRAGMENT_SHADER))
         this.tex_program = tex_program!
         gl!.linkProgram(this.tex_program)
+
+        this.factorys2D={
+            simple:this.proccess_factory(GLF_Simple),
+            texture:this.proccess_factory(GLF_Texture),
+            light:this.proccess_factory(GLF_Light)
+        }
         
         this.factorys2D_consts["texture_ADV"]={
             "position":this.gl.getAttribLocation(this.tex_program, "a_Position"),
@@ -397,14 +484,6 @@ void main(void) {
                 screenX: e.screenX
             }));
         });
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
-        this.resize({zoom:1},500)
-    }
-    resize(camera:Camera2D,depth:number=500){
-        const scaleX = this.canvas.width / (this.meter_size*camera.zoom)
-        const scaleY = this.canvas.height / (this.meter_size*camera.zoom)
-        this.projectionMatrix = new Float32Array(matrix4.projection(v2.new(scaleX,scaleY),depth))
     }
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
@@ -425,57 +504,26 @@ void main(void) {
         this.gl.linkProgram(p!)
         return p!
     }
-    draw_vertices(model:Model2D,material:Material2D,trans:Transform2D,mode:number=this.gl.TRIANGLES){
-        material.factory.on_execute(material.factory,material.args,model,trans,mode)
+    override draw(model:Model2D,material:Material2D,matrix:Matrix,position:Vec2,scale:Vec2):void{
+        material.draw(material,matrix,model,position,scale)
     }
-    draw_rect2D(rect: RectHitbox2D, material: Material2D,offset:Vec2=NullVec2) {
+    draw_rect2D(rect: RectHitbox2D, material: GLMaterial2D<{}>,matrix:Matrix,offset:Vec2=NullVec2) {
         const x1 = 0
         const y1 = 0
         const x2 = rect.max.x-rect.min.x
         const y2 = rect.max.x-rect.min.x
 
-        this.draw_vertices({vertices:new Float32Array([
+        material.draw(material,matrix,{vertices:new Float32Array([
             x1, y1,
             x2, y1,
             x1, y2,
             x1, y2,
             x2, y1,
             x2, y2
-        ]),tex_coords:new Float32Array([])}, material,{position:v2.sub(rect.position,offset),scale:v2.new(1,1),rotation:0});
+        ]),tex_coords:new Float32Array([])},v2.sub(rect.position,offset),v2.new(1,1))
     }
 
-    draw_circle2D(circle: CircleHitbox2D, material: Material2D,offset:Vec2=NullVec2, precision: number = 50): void {
-        const centerX = 0
-        const centerY = 0
-        const radius = circle.radius
-
-        const angleIncrement = (2 * Math.PI) / precision
-
-        const vertices: number[] = []
-        vertices.push(centerX, centerY);
-        for (let i = 0; i <= precision; i++) {
-            const angle = angleIncrement * i
-            const x = centerX + radius * Math.cos(angle)
-            const y = centerY + radius * Math.sin(angle)
-            vertices.push(x, y)
-        }
-        this.draw_vertices({vertices:new Float32Array(vertices),tex_coords:new Float32Array()}, material,{position:v2.sub(circle.position,offset),scale:v2.new(1,1),rotation:0},this.gl.TRIANGLE_FAN);
-    }
-
-    draw_hitbox2D(hitbox: Hitbox2D, mat: Material2D,offset:Vec2=NullVec2): void {
-        switch (hitbox.type) {
-            case HitboxType2D.circle:
-                this.draw_circle2D(hitbox, mat,offset)
-                break;
-            case HitboxType2D.rect:
-                this.draw_rect2D(hitbox, mat,offset)
-                break;
-            default:
-                return;
-        }
-    }
-
-    draw_image2D(image: Frame,position: Vec2,model:Float32Array,tint:Color=ColorM.default.white): void {
+    draw_image2D(image: Frame,position: Vec2,model:Float32Array,matrix:Matrix,tint:Color=ColorM.default.white): void {
         const program=this.tex_program
 
         const vertexBuffer = this.gl.createBuffer()
@@ -498,9 +546,9 @@ void main(void) {
 
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, image.texture);
-        this.gl.uniform1i(this.factorys2D_consts["texture_ADV"]["texture_ADV"] as WebGLUniformLocation, 0)
+        this.gl.uniform1i(this.factorys2D_consts["texture_ADV"]["texture"] as WebGLUniformLocation, 0)
 
-        this.gl.uniformMatrix4fv(this.factorys2D_consts["texture_ADV"]["proj"], false, this.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.factorys2D_consts["texture_ADV"]["proj"], false, matrix);
 
         this.gl.uniform2f(this.factorys2D_consts["texture_ADV"]["translation"],position.x,position.y)
 
@@ -515,13 +563,11 @@ void main(void) {
         this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
         
-        this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.depthMask(true)
         this.gl.depthFunc(this.gl.LEQUAL)
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
     }
-
 }
 export function createCanvas(size: Vec2, pixelated: boolean = true, center: boolean = true): HTMLCanvasElement {
     const canvas = document.createElement("canvas");

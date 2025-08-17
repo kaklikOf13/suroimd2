@@ -18,73 +18,6 @@ export interface SoundDef{
     src:string
 }
 
-function rotatePoint(x:number, y:number, angle:number) {
-    const cosTheta = Math.cos(angle);
-    const sinTheta = Math.sin(angle);
-    return {
-        x: cosTheta * x - sinTheta * y,
-        y: sinTheta * x + cosTheta * y
-    };
-}
-export function ImageModel2D(scale: Vec2, angle: number, hotspot: Vec2=v2.new(0,0),size:Vec2,meter_size:number=100):Float32Array{
-    const sizeR=v2.new((size.x/meter_size)*(scale.x/2),(size.y/meter_size)*(scale.y/2))
-    const x1 = -sizeR.x*hotspot.x
-    const y1 = -sizeR.y*hotspot.y
-    const x2 = sizeR.x+x1
-    const y2 = sizeR.y+y1
-
-    const verticesB = [
-        { x: x1, y: y1 },
-        { x: x2, y: y1 },
-        { x: x1, y: y2 },
-        { x: x2, y: y2 }
-    ];
-    const verticesR = verticesB.map(vertex => rotatePoint(vertex.x, vertex.y, angle))
-
-    return new Float32Array([
-        verticesR[0].x, verticesR[0].y,
-        verticesR[1].x, verticesR[1].y,
-        verticesR[2].x, verticesR[2].y,
-        
-        verticesR[2].x, verticesR[2].y,
-        verticesR[1].x, verticesR[1].y,
-        verticesR[3].x, verticesR[3].y
-    ])
-}
-export function LineModel2D(start: Vec2, end: Vec2, width: number): Model2D {
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-
-    const len = Math.sqrt(dx * dx + dy * dy);
-    if (len === 0) return {vertices:new Float32Array(0),tex_coords:new Float32Array([])};
-
-    const angle = Math.atan2(dy, dx);
-    const halfW = width / 2;
-
-    const verticesBase = [
-        { x: 0,    y:  halfW },
-        { x: len,  y:  halfW },
-        { x: 0,    y: -halfW },
-        { x: len,  y: -halfW }
-    ];
-
-    const verticesRotated = verticesBase.map(v => rotatePoint(v.x, v.y, angle));
-
-    const verticesTranslated = verticesRotated.map(v => ({
-        x: v.x + start.x,
-        y: v.y + start.y
-    }));
-
-    return {vertices:new Float32Array([
-        verticesTranslated[0].x, verticesTranslated[0].y,
-        verticesTranslated[1].x, verticesTranslated[1].y,
-        verticesTranslated[2].x, verticesTranslated[2].y,
-
-        verticesTranslated[2].x, verticesTranslated[2].y,
-        verticesTranslated[1].x, verticesTranslated[1].y,
-        verticesTranslated[3].x, verticesTranslated[3].y
-    ]),tex_coords:new Float32Array()};
-}
 export class Frame{
     source:HTMLImageElement
     texture!:WebGLTexture
@@ -97,6 +30,7 @@ export class Frame{
     }
     texture_coordinates:Float32Array
     frame_size?:Vec2
+    living_texture:boolean=true
     readonly resourceType:SourceType.Frame=SourceType.Frame
     gl:WebGLRenderingContext
     constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string,tc:number[]){
@@ -106,6 +40,8 @@ export class Frame{
         this.texture_coordinates=new Float32Array(tc)
     }
     free(){
+        if(!this.living_texture)return
+        this.living_texture=false
         this.gl.deleteTexture(this.texture)
     }
 }
@@ -212,6 +148,25 @@ export class ResourcesManager{
                 1.0, 1.0,
                 1.0, 0.0
             ]);
+            ret.source.addEventListener("load",()=>{
+                const sp=ret as Frame
+                sp.texture=loadTexture(this.gl,sp.source)!
+                resolve(ret)
+            });
+            ret.source.src=src
+        })
+    }
+    get_frame_from_canvas(canvas:HTMLCanvasElement,gl?:WebGLRenderingContext):Promise<Frame>{
+        return new Promise<Frame>((resolve) => {  
+            const src=canvas.toDataURL()
+            const ret=new Frame(new Image(),gl??this.gl,src,[
+                0.0, 1.0,
+                1.0, 1.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                1.0, 1.0,
+                1.0, 0.0
+            ])
             ret.source.addEventListener("load",()=>{
                 const sp=ret as Frame
                 sp.texture=loadTexture(this.gl,sp.source)!
@@ -369,8 +324,4 @@ export enum AudioState{
     failed,
     inited,
     interrupt
-}
-export interface Model2D{
-    vertices:Float32Array
-    tex_coords:Float32Array
 }

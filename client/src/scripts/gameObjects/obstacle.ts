@@ -101,9 +101,9 @@ export class Obstacle extends ClientGameObject2D{
         }
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        if(Debug.hitbox){
+        /*if(Debug.hitbox){
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_obstacle"),camera.visual_position)
-        }
+        }*/
     }
     constructor(){
         super()

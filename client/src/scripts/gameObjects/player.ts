@@ -18,6 +18,7 @@ import { DefaultFistRig } from "common/scripts/others/item.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { ParticlesEmitter2D, ParticlesManager2D } from "common/scripts/engine/particles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
+import { Light2D } from "../engine/container.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -51,6 +52,7 @@ export class Player extends GameObject{
             right_arm?:Tween<Vec2>
             weapon?:Tween<Vec2>
         },
+        muzzle_flash_light?:Light2D
         consumible_particle:string
         consumible_particles?:ParticlesEmitter2D<ClientParticle2D>
     }={consumible_particle:"healing_particle"}
@@ -283,9 +285,9 @@ export class Player extends GameObject{
         this.container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        if(Debug.hitbox){
+        /*if(Debug.hitbox){
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_player"),camera.visual_position)
-        }
+        }*/
     }
     constructor(){
         super()
@@ -337,10 +339,13 @@ export class Player extends GameObject{
                 }
                 if(d.muzzleFlash&&!this.sprites.muzzle_flash.visible){
                     this.sprites.muzzle_flash.frame=this.game.resources.get_sprite(d.muzzleFlash.sprite)
+                    if(this.anims.muzzle_flash_light)this.anims.muzzle_flash_light.destroyed=true
+                    this.anims.muzzle_flash_light=this.game.light_map.addRadialLight(this.position,1,1,ColorM.hex("#ff0"))
                     this.sprites.muzzle_flash.position=v2.new(d.lenght,0)
                     
                     this.sprites.muzzle_flash.visible=true
                     this.game.addTimeout(()=>{
+                        this.anims.muzzle_flash_light!.destroyed=true
                         this.sprites.muzzle_flash.visible=false
                     },dur)
                 }
