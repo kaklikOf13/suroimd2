@@ -1,10 +1,10 @@
 import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, PolygonHitbox2D, RectHitbox2D, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "../../../../common/scripts/definitions/objects/obstacles.ts";
+import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
 
 import { IslandDef, LootTables } from "common/scripts/definitions/maps/base.ts"
-import { MapPacket } from "common/scripts/packets/map_packet.ts";
+import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts";
 import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
@@ -19,9 +19,10 @@ export const generation={
             const hitboxes:Hitbox2D[]=[]
             for(const f of def.generation.terrain.floors.sort()){
                 cp+=f.padding
-                const hb=new PolygonHitbox2D(jaggedRectangle(v2.new(cp,cp),v2.new(map.size.x-cp,map.size.y-cp),f.spacing,f.variation,random))
+                const min=v2.new(cp,cp),max=v2.new(map.size.x-cp,map.size.y-cp)
+                const hb=new PolygonHitbox2D(jaggedRectangle(min,max,f.spacing,f.variation,random))
                 hitboxes.push(hb)
-                map.terrain.add_floor(f.type,hb,Layers.Normal)
+                map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,hb)
             }
             if(def.generation.terrain.rivers){
                 const rivers=generate_rivers(hitboxes[def.generation.terrain.rivers.spawn_floor].toRect(),def.generation.terrain.rivers.defs,def.generation.terrain.rivers.divisions,random,def.generation.terrain.rivers.expansion,[
@@ -67,9 +68,10 @@ export class GameMap{
         this.size=v2.new(10,10)
         this.game=game
     }
-    map_packet_stream:NetStream=new NetStream(new ArrayBuffer(10*1024))
+    map_packet_stream:NetStream=new NetStream(new ArrayBuffer(400*1024))
     terrain:TerrainManager=new TerrainManager()
     random!:SeededRandom
+    objects:Obstacle[]=[]
     getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
         let pos:Vec2|undefined=undefined
         let attempt=0
@@ -119,6 +121,7 @@ export class GameMap{
         const o=this.game.scene.objects.add_object(new Obstacle(),Layers.Normal,undefined,{
             def:def
         }) as Obstacle
+        this.objects.push(o)
         return o
     }
     clamp_hitbox(hb:Hitbox2D){
@@ -139,14 +142,28 @@ export class GameMap{
         const random=new SeededRandom(seed)
         this.random=random
         algorithm(this,random)
-
-        this.game.clients.packets_manager.encode(this.encode(),this.map_packet_stream)
+        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
     }
-    encode():MapPacket{
+    encode(seed:number):MapPacket{
         const p=new MapPacket()
+        const objects:MapObjectEncode[]=[]
+        for(const o of this.objects){
+            if(!o.def.invisibleOnMap){
+                objects.push({
+                    def:o.def.idNumber!,
+                    position:o.position,
+                    rotation:o.rotation,
+                    scale:o.scale,
+                    type:0,
+                    variation:o.variation
+                })
+            }
+        }
         p.map={
             terrain:this.terrain.floors,
-            size:this.size
+            size:this.size,
+            seed:seed,
+            objects
         }
         return p
     }

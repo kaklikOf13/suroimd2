@@ -158,7 +158,7 @@ export const GasParticles={
 Guns.insert(
     {
         idString:"m9",
-        fireDelay:0.3,
+        fireDelay:0.25,
         spread:0.7,
         lenght:0.8,
         size:6,
@@ -173,7 +173,7 @@ Guns.insert(
                 radius:0.02,
                 range:100,
                 falloff:0.8,
-                speed:25,
+                speed:28,
                 obstacleMult:1.2,
                 tracer:tracers.small
             }

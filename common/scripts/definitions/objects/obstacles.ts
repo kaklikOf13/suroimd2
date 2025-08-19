@@ -31,6 +31,7 @@ export interface ObstacleDef extends Definition{
     hotspot?:Vec2
     noCollision?:boolean
     noBulletCollision?:boolean
+    invisibleOnMap?:boolean
     scale?:{
         min?:number
         max?:number

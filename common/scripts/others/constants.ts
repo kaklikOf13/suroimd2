@@ -68,7 +68,8 @@ export enum zIndexes{
     Explosions,
     ParachutePlayers,
     Lights,
-    DamageSplashs
+    DamageSplashs,
+    Minimap
 }
 export enum ActionsType{
     Reload,

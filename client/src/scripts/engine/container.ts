@@ -1,6 +1,6 @@
 import { SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D, GLMaterial2D, GL2D_LightMatArgs } from "./renderer.ts";
-import { type ResourcesManager, type Frame } from "./resources.ts";
+import { type ResourcesManager, type Frame, DefaultTexCoords } from "./resources.ts";
 import { AKeyFrame, FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 import { Hitbox2D, HitboxType2D } from "common/scripts/engine/hitbox.ts";
@@ -12,6 +12,7 @@ export interface CamA{
     position:Vec2
     size:Vec2
     meter_size:number
+    center_pos:boolean
 }
 export abstract class Container2DObject {
     abstract object_type: string;
@@ -314,17 +315,19 @@ export class Sprite2D extends Container2DObject{
     current_delay:number=0
     current_frame:number=0
 
+    old_ms=1
+
     cam?:CamA
 
     update_model(){
         if(!this.frame||!this.cam)return
         this._real_size=this.size??this.frame.frame_size??v2.new(this.frame.source.width,this.frame.source.height)
-
-        this.model=ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,this.cam.meter_size)
+        this.model=ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100)
         this._old_hotspot=v2.duplicate(this.hotspot)
         this._old_scale=v2.duplicate(this._real_scale)
         this._old_size=v2.duplicate(this._real_size)
         this._old_rotation=this._real_rotation
+        this.old_ms=this.cam.meter_size
     }
 
     model:Float32Array
@@ -369,6 +372,7 @@ export class Sprite2D extends Container2DObject{
         this.cam=cam
         if(
             (!this._old_rotation||!this._old_scale||!this._old_size||!this._old_hotspot)||
+            (this.old_ms!==cam.meter_size)||
             (!v2.is(this._old_hotspot,this.hotspot)||this._real_rotation!==this._old_rotation||v2.is(this._real_scale,this._old_scale)||v2.is(this._real_size,this._old_size))
         )this.update_model()
         if(this.frame)renderer.draw_image2D(this.frame,this._real_position,this.model,cam.matrix,this._real_tint)
@@ -388,8 +392,9 @@ export class Container2D extends Container2DObject{
     updateZIndex(){
         this.children.sort((a, b) => a.zIndex - b.zIndex || a.id_on_parent - b.id_on_parent);
     }
-    draw(cam:CamA,renderer:Renderer):void{
-        for(const c of this.children){
+    draw(cam:CamA,renderer:Renderer,objects?:Container2DObject[]):void{
+        if(!objects)objects=this.children
+        for(const c of objects){
             if(c.visible)c.draw(cam,renderer)
         }
     }
@@ -656,7 +661,233 @@ export class Lights2D extends Container2DObject {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     }
 }
+export class SubCanvas2D extends Container2DObject {
+    override object_type = "sub_canvas";
 
+    private renderer!: WebglRenderer;
+    private FBO!: WebGLFramebuffer;
+    private Texture!: WebGLTexture;
+
+    container:Container2D=new Container2D()
+
+    downscale = 1.0
+    width:number
+    height:number
+    add_child(c:Container2DObject){
+        this.container.add_child(c)
+    }
+
+    size?:Vec2
+
+    _zoom:number=1
+    constructor(width:number,height:number){
+        super()
+        this.width=width
+        this.height=height
+    }
+    size_matrix:Matrix=matrix4.identity()
+    resize(){
+        const scale=this.camera.meter_size*this._zoom
+
+        const scaleX = this.width / (this.camera.meter_size*this._zoom)
+        const scaleY = this.height / (this.camera.meter_size*this._zoom)
+
+        this.size_matrix = matrix4.projection(v2.new(scaleX,scaleY),500)
+
+        this.camera.size=v2.new(this.width/scale,this.height/scale)  
+    }
+
+    private initFramebuffer(w: number, h: number) {
+        const gl = this.renderer.gl;
+        this.resize()
+        if (this.Texture) gl.deleteTexture(this.Texture);
+        if (this.FBO) gl.deleteFramebuffer(this.FBO);
+
+        this.Texture = gl.createTexture()!;
+        gl.bindTexture(gl.TEXTURE_2D, this.Texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, Math.floor(w), Math.floor(h), 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        this.FBO = gl.createFramebuffer()!;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.FBO);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.Texture, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+    private _lastW:number=0
+    private _lastH:number=0
+
+    camera:CamA={
+        matrix:matrix4.identity(),
+        meter_size:5,
+        position:this.position,
+        size:v2.new(5,5),
+        center_pos:false
+    }
+    render(renderer: WebglRenderer, camera: Camera2D,objects?:Container2DObject[]) {
+        this.renderer = renderer;
+        const gl = renderer.gl;
+
+        const w = Math.max(1, this.width*this.downscale);
+        const h = Math.max(1, this.height*this.downscale);
+
+        if (!this.FBO || !this.Texture || this._lastW !== w || this._lastH !== h) {
+            this.initFramebuffer(w, h);
+            this._lastW = w;
+            this._lastH = h;
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.FBO);
+
+        gl.viewport(0, 0, w, h);
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        if(this.camera.center_pos){
+            const halfViewSize = v2.new(this.camera.size.x / 2, this.camera.size.y / 2)
+            const cameraPos = v2.sub(this.camera.position, halfViewSize)
+            this.camera.matrix=matrix4.mult(this.size_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
+        }else{
+            this.camera.matrix=matrix4.mult(this.size_matrix,matrix4.translation_2d(v2.neg(this.camera.position)))
+        }
+        this.container.draw(this.camera,renderer,objects)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.updateScreenModel(v2.new(w,h), camera.meter_size)
+        gl.viewport(0, 0, renderer.canvas.width, renderer.canvas.height)
+    }
+
+    screenModel:Model2D=model2d.rect()
+    hotspot:Vec2=v2.new(0.5,0.5)
+    override update(dt: number, resources: ResourcesManager): void {
+        super.update(dt,resources)
+        this.container.update(dt,resources)
+    }
+    private updateScreenModel(pixelSize: Vec2, meterSize: number) {
+        this.screenModel={
+            tex_coords:new Float32Array(DefaultTexCoords),
+            vertices:ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this.size??pixelSize,meterSize)
+        }
+    }
+    toBase64(resources:ResourcesManager):string{
+        if (!this.Texture || !this.FBO) return "";
+        const gl = this.renderer.gl;
+
+        const w = Math.floor(this.width*this.downscale)
+        const h = Math.floor(this.height*this.downscale)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.FBO)
+
+        const pixels = new Uint8Array(w * h * 4)
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        const canvas=resources.canvas
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d")!
+        const imgData = ctx.createImageData(w, h)
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const srcIndex = ((h - y - 1) * w + x) * 4
+                const dstIndex = (y * w + x) * 4
+                imgData.data[dstIndex + 0] = pixels[srcIndex + 0]
+                imgData.data[dstIndex + 1] = pixels[srcIndex + 1]
+                imgData.data[dstIndex + 2] = pixels[srcIndex + 2]
+                imgData.data[dstIndex + 3] = pixels[srcIndex + 3]
+            }
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+
+        const dataURL = canvas.toDataURL("image/png")
+        return dataURL
+    }
+
+    override draw(cam:CamA,renderer: WebglRenderer) {
+        if (!this.Texture) return;
+
+        const mat = renderer.factorys2D.texture.create({
+            texture: this.Texture,
+            tint: { r: 1, g: 1, b: 1, a: 1 }
+        });
+        renderer.draw(this.screenModel,mat,cam.matrix,this._real_position,v2.new(1,-1))
+    }
+}
+export class Minimap2D extends SubCanvas2D{
+    type="minimap"
+
+    image_division:number
+
+    min:Vec2
+    max:Vec2
+    
+    fill_objects:Container2DObject[]=[]
+
+    grid:Record<number,Record<number,Container2DObject[]>>={}
+
+    override add_child(c: Container2DObject,fill:boolean=true): void {
+        if(fill){
+            this.fill_objects.push(c)
+        }else{
+            const gp=v2.floor(v2.scale(c._real_position,this.image_division))
+            const min=v2.sub(gp,v2.new(1,1))
+            const max=v2.add(gp,v2.new(1,1))
+            for(let y=min.y;y<max.y;y++){
+                if(!this.grid[y])this.grid[y]={}
+                for(let x=min.x;x<max.x;x++){
+                    if(!this.grid[y][x])this.grid[y][x]=[]
+                    this.grid[y][x].push(c)
+                }
+            }
+        }
+        super.add_child(c)
+    }
+
+    get_mm_grid_objects(min:Vec2,max:Vec2):Container2DObject[]{
+        const ret:Container2DObject[]=[]
+        for(let y=min.y;y<max.y;y++){
+            if(!this.grid[y])continue
+            for(let x=min.x;x<max.x;x++){
+                if(!this.grid[y][x])continue
+                ret.push(...this.grid[y][x])
+            }
+        }
+        return ret
+    }
+    get_grid_objects(pos:Vec2):Container2DObject[]{
+        if(!this.grid[pos.y])return []
+        if(!this.grid[pos.y][pos.x])return []
+        return this.grid[pos.y][pos.x]
+    }
+
+    constructor(image_division=20,min:Vec2=v2.new(0,0),max:Vec2=v2.new(100,100)){
+        super(250,250)
+        this.min=min
+        this.max=max
+        this.image_division=image_division
+    }
+    render_full(resources:ResourcesManager,renderer: WebglRenderer, camera: Camera2D,min?:Vec2,max?:Vec2): string[][] {
+        const ret:string[][]=[]
+        if(!min)min=v2.ceil(v2.dscale(this.min,this.image_division))
+        if(!max)max=v2.ceil(v2.dscale(this.max,this.image_division))
+        this.width=this.image_division*this.camera.meter_size
+        this.height=this.image_division*this.camera.meter_size
+        for(let y=min.y;y<max.y;y++){
+            const ya:string[]=[]
+            for(let x=min.x;x<max.x;x++){
+                this.camera.position=v2.scale(v2.new(x,y),this.image_division)
+                super.render(renderer,camera,[...this.get_grid_objects(v2.new(x,y)),...this.fill_objects])
+                ya.push(this.toBase64(resources))
+            }
+            ret.push(ya)
+        }
+        return ret
+    }
+}
 export class Camera2D{
     renderer:Renderer
     container:Container2D=new Container2D()
@@ -675,6 +906,8 @@ export class Camera2D{
 
     position = v2.new(0, 0)
     visual_position=v2.new(0,0)
+
+    center_pos:boolean=true
 
     constructor(renderer:Renderer){
         this.renderer=renderer
@@ -699,17 +932,20 @@ export class Camera2D{
     }
 
     update(dt:number,resources:ResourcesManager): void {
-        //const scale = this._zoom;
-        const halfViewSize = v2.new(this.width / 2, this.height / 2);
+        if(this.center_pos){
+            const halfViewSize = v2.new(this.width / 2, this.height / 2);
+            const cameraPos = v2.sub(this.position, halfViewSize);
 
-        const cameraPos = v2.sub(this.position, halfViewSize);
+            this.visual_position=cameraPos
+            this.projectionMatrix=this.SubMatrix
 
-        //this.container.position = v2.neg(cameraPos);
-        this.visual_position=cameraPos
-        this.projectionMatrix=this.SubMatrix
+            this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(cameraPos)))
+        }else{
+            this.visual_position=this.position
+            this.projectionMatrix=this.SubMatrix
 
-        this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(cameraPos)))
-
+            this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
+        }
         this.container.update(dt,resources);
         this.container.updateZIndex();  
     }
@@ -719,7 +955,8 @@ export class Camera2D{
             matrix:this.projectionMatrix,
             position:this.visual_position,
             meter_size:this.meter_size,
-            size:v2.new(this.width,this.height)
+            size:v2.new(this.width,this.height),
+            center_pos:this.center_pos
         },renderer)
     }
 }

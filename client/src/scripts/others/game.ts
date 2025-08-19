@@ -28,6 +28,7 @@ import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { WebglRenderer } from "../engine/renderer.ts";
+import { MinimapManager } from "../managers/miniMapManager.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -44,10 +45,12 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
-  scope_zoom:number=0.53
+  scope_zoom:number=0.27
   happening:boolean=false
 
   light_map=new Lights2D()
+
+  minimap:MinimapManager=new MinimapManager(this)
 
   //0.14=l6 32x
   //0.27=l5 16x
@@ -182,7 +185,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
     this.camera.addObject(this.light_map)
-    this.light_map.ambient=0.5
+    this.light_map.ambient=0
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
   }
@@ -199,8 +202,9 @@ export class Game extends ClientGame2D<GameObject>{
   clear(){
     this.scene.reset()
   }
-  override on_render(_dt:number):void{
+  override on_render(dt:number):void{
     this.light_map.render(this.renderer as WebglRenderer,this.camera)
+    this.minimap.draw()
   }
   override on_run(): void {
     
@@ -226,9 +230,8 @@ export class Game extends ClientGame2D<GameObject>{
     if(this.activePlayer){
       this.camera.position=this.activePlayer!.position
       const gridSize=GameConstants.collision.chunckSize
-      this.grid_gfx.clear()
-      this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
-      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.08)
+      this.minimap.position=v2.duplicate(this.camera.position)
+      this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
     }
   }
   connect(client:Client,playerName:string){
@@ -247,6 +250,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("map",(mp:MapPacket)=>{
       this.terrain.process_map(mp.map)
       this.terrain.draw(this.terrain_gfx,1)
+      this.terrain.draw(this.minimap.terrain_gfx,1)
+      this.minimap.init(mp.map)
     })
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false

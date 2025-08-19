@@ -4,6 +4,9 @@ import { type ID } from "./utils.ts"
 import { NetStream } from "./stream.ts";
 import { random } from "./random.ts";
 export type GameObjectID=ID
+export type CameraMain={
+
+}
 export abstract class BaseObject2D{
     public hb:Hitbox2D
     public destroyed:boolean
@@ -209,7 +212,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         layer: number,
         id?: number,
         args?: Record<string, any>,
-        sv: Record<string, any> = {}
+        sv: Record<string, any> = {},
     ): GameObject {
         if (!this.objects[layer]) {
             this.add_layer(layer);
@@ -274,7 +277,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const obb=this.oncreate(oid,layer,tp)
                 if(!obb)return
                 obj=obb
-                this.add_object(obj,layer,oid)
+                this.add_object(obj,layer,oid,undefined,undefined)
             }
             obj.is_new=b[4]
             if(obj){
@@ -328,8 +331,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         return stream
     }
-    encode_list(l:GameObject[],size:number=1024*1024,last_list:GameObject[]=[]):{last:GameObject[],strm:NetStream}{
-        const stream=new NetStream(new ArrayBuffer(size))
+    encode_list(l:GameObject[],size:number=1024*1024,last_list:GameObject[]=[],stream?:NetStream):{last:GameObject[],strm:NetStream}{
+        if(!stream)stream=new NetStream(new ArrayBuffer(size))
         stream.writeUint16(l.length)
         for(let i=0;i<l.length;i++){
             l[i].encodeObject(!last_list.includes(l[i]),stream)

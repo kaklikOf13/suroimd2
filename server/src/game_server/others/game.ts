@@ -254,6 +254,26 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 ],
                 terrain:{
                     base:FloorType.Water,
+                    rivers:{
+                        divisions:100,
+                        spawn_floor:1,
+                        expansion:32,
+                        defs:[
+                            {
+                                rivers:[
+                                    {sub_river_width:2,width:10,width_variation:1,sub_river_chance:0.5},
+                                    {sub_river_width:1,width:15,width_variation:1,sub_river_chance:0.1},
+                                ],
+                                weight:10
+                            },
+                            {
+                                rivers:[
+                                    {sub_river_width:3,width:20,width_variation:1,sub_river_chance:0.9},
+                                ],
+                                weight:1
+                            }
+                        ]
+                    },
                     floors:[
                         {
                             padding:25,
@@ -271,7 +291,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 }
             }
         }))*/
-       this.map.generate(generation.island({
+        this.map.generate(generation.island({
             generation:{
                 size:v2.new(100,100),
                 ground_loot:[{count:20,table:"ground_loot"}],
@@ -389,6 +409,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         },this.map.random)
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
+        p.position.x=100
+        p.position.y=100
 
         if(connected){
             this.send_killfeed_message({

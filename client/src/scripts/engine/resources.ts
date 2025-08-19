@@ -9,6 +9,14 @@ interface FrameData {
     h: number
     file?:string
 }
+export const DefaultTexCoords=[
+    0.0, 1.0,
+    1.0, 1.0,
+    0.0, 0.0,
+    0.0, 0.0,
+    1.0, 1.0,
+    1.0, 0.0
+]
 export interface SpritesheetJSON {
     meta: { image: string,scale:number,size:{w:number,h:number} }
     frames: Record<string, FrameData>

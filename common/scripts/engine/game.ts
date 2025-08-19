@@ -1,5 +1,5 @@
 import { Clock, cloneDeep } from "./utils.ts"
-import { BaseObject2D, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
+import { BaseObject2D, CameraMain, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
 import { type Vec2 } from "./geometry.ts";
 import { DefinitionsSimple } from "./definitions.ts";
 export enum DefaultEvents{
@@ -97,7 +97,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         // deno-lint-ignore no-explicit-any
         this.objects.add_object=(obj: DefaultGameObject, layer: number, id?: number | undefined, args?: Record<string, any> | undefined, sv?: Record<string, any>)=>{
             obj.game=this.game
-            return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args,sv)
+            return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args)
         }
         this.objects.oncreate=(_id:number,_layer:number,t)=>{
             if(!this.game.objects.getFromNumber(t))return undefined

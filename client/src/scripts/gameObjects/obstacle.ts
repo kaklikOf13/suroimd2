@@ -6,7 +6,14 @@ import { ParticlesEmitter2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
+import { GraphicsParticlesConfig } from "../others/config.ts";
+export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
+    const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
+    if(def.variations){
+        return spr_id+`_${variation}`
+    }
+    return spr_id
+}
 export class Obstacle extends ClientGameObject2D{
     stringType:string="obstacle"
     numberType: number=4
@@ -26,7 +33,7 @@ export class Obstacle extends ClientGameObject2D{
     }
 
     emitter_1?:ParticlesEmitter2D<ClientParticle2D>
-    create(_args: Record<string, void>): void {
+    create(_args: Record<string,any>): void {
         this.game.camera.addObject(this.container)
     }
 
@@ -149,12 +156,7 @@ export class Obstacle extends ClientGameObject2D{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
             }
-            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            if(this.def.variations){
-                this.frame.base=spr_id+`_${this.variation}`
-            }else{
-                this.frame.base=spr_id
-            }
+            this.frame.base=GetObstacleBaseFrame(this.def,data.full.variation)
             this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
             this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
 
