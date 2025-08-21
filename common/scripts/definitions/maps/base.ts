@@ -6,6 +6,7 @@ import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { Random1 } from "../../engine/random.ts";
 import { Vec2 } from "../../engine/geometry.ts";
 import { type Layers } from "../../others/constants.ts";
+import { SpawnMode } from "../objects/obstacles.ts";
 
 export interface Aditional{
     withammo:boolean
@@ -57,7 +58,7 @@ export interface IslandDef{
             }
         },
         ground_loot?:{table:string,count:Random1,layer?:Layers}[],
-        spawn?:{id:string,count:Random1}[][],
+        spawn?:{id:string,count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
     }
 }
 export const LootTables=new LootTablesDefs<GameItem,Aditional>(get_item)

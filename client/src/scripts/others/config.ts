@@ -13,6 +13,9 @@ export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
 export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
 export const offline=false
+export const Offline_Settings={
+    ping:5
+}
 export const api=true
 export const forum=true
 export enum GraphicsParticlesConfig {
@@ -64,44 +67,44 @@ export const ConfigDefaultActions={
         keys:[Key.D]
     },
     "weapon1":{
-          buttons:[],
-          keys:[Key.Number_1]
+        buttons:[],
+        keys:[Key.Number_1]
     },
     "weapon2":{
-          buttons:[],
-          keys:[Key.Number_2]
+        buttons:[],
+        keys:[Key.Number_2]
     },
     "weapon3":{
-          buttons:[],
-          keys:[Key.Number_3]
+        buttons:[],
+        keys:[Key.Number_3]
     },
     "use_item1":{
-          buttons:[],
-          keys:[Key.Number_4]
+        buttons:[],
+        keys:[Key.Number_4]
     },
     "use_item2":{
-          buttons:[],
-          keys:[Key.Number_5]
+        buttons:[],
+        keys:[Key.Number_5]
     },
     "use_item3":{
-          buttons:[],
-          keys:[Key.Number_6]
+        buttons:[],
+        keys:[Key.Number_6]
     },
     "use_item4":{
-          buttons:[],
-          keys:[Key.Number_7]
+        buttons:[],
+        keys:[Key.Number_7]
     },
     "use_item5":{
-          buttons:[],
-          keys:[Key.Number_8]
+        buttons:[],
+        keys:[Key.Number_8]
     },
     "use_item6":{
-          buttons:[],
-          keys:[Key.Number_9]
+        buttons:[],
+        keys:[Key.Number_9]
     },
     "use_item7":{
-          buttons:[],
-          keys:[Key.Number_0]
+        buttons:[],
+        keys:[Key.Number_0]
     },
     "previour_weapon":{
         buttons:[GamepadButtonID.L1],
@@ -116,6 +119,7 @@ export const ConfigDefaultActions={
         keys:[Key.I]
     }
 }
+export const ClientRotation=false
 export const Debug={
     hitbox:false,
     force_mobile:false

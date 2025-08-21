@@ -1,6 +1,6 @@
-import { Floors, FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
+import { Floors, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Graphics2D } from "../engine/container.ts";
-import { ColorM, WebglRenderer } from "../engine/renderer.ts";
+import { ColorM } from "../engine/renderer.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { type Game } from "../others/game.ts";
 

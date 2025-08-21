@@ -390,14 +390,14 @@ export class Player extends ServerGameObject{
         this.update_modifiers()
         if(this.client&&this.client.opened&&!this.is_npc&&!this.is_bot){
             const up=new UpdatePacket()
-            up.gui.health=this.health
-            up.gui.max_health=this.maxHealth
-            up.gui.boost=this.boost
-            up.gui.max_boost=this.maxBoost
-            up.gui.boost_type=this.boost_def.type
-            up.gui.inventory=[]
+            up.priv.health=this.health
+            up.priv.max_health=this.maxHealth
+            up.priv.boost=this.boost
+            up.priv.max_boost=this.maxBoost
+            up.priv.boost_type=this.boost_def.type
+            up.priv.inventory=[]
             if(this.splashDelay<=0){
-                up.gui.damages=this.damagesSplash
+                up.priv.damages=this.damagesSplash
                 this.damagesSplash=[]
             }else{
                 this.splashDelay--
@@ -406,25 +406,25 @@ export class Player extends ServerGameObject{
             for(let i=0;i<this.inventory.slots.length;i++){
                 const s=this.inventory.slots[i]
                 if(s.item){
-                    up.gui.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
+                    up.priv.inventory.push({count:s.quantity,idNumber:GameItems.keysString[s.item!.def.idString!],type:s.item.itemType})
                 }else{
-                    up.gui.inventory.push({count:0,idNumber:0,type:InventoryItemType.consumible})
+                    up.priv.inventory.push({count:0,idNumber:0,type:InventoryItemType.consumible})
                 }
                 ii++
             }
-            up.gui.dirty=this.privateDirtys
-            up.gui.weapons={
+            up.priv.dirty=this.privateDirtys
+            up.priv.weapons={
                 melee:this.inventory.weapons[0]?.def,
                 gun1:this.inventory.weapons[1]?.def,
                 gun2:this.inventory.weapons[2]?.def,
             }
-            up.gui.current_weapon={
+            up.priv.current_weapon={
                 slot:this.inventory.weaponIdx,
                 ammo:(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun")?(this.inventory.currentWeapon as GunItem).ammo:0
             }
             if(this.privateDirtys.ammos){
                 for(const a of Object.keys(this.inventory.ammos)){
-                    up.gui.ammos[Ammos.getFromString(a).idNumber!]=this.inventory.ammos[a]
+                    up.priv.ammos[Ammos.getFromString(a).idNumber!]=this.inventory.ammos[a]
                 }
             }
             this.privateDirtys={
@@ -436,7 +436,7 @@ export class Player extends ServerGameObject{
             }
 
             if(this.actions.current_action){
-                up.gui.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
+                up.priv.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
             this.camera_hb.min.x=this.position.x-(30/2)
             this.camera_hb.min.y=this.position.y-(30/2)

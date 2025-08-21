@@ -49,7 +49,11 @@ export class Loot extends GameObject{
         }*/
     }
     override updateData(data:LootData){
-        this.position=data.position
+        if(v2.distance(this.position,data.position)<=1){
+            this.position=v2.lerp(this.position,data.position,0.8)
+        }else{
+            this.position=data.position
+        }
         this.container.position=this.position
         this.manager.cells.updateObject(this)
         if(data.full){

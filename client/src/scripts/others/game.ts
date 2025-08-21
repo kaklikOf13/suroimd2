@@ -13,7 +13,7 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import { Debug } from "./config.ts";
+import { ClientRotation, Debug } from "./config.ts";
 import { type DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
@@ -45,7 +45,7 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
-  scope_zoom:number=0.27
+  scope_zoom:number=0.53
   happening:boolean=false
 
   light_map=new Lights2D()
@@ -160,7 +160,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   set_lookTo_angle(angle:number){
     this.action.angle=angle;
-    if(this.activePlayer&&!this.activePlayer.driving){
+    if(ClientRotation&&this.activePlayer&&!this.activePlayer.driving){
       (this.activePlayer as Player).container.rotation=this.action.angle
     }
   }
@@ -174,8 +174,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.renderer.background=ColorM.hex("#000");
 
     if(Debug.hitbox){
-      const hc=ColorM.hex("#ee000099")
-      /*this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      /*const hc=ColorM.hex("#ee000099")
+      this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_loot",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
@@ -202,7 +202,7 @@ export class Game extends ClientGame2D<GameObject>{
   clear(){
     this.scene.reset()
   }
-  override on_render(dt:number):void{
+  override on_render(_dt:number):void{
     this.light_map.render(this.renderer as WebglRenderer,this.camera)
     this.minimap.draw()
   }
@@ -237,7 +237,7 @@ export class Game extends ClientGame2D<GameObject>{
   connect(client:Client,playerName:string){
     this.client=client
     this.client.on("update",(up:UpdatePacket)=>{
-      this.guiManager.update_gui(up.gui)
+      this.guiManager.update_gui(up.priv)
       this.scene.objects.proccess_l(up.objects!,true)
     })
     this.client.on("killfeed",(kfp:KillFeedPacket)=>{

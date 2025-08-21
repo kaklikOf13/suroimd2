@@ -301,7 +301,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
                         {id:"stone",count:30},
                         {id:"bush",count:20},
                         {id:"wood_crate",count:10},
-                        {id:"barrel",count:8}
+                        {id:"barrel",count:8},
+
+                        {id:"pig",count:10},
+                        {id:"chicken",count:10}
                     ]
                 ],
                 terrain:{
@@ -409,8 +412,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         },this.map.random)
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
-        p.position.x=100
-        p.position.y=100
 
         if(connected){
             this.send_killfeed_message({

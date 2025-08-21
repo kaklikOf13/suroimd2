@@ -44,7 +44,6 @@ export class MinimapManager{
         this.map.update(0.1, this.game.resources)
         const base64Grid = this.map.render_full(this.game.resources, this.game.renderer as WebglRenderer, this.game.camera)
         this.map.image_division=100
-        console.log(this.map.camera.meter_size)
 
         this.ms=1.429*(this.imgS/this.game.camera.meter_size)
 

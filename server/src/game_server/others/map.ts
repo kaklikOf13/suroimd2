@@ -8,6 +8,7 @@ import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
 import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
+import { Creatures } from "common/scripts/definitions/objects/creatures.ts";
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export const generation={
     island:(def:IslandDef)=>{
@@ -35,10 +36,26 @@ export const generation={
             for(const spawn of def.generation.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
-                    const def=Obstacles.getFromString(item.id)
-                    for(let idx=0;idx<count;idx++){
-                        const obj=map.generate_obstacle(def,random)
-                        if(!obj)break
+                    if(Creatures.exist(item.id)){
+                        const def=Creatures.getFromString(item.id)
+                        for(let idx=0;idx<count;idx++){
+                            const obj=map.game.add_creature(v2.new(0,0),def,item.layer)
+                            const pos=map.getRandomPosition(obj.hb,obj.id,obj.layer,item.spawn??def.spawn??{
+                                type:SpawnModeType.whitelist,
+                                list:[FloorType.Grass]
+                            },random)
+                            if(!pos){
+                                obj.destroy()
+                                break
+                            }
+                            obj.position=pos
+                        }
+                    }else{
+                        const def=Obstacles.getFromString(item.id)
+                        for(let idx=0;idx<count;idx++){
+                            const obj=map.generate_obstacle(def,random,item.spawn,item.layer)
+                            if(!obj)break
+                        }
                     }
                 }
             }
@@ -127,9 +144,9 @@ export class GameMap{
     clamp_hitbox(hb:Hitbox2D){
         hb.clamp(v2.new(0,0),this.size)
     }
-    generate_obstacle(def:ObstacleDef,random:SeededRandom):Obstacle|undefined{
+    generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Obstacle|undefined{
         const o=this.add_obstacle(def)
-        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.id,o.layer,o.def.spawnMode,random)
+        const p=this.getRandomPosition(def.spawnHitbox?def.spawnHitbox.clone():(def.hitbox?def.hitbox.clone():new NullHitbox2D(v2.new(0,0))),o.id,layer??o.layer,spawn??o.def.spawnMode,random)
         if(!p){
             o.destroy()
             return undefined

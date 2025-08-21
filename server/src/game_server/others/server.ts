@@ -1,9 +1,9 @@
 import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
-import { Game, GameConfig } from "./game.ts"
+import { Game } from "./game.ts"
 import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
-import { ConfigType } from "../../../configs/config.ts";
 import { v1 as uuid } from "https://deno.land/std@0.224.0/uuid/mod.ts"
 import { Layers } from "common/scripts/others/constants.ts";
+import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
 export class GameServer{
     server:Server
     games:Game[]

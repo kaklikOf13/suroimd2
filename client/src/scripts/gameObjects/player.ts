@@ -5,7 +5,7 @@ import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/it
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
+import { ClientRotation, Debug, GraphicsParticlesConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
@@ -19,6 +19,7 @@ import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { ParticlesEmitter2D, ParticlesManager2D } from "common/scripts/engine/particles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { Light2D } from "../engine/container.ts";
+import { Numeric } from "common/scripts/engine/utils.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -567,13 +568,17 @@ export class Player extends GameObject{
             }
         }
         this.set_driving(data.driving)
-        this.position=data.position
-        this.rotation=data.rotation
-
-        this.container.rotation=this.rotation
+        if(v2.distance(this.position,data.position)<=1){
+            this.position=v2.lerp(this.position,data.position,0.85)
+        }else{
+            this.position=data.position
+        }
 
         this.manager.cells.updateObject(this)
-
+        if(this.id!==this.game.activePlayerId||!ClientRotation){
+            this.rotation=Numeric.lerp_rad(this.rotation,data.rotation,0.85)
+            this.container.rotation=this.rotation
+        }
         if(this.id===this.game.activePlayerId){
             this.game.update_camera()
             this.game.sounds.listener_position=this.position

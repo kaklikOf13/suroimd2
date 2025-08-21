@@ -1,6 +1,6 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline } from "./config.ts";
+import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline, Offline_Settings } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
@@ -21,7 +21,7 @@ import { HideElement } from "../engine/utils.ts";
     document.body.appendChild(canvas)
     const sounds=new SoundManager()
 
-    const renderer=new WebglRenderer(canvas,100)
+    const renderer=new WebglRenderer(canvas)
 
     const resources=new ResourcesManager(renderer.gl,sounds)
 
@@ -104,7 +104,7 @@ import { HideElement } from "../engine/utils.ts";
             if(this.game.happening||!loaded)return
             let socket:BasicSocket
             if(offline){
-                socket=gs?.clients.fake_connect(1) as BasicSocket
+                socket=gs?.clients.fake_connect(Offline_Settings.ping) as BasicSocket
             }else{
                 const ser=new IPLocation(regions[current_region].host,regions[current_region].port)
                 const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())

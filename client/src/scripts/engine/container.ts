@@ -511,7 +511,7 @@ export class AnimatedContainer2D extends Container2D{
     }
 }
 
-type LightInstance = {
+type Light2D = {
     mat: GLMaterial2D<GL2D_LightMatArgs>
     pos: Vec2
     model: Model2D
@@ -524,7 +524,7 @@ export class Lights2D extends Container2DObject {
     private renderer!: WebglRenderer;
     private lightFBO!: WebGLFramebuffer;
     private lightTexture!: WebGLTexture;
-    private lights: LightInstance[] = [];
+    private lights: Light2D[] = [];
     downscale = 1.0;
     ambientColor: Color = { r: 1, g: 1, b: 1, a: 1 };
 
@@ -563,7 +563,7 @@ export class Lights2D extends Container2DObject {
     }*/
     addLight(pos: Vec2, model:Model2D, color: Color = { r: 1, g: 1, b: 1, a: 1 }) {
         const mat = this.renderer.factorys2D.light.create({ color});
-        const inst: LightInstance = { mat, pos: v2.duplicate(pos), model, destroyed: false };
+        const inst: Light2D = { mat, pos: v2.duplicate(pos), model, destroyed: false };
         this.lights.push(inst);
         return inst;
     }

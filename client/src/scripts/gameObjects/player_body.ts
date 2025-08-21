@@ -55,7 +55,11 @@ export class PlayerBody extends ClientGameObject2D{
             this.sprite.tint=ColorM.hex("#ccc")
             this.container.visible=true
         }
-        this.position=data.position
+        if(v2.distance(this.position,data.position)<=1){
+            this.position=v2.lerp(this.position,data.position,0.8)
+        }else{
+            this.position=data.position
+        }
         this.container.position=data.position
     }
 }
