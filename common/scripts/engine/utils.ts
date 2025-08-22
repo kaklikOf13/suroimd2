@@ -1,6 +1,7 @@
 import { Language } from "./definitions.ts";
 import { type Scene2D } from "./game.ts";
 import { Vec2, v2 } from "./geometry.ts";
+import { random } from "./random.ts";
 
 export const halfpi=Math.PI/2
 export type ID=number
@@ -93,22 +94,40 @@ export class Clock {
     private lastFrameTime: number;
     public timeScale: number;
     public callback: (dt:number)=>void;
+    public intervals:Map<number,(dt:number)=>void>=new Map()
 
     constructor(targetFPS: number, timeScale: number, callback: (dt:number)=>void) {
-        this.frameDuration = 1000 / targetFPS;
-        this.lastFrameTime = Date.now();
-        this.timeScale = timeScale;
-        this.callback = callback;
+        this.frameDuration = 1000 / targetFPS
+        this.lastFrameTime = Date.now()
+        this.timeScale = timeScale
+        this.callback = callback
     }
 
-    interval:number=0
+    private interval:number=0
+
+    add_interval(cb:(dt:number)=>void):number{
+        let id=0
+        while(this.intervals.has(id)){
+            id=random.int(0,10000000000)
+        }
+        this.intervals.set(id,cb)
+        return id
+    }
+
+    clear_interval(id:number){
+        if(this.intervals.has(id))this.intervals.delete(id)
+    }
 
     public start() {
         this.interval=setInterval(() => {
             const currentTime = Date.now()
             const elapsedTime = currentTime - this.lastFrameTime
             this.lastFrameTime = Date.now()
-            this.callback((elapsedTime/1000)*this.timeScale)
+            const dt=(elapsedTime/1000)*this.timeScale
+            this.callback(dt)
+            for(const i of this.intervals.values()){
+                i(dt)
+            }
         }, this.frameDuration)
     }
     public stop(){

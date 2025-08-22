@@ -1,5 +1,5 @@
 import { LootData } from "common/scripts/others/objectsEncode.ts";
-import { Angle, CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
@@ -23,8 +23,12 @@ export class Loot extends GameObject{
         this.hb=new CircleHitbox2D(v2.new(3,3),0.3)
         this.game.camera.addObject(this.container)
     }
-    update(_dt:number): void {
-        
+    update(dt:number): void {
+        if(v2.distance(this.position,this.dest_pos)<=1){
+            this.position=v2.lerp(this.position,this.dest_pos,1/(1+dt*8))
+        }else{
+            this.position=this.dest_pos
+        }
     }
     constructor(){
         super()
@@ -48,12 +52,9 @@ export class Loot extends GameObject{
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_loot"),camera.visual_position)
         }*/
     }
+    dest_pos:Vec2=v2.new(0,0)
     override updateData(data:LootData){
-        if(v2.distance(this.position,data.position)<=1){
-            this.position=v2.lerp(this.position,data.position,0.8)
-        }else{
-            this.position=data.position
-        }
+        this.dest_pos=data.position
         this.container.position=this.position
         this.manager.cells.updateObject(this)
         if(data.full){

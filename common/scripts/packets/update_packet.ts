@@ -14,7 +14,7 @@ export interface DamageSplash{
     critical:boolean
     shield_break:boolean
 }
-export interface Plane{
+export interface PlaneData{
     direction:number
     pos:Vec2
     complete:boolean
@@ -29,6 +29,8 @@ export interface PrivateUpdate{
         action:boolean
         ammos:boolean
     }
+
+    planes:PlaneData[]
 
     health:number
     max_health:number
@@ -103,6 +105,13 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             stream.writeUint16(i[1] as unknown as number)
         },1)
     }
+    stream.writeArray(priv.planes,(e)=>{
+        stream.writeID(e.id)
+        stream.writePosition(e.pos)
+        stream.writeRad(e.direction)
+        stream.writeBooleanGroup(e.complete)
+        stream.writeUint8(e.type)
+    },1)
 }
 function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     priv.health=stream.readUint8()
@@ -182,6 +191,15 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             priv.ammos[stream.readUint8()]=stream.readUint16()
         }
     }
+    priv.planes=stream.readArray(()=>{
+        return {
+            id:stream.readID(),
+            pos:stream.readPosition(),
+            direction:stream.readRad(),
+            complete:stream.readBooleanGroup()[0],
+            type:stream.readUint8()
+        }
+    },1)
 }
 export class UpdatePacket extends Packet{
     ID=2
@@ -212,7 +230,8 @@ export class UpdatePacket extends Packet{
             slot:0
         },
         damages:[],
-        inventory:undefined
+        inventory:undefined,
+        planes:[]
     }
 
     objects?:NetStream

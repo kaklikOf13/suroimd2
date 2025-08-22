@@ -14,7 +14,7 @@ import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
 import { ClientRotation, Debug } from "./config.ts";
-import { type DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { type DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
@@ -29,6 +29,7 @@ import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts
 import { Creature } from "../gameObjects/creature.ts";
 import { WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
+import { Plane } from "./planes.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -201,6 +202,10 @@ export class Game extends ClientGame2D<GameObject>{
   onstop?:(g:Game)=>void
   clear(){
     this.scene.reset()
+    for(const p of this.planes.values()){
+      p.free()
+    }
+    this.planes.clear()
   }
   override on_render(_dt:number):void{
     this.light_map.render(this.renderer as WebglRenderer,this.camera)
@@ -221,6 +226,9 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.drop=-1
       this.action.drop_kind=0
     }
+    for(const p of this.planes.values()){
+      p.update(dt)
+    }
     this.renderer.fullCanvas()
     //this.camera.resize()
     this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/1920)
@@ -234,10 +242,21 @@ export class Game extends ClientGame2D<GameObject>{
       this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
     }
   }
+  planes:Map<number,Plane>=new Map()
+  proccess_private(priv:PrivateUpdate){
+    for(const p of priv.planes){
+      if(!this.planes.has(p.id)){
+        this.planes.set(p.id,new Plane(this))
+      }
+      const plane=this.planes.get(p.id)!
+      plane.updateData(p)
+    }
+  }
   connect(client:Client,playerName:string){
     this.client=client
     this.client.on("update",(up:UpdatePacket)=>{
       this.guiManager.update_gui(up.priv)
+      this.proccess_private(up.priv)
       this.scene.objects.proccess_l(up.objects!,true)
     })
     this.client.on("killfeed",(kfp:KillFeedPacket)=>{

@@ -1,4 +1,4 @@
-import { ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
+import { Angle, ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -10,14 +10,13 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap, generation } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
-import { GroupManager, TeamsManager } from "./teams.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
@@ -27,147 +26,21 @@ import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
-import { SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
+import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
 import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
-
+import { GamemodeManager, TeamsGamemodeManager } from "./modeManager.ts";
+import { PlaneData } from "common/scripts/packets/update_packet.ts";
+export interface PlaneDataServer extends PlaneData{
+    velocity:Vec2
+    target_pos:Vec2
+    called:boolean
+}
 export interface GameStatus{
     players:{
         name:string
         username:string
         kills:number
     }[]
-}
-export class GamemodeManager{
-    game:Game
-    closed:boolean=false
-    team_size:number=1
-    can_join():boolean{
-        return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
-    }
-    kill_leader?:Player
-    constructor(game:Game){
-        this.game=game
-        this.team_size=game.config.teamSize
-    }
-    can_down(_player:Player):boolean{
-        return false
-    }
-    on_start(){
-        this.game.interactionsEnabled=true
-        this.game.addTimeout(()=>{
-            this.closed=true
-            this.game.pvpEnabled=true
-            console.log(`Game ${this.game.id} Clossed`)
-        },50)
-    }
-    on_finish(){
-        this.game.addTimeout(()=>{
-            for(const p of this.game.livingPlayers){
-                p.send_game_over(true)
-            }
-            this.game.killing_game=true
-            console.log(`Game ${this.game.id} Fineshed`)
-        },2)
-    }
-    startRules():boolean{
-        return this.game.livingPlayers.length>1
-    }
-    on_player_join(_p:Player){
-        if(!this.game.started&&this.game.livingPlayers.length>1){
-            this.game.addTimeout(this.game.start.bind(this.game),3)
-        }
-    }
-    on_player_die(_p:Player){
-        if(this.game.livingPlayers.length<=1){
-            this.game.finish()
-        }
-    }
-    is_ally(_a:Player,_b:Player):boolean{
-        return false
-    }
-}
-export class TeamsGamemodeManager extends GamemodeManager{
-    teamsManager:TeamsManager
-    constructor(game:Game){
-        super(game)
-        this.teamsManager=new TeamsManager()
-    }
-    override can_down(player:Player):boolean{
-        return (player.team&&player.team.get_not_downed_players().length>1)!
-    }
-    set_team_for_player(p:Player){
-        if(p.team===undefined){
-            let t=this.teamsManager.get_perfect_team(this.team_size,p.groupId)
-            if(!t){
-                t=this.teamsManager.add_team()
-            }else if(t.players.length>0){
-                p.position=random.choose(t.players).position
-            }
-            t.add_player(p)
-        }
-    }
-    override on_player_join(p:Player){
-        this.set_team_for_player(p)
-        if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
-            this.game.addTimeout(this.game.start.bind(this.game),3)
-        }
-    }
-    override on_player_die(p:Player){
-        if(p.team){
-            for(const pp of p.team.get_downed_players()){
-                pp.kill({amount:pp.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downedBy,source:pp.downedBySource})
-            }
-        }
-        if(this.teamsManager.get_living_teams().length<=1){
-            this.game.finish()
-        }
-    }
-    override is_ally(a:Player,b:Player):boolean{
-        return a.teamId===b.teamId
-    }
-}
-export class GroupGamemodeManager extends TeamsGamemodeManager{
-    groupsManager:GroupManager=new GroupManager()
-    f=0
-    groups_size:number
-
-    constructor(game:Game,groups_size:number=2){
-        super(game)
-        this.groups_size=groups_size
-        this.team_size=4
-    }
-    override can_down(player:Player):boolean{
-        return super.can_down(player)&&(player.team&&player.team.get_not_downed_players().length>1)!
-    }
-    override on_player_join(p:Player){
-        let g=this.groupsManager.groups[this.f]
-        if(!g){
-            g=this.groupsManager.add_group()
-        }
-        g.add_player(p)
-        this.f++
-        if(this.f>=this.groups_size){
-            this.f=0
-        }
-        super.set_team_for_player(p)
-        if(p.team)p.team.group=g.id
-        if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
-            this.game.addTimeout(this.game.start.bind(this.game),3)
-        }
-    }
-    override on_player_die(p:Player){
-        if(p.team){
-            for(const pp of p.team.get_downed_players()){
-                pp.kill({amount:pp.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downedBy,source:pp.downedBySource})
-            }
-        }
-        if(this.teamsManager.get_living_teams().length<=1){
-            this.game.finish()
-        }
-    }
-    override is_ally(a:Player,b:Player):boolean{
-        return a.groupId===b.groupId
-    }
 }
 export class Game extends ServerGame2D<ServerGameObject>{
     config:GameConfig
@@ -347,9 +220,21 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }),3)
     }
-
     override on_update(): void {
         super.on_update()
+        for(const p of this.planes){
+            p.pos=v2.add(p.pos,v2.scale(p.velocity,this.dt))
+            switch(p.type){
+                case 0:
+                    if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
+                        const obs=this.map.add_obstacle(Obstacles.getFromString("copper_crate"))
+                        obs.set_position(v2.duplicate(p.pos))
+                        obs.manager.cells.updateObject(obs)
+                        p.called=true
+                    }
+                    break
+            }
+        }
         this.netUpdate()
         if(this.killing_game){
             this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
@@ -358,6 +243,21 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 this.running=false
             }
         }
+    }
+    planes:PlaneDataServer[]=[]
+    add_airdrop(position:Vec2){
+        const dir=v2.lookTo(v2.new(0,0),position)
+        
+        this.planes.push({
+            id:random.int(0,1000000),
+            complete:false,
+            direction:dir,
+            target_pos:position,
+            called:false,
+            pos:v2.new(0,0),//v2.mult(v2.from_RadAngle(dir),this.map.size),
+            velocity:v2.scale(v2.from_RadAngle(dir),8),
+            type:0
+        })
     }
     privatesDirtysInter=0
     override on_stop():void{
@@ -421,6 +321,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             })
             this.modeManager.on_player_join(p)
         }
+        this.add_airdrop(v2.duplicate(p.position))
         return p
     }
     override on_run(): void {

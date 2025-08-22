@@ -1,11 +1,8 @@
-import { CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { type Player } from "./player.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
-import { Explosions } from "common/scripts/definitions/explosions.ts";
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { type Obstacle } from "./obstacle.ts";
 
 export class Projectile extends ServerGameObject{
     stringType:string="projectile"

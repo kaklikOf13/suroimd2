@@ -396,6 +396,7 @@ export class Player extends ServerGameObject{
             up.priv.max_boost=this.maxBoost
             up.priv.boost_type=this.boost_def.type
             up.priv.inventory=[]
+            up.priv.planes=this.game.planes
             if(this.splashDelay<=0){
                 up.priv.damages=this.damagesSplash
                 this.damagesSplash=[]

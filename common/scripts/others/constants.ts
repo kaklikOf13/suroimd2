@@ -67,6 +67,7 @@ export enum zIndexes{
     Obstacles4,
     Explosions,
     ParachutePlayers,
+    Planes,
     Lights,
     DamageSplashs,
     Minimap
