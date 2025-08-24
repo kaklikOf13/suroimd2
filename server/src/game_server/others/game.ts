@@ -1,4 +1,4 @@
-import { Angle, ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
+import { Angle, ID, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -87,6 +87,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     string_id=""
     Config:ConfigType
+
+    replay?:ReplayRecorder2D
 
     constructor(clients:OfflineClientsManager,id:ID,config:GameConfig,Config:ConfigType){
         super(config.gameTps,id,clients,PacketManager,[
@@ -262,6 +264,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     privatesDirtysInter=0
     override on_stop():void{
         super.on_stop()
+        if(this.replay)this.replay.stop()
         clearInterval(this.privatesDirtysInter)
         for(const p of this.players){
             this.status.players.push({
@@ -399,6 +402,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
+        if(this.replay)this.replay.start()
         console.log(`Game ${this.id} Started`)
     }
     finish(){

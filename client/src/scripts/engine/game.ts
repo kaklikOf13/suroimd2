@@ -1,4 +1,4 @@
-import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { BaseGameObject2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { Color, ColorM, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { InputManager } from "./keys.ts";
@@ -10,7 +10,7 @@ import { FrameDef } from "common/scripts/engine/definitions.ts";
 export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
-    declare game:ClientGame2D<any,any>
+    declare game:ClientGame2D<any>
     
     constructor(){
         super()
@@ -106,7 +106,7 @@ export class ABParticle2D extends ClientParticle2D{
         this.container.visible=true
     }
 }
-export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{
+export class ClientGame2D<GObject extends ClientGameObject2D=ClientGameObject2D> extends Game2D<GObject>{
     camera:Camera2D
     renderer:Renderer
     resources:ResourcesManager
@@ -116,7 +116,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
 
     sounds:SoundManager
     save:GameConsole
-    constructor(input_manager:InputManager,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+    constructor(input_manager:InputManager,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>GObject>=[]){
         super(60,objects)
         this.sounds=sounds
         this.input_manager=input_manager

@@ -12,7 +12,7 @@ export interface TweenOptions<T>{
     onComplete?: () => void
 }
 export class Tween<T> {
-    readonly game: ClientGame2D;
+    readonly game: ClientGame2D<any>;
 
     tick:number=0
 
@@ -31,7 +31,7 @@ export class Tween<T> {
     readonly onComplete?: () => void;
 
     constructor(
-        game: ClientGame2D,
+        game: ClientGame2D<any>,
         config: TweenOptions<T>
     ) {
         this.game = game;

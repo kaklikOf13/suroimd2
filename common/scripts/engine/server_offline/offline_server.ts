@@ -2,7 +2,7 @@ import { PacketsManager,ConnectPacket, DisconnectPacket,Packet } from "../packet
 import { ID } from "../utils.ts";
 import { SignalManager } from "../utils.ts"
 import { NetStream } from "../stream.ts"
-import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D } from "../game.ts";
+import { BaseGameObject2D, Game2D } from "../game.ts";
 import { random } from "../random.ts";
 
 //Definitions
@@ -228,7 +228,7 @@ export class OfflineClientsManager{
     }
 }
 
-export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D,Events extends DefaultEvents=DefaultEvents,EMap extends DefaultEventsMap2D=DefaultEventsMap2D> extends Game2D<DefaultGameObject,Events,EMap>{
+export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D> extends Game2D<DefaultGameObject>{
     public clients:OfflineClientsManager
     public allowJoin:boolean
     public id:ID=1

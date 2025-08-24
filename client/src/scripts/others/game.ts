@@ -25,7 +25,7 @@ import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { Graphics2D, Lights2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
-import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts";
+import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
@@ -64,6 +64,29 @@ export class Game extends ClientGame2D<GameObject>{
   //1.75=l-3 0.1x
 
   listners_init(){
+    this.input_manager.add_axis("movement",
+      {
+        keys:[Key.W],
+        buttons:[]
+      },
+      {
+        keys:[Key.S],
+        buttons:[]
+      },
+      {
+        keys:[Key.A],
+        buttons:[]
+      },
+      {
+        keys:[Key.D],
+        buttons:[]
+      }
+    )
+    this.input_manager.on("axis",(a:AxisActionEvent)=>{
+      if(a.action==="movement"){
+        this.action.Movement=a.value
+      }
+    })
     this.input_manager.on("actiondown",(a:ActionEvent)=>{
       switch(a.action){
         case "fire":
@@ -83,18 +106,6 @@ export class Game extends ClientGame2D<GameObject>{
           break
         case "weapon3":
           this.action.hand=2
-          break
-        case "move_left":
-          this.action.Movement.x=-1
-          break
-        case "move_right":
-          this.action.Movement.x=1
-          break
-        case "move_up":
-          this.action.Movement.y=-1
-          break
-        case "move_down":
-          this.action.Movement.y=1
           break
         case "use_item1":
           this.action.use_slot=0
@@ -132,18 +143,6 @@ export class Game extends ClientGame2D<GameObject>{
       switch(a.action){
         case "fire":
           this.action.UsingItem=false
-          break
-        case "move_left":
-          this.action.Movement.x=this.action.Movement.x!==-1?this.action.Movement.x:0
-          break
-        case "move_right":
-          this.action.Movement.x=this.action.Movement.x!==1?this.action.Movement.x:0
-          break
-        case "move_up":
-          this.action.Movement.y=this.action.Movement.y!==-1?this.action.Movement.y:0
-          break
-        case "move_down":
-          this.action.Movement.y=this.action.Movement.y!==1?this.action.Movement.y:0
           break
       }
     })
@@ -257,7 +256,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("update",(up:UpdatePacket)=>{
       this.guiManager.update_gui(up.priv)
       this.proccess_private(up.priv)
-      this.scene.objects.proccess_l(up.objects!,true)
+      this.scene.objects.proccess_list(up.objects!,true)
     })
     this.client.on("killfeed",(kfp:KillFeedPacket)=>{
       this.guiManager.add_killfeed_message(kfp.message)

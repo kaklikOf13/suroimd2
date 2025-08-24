@@ -447,7 +447,7 @@ export class Player extends ServerGameObject{
                 ...Object.values(this.manager.objects[this.layer].objects),
             ]*/
             const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
-            const o=this.game.scene.objects.encode_list(objs,2048*1024,this.view_objects)
+            const o=this.game.scene.objects.encode_list(objs,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm
             this.client.emit(up)

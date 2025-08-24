@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { DefaultEvents, Numeric } from "common/scripts/engine/mod.ts";
+import { Numeric } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
@@ -241,7 +241,7 @@ export class GuiManager{
         if(isMobile||Debug.force_mobile){
             this.mobile_init()
         }
-        this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
+        this.game.signals.on("update",this.update.bind(this))
     }
     start(){
         if(this.game.client){

@@ -46,7 +46,7 @@ export abstract class BaseObject2D{
         dirty:true,
         creation:true,
     }
-    encodeObject(full:boolean,stream:NetStream){
+    encodeObject(full:boolean,stream:NetStream,encoders?:Record<string,ObjectEncoder>,priv:boolean=false){
         const bools=[
             (full||this.dirtyPart)&&this.netSync.dirty,//Dirty Part
             (full||this.dirty)&&this.netSync.dirty,//Dirty Full
@@ -61,9 +61,10 @@ export abstract class BaseObject2D{
             stream.writeUint8(this.numberType)
             if(bools[0]||bools[1]){
                 const data=this.getData()
-                const e=this.manager.encoders[this.stringType]
+                const e=(encoders??this.manager.encoders)[this.stringType]
                 if(!e)return
                 e.encode(bools[1],data,stream)
+                if(priv&&data.private&&e.encode_private)e.encode_private(data.private,stream)
             }
         }
     }
@@ -173,11 +174,17 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 }
 export type EncodedData={
     // deno-lint-ignore ban-types
-    full?:Object
+    full?:{}
+    // deno-lint-ignore ban-types
+    private?:{}
 }
 export interface ObjectEncoder{
     encode:(full:boolean,data:EncodedData,stream:NetStream)=>void
+    // deno-lint-ignore ban-types
+    encode_private?:(data:{},stream:NetStream)=>void
     decode:(full:boolean,stream:NetStream)=>EncodedData
+    // deno-lint-ignore ban-types
+    decode_private?:(stream:NetStream)=>{}
 }
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
@@ -211,7 +218,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj: GameObject,
         layer: number,
         id?: number,
+        // deno-lint-ignore no-explicit-any
         args?: Record<string, any>,
+        // deno-lint-ignore no-explicit-any
         sv: Record<string, any> = {},
     ): GameObject {
         if (!this.objects[layer]) {
@@ -263,7 +272,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects[layer] = { orden: [], objects: {} };
         this.layers.push(layer);
     }
-    process_object(stream:NetStream){
+    process_object(stream:NetStream,encoders?:Record<string,ObjectEncoder>,priv:boolean=false){
         const b=stream.readBooleanGroup()
         if(b[0]||b[1]||b[2]){
             const oid=stream.readID()
@@ -282,8 +291,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             obj.is_new=b[4]
             if(obj){
                 if(b[0]||b[1]){
-                    const enc=this.encoders[obj.stringType]
+                    const enc=(encoders??this.encoders)[obj.stringType]
                     const data=enc.decode(b[1],stream)
+                    if(priv&&enc.decode_private)data.private=enc.decode_private(stream)
                     obj.updateData(data)
                 }
                 if(b[2]){
@@ -291,11 +301,20 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 }
             }
         }
-   }
-   proccess_l(stream:NetStream,process_deletion:boolean=false){
+    }
+    proccess_all(stream:NetStream,encoders?:Record<string,ObjectEncoder>,priv?:boolean){
+        const ls=stream.readUint8()
+        for(let l=0;l<ls;l++){
+            const ee=stream.readUint16()
+            for(let i=0;i<ee;i++){
+                this.process_object(stream,encoders,priv)
+            }
+        }
+    }
+    proccess_list(stream:NetStream,process_deletion:boolean=false,encoders?:Record<string,ObjectEncoder>,priv?:boolean){
         let os=stream.readUint16()
         for(let i=0;i<os;i++){
-            this.process_object(stream)
+            this.process_object(stream,encoders,priv)
         }
         os=stream.readUint16()
         for(let i=0;i<os;i++){
@@ -304,38 +323,23 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             if(process_deletion&&this.objects[c]&&this.objects[c].objects[id])this.objects[c].objects[id].destroy()
         }
     }
-    encode(size:number=1024*1024,full:boolean=false,encodeList?:Record<number,number[]>):NetStream{
-        const stream=new NetStream(new ArrayBuffer(size))
-        if(encodeList){
-            stream.writeUint16(Object.keys(encodeList).length)
-            for(const c in encodeList){
-                // deno-lint-ignore ban-ts-comment
-                //@ts-ignore
-                stream.writeUint24(encodeList[c].length)
-                for(let j=0;j<encodeList[c].length;j++){
-                    const o=encodeList[c][j]
-                    const obj=this.objects[c].objects[o]
-                    obj.encodeObject(full,stream)
-                }
-            }
-        }else{
-            stream.writeUint16(this.layers.length)
-            for(const c of this.layers){
-                stream.writeUint24(this.objects[c].orden.length)
-                for(let j=0;j<this.objects[c].orden.length;j++){
-                    const o=this.objects[c].orden[j]
-                    const obj=this.objects[c].objects[o]
-                    obj.encodeObject(full,stream)
-                }
+    encode_all(full:boolean=false,stream?:NetStream,encoders?:Record<string,ObjectEncoder>,priv?:boolean):NetStream{
+        if(!stream)stream=new NetStream(new ArrayBuffer(1024*1024))
+        stream.writeUint8(this.layers.length)
+        for(const l of this.layers){
+            stream.writeUint16(this.objects[l].orden.length)
+            for(const o of this.objects[l].orden){
+                const obj=this.objects[l].objects[o]
+                obj.encodeObject(full,stream,encoders,priv)
             }
         }
         return stream
     }
-    encode_list(l:GameObject[],size:number=1024*1024,last_list:GameObject[]=[],stream?:NetStream):{last:GameObject[],strm:NetStream}{
-        if(!stream)stream=new NetStream(new ArrayBuffer(size))
+    encode_list(l:GameObject[],last_list:GameObject[]=[],stream?:NetStream,encoders?:Record<string,ObjectEncoder>,priv?:boolean):{last:GameObject[],strm:NetStream}{
+        if(!stream)stream=new NetStream(new ArrayBuffer(1024*1024))
         stream.writeUint16(l.length)
         for(let i=0;i<l.length;i++){
-            l[i].encodeObject(!last_list.includes(l[i]),stream)
+            l[i].encodeObject(!last_list.includes(l[i]),stream,encoders,priv)
         }
         const deletions=last_list.filter(obj =>
            !l.includes(obj)&&obj.netSync.deletion
