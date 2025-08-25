@@ -50,22 +50,6 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.A],
         keys:[Key.E]
     },
-    /*"move_up":{
-        buttons:[],
-        keys:[Key.W]
-    },
-    "move_down":{
-        buttons:[],
-        keys:[Key.S]
-    },
-    "move_left":{
-        buttons:[],
-        keys:[Key.A]
-    },
-    "move_right":{
-        buttons:[],
-        keys:[Key.D]
-    },*/
     "weapon1":{
         buttons:[],
         keys:[Key.Number_1]

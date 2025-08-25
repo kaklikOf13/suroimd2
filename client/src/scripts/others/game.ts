@@ -47,6 +47,7 @@ export class Game extends ClientGame2D<GameObject>{
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
   scope_zoom:number=0.53
+  flying_position:number=0
   happening:boolean=false
 
   light_map=new Lights2D()
@@ -229,8 +230,7 @@ export class Game extends ClientGame2D<GameObject>{
       p.update(dt)
     }
     this.renderer.fullCanvas()
-    //this.camera.resize()
-    this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/1920)
+    this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
     
   }
   update_camera(){

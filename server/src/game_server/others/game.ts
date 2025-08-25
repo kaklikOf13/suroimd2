@@ -1,4 +1,4 @@
-import { Angle, ID, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
+import { ID, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
