@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -30,6 +30,7 @@ import { Creature } from "../gameObjects/creature.ts";
 import { WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
+import { ClientParticle2D, RainParticle2D } from "../engine/game.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -165,6 +166,7 @@ export class Game extends ClientGame2D<GameObject>{
       (this.activePlayer as Player).container.rotation=this.action.angle
     }
   }
+  rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
   constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
@@ -189,6 +191,28 @@ export class Game extends ClientGame2D<GameObject>{
     this.light_map.ambient=0
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
+    this.rain_particles_emitter=this.particles.add_emiter({
+      delay:0.05,
+      particle:()=>new RainParticle2D({
+        frame:{
+          main:{
+            image:"raindrop_1",
+          },
+          wave:{
+            image:"raindrop_2",
+          }
+        },
+        zindex:{
+          wave:zIndexes.Rain1,
+          main:zIndexes.Rain2
+        },
+        speed:15,
+        lifetime:0.7,
+        position:v2.random2(v2.sub(this.camera.visual_position,v2.new(5,5)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
+        rotation:Angle.deg2rad(45),
+      }),
+      enabled:true
+    })
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)

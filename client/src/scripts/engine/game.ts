@@ -51,6 +51,21 @@ export interface ABParticle2Config{
         tint?:Color
     }
 }
+export interface RainParticle2Config{
+    frame:{
+        main:FrameDef
+        wave:FrameDef
+    }
+    lifetime?:number
+    zindex?:{
+        main:number
+        wave:number
+    }
+    position:Vec2
+    rotation:number
+    speed?:number
+    scale?:number
+}
 export class ABParticle2D extends ClientParticle2D{
     ticks=0
     config:ABParticle2Config
@@ -102,6 +117,69 @@ export class ABParticle2D extends ClientParticle2D{
     override on_create(): void {
         super.on_create()
         this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame2D).resources)
+        this.container.add_child(this.sprite)
+        this.container.visible=true
+    }
+}
+export class RainParticle2D extends ClientParticle2D{
+    ticks=0
+    stage=0
+
+    config:RainParticle2Config
+    sprite:Sprite2D=new Sprite2D()
+    lifetime:number
+
+    constructor(config:RainParticle2Config){
+        super()
+        this.config=config
+        this.position=v2.duplicate(config.position)
+        this.container.position=this.position
+        this.container.scale=v2.new(config.scale??1,config.scale??1)
+        this.container.rotation=config.rotation
+        this.sprite.hotspot=v2.new(1,.5)
+        this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)
+        if(config.zindex){
+            this.sprite.zIndex=config.zindex.main
+        }
+        this.lifetime=config.lifetime??1
+        
+        this.sprite.tint={r:1,b:1,g:1,a:0}
+    }
+    vel:Vec2=v2.new(0,0)
+    override update(dt: number): void {
+        switch(this.stage){
+            case 0:{
+                if(this.ticks>=this.lifetime){
+                    this.ticks=0
+                    this.stage=1
+                    this.sprite.set_frame(this.config.frame.wave,(this.manager.game as unknown as ClientGame2D).resources)
+                    this.container.scale=v2.new(0,0)
+                    this.sprite.hotspot=v2.new(.5,.5)
+                    if(this.config.zindex){
+                        this.sprite.zIndex=this.config.zindex.main
+                    }
+                }
+                this.container.position.x+=this.vel.x*dt
+                this.container.position.y+=this.vel.y*dt
+                this.ticks+=dt
+                this.sprite.tint.a=Numeric.clamp(this.ticks*3,0,1)
+                break
+            }
+            case 1:{
+                if(this.ticks>=1){
+                    this.destroyed=true
+                }
+                this.ticks+=2*dt
+                this.sprite.tint.a=1-this.ticks
+                this.container.scale=v2.add(this.container.scale,v2.new(6*dt,6*dt))
+                break
+            }
+        }
+
+    }
+    override on_create(): void {
+        super.on_create()
+        this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame2D).resources)
         this.container.add_child(this.sprite)
         this.container.visible=true
     }
