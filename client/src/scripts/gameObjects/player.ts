@@ -540,7 +540,7 @@ export class Player extends GameObject{
             this.container.destroy()
         }
         this.left_handed=data.left_handed
-        if(data.parachute){
+        if(data.parachute&&!data.driving){
             this.set_current_weapon(undefined)
             this.sprites.parachute.visible=true
             const s=this.scale+(1*data.parachute.value)

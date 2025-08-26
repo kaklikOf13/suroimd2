@@ -302,7 +302,8 @@ export class GInventory extends Inventory<LItem>{
   backpack!:BackpackDef
   default_melee:string="survival_knife"
 
-  set_backpack(backpack:BackpackDef){
+  set_backpack(backpack?:BackpackDef){
+    if(!backpack)backpack=Backpacks.getFromString("null_pack")
     if(this.backpack&&this.backpack.idString===backpack.idString)return
     this.backpack=backpack
     for(const s of this.slots){
@@ -321,7 +322,7 @@ export class GInventory extends Inventory<LItem>{
     this.owner=owner
     this.default_melee=default_melee
     this.set_weapon(0,default_melee)
-    this.set_backpack(Backpacks.getFromString("null_pack"))
+    this.set_backpack()
   }
 
   set_current_weapon_index(idx:number){
@@ -474,6 +475,22 @@ export class GInventory extends Inventory<LItem>{
       return con
     }
     return 0
+  }
+  clear(){
+    this.ammos={}
+    this.owner.vest=undefined
+    this.owner.helmet=undefined
+    this.set_backpack()
+    for(const s of this.slots){
+      s.clear()
+    }
+    this.owner.privateDirtys.inventory=true
+    this.owner.privateDirtys.weapons=true
+    this.owner.privateDirtys.ammos=true
+    this.weapons[1]=undefined
+    this.weapons[2]=undefined
+    this.set_weapon(0,this.default_melee)
+    this.set_current_weapon_index(0)
   }
   drop_all(){
       this.drop_weapon(0)

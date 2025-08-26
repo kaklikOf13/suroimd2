@@ -13,7 +13,7 @@ export interface VehicleDef extends Definition{
         back_walk_mult:number
         desacceleration:number
     }
-    pillot_seat:{
+    pillot_seat?:{
         position:Vec2
         leave:Vec2
     }
@@ -28,6 +28,12 @@ export interface VehicleDef extends Definition{
             scale:number
         }[]
         frame?:string
+    }
+    infinity_walk?:boolean
+    battle_plane?:{
+        main_seat:Vec2
+        leave_position:Vec2
+        seats_count:number
     }
 }
 
@@ -104,6 +110,27 @@ Vehicles.insert(
                     scale:2.5
                 }
             ]
+        }
+    },
+    {
+        idString:"battle_plane",
+        frame:{
+            base_scale:2.5
+        },
+        movimentation:{
+            acceleration:0,
+            angle_acceleration:0,
+            final_speed:20,
+            back_walk_mult:0,
+            desacceleration:0
+        },
+        battle_plane:{
+            main_seat:v2.new(0,0),
+            leave_position:v2.new(0,0),
+            seats_count:100,
+        },
+        wheels:{
+            defs:[]
         }
     },
 )

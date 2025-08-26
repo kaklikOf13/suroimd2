@@ -180,7 +180,7 @@ export class Player extends ServerGameObject{
                   * (this.inventory.currentWeaponDef?.speed_mod??1)
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
-                  * (Floors[this.current_floor].speed_mult??1)
+                  * (this.parachute?1:((Floors[this.current_floor].speed_mult??1)))
         if(this.recoil){
             this.recoil.delay-=dt
             this.current_animation=undefined
@@ -214,19 +214,19 @@ export class Player extends ServerGameObject{
                 break
             }
         }
-        if(this.parachute){
-            speed*=1.5+(0.25+this.parachute.value)
-            this.parachute.value-=dt*0.05
-            if(this.parachute.value<=0){
-                this.parachute=undefined
-                this.dirty=true
-            }
-        }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.movement,this.reloading_input,dt)
         }else{
             this.position=v2.add(this.position,v2.add(v2.scale(this.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
+            if(this.parachute){
+                speed*=1.7+(0.5+this.parachute.value)
+                this.parachute.value-=dt*0.05
+                if(this.parachute.value<=0){
+                    this.parachute=undefined
+                    this.dirty=true
+                }
+            }
         }
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
@@ -297,6 +297,12 @@ export class Player extends ServerGameObject{
         this.inventory.update()
         this.dirtyPart=true
     }
+    clear(){
+        this.inventory.clear()
+        this.boost=0
+        this.boost_def=Boosts[BoostType.Null]
+        this.dirty=true
+    }
     process_action(action:ActionPacket){
         this.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
         if(!this.using_item&&action.UsingItem){
@@ -312,14 +318,12 @@ export class Player extends ServerGameObject{
         if(action.Reloading&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
         }
+        if(action.interact&&this.seat){
+            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
+            this.seat.clear_player()
+            this.interaction_input=false
+        }
         if(!this.downed&&!this.parachute){
-            if(action.interact){
-                if(this.seat){
-                    this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
-                    this.seat.clear_player()
-                    this.interaction_input=false
-                }
-            }
             if(action.use_slot!==-1){
                 const item=this.inventory.slots[action.use_slot]?.item
                 if(item){

@@ -3,6 +3,10 @@ import { type Player } from "../gameObjects/player.ts";
 import { type Game } from "./game.ts";
 import { GroupManager, TeamsManager } from "./teams.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { Vehicle } from "../gameObjects/vehicle.ts";
+import { v2 } from "common/scripts/engine/geometry.ts";
+import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { Layers } from "common/scripts/others/constants.ts";
 
 export class GamemodeManager{
     game:Game
@@ -12,6 +16,8 @@ export class GamemodeManager{
         return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
     }
     kill_leader?:Player
+    battle_plane?:Vehicle
+    battle_plane_enabled:boolean=true
     constructor(game:Game){
         this.game=game
         this.team_size=game.config.teamSize
@@ -19,13 +25,34 @@ export class GamemodeManager{
     can_down(_player:Player):boolean{
         return false
     }
+    call_battle_plane(){
+        this.battle_plane=this.game.add_vehicle(v2.new(0,0),Vehicles.getFromString("battle_plane"),Layers.Normal)
+        this.closed=true
+        this.game.pvpEnabled=true
+        this.battle_plane.velocity=v2.new(4,4)
+        for(const p of this.game.players){
+            p.clear()
+            if(!p.dead){
+                for(const s of this.battle_plane.seats){
+                    if(!s.player){
+                        s.set_player(p)
+                        break
+                    }
+                }
+            }
+        }
+    }
     on_start(){
         this.game.interactionsEnabled=true
-        this.game.addTimeout(()=>{
-            this.closed=true
-            this.game.pvpEnabled=true
-            console.log(`Game ${this.game.id} Clossed`)
-        },50)
+        if(this.battle_plane_enabled){
+            this.call_battle_plane()
+        }else{
+            this.game.addTimeout(()=>{
+                this.closed=true
+                this.game.pvpEnabled=true
+                console.log(`Game ${this.game.id} Clossed`)
+            },50)
+        }
     }
     on_finish(){
         this.game.addTimeout(()=>{
