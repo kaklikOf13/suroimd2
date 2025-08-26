@@ -141,7 +141,7 @@ export class RainParticle2D extends ClientParticle2D{
         this.sprite.hotspot=v2.new(1,.5)
         this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)
         if(config.zindex){
-            this.sprite.zIndex=config.zindex.main
+            this.container.zIndex=config.zindex.main
         }
         this.lifetime=config.lifetime??1
         
@@ -158,7 +158,7 @@ export class RainParticle2D extends ClientParticle2D{
                     this.container.scale=v2.new(0,0)
                     this.sprite.hotspot=v2.new(.5,.5)
                     if(this.config.zindex){
-                        this.sprite.zIndex=this.config.zindex.main
+                        this.container.zIndex=this.config.zindex.wave
                     }
                 }
                 this.container.position.x+=this.vel.x*dt

@@ -203,13 +203,13 @@ export class Game extends ClientGame2D<GameObject>{
           }
         },
         zindex:{
-          wave:zIndexes.Rain1,
-          main:zIndexes.Rain2
+          main:zIndexes.Rain1,
+          wave:zIndexes.Rain2,
         },
         speed:25,
         lifetime:random.float(0.5,1.2),
         scale:{
-          main:random.float(0.7,1)
+          main:random.float(0.7,1.5)
         },
         position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
         rotation:Angle.deg2rad(45),
