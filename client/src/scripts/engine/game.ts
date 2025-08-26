@@ -56,6 +56,9 @@ export interface RainParticle2Config{
         main:FrameDef
         wave:FrameDef
     }
+    scale?:{
+        main:number
+    }
     lifetime?:number
     zindex?:{
         main:number
@@ -64,7 +67,6 @@ export interface RainParticle2Config{
     position:Vec2
     rotation:number
     speed?:number
-    scale?:number
 }
 export class ABParticle2D extends ClientParticle2D{
     ticks=0
@@ -134,7 +136,7 @@ export class RainParticle2D extends ClientParticle2D{
         this.config=config
         this.position=v2.duplicate(config.position)
         this.container.position=this.position
-        this.container.scale=v2.new(config.scale??1,config.scale??1)
+        this.container.scale=v2.new(config.scale?.main??1,config.scale?.main??1)
         this.container.rotation=config.rotation
         this.sprite.hotspot=v2.new(1,.5)
         this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)

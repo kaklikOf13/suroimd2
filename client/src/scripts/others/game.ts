@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -192,7 +192,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
     this.rain_particles_emitter=this.particles.add_emiter({
-      delay:0.05,
+      delay:0.005,
       particle:()=>new RainParticle2D({
         frame:{
           main:{
@@ -206,9 +206,12 @@ export class Game extends ClientGame2D<GameObject>{
           wave:zIndexes.Rain1,
           main:zIndexes.Rain2
         },
-        speed:15,
-        lifetime:0.7,
-        position:v2.random2(v2.sub(this.camera.visual_position,v2.new(5,5)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
+        speed:25,
+        lifetime:random.float(0.5,1.2),
+        scale:{
+          main:random.float(0.7,1)
+        },
+        position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
         rotation:Angle.deg2rad(45),
       }),
       enabled:true
