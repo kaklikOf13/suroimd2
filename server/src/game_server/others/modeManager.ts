@@ -21,6 +21,7 @@ export class GamemodeManager{
     constructor(game:Game){
         this.game=game
         this.team_size=game.config.teamSize
+        this.battle_plane_enabled=this.battle_plane_enabled&&game.config.deenable_lobby
     }
     can_down(_player:Player):boolean{
         return false

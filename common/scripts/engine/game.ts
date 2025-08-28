@@ -97,7 +97,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
             this.timeouts[i].delay-=dt
             if(this.timeouts[i].delay<=0){
                 this.timeouts[i].c()
-                this.timeouts.splice(i,1)
+                this.timeouts.splice(i,1) 
                 i--
             }
         }

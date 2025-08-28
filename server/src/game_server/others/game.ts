@@ -113,7 +113,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.gamemode=DefaultGamemode
         this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false
-
         /*this.map.generate(generation.island({
             generation:{
                 size:v2.new(800,800),
@@ -304,8 +303,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.players.push(p)
         this.livingPlayers.push(p)
 
-        p.pvpEnabled=this._pvpEnabled||this.config.deenable_feast
-        p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
+        p.pvpEnabled=this._pvpEnabled
+        p.interactionsEnabled=this._interactionsEnabled
 
         p.username=username
 
@@ -315,6 +314,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         },this.map.random)
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
+
+        p.position=v2.new(100,100)
 
         if(connected){
             this.send_killfeed_message({

@@ -5,7 +5,7 @@ export interface GameConfig{
     gameTps:number
     teamSize:number
     netTps:number
-    deenable_feast:boolean
+    deenable_lobby:boolean
 }
 export interface RegionDef{
     host:string
