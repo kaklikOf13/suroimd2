@@ -50,6 +50,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.A],
         keys:[Key.E]
     },
+    "full_map":{
+        buttons:[GamepadButtonID.Select],
+        keys:[Key.M]
+    },
     "weapon1":{
         buttons:[],
         keys:[Key.Number_1]

@@ -6,6 +6,7 @@ import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
 import { GetObstacleBaseFrame } from "../gameObjects/obstacle.ts";
+import { HideElement, ShowElement } from "../engine/utils.ts";
 
 export class MinimapManager{
     game:Game
@@ -17,6 +18,19 @@ export class MinimapManager{
 
     canvas:HTMLCanvasElement=document.querySelector("#minimap-canvas") as HTMLCanvasElement
     ctx:CanvasRenderingContext2D
+
+    full_map_canvas:HTMLCanvasElement=document.querySelector("#fullmap-canvas") as HTMLCanvasElement
+    full_map_ctx:CanvasRenderingContext2D
+
+    full_map:boolean=false
+    set_full_map(v:boolean){
+        this.full_map=v
+        if(v){
+            ShowElement(this.full_map_canvas)
+        }else{
+            HideElement(this.full_map_canvas)
+        }
+    }
     constructor(game:Game){
         this.game=game
 
@@ -32,6 +46,13 @@ export class MinimapManager{
 
         this.map.camera.meter_size=10
         this.ctx=this.canvas.getContext("2d")!
+
+        this.full_map_canvas.width=800
+        this.full_map_canvas.height=800
+        this.full_map_ctx=this.full_map_canvas.getContext("2d")!
+        this.set_full_map(false)
+
+        this.canvas.addEventListener("click",()=>this.set_full_map(!this.full_map))
     }
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
         grid_gfx.clear()
@@ -42,7 +63,7 @@ export class MinimapManager{
     render(){
         this.map.downscale=4
         this.map.camera.meter_size=10/(this.config.size.x/100)
-        this.imgS=230*(this.config.size.x/20)
+        this.imgS=500*(this.config.size.x/20)
         this.ms=(this.imgS/10)/10
         this.map.update(0.1,this.game.resources)
         this.map.render(this.game.renderer as WebglRenderer,this.game.camera)
@@ -55,8 +76,8 @@ export class MinimapManager{
     
     draw():Promise<void>{
         return new Promise<void>((resolve) => {    
-            this.canvas.width = 230
-            this.canvas.height = 230
+            this.canvas.width = 500
+            this.canvas.height = 500
             this.ctx.clearRect(0, 0, this.canvas.width,this.canvas.height)
 
             const halfW = this.canvas.width / 2
@@ -72,6 +93,14 @@ export class MinimapManager{
             this.ctx.fillStyle="#0ff"
             this.ctx.fillRect(halfW-5,halfH-5,10,10)
             resolve()
+
+            if(this.full_map){
+                this.full_map_ctx.drawImage(this.image,0,0,this.full_map_canvas.width,this.full_map_canvas.height)
+                
+                this.full_map_ctx.fillStyle="#0ff"
+                const dp=v2.scale(v2.mult(this.position,this.map.scale),8)
+                this.full_map_ctx.fillRect(dp.x-5,dp.y-5,10,10)
+            }
 
             /*
 

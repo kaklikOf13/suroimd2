@@ -109,6 +109,9 @@ export class Game extends ClientGame2D<GameObject>{
         case "weapon3":
           this.action.hand=2
           break
+        case "full_map":
+          this.minimap.set_full_map(!this.minimap.full_map)
+          break
         case "use_item1":
           this.action.use_slot=0
           break
