@@ -1,9 +1,11 @@
-import { ClientGameObject2D, Container2D, Sprite2D } from "../engine/mod.ts";
+import { Container2D, Sprite2D } from "../engine/mod.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { PlayerBodyData } from "common/scripts/others/objectsEncode.ts";
 import { ColorM } from "../engine/renderer.ts";
-export class PlayerBody extends ClientGameObject2D{
+import { random } from "common/scripts/engine/random.ts";
+import { GameObject } from "../others/gameObject.ts";
+export class PlayerBody extends GameObject{
     stringType:string="player_body"
     numberType: number=8
 
@@ -34,11 +36,31 @@ export class PlayerBody extends ClientGameObject2D{
     
     override async updateData(data:PlayerBodyData){
         if(data.full){
-            this.sprite_text.frame=await this.game.resources.render_text(`${data.full.name}`,50,"#ccc")
+            switch(data.full.gore_type){
+                case 0:
+                    this.sprite_text.frame=await this.game.resources.render_text(`${data.full.name}`,50,"#ccc")
+                    break
+                case 1:
+                    this.sprite.frame=this.game.resources.get_sprite(`player_gore_${data.full.gore_id}`)
+                    this.sprite.rotation=random.rad()
+                    if(data.moving){
+                        this.sprite.scale=v2.new(1,1)
+                        this.game.addTween({
+                            target:this.sprite.scale,
+                            duration:1,
+                            to:v2.new(1,1)
+                        })
+                    }
+                    break
+            }
             this.sprite.tint=ColorM.hex("#ccc")
             this.container.visible=true
         }
-        this.position=data.position
+        if(v2.distance(this.position,data.position)<=1){
+            this.position=v2.lerp(this.position,data.position,0.8)
+        }else{
+            this.position=data.position
+        }
         this.container.position=data.position
     }
 }

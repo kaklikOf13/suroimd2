@@ -25,7 +25,9 @@ export const Floors: Record<FloorType, FloorDef> = {
 export interface Floor {
     type: FloorType;
     smooth: boolean;
+    jagged:boolean;
     hb: Hitbox2D;
+    final_hb:Hitbox2D;
     layer: number;
 }
 
@@ -45,8 +47,8 @@ export class TerrainManager {
     floors: Floor[] = [];
     grid = new Map<number, Map<number, { floors: Floor[] }>>();
 
-    add_floor(type: FloorType, hb: Hitbox2D, layer = 0, smooth = true) {
-        const floor: Floor = { type, hb, smooth, layer };
+    add_floor(type: FloorType, hb: Hitbox2D, layer = 0, smooth = true,jagged:boolean=false,final_hb?:Hitbox2D) {
+        const floor: Floor = { type, hb, smooth, layer,jagged,final_hb:final_hb??hb };
         this.floors.push(floor);
 
         const rect = hb.toRect();

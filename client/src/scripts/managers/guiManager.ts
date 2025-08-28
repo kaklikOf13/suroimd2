@@ -1,12 +1,12 @@
 import { Game } from "../others/game.ts";
-import { BoostType, InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { DefaultEvents, Numeric, v2 } from "common/scripts/engine/mod.ts";
+import { Numeric } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
-import { MeleeDef } from "../../../../common/scripts/definitions/items/melees.ts";
-import { GunDef } from "../../../../common/scripts/definitions/items/guns.ts";
-import { GuiUpdate } from "common/scripts/packets/update_packet.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { BoostType,Boosts } from "common/scripts/definitions/player/boosts.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
@@ -15,6 +15,8 @@ import { isMobile } from "../engine/game.ts";
 import { Debug } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
+import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
+
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -239,7 +241,7 @@ export class GuiManager{
         if(isMobile||Debug.force_mobile){
             this.mobile_init()
         }
-        this.game.events.on(DefaultEvents.GameTick,this.update.bind(this))
+        this.game.signals.on("update",this.update.bind(this))
     }
     start(){
         if(this.game.client){
@@ -462,29 +464,29 @@ export class GuiManager{
             elem.remove()
         },4)
     }
-    update_gui(gui:GuiUpdate){
-        this.set_health(gui.health,gui.max_health)
-        this.set_boost(gui.boost,gui.max_boost,gui.boost_type)
+    update_gui(priv:PrivateUpdate){
+        this.set_health(priv.health,priv.max_health)
+        this.set_boost(priv.boost,priv.max_boost,priv.boost_type)
 
-        if(gui.damages){
-            for(const ds of gui.damages){
+        if(priv.damages){
+            for(const ds of priv.damages){
                 this.game.add_damageSplash(ds)
             }
         }
 
-        if(gui.dirty.weapons){
+        if(priv.dirty.weapons){
             let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
             let img=this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
 
             let name2=this.content.e_weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
             let img2=this.content.e_weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
-            if(gui.weapons.melee){
-                name.innerText=gui.weapons.melee.idString
-                name2.innerText=gui.weapons.melee.idString
-                const src=this.game.resources.get_sprite(gui.weapons.melee.idString).src
+            if(priv.weapons.melee){
+                name.innerText=priv.weapons.melee.idString
+                name2.innerText=priv.weapons.melee.idString
+                const src=this.game.resources.get_sprite(priv.weapons.melee.idString).src
                 img.src=src
                 img2.src=src
-                this.weapons[0]=gui.weapons.melee
+                this.weapons[0]=priv.weapons.melee
                 img.style.display="block"
                 img2.style.display="block"
             }else{
@@ -495,13 +497,13 @@ export class GuiManager{
             img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
             name2=this.content.e_weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
             img2=this.content.e_weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
-            if(gui.weapons.gun1){
-                name.innerText=gui.weapons.gun1.idString
-                name2.innerText=gui.weapons.gun1.idString
-                const src=this.game.resources.get_sprite(gui.weapons.gun1.idString).src
+            if(priv.weapons.gun1){
+                name.innerText=priv.weapons.gun1.idString
+                name2.innerText=priv.weapons.gun1.idString
+                const src=this.game.resources.get_sprite(priv.weapons.gun1.idString).src
                 img.src=src
                 img2.src=src
-                this.weapons[1]=gui.weapons.gun1
+                this.weapons[1]=priv.weapons.gun1
                 img.style.display="block"
                 img2.style.display="block"
             }else{
@@ -514,13 +516,13 @@ export class GuiManager{
             img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
             name2=this.content.e_weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
             img2=this.content.e_weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
-            if(gui.weapons.gun2){
-                name.innerText=gui.weapons.gun2.idString
-                name2.innerText=gui.weapons.gun2.idString
-                const src=this.game.resources.get_sprite(gui.weapons.gun2.idString).src
+            if(priv.weapons.gun2){
+                name.innerText=priv.weapons.gun2.idString
+                name2.innerText=priv.weapons.gun2.idString
+                const src=this.game.resources.get_sprite(priv.weapons.gun2.idString).src
                 img.src=src
                 img2.src=src
-                this.weapons[2]=gui.weapons.gun2
+                this.weapons[2]=priv.weapons.gun2
                 img.style.display="block"
                 img2.style.display="block"
             }else{
@@ -530,10 +532,10 @@ export class GuiManager{
                 img2.style.display="none"
             }
         }
-        if(gui.dirty.current_weapon&&gui.current_weapon){
+        if(priv.dirty.current_weapon&&priv.current_weapon){
             if(this.currentWeapon)this.currentWeapon.classList.remove("weapon-slot-selected")
-            const wp=this.weapons[gui.current_weapon.slot as keyof typeof this.weapons]
-            switch(gui.current_weapon.slot){
+            const wp=this.weapons[priv.current_weapon.slot as keyof typeof this.weapons]
+            switch(priv.current_weapon.slot){
                 case 1:
                     this.currentWeapon=this.content.weapon2
                     this.currentWeaponIDX=1
@@ -547,33 +549,33 @@ export class GuiManager{
                     this.currentWeaponIDX=0
             }
 
-            if(gui.current_weapon.slot===0){
+            if(priv.current_weapon.slot===0){
                 //
             }else{
-                this.content.hand_info_count.innerText=`${gui.current_weapon.ammo}/${(wp as GunDef).reload?.capacity}`
+                this.content.hand_info_count.innerText=`${priv.current_weapon.ammo}/${(wp as GunDef).reload?.capacity}`
             }
             this.currentWeapon.classList.add("weapon-slot-selected")
         }
 
-        if(gui.dirty.inventory&&gui.inventory){
-            this.update_gui_items(gui.inventory)
+        if(priv.dirty.inventory&&priv.inventory){
+            this.update_gui_items(priv.inventory)
         }
-        if(gui.dirty.action){
-            if(gui.action){
+        if(priv.dirty.action){
+            if(priv.action){
                 this.action={
-                    delay:gui.action.delay,
+                    delay:priv.action.delay,
                     start:Date.now(),
-                    type:gui.action.type
+                    type:priv.action.type
                 }
             }else{
                 this.action=undefined
             }
         }
-        if(gui.dirty.ammos){
+        if(priv.dirty.ammos){
             const aa:Record<string,number>={}
-            for(const a of Object.keys(gui.ammos)){
+            for(const a of Object.keys(priv.ammos)){
                 const def=Ammos.getFromNumber(a as unknown as number)
-                aa[def.idString]=gui.ammos[a as unknown as number]
+                aa[def.idString]=priv.ammos[a as unknown as number]
             }
             this.update_ammos(aa)
         }
@@ -640,13 +642,6 @@ export class GuiManager{
         const p=boost/max_boost
         this.content._bar_interior.style.width =`${p*100}%`
         this.content._bar_amount.innerText=`${boost}/${max_boost}`
-        this.content._bar_interior.style.backgroundColor=BoostsColors[_type]
+        this.content._bar_interior.style.backgroundColor=Boosts[_type].color
     }
-}
-const BoostsColors:Record<BoostType,string>={
-    [BoostType.Null]:"#fff",
-    [BoostType.Adrenaline]:"#ff0",
-    [BoostType.Shield]:"#08f",
-    [BoostType.Mana]:"#92a",
-    [BoostType.Addiction]:"#e13"
 }

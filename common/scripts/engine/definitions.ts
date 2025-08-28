@@ -1,5 +1,5 @@
 import { Vec2 } from "./geometry.ts";
-import { mergeDeep, splitPath } from "./utils.ts";
+import { EaseFunction, mergeDeep, splitPath } from "./utils.ts";
 export interface Definition{
     idString:string,
     idNumber?:number
@@ -34,8 +34,8 @@ export class DefinitionsSimple<Type,Base=null>{
     exist(id:string):boolean{
         return Object.hasOwn(this.value,id)
     }
-    extends(extend:string,val:Type,id:string){
-        this.set(mergeDeep<Type>(val,this.getFromString(extend)!),id)
+    extends(extend:string,val:Partial<Type>,id:string){
+        this.set(mergeDeep<Type>(this.getFromString(extend)!,val),id)
     }
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
@@ -212,8 +212,30 @@ export interface FrameTransform{
     scale?:number
     hotspot?:Vec2
     rotation?:number
+    position?:Vec2
+    visible?:boolean
+    zIndex?:number
 }
-export type FrameDef={image:string}&FrameTransform
+export type FrameDef={image?:string}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef
+export interface AKeyFrameSpriteAction extends FrameTransform {
+    type: "sprite"
+    image?: string
+    fuser: string
+}
+
+export interface AKeyFrameTweenAction {
+    type: "tween"
+    ease?:EaseFunction
+    fuser:string
+    to: FrameTransform
+}
+export type AKeyFrameAction =
+    | AKeyFrameSpriteAction
+    | AKeyFrameTweenAction
+export interface AKeyFrame{
+    actions:AKeyFrameAction[]
+    time:number
+}

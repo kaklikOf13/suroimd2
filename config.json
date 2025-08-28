@@ -12,7 +12,7 @@
   "game": {
     "max_games": 5,
     "config": {
-      "deenable_feast": true,
+      "deenable_lobby": true,
       "gameTps": 100,
       "maxPlayers": 70,
       "netTps": 60,
@@ -29,7 +29,7 @@
     }
   },
   "database": {
-    "enabled": true,
+    "enabled": false,
     "files": {
       "accounts": "database/accounts.db",
       "forum":"database/forum.db"

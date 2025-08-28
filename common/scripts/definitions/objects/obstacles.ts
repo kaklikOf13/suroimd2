@@ -1,7 +1,7 @@
 import { v2 } from "../../engine/geometry.ts";
 import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2, FrameTransform } from "../../engine/mod.ts";
 import { zIndexes } from "../../others/constants.ts";
-import { RectHitbox2D } from "../../engine/hitbox.ts";
+import { HitboxGroup2D, RectHitbox2D } from "../../engine/hitbox.ts";
 import { FloorType } from "../../others/terrain.ts";
 export enum  SpawnModeType{
     any,
@@ -31,6 +31,7 @@ export interface ObstacleDef extends Definition{
     hotspot?:Vec2
     noCollision?:boolean
     noBulletCollision?:boolean
+    invisibleOnMap?:boolean
     scale?:{
         min?:number
         max?:number
@@ -160,15 +161,17 @@ Obstacles.insert(
     {
         idString:"copper_crate",
         health:160,
-        hotspot:v2.new(0,0),
-        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        hitbox:new RectHitbox2D(v2.new(-0.65,-0.65),v2.new(0.65,0.65)),//new HitboxGroup2D(new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6))),//
         scale:{
-            destroy:0.8
+            destroy:0.6,
+        },
+        frame_transform:{
+            hotspot:v2.new(0,0),
+            scale:2
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
-        material:"tree",
-        reflectBullets:true,
+        material:"tree", //TODO Copper Material
 
         interactDestroy:true,
         lootTable:"copper_crate",
@@ -184,7 +187,7 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
-        material:"tree",
+        material:"tree",//TODO Iron Material
         reflectBullets:true,
 
         interactDestroy:true,

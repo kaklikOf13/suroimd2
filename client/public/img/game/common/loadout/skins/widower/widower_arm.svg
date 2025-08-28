@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="158.93747"
+   width="143.93744"
    height="37.917801"
-   viewBox="0 0 42.05221 10.032419"
+   viewBox="0 0 38.083451 10.032419"
    version="1.1"
    id="svg5"
-   sodipodi:docname="default_skin_arm.svg"
+   sodipodi:docname="widower_arm.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,9 +23,9 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      showgrid="false"
-     inkscape:zoom="4.3992128"
-     inkscape:cx="22.163056"
-     inkscape:cy="25.11813"
+     inkscape:zoom="1.0998032"
+     inkscape:cx="-129.11401"
+     inkscape:cy="95.926253"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -41,7 +41,7 @@
        xlink:href="#color-2"
        id="linearGradient35"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.0314358,0,0,1.023076,-7.8594681,-4.8770679)"
+       gradientTransform="matrix(1.0418881,0,0,0.90256761,-10.53927,20.564091)"
        x1="256.59305"
        y1="171.25734"
        x2="256.38449"
@@ -102,7 +102,7 @@
   <g
      id="g35"
      inkscape:label="Right"
-     transform="matrix(0,-0.74833003,0.74833003,0,-123.88314,197.0263)">
+     transform="matrix(0,-0.74833003,0.74833003,0,-127.85189,197.0263)">
     <path
        d="m 251.60743,217.49058 c -0.93143,-2.70145 0.49355,-5.64994 3.18276,-6.58561 2.68922,-0.93568 5.62436,0.49579 6.5558,3.19723 0.93145,2.70147 -0.49354,5.64996 -3.18275,6.58563 -2.68924,0.93568 -5.62437,-0.49579 -6.55582,-3.19725 z"
        fill="#312817"
@@ -110,10 +110,10 @@
        style="fill:#ffc266;fill-opacity:1;stroke:#312817;stroke-width:1.53702;stroke-dasharray:none;stroke-opacity:1"
        sodipodi:nodetypes="ssssss" />
     <path
-       d="m 250.90882,213.97969 v -47.40632 h 11.35191 v 47.40632 c -0.84457,3.34737 -10.36008,3.30761 -11.35191,0 z"
+       d="m 250.8513,213.64166 v -41.82232 h 11.46695 v 41.82232 c -0.85313,2.95308 -10.46507,2.918 -11.46695,0 z"
        fill="url(#color-2)"
        id="path35"
-       style="fill:url(#linearGradient35);stroke:#191a1f;stroke-width:2.0545;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#linearGradient35);stroke:#191a1f;stroke-width:1.93946;stroke-dasharray:none;stroke-opacity:1"
        sodipodi:nodetypes="ccccc" />
   </g>
 </svg>

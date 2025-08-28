@@ -1,12 +1,11 @@
 import { LootData } from "common/scripts/others/objectsEncode.ts";
-import { Angle, CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
-import { Debug } from "../others/config.ts";
 import { ease } from "common/scripts/engine/utils.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 export class Loot extends GameObject{
@@ -23,8 +22,12 @@ export class Loot extends GameObject{
         this.hb=new CircleHitbox2D(v2.new(3,3),0.3)
         this.game.camera.addObject(this.container)
     }
-    update(_dt:number): void {
-        
+    update(dt:number): void {
+        if(v2.distance(this.position,this.dest_pos)<=1){
+            this.position=v2.lerp(this.position,this.dest_pos,1/(1+dt*8))
+        }else{
+            this.position=this.dest_pos
+        }
     }
     constructor(){
         super()
@@ -44,12 +47,13 @@ export class Loot extends GameObject{
       this.container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        if(Debug.hitbox){
+        /*if(Debug.hitbox){
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_loot"),camera.visual_position)
-        }
+        }*/
     }
+    dest_pos:Vec2=v2.new(0,0)
     override updateData(data:LootData){
-        this.position=data.position
+        this.dest_pos=data.position
         this.container.position=this.position
         this.manager.cells.updateObject(this)
         if(data.full){

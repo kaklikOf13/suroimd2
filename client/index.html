@@ -29,6 +29,8 @@
           <button id="btn-mobile-inventory" class="btn-green"><span>I</span></button>
           <button id="btn-mobile-reload" class="btn-green"><span>R</span></button>
         </div>
+        <canvas id="minimap-canvas" width="230" height="230"></canvas>
+        <canvas id="fullmap-canvas" width="230" height="230"></canvas>
         <div id="help-gui">
         </div>
         <div id="gameover-container" class="background-menu">
@@ -127,34 +129,37 @@
           <div id="ammos-inventory">
           </div>
         </div>
-          <div id="all-inventory" class="background-menu">
-            <button class="btn-red" id="close-all-inventory">X</button>
-            <span class="span">Weapons</span>
-            <div class="all-inventory-b" id="all-inventory-weapons">
-              <div class="weapon-slot-2" id="game-weapon-slot-expanded-00">
-                <div class="weapon-slot-number">1</div>
-                <span class="weapon-slot-name">m870</span>
-                <img class="weapon-slot-image"></img>
-              </div>
-              <div class="weapon-slot-2" id="game-weapon-slot-expanded-01">
-                <div class="weapon-slot-number">2</div>
-                <span class="weapon-slot-name">m870</span>
-                <img class="weapon-slot-image"></img>
-              </div>
-              <div class="weapon-slot-2" id="game-weapon-slot-expanded-02">
-                <div class="weapon-slot-number">3</div>
-                <span class="weapon-slot-name">m870</span>
-                <img class="weapon-slot-image"></img>
-              </div>
+        <div id="all-inventory" class="background-menu">
+          <button class="btn-red" id="close-all-inventory">X</button>
+          <span class="span">Weapons</span>
+          <div class="all-inventory-b" id="all-inventory-weapons">
+            <div class="weapon-slot-2" id="game-weapon-slot-expanded-00">
+              <div class="weapon-slot-number">1</div>
+              <span class="weapon-slot-name">m870</span>
+              <img class="weapon-slot-image"></img>
             </div>
-            <span class="span">Ammos</span>
-            <div id="all-inventory-ammos" class="all-inventory-b">
+            <div class="weapon-slot-2" id="game-weapon-slot-expanded-01">
+              <div class="weapon-slot-number">2</div>
+              <span class="weapon-slot-name">m870</span>
+              <img class="weapon-slot-image"></img>
             </div>
-            <span class="span">Items</span>
-            <div id="all-inventory-items" class="all-inventory-b">
+            <div class="weapon-slot-2" id="game-weapon-slot-expanded-02">
+              <div class="weapon-slot-number">3</div>
+              <span class="weapon-slot-name">m870</span>
+              <img class="weapon-slot-image"></img>
             </div>
           </div>
+          <span class="span">Ammos</span>
+          <div id="all-inventory-ammos" class="all-inventory-b">
+          </div>
+          <span class="span">Items</span>
+          <div id="all-inventory-items" class="all-inventory-b">
+          </div>
+        </div>
       </div>
+      <div id="vignetting-gfx"></div>
+      <div id="bloom-gfx"></div>
+      <div id="tiltshift-gfx"></div>-
       <canvas id="game-canvas"></canvas>
     </div>
     <tabs-container id="settings-tabs" class="background-menu">

@@ -59,6 +59,7 @@ export enum zIndexes{
     Bullets,
     Obstacles1,
     Obstacles2,
+    Rain2,
     Vehicles,
     Creatures,
     Players,
@@ -67,7 +68,11 @@ export enum zIndexes{
     Obstacles4,
     Explosions,
     ParachutePlayers,
-    DamageSplashs
+    Rain1,
+    Planes,
+    Lights,
+    DamageSplashs,
+    Minimap
 }
 export enum ActionsType{
     Reload,

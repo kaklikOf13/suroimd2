@@ -12,7 +12,7 @@ export interface TweenOptions<T>{
     onComplete?: () => void
 }
 export class Tween<T> {
-    readonly game: ClientGame2D;
+    readonly game: ClientGame2D<any>;
 
     tick:number=0
 
@@ -31,7 +31,7 @@ export class Tween<T> {
     readonly onComplete?: () => void;
 
     constructor(
-        game: ClientGame2D,
+        game: ClientGame2D<any>,
         config: TweenOptions<T>
     ) {
         this.game = game;
@@ -88,10 +88,12 @@ export class Tween<T> {
 export function HideElement(elem:HTMLElement){
     elem.style.display="none"
     elem.style.pointerEvents="none"
+    elem.style.opacity="0"
 }
 export function ShowElement(elem:HTMLElement){
     elem.style.display = ""
     elem.style.pointerEvents = ""
+    elem.style.opacity="1"
 }
 export function ToggleElement(elem:HTMLElement){
     if(elem.style.display==="none")ShowElement(elem)

@@ -61,11 +61,3 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
         type:stream.readUint8(),
     }
 }
-
-export enum BoostType{
-    Null,
-    Shield,
-    Adrenaline,
-    Mana,
-    Addiction
-}

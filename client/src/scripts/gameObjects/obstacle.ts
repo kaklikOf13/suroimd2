@@ -6,8 +6,16 @@ import { ParticlesEmitter2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
-export class Obstacle extends ClientGameObject2D{
+import { GraphicsParticlesConfig } from "../others/config.ts";
+import { GameObject } from "../others/gameObject.ts";
+export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
+    const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
+    if(def.variations){
+        return spr_id+`_${variation}`
+    }
+    return spr_id
+}
+export class Obstacle extends GameObject{
     stringType:string="obstacle"
     numberType: number=4
     name:string=""
@@ -26,7 +34,7 @@ export class Obstacle extends ClientGameObject2D{
     }
 
     emitter_1?:ParticlesEmitter2D<ClientParticle2D>
-    create(_args: Record<string, void>): void {
+    create(_args: Record<string,any>): void {
         this.game.camera.addObject(this.container)
     }
 
@@ -43,6 +51,7 @@ export class Obstacle extends ClientGameObject2D{
         if(this.dead){
             this.sprite.frame=this.game.resources.get_sprite(this.frame.dead)
             this.container.zIndex=zIndexes.DeadObstacles
+            if(this.emitter_1)this.emitter_1.destroyed=true
         }else{
             this.sprite.frame=this.game.resources.get_sprite(this.frame.base)
             this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
@@ -100,9 +109,9 @@ export class Obstacle extends ClientGameObject2D{
         }
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        if(Debug.hitbox){
+        /*if(Debug.hitbox){
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_obstacle"),camera.visual_position)
-        }
+        }*/
     }
     constructor(){
         super()
@@ -148,34 +157,31 @@ export class Obstacle extends ClientGameObject2D{
                     this.game.resources.get_audio(mat.sounds+"_hit")
                 }
             }
-            const spr_id=(this.def.frame&&this.def.frame.base)?this.def.frame.base:this.def.idString
-            if(this.def.variations){
-                this.frame.base=spr_id+`_${this.variation}`
-            }else{
-                this.frame.base=spr_id
-            }
+            this.frame.base=GetObstacleBaseFrame(this.def,data.full.variation)
             this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
             this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
 
             if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
-                this.emitter_1=this.game.particles.add_emiter({
-                    delay:0.3,
-                    particle:()=>new ABParticle2D({
-                        frame:{
-                            image:"gas_smoke_particle"
-                        },
-                        position:this.position,
-                        speed:random.float(0.7,1),
-                        angle:0,
-                        direction:random.float(-1.45,-1.65),
-                        life_time:random.float(1.7,3),
-                        zIndex:zIndexes.Particles,
-                        scale:0,
-                        tint:ColorM.hex("#ffffffdd"),
-                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#ffffff00")}
-                    }),
-                    enabled:data.health<=0.35,
-                })
+                if(!this.emitter_1){
+                    this.emitter_1=this.game.particles.add_emiter({
+                        delay:0.3,
+                        particle:()=>new ABParticle2D({
+                            frame:{
+                                image:"gas_smoke_particle"
+                            },
+                            position:this.position,
+                            speed:random.float(0.7,1),
+                            angle:0,
+                            direction:random.float(-1.45,-1.65),
+                            life_time:random.float(1.7,3),
+                            zIndex:zIndexes.Particles,
+                            scale:0,
+                            tint:ColorM.hex("#ffffffdd"),
+                            to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#ffffff00")}
+                        }),
+                        enabled:data.health<=0.35,
+                    })
+                }
             }
         }
         if(data.dead){

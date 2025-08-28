@@ -1,17 +1,14 @@
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
 export enum PlayerAnimationType{
-    Shooting,
     Reloading,
-    Healing,
+    Consuming,
 }
 export type PlayerAnimation={
 }&({
-    type:PlayerAnimationType.Shooting
-}|{
     type:PlayerAnimationType.Reloading
     alt_reload:boolean
 }|{
-    type:PlayerAnimationType.Healing
+    type:PlayerAnimationType.Consuming
     item:number
 })
 export interface PlayerData extends EncodedData{
@@ -25,11 +22,10 @@ export interface PlayerData extends EncodedData{
     }
     position:Vec2
     rotation:number
-    using_item:boolean
-    using_item_down:boolean
     dead:boolean
     left_handed:boolean
     driving:boolean
+    attacking:boolean
     parachute?:{
         value:number
     }
@@ -92,7 +88,10 @@ export interface ProjectileData extends EncodedData{
 export interface PlayerBodyData extends EncodedData{
     full?:{
         name:string
+        gore_type:number
+        gore_id:number
     }
+    moving:boolean
     position:Vec2
 }
 export interface VehicleData extends EncodedData{
@@ -119,25 +118,24 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             const ret:PlayerData={
                 position:stream.readPosition(),
                 rotation:stream.readRad(),
-                using_item:false,
-                using_item_down:false,
                 full:undefined,
                 dead:false,
                 left_handed:false,
-                driving:false
+                driving:false,
+                attacking:false
             }
             const bg1=stream.readBooleanGroup()
-            ret.using_item=bg1[0]
-            ret.using_item_down=bg1[1]
-            ret.dead=bg1[3]
-            ret.left_handed=bg1[4]
-            ret.driving=bg1[6]
-            if(bg1[5]){
+            ret.dead=bg1[0]
+            ret.left_handed=bg1[1]
+            ret.driving=bg1[2]
+            ret.attacking=bg1[3]
+            if(bg1[4]){
                 ret.parachute={
                     value:stream.readFloat(0,1,1)
                 }
             }
             if(full){
+                const bg2=stream.readBooleanGroup()
                 ret.full={
                     vest:stream.readUint8(),
                     helmet:stream.readUint8(),
@@ -145,21 +143,20 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     skin:stream.readUint16(),
                     current_weapon:stream.readInt16(),
                 }
-                if(bg1[2]){
+                if(bg2[0]){
                     const tp=stream.readUint8() as PlayerAnimationType
                     switch(tp){
-                        case PlayerAnimationType.Shooting:
-                            ret.full.animation={
-                                type:tp
-                            }
-                            break
                         case PlayerAnimationType.Reloading:
                             ret.full.animation={
                                 type:tp,
                                 alt_reload:!!stream.readUint8()
                             }
                             break
-                        case PlayerAnimationType.Healing:
+                        case PlayerAnimationType.Consuming:
+                            ret.full.animation={
+                                type:tp,
+                                item:stream.readUint16()
+                            }
                             break
                     }
                 }
@@ -171,12 +168,19 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         encode(full:boolean,data:PlayerData,stream:NetStream){
             stream.writePosition(data.position)
             .writeRad(data.rotation)
-            .writeBooleanGroup(data.using_item,data.using_item_down,data.full?.animation!==undefined,data.dead,data.left_handed,data.parachute!==undefined,data.driving)
+            .writeBooleanGroup(
+                data.dead,
+                data.left_handed,
+                data.driving,
+                data.attacking,
+                data.parachute!==undefined
+            )
             if(data.parachute){
                 stream.writeFloat(data.parachute.value,0,1,1)
             }
             if(full){
-                stream.writeUint8(data.full!.vest)
+                stream.writeBooleanGroup(data.full?.animation!==undefined)
+                .writeUint8(data.full!.vest)
                 .writeUint8(data.full!.helmet)
                 .writeUint8(data.full!.backpack)
                 .writeUint16(data.full!.skin)
@@ -184,12 +188,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 if(data.full!.animation!==undefined){
                     stream.writeUint8(data.full!.animation.type)
                     switch(data.full!.animation.type){
-                        case PlayerAnimationType.Shooting:
-                            break
                         case PlayerAnimationType.Reloading:
                             stream.writeUint8(data.full!.animation.alt_reload?1:0)
                             break
-                        case PlayerAnimationType.Healing:
+                        case PlayerAnimationType.Consuming:
+                            stream.writeUint16(data.full!.animation.item)
                             break
                     }
                 }
@@ -346,10 +349,13 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         decode:(full:boolean,stream:NetStream)=>{
             const ret:PlayerBodyData={
                 position:stream.readPosition(),
+                moving:stream.readBooleanGroup()[0]
             }
             if(full){
                 ret.full={
-                    name:stream.readStringSized(30)
+                    name:stream.readStringSized(30),
+                    gore_type:stream.readUint8(),
+                    gore_id:stream.readUint8(),
                 }
             }
             return ret
@@ -358,8 +364,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         //@ts-ignore
         encode(full:boolean,data:PlayerBodyData,stream:NetStream){
             stream.writePosition(data.position)
+            .writeBooleanGroup(data.moving)
             if(full){
                 stream.writeStringSized(30,data.full!.name)
+                stream.writeUint8(data.full!.gore_type)
+                stream.writeUint8(data.full!.gore_id)
             }
         }
     },

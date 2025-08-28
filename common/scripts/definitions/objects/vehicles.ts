@@ -1,10 +1,12 @@
 import { Definition, Definitions } from "../../engine/definitions.ts";
 import { v2, Vec2 } from "../../engine/geometry.ts";
+import { zIndexes } from "../../others/constants.ts";
 
 export interface VehicleDef extends Definition{
     frame:{
         base?:string
         base_scale?:number
+        zindex?:number
     }
     movimentation:{
         acceleration:number
@@ -13,7 +15,7 @@ export interface VehicleDef extends Definition{
         back_walk_mult:number
         desacceleration:number
     }
-    pillot_seat:{
+    pillot_seat?:{
         position:Vec2
         leave:Vec2
     }
@@ -29,10 +31,16 @@ export interface VehicleDef extends Definition{
         }[]
         frame?:string
     }
+    infinity_walk?:boolean
+    battle_plane?:{
+        main_seat:Vec2
+        leave_position:Vec2
+        seats_count:number
+    }
 }
 
 
-export const Vehicles=new Definitions<VehicleDef,null>((g)=>{
+export const Vehicles=new Definitions<VehicleDef,null>((_g)=>{
 })
 
 Vehicles.insert(
@@ -104,6 +112,28 @@ Vehicles.insert(
                     scale:2.5
                 }
             ]
+        }
+    },
+    {
+        idString:"battle_plane",
+        frame:{
+            base_scale:13,
+            zindex:zIndexes.Planes
+        },
+        movimentation:{
+            acceleration:0,
+            angle_acceleration:0,
+            final_speed:20,
+            back_walk_mult:0,
+            desacceleration:0
+        },
+        battle_plane:{
+            main_seat:v2.new(0,0),
+            leave_position:v2.new(0,0),
+            seats_count:100,
+        },
+        wheels:{
+            defs:[]
         }
     },
 )

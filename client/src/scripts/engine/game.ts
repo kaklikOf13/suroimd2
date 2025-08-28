@@ -1,7 +1,7 @@
-import { BaseGameObject2D, DefaultEvents, DefaultEventsMap2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { BaseGameObject2D, Game2D, Numeric, Particle2D, ParticlesManager2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { Color, ColorM, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
-import { type GamepadManager, InputManager, KeyListener, MousePosListener } from "./keys.ts";
+import { InputManager } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
 import { Camera2D, Container2D, Sprite2D } from "./container.ts";
@@ -10,7 +10,7 @@ import { FrameDef } from "common/scripts/engine/definitions.ts";
 export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
-    declare game:ClientGame2D<any,any>
+    declare game:ClientGame2D<any>
     
     constructor(){
         super()
@@ -50,6 +50,23 @@ export interface ABParticle2Config{
         scale?:number
         tint?:Color
     }
+}
+export interface RainParticle2Config{
+    frame:{
+        main:FrameDef
+        wave:FrameDef
+    }
+    scale?:{
+        main:number
+    }
+    lifetime?:number
+    zindex?:{
+        main:number
+        wave:number
+    }
+    position:Vec2
+    rotation:number
+    speed?:number
 }
 export class ABParticle2D extends ClientParticle2D{
     ticks=0
@@ -106,7 +123,70 @@ export class ABParticle2D extends ClientParticle2D{
         this.container.visible=true
     }
 }
-export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap extends DefaultEventsMap2D = DefaultEventsMap2D> extends Game2D<ClientGameObject2D,Events,EMap>{
+export class RainParticle2D extends ClientParticle2D{
+    ticks=0
+    stage=0
+
+    config:RainParticle2Config
+    sprite:Sprite2D=new Sprite2D()
+    lifetime:number
+
+    constructor(config:RainParticle2Config){
+        super()
+        this.config=config
+        this.position=v2.duplicate(config.position)
+        this.container.position=this.position
+        this.container.scale=v2.new(config.scale?.main??1,config.scale?.main??1)
+        this.container.rotation=config.rotation
+        this.sprite.hotspot=v2.new(1,.5)
+        this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)
+        if(config.zindex){
+            this.container.zIndex=config.zindex.main
+        }
+        this.lifetime=config.lifetime??1
+        
+        this.sprite.tint={r:1,b:1,g:1,a:0}
+    }
+    vel:Vec2=v2.new(0,0)
+    override update(dt: number): void {
+        switch(this.stage){
+            case 0:{
+                if(this.ticks>=this.lifetime){
+                    this.ticks=0
+                    this.stage=1
+                    this.sprite.set_frame(this.config.frame.wave,(this.manager.game as unknown as ClientGame2D).resources)
+                    this.container.scale=v2.new(0,0)
+                    this.sprite.hotspot=v2.new(.5,.5)
+                    if(this.config.zindex){
+                        this.container.zIndex=this.config.zindex.wave
+                    }
+                }
+                this.container.position.x+=this.vel.x*dt
+                this.container.position.y+=this.vel.y*dt
+                this.ticks+=dt
+                this.sprite.tint.a=Numeric.clamp(this.ticks*3,0,1)
+                break
+            }
+            case 1:{
+                if(this.ticks>=1){
+                    this.destroyed=true
+                }
+                this.ticks+=2*dt
+                this.sprite.tint.a=1-this.ticks
+                this.container.scale=v2.add(this.container.scale,v2.new(6*dt,6*dt))
+                break
+            }
+        }
+
+    }
+    override on_create(): void {
+        super.on_create()
+        this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame2D).resources)
+        this.container.add_child(this.sprite)
+        this.container.visible=true
+    }
+}
+export class ClientGame2D<GObject extends ClientGameObject2D=ClientGameObject2D> extends Game2D<GObject>{
     camera:Camera2D
     renderer:Renderer
     resources:ResourcesManager
@@ -116,7 +196,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
 
     sounds:SoundManager
     save:GameConsole
-    constructor(input_manager:InputManager,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>ClientGameObject2D>=[]){
+    constructor(input_manager:InputManager,console:GameConsole,resources:ResourcesManager,sounds:SoundManager,renderer:Renderer,objects:Array<new ()=>GObject>=[]){
         super(60,objects)
         this.sounds=sounds
         this.input_manager=input_manager
@@ -140,7 +220,7 @@ export class ClientGame2D<Events extends DefaultEvents = DefaultEvents, EMap ext
     draw(renderer:Renderer,dt:number){
         renderer.clear()
         this.camera.update(dt,this.resources)
-        this.camera.container.draw(renderer)
+        this.camera.draw(renderer)
         this.on_render(dt)
         for(const c in this.scene.objects.objects){
             for(const o of this.scene.objects.objects[c].orden){

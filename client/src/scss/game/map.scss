@@ -1,0 +1,22 @@
+#minimap-canvas{
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    border: 4px solid #003;
+    border-radius: 10px;
+    opacity: 70%;
+    background-color: #000;
+    height: 300px;
+}
+#fullmap-canvas{
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    top: 0px;
+    margin: auto;
+    border: 4px solid #003;
+    height: 50%;
+    opacity: 90%;
+    border-radius: 10px;
+}

@@ -1,9 +1,11 @@
 import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
-import { Game, GameConfig } from "./game.ts"
-import { ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
-import { ConfigType } from "../../../configs/config.ts";
+import { Game } from "./game.ts"
+import { Game2D, ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
 import { v1 as uuid } from "https://deno.land/std@0.224.0/uuid/mod.ts"
 import { Layers } from "common/scripts/others/constants.ts";
+import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
+import { ServerReplayRecorder2D } from "../../engine/replay.ts";
+import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 export class GameServer{
     server:Server
     games:Game[]
@@ -23,6 +25,7 @@ export class GameServer{
         this.config=config
         this.addGame(config.game.config)
         Deno.mkdirSync("database/games",{recursive:true})
+        Deno.mkdirSync("database/replays",{recursive:true})
     }
     get_game(config?:GameConfig):ID{
         for(const g of this.games){
@@ -45,8 +48,9 @@ export class GameServer{
     addGame(config?:GameConfig):Game{
         const id=this.games.length
         this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? this.config.game.config,this.config))
-        this.games[id].mainloop()
+        this.games[id].replay=new ServerReplayRecorder2D(this.games[id] as unknown as Game2D,ObjectsE)
         this.games[id].string_id=uuid.generate() as string
+        this.games[id].mainloop()
         const handler=(this.games[id].clients as ClientsManager).handler_log(()=>{
             let idC=random.id()
             while(this.games[id].scene.objects.exist(
@@ -67,13 +71,14 @@ export class GameServer{
                 f.writeSync(encoder.encode(JSON.stringify(this.games[id].status)))
                 f.close()
             }
+            (this.games[id].replay! as ServerReplayRecorder2D).save_replay(`database/replays/game-${this.games[id].string_id}.repl`)
             const ln:string[]=[]
             for(const p of this.games[id].players){
                 if(ln.includes(p.username))continue
                 if(p.earned.coins>0||p.earned.xp>0||p.earned.score>0){
                     ln.push(p.username)
                 }
-                fetch(`http${this.config.api.global}/internal/update-user`, {
+                fetch(`${this.config.api.global}/internal/update-user`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

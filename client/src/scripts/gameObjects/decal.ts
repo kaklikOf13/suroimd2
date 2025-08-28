@@ -1,8 +1,9 @@
-import { ClientGameObject2D, Sprite2D } from "../engine/mod.ts";
-import {Vec2, v2 } from "common/scripts/engine/geometry.ts";
+import { Sprite2D } from "../engine/mod.ts";
+import { v2 } from "common/scripts/engine/geometry.ts";
 import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-export class Decal extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class Decal extends GameObject{
     stringType:string="decal"
     numberType: number=7
 

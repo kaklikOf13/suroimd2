@@ -1,4 +1,4 @@
-import { BoostType } from "common/scripts/definitions/utils.ts";
+import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 
 export interface Gamemode{
     player:{
@@ -26,7 +26,7 @@ export const DefaultGamemode:Gamemode={
         boosts:{
             adrenaline:{
                 decay:0.35,
-                speed:0.5,
+                speed:0.25,
                 regen:0.0112
             },
             mana:{

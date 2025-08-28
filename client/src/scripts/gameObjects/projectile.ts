@@ -24,9 +24,9 @@ export class Projectile extends GameObject{
         if(this.spr){
             const zs=this.def.zBaseScale+(this.def.zScaleAdd*this.zpos)
             renderer.draw_image2D(this.spr,v2.sub(this.position,camera.position),v2.new(zs,zs),Angle.rad2deg(this.rotation),v2.new(.5,.5))
-            if(Debug.hitbox){
+            /*if(Debug.hitbox){
                 renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_projectile"),camera.position)
-            }
+            }*/
         }
     }
 

@@ -1,6 +1,6 @@
-import { ClientGame2D, ResourcesManager, Renderer, ColorM, WebglRenderer, InputManager} from "../engine/mod.ts"
+import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Client, DefaultSignals, Numeric, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -13,8 +13,8 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import { Debug } from "./config.ts";
-import { type DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { ClientRotation, Debug } from "./config.ts";
+import { type DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
@@ -22,11 +22,15 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
 import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Graphics2D } from "../engine/container.ts";
+import { Graphics2D, Lights2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
-import { ActionEvent, GamepadManagerEvent, MouseEvents } from "../engine/keys.ts";
+import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
+import { WebglRenderer } from "../engine/renderer.ts";
+import { MinimapManager } from "../managers/miniMapManager.ts";
+import { Plane } from "./planes.ts";
+import { ClientParticle2D, RainParticle2D } from "../engine/game.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -39,12 +43,17 @@ export class Game extends ClientGame2D<GameObject>{
 
   gameOver:boolean=false
 
-  terrain:TerrainM=new TerrainM()
+  terrain:TerrainM=new TerrainM(this)
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
   scope_zoom:number=0.53
+  flying_position:number=0
   happening:boolean=false
+
+  light_map=new Lights2D()
+
+  minimap:MinimapManager=new MinimapManager(this)
 
   //0.14=l6 32x
   //0.27=l5 16x
@@ -57,6 +66,29 @@ export class Game extends ClientGame2D<GameObject>{
   //1.75=l-3 0.1x
 
   listners_init(){
+    this.input_manager.add_axis("movement",
+      {
+        keys:[Key.W],
+        buttons:[]
+      },
+      {
+        keys:[Key.S],
+        buttons:[]
+      },
+      {
+        keys:[Key.A],
+        buttons:[]
+      },
+      {
+        keys:[Key.D],
+        buttons:[]
+      }
+    )
+    this.input_manager.on("axis",(a:AxisActionEvent)=>{
+      if(a.action==="movement"){
+        this.action.Movement=a.value
+      }
+    })
     this.input_manager.on("actiondown",(a:ActionEvent)=>{
       switch(a.action){
         case "fire":
@@ -77,17 +109,8 @@ export class Game extends ClientGame2D<GameObject>{
         case "weapon3":
           this.action.hand=2
           break
-        case "move_left":
-          this.action.Movement.x=-1
-          break
-        case "move_right":
-          this.action.Movement.x=1
-          break
-        case "move_up":
-          this.action.Movement.y=-1
-          break
-        case "move_down":
-          this.action.Movement.y=1
+        case "full_map":
+          this.minimap.set_full_map(!this.minimap.full_map)
           break
         case "use_item1":
           this.action.use_slot=0
@@ -126,18 +149,6 @@ export class Game extends ClientGame2D<GameObject>{
         case "fire":
           this.action.UsingItem=false
           break
-        case "move_left":
-          this.action.Movement.x=this.action.Movement.x!==-1?this.action.Movement.x:0
-          break
-        case "move_right":
-          this.action.Movement.x=this.action.Movement.x!==1?this.action.Movement.x:0
-          break
-        case "move_up":
-          this.action.Movement.y=this.action.Movement.y!==-1?this.action.Movement.y:0
-          break
-        case "move_down":
-          this.action.Movement.y=this.action.Movement.y!==1?this.action.Movement.y:0
-          break
       }
     })
     this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
@@ -154,10 +165,11 @@ export class Game extends ClientGame2D<GameObject>{
   }
   set_lookTo_angle(angle:number){
     this.action.angle=angle;
-    if(this.activePlayer&&!this.activePlayer.driving){
+    if(ClientRotation&&this.activePlayer&&!this.activePlayer.driving){
       (this.activePlayer as Player).container.rotation=this.action.angle
     }
   }
+  rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
   constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
@@ -168,17 +180,45 @@ export class Game extends ClientGame2D<GameObject>{
     this.renderer.background=ColorM.hex("#000");
 
     if(Debug.hitbox){
-      const hc=ColorM.hex("#ee000099")
+      /*const hc=ColorM.hex("#ee000099")
       this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_loot",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
       this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
-      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
+      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))*/
     }
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
+    this.camera.addObject(this.light_map)
+    this.light_map.ambient=0.6
+    this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
+    this.rain_particles_emitter=this.particles.add_emiter({
+      delay:0.005,
+      particle:()=>new RainParticle2D({
+        frame:{
+          main:{
+            image:"raindrop_1",
+          },
+          wave:{
+            image:"raindrop_2",
+          }
+        },
+        zindex:{
+          main:zIndexes.Rain1,
+          wave:zIndexes.Rain2,
+        },
+        speed:25,
+        lifetime:random.float(0.5,1.2),
+        scale:{
+          main:random.float(0.7,1.5)
+        },
+        position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
+        rotation:Angle.deg2rad(45),
+      }),
+      enabled:true
+    })
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)
@@ -192,8 +232,14 @@ export class Game extends ClientGame2D<GameObject>{
   onstop?:(g:Game)=>void
   clear(){
     this.scene.reset()
+    for(const p of this.planes.values()){
+      p.free()
+    }
+    this.planes.clear()
   }
   override on_render(_dt:number):void{
+    this.light_map.render(this.renderer as WebglRenderer,this.camera)
+    this.minimap.draw()
   }
   override on_run(): void {
     
@@ -210,25 +256,37 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.drop=-1
       this.action.drop_kind=0
     }
-    this.renderer.fullCanvas(this.camera)
-    this.camera.resize()
-    this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/1920)
+    for(const p of this.planes.values()){
+      p.update(dt)
+    }
+    this.renderer.fullCanvas()
+    this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
     
   }
   update_camera(){
     if(this.activePlayer){
       this.camera.position=this.activePlayer!.position
       const gridSize=GameConstants.collision.chunckSize
-      this.grid_gfx.clear()
-      this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
-      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.08)
+      this.minimap.position=v2.duplicate(this.camera.position)
+      this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
+    }
+  }
+  planes:Map<number,Plane>=new Map()
+  proccess_private(priv:PrivateUpdate){
+    for(const p of priv.planes){
+      if(!this.planes.has(p.id)){
+        this.planes.set(p.id,new Plane(this))
+      }
+      const plane=this.planes.get(p.id)!
+      plane.updateData(p)
     }
   }
   connect(client:Client,playerName:string){
     this.client=client
     this.client.on("update",(up:UpdatePacket)=>{
-      this.guiManager.update_gui(up.gui)
-      this.scene.objects.proccess_l(up.objects!,true)
+      this.guiManager.update_gui(up.priv)
+      this.proccess_private(up.priv)
+      this.scene.objects.proccess_list(up.objects!,true)
     })
     this.client.on("killfeed",(kfp:KillFeedPacket)=>{
       this.guiManager.add_killfeed_message(kfp.message)
@@ -240,6 +298,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("map",(mp:MapPacket)=>{
       this.terrain.process_map(mp.map)
       this.terrain.draw(this.terrain_gfx,1)
+      this.terrain.draw(this.minimap.terrain_gfx,1)
+      this.minimap.init(mp.map)
     })
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false
@@ -259,7 +319,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.guiManager.players_name={}
     this.guiManager.start()
     this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/300)
-    this.renderer.fullCanvas(this.camera)
+    this.renderer.fullCanvas()
   }
   init_gui(gui:GuiManager){
     this.guiManager=gui

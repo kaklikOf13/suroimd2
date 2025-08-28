@@ -1,9 +1,9 @@
-import { BaseGameObject2D, CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import {CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, DamageReason } from "common/scripts/definitions/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
-import { Ammos } from "../../../../common/scripts/definitions/items/ammo.ts";
+import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";

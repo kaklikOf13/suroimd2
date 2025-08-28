@@ -1,6 +1,6 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline } from "./config.ts";
+import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline, Offline_Settings } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
@@ -13,6 +13,7 @@ import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
+import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100);
@@ -21,7 +22,7 @@ import { HideElement } from "../engine/utils.ts";
     document.body.appendChild(canvas)
     const sounds=new SoundManager()
 
-    const renderer=new WebglRenderer(canvas,100)
+    const renderer=new WebglRenderer(canvas)
 
     const resources=new ResourcesManager(renderer.gl,sounds)
 
@@ -41,26 +42,32 @@ import { HideElement } from "../engine/utils.ts";
     let regions:Record<string,RegionDef>={}
     const gui=new GuiManager()
 
-    if(offline){
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
+    function NewGameServer(){
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-            deenable_feast:true,
             gameTps:100,
             maxPlayers:10,
             teamSize:1,
-            netTps:30
+            netTps:30,
+            deenable_lobby:Math.random()<=0.3,
         },{
             database:{
                 enabled:false
             }
         })
         gs.mainloop()
+        for(let i=0;i<9;i++){
+            const bot=gs.add_bot()
+            bot.ai=new SimpleBotAi()
+        }
         gs.subscribe_db={
             "localhost":{
                 skins:[1,2]
             }
         }
+    }
+
+    if(offline){
+        NewGameServer()
     }
     if(api){
         regions=await(await fetch(`${API_BASE}/get-regions`)).json()
@@ -104,7 +111,7 @@ import { HideElement } from "../engine/utils.ts";
             if(this.game.happening||!loaded)return
             let socket:BasicSocket
             if(offline){
-                socket=gs?.clients.fake_connect(1) as BasicSocket
+                socket=gs?.clients.fake_connect(Offline_Settings.ping) as BasicSocket
             }else{
                 const ser=new IPLocation(regions[current_region].host,regions[current_region].port)
                 const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())
@@ -124,6 +131,12 @@ import { HideElement } from "../engine/utils.ts";
             this.game.guiManager.clear()
             HideElement(this.game.guiManager.content.gameOver)
             this.game.happening=false
+
+            if(gs){
+                gs.clock.stop()
+                gs.running=false
+                NewGameServer()
+            }
         }
 
     }

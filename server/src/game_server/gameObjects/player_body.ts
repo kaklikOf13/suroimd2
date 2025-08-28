@@ -1,4 +1,4 @@
-import { NullVec2, v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { type Player } from "./player.ts";
@@ -15,9 +15,12 @@ export class PlayerBody extends ServerGameObject{
     velocity:Vec2
     old_pos:Vec2=v2.new(-1,-1)
 
-    constructor(angle:number=random.rad()){
+    gore_type:number=0
+    gore_id:number=0
+
+    constructor(angle:number=random.rad(),speed:number=8){
         super()
-        this.velocity=v2.scale(v2.from_RadAngle(angle),8)
+        this.velocity=v2.scale(v2.from_RadAngle(angle),speed)
     }
 
     fuse_delay:number=0
@@ -33,17 +36,22 @@ export class PlayerBody extends ServerGameObject{
     }
     override interact(_user: Player): void {
     }
-    create(args: {position:Vec2,owner_name:string}): void {
+    create(args: {position:Vec2,owner_name:string,gore_type?:number,gore_id?:number}): void {
         this.hb=new CircleHitbox2D(args.position,0.4)
         this.player_name=args.owner_name
+        this.gore_type=args.gore_type??0
+        this.gore_id=args.gore_id??0
         this.dirty=true
         this.dirtyPart=true
     }
     override getData(): PlayerBodyData {
         return {
             position:this.position,
+            moving:this.velocity.x!=0||this.velocity.y!=0,
             full:{
-                name:this.player_name
+                name:this.player_name,
+                gore_type:this.gore_type,
+                gore_id:this.gore_id
             }
         }
     }

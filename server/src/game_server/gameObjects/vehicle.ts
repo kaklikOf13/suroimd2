@@ -19,15 +19,17 @@ export class VehicleSeat{
         this.leave=leave
     }
     clear_player(){
-        if(!this.player)return
+        if(!this.player||!this.vehicle.can_leave)return
         this.player.dirty=true
         this.player.seat=undefined
         this.player=undefined
     }
     set_player(p:Player){
         if(this.player)return
+        if(p.seat)p.seat.clear_player(p)
         this.player=p
         p.seat=this
+        if(this.vehicle.def.battle_plane)this.player.parachute={value:1}
     }
 }
 export class Vehicle extends ServerGameObject{
@@ -44,6 +46,8 @@ export class Vehicle extends ServerGameObject{
     old_pos:Vec2=v2.new(-1,-1)
 
     seats:VehicleSeat[]=[]
+
+    can_leave:boolean=true
 
     constructor(){
         super()
@@ -76,16 +80,29 @@ export class Vehicle extends ServerGameObject{
             s.rotation=this.angle
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
-        if(!this.is_moving||(this.back_walk&&this.speed>0))this.speed=Numeric.lerp(this.speed,0,1/(1+dt*this.def.movimentation.desacceleration))
+        if(this.def.battle_plane){
+            if(v2.greater(this.position,this.game.map.size)){
+                for(const s of this.seats){
+                    s.clear_player()
+                }
+            }
+        }else{
+            if(!this.is_moving||(this.back_walk&&this.speed>0))this.speed=Numeric.lerp(this.speed,0,1/(1+dt*this.def.movimentation.desacceleration))
+            this.velocity=v2.scale(v2.normalizeSafe(v2.from_RadAngle(this.angle),NullVec2),this.speed)
+        }
         this.is_moving=false
-        this.velocity=v2.scale(v2.normalizeSafe(v2.from_RadAngle(this.angle),NullVec2),this.speed)
     }
     create(args: {position:Vec2,def:VehicleDef}): void {
         this.hb=new CircleHitbox2D(args.position,2)
         this.def=args.def
-        this.seats.push(new VehicleSeat(this,this.def.pillot_seat.position,true,this.def.pillot_seat.leave))
+        if(this.def.pillot_seat)this.seats.push(new VehicleSeat(this,this.def.pillot_seat.position,true,this.def.pillot_seat.leave))
         for(const s of this.def.seats??[]){
             this.seats.push(new VehicleSeat(this,s.position,false,s.leave))
+        }
+        if(this.def.battle_plane){
+            for(let i=0;i<this.def.battle_plane.seats_count;i++){
+                this.seats.push(new VehicleSeat(this,this.def.battle_plane.main_seat,false,this.def.battle_plane.leave_position))
+            }
         }
     }
     override onDestroy(): void {

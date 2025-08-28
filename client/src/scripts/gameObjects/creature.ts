@@ -1,10 +1,11 @@
-import { ClientGameObject2D } from "../engine/mod.ts";
 import { Container2D, Sprite2D } from "../engine/container.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { CreatureData } from "common/scripts/others/objectsEncode.ts";
-import { CreatureDef, Creatures } from "../../../../common/scripts/definitions/objects/creatures.ts";
-export class Creature extends ClientGameObject2D{
+import { CreatureDef, Creatures } from "common/scripts/definitions/objects/creatures.ts";
+import { Numeric } from "common/scripts/engine/utils.ts";
+import { GameObject } from "../others/gameObject.ts";
+export class Creature extends GameObject{
     stringType:string="creature"
     numberType: number=10
 
@@ -42,9 +43,14 @@ export class Creature extends ClientGameObject2D{
         this.main_sprite.zIndex=2
     }
     override updateData(data: CreatureData): void {
-        this.container.rotation=data.angle
-        this.container.position=data.position
+        this.container.rotation=Numeric.lerp_rad(this.container.rotation,data.angle,0.75)
+        if(v2.distance(this.position,data.position)<=1){
+            this.position=v2.lerp(this.position,data.position,0.8)
+        }else{
+            this.position=data.position
+        }
         this.hb.translate(data.position)
+        this.container.position=data.position
         if(data.full){
             this.set_def(Creatures.getFromNumber(data.full.def))
             this.hb=this.def.hitbox.transform(this.position)

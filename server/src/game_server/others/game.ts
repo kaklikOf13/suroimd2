@@ -1,4 +1,4 @@
-import { ID, Numeric, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
+import { ID, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -10,14 +10,13 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap, generation } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
-import { GroupManager, TeamsManager } from "./teams.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
@@ -27,136 +26,21 @@ import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
-import { SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
+import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
 import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
-
+import { GamemodeManager, TeamsGamemodeManager } from "./modeManager.ts";
+import { PlaneData } from "common/scripts/packets/update_packet.ts";
+export interface PlaneDataServer extends PlaneData{
+    velocity:Vec2
+    target_pos:Vec2
+    called:boolean
+}
 export interface GameStatus{
     players:{
         name:string
         username:string
         kills:number
     }[]
-}
-export class GamemodeManager{
-    game:Game
-    closed:boolean=false
-    team_size:number=1
-    can_join():boolean{
-        return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
-    }
-    kill_leader?:Player
-    constructor(game:Game){
-        this.game=game
-        this.team_size=game.config.teamSize
-    }
-    can_down(_player:Player):boolean{
-        return false
-    }
-    on_start(){
-        this.game.interactionsEnabled=true
-        this.game.addTimeout(()=>{
-            this.closed=true
-            this.game.pvpEnabled=true
-            console.log(`Game ${this.game.id} Clossed`)
-        },50)
-    }
-    on_finish(){
-        this.game.addTimeout(()=>{
-            for(const p of this.game.livingPlayers){
-                p.send_game_over(true)
-            }
-            this.game.killing_game=true
-            console.log(`Game ${this.game.id} Fineshed`)
-        },2)
-    }
-    startRules():boolean{
-        return this.game.livingPlayers.length>1
-    }
-    on_player_join(_p:Player){
-        if(!this.game.started&&this.game.livingPlayers.length>1){
-            this.game.addTimeout(this.game.start.bind(this.game),3)
-        }
-    }
-    on_player_die(_p:Player){
-        if(this.game.livingPlayers.length<=1){
-            this.game.finish()
-        }
-    }
-}
-export class TeamsGamemodeManager extends GamemodeManager{
-    teamsManager:TeamsManager
-    constructor(game:Game){
-        super(game)
-        this.teamsManager=new TeamsManager()
-    }
-    override can_down(player:Player):boolean{
-        return (player.team&&player.team.get_not_downed_players().length>1)!
-    }
-    set_team_for_player(p:Player){
-        if(p.team===undefined){
-            let t=this.teamsManager.get_perfect_team(this.team_size,p.groupId)
-            if(!t){
-                t=this.teamsManager.add_team()
-            }
-            t.add_player(p)
-        }
-    }
-    override on_player_join(p:Player){
-        this.set_team_for_player(p)
-        if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
-            this.game.addTimeout(this.game.start.bind(this.game),3)
-        }
-    }
-    override on_player_die(p:Player){
-        if(p.team){
-            for(const pp of p.team.get_downed_players()){
-                pp.kill({amount:pp.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downedBy,source:pp.downedBySource})
-            }
-        }
-        if(this.teamsManager.get_living_teams().length<=1){
-            this.game.finish()
-        }
-    }
-}
-export class GroupGamemodeManager extends TeamsGamemodeManager{
-    groupsManager:GroupManager=new GroupManager()
-    f=0
-    groups_size:number
-
-    constructor(game:Game,groups_size:number=2){
-        super(game)
-        this.groups_size=groups_size
-        this.team_size=4
-    }
-    override can_down(player:Player):boolean{
-        return super.can_down(player)&&(player.team&&player.team.get_not_downed_players().length>1)!
-    }
-    override on_player_join(p:Player){
-        let g=this.groupsManager.groups[this.f]
-        if(!g){
-            g=this.groupsManager.add_group()
-        }
-        g.add_player(p)
-        this.f++
-        if(this.f>=this.groups_size){
-            this.f=0
-        }
-        super.set_team_for_player(p)
-        if(p.team)p.team.group=g.id
-        if(!this.game.started&&this.teamsManager.get_living_teams().length>1){
-            this.game.addTimeout(this.game.start.bind(this.game),3)
-        }
-    }
-    override on_player_die(p:Player){
-        if(p.team){
-            for(const pp of p.team.get_downed_players()){
-                pp.kill({amount:pp.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downedBy,source:pp.downedBySource})
-            }
-        }
-        if(this.teamsManager.get_living_teams().length<=1){
-            this.game.finish()
-        }
-    }
 }
 export class Game extends ServerGame2D<ServerGameObject>{
     config:GameConfig
@@ -204,6 +88,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
     string_id=""
     Config:ConfigType
 
+    replay?:ReplayRecorder2D
+
     constructor(clients:OfflineClientsManager,id:ID,config:GameConfig,Config:ConfigType){
         super(config.gameTps,id,clients,PacketManager,[
             Player,
@@ -227,7 +113,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.gamemode=DefaultGamemode
         this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
         this.new_list=false
-
         /*this.map.generate(generation.island({
             generation:{
                 size:v2.new(800,800),
@@ -243,6 +128,26 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 ],
                 terrain:{
                     base:FloorType.Water,
+                    rivers:{
+                        divisions:100,
+                        spawn_floor:1,
+                        expansion:32,
+                        defs:[
+                            {
+                                rivers:[
+                                    {sub_river_width:2,width:10,width_variation:1,sub_river_chance:0.5},
+                                    {sub_river_width:1,width:15,width_variation:1,sub_river_chance:0.1},
+                                ],
+                                weight:10
+                            },
+                            {
+                                rivers:[
+                                    {sub_river_width:3,width:20,width_variation:1,sub_river_chance:0.9},
+                                ],
+                                weight:1
+                            }
+                        ]
+                    },
                     floors:[
                         {
                             padding:25,
@@ -260,7 +165,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 }
             }
         }))*/
-       this.map.generate(generation.island({
+        this.map.generate(generation.island({
             generation:{
                 size:v2.new(100,100),
                 ground_loot:[{count:20,table:"ground_loot"}],
@@ -270,7 +175,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
                         {id:"stone",count:30},
                         {id:"bush",count:20},
                         {id:"wood_crate",count:10},
-                        {id:"barrel",count:8}
+                        {id:"barrel",count:8},
+
+                        {id:"pig",count:10},
+                        {id:"chicken",count:10}
                     ]
                 ],
                 terrain:{
@@ -313,9 +221,21 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }),3)
     }
-
     override on_update(): void {
         super.on_update()
+        for(const p of this.planes){
+            p.pos=v2.add(p.pos,v2.scale(p.velocity,this.dt))
+            switch(p.type){
+                case 0:
+                    if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
+                        const obs=this.map.add_obstacle(Obstacles.getFromString("copper_crate"))
+                        obs.set_position(v2.duplicate(p.pos))
+                        obs.manager.cells.updateObject(obs)
+                        p.called=true
+                    }
+                    break
+            }
+        }
         this.netUpdate()
         if(this.killing_game){
             this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
@@ -325,9 +245,25 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }
     }
+    planes:PlaneDataServer[]=[]
+    add_airdrop(position:Vec2){
+        const dir=v2.lookTo(v2.new(0,0),position)
+        
+        this.planes.push({
+            id:random.int(0,1000000),
+            complete:false,
+            direction:dir,
+            target_pos:position,
+            called:false,
+            pos:v2.new(0,0),//v2.mult(v2.from_RadAngle(dir),this.map.size),
+            velocity:v2.scale(v2.from_RadAngle(dir),8),
+            type:0
+        })
+    }
     privatesDirtysInter=0
     override on_stop():void{
         super.on_stop()
+        if(this.replay)this.replay.stop()
         clearInterval(this.privatesDirtysInter)
         for(const p of this.players){
             this.status.players.push({
@@ -367,8 +303,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.players.push(p)
         this.livingPlayers.push(p)
 
-        p.pvpEnabled=this._pvpEnabled||this.config.deenable_feast
-        p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_feast
+        p.pvpEnabled=this._pvpEnabled||this.config.deenable_lobby
+        p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_lobby
 
         p.username=username
 
@@ -390,9 +326,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return p
     }
     override on_run(): void {
-        for(let i=0;i<9;i++){
-            this.add_bot()
-        }
     }
     async activate_player(username:string,packet:JoinPacket,client:Client){
         const p=this.add_player(client.ID,username,packet) as Player;
@@ -464,6 +397,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
+        this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
+        if(this.replay)this.replay.start()
         console.log(`Game ${this.id} Started`)
     }
     finish(){
@@ -490,6 +425,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
         const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+        return b
+    }
+    add_player_gore(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
+        const b=this.scene.objects.add_object(new PlayerBody(angle,random.float(4,8)),layer,undefined,{owner_name:"",owner,position:v2.duplicate(owner.position),gore_type:1,gore_id:random.int(0,2)}) as PlayerBody
         return b
     }
     add_projectile(position:Vec2,def:ProjectileDef,owner?:Player,layer:number=Layers.Normal):Projectile{

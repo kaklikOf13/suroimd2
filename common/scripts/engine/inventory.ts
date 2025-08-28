@@ -38,6 +38,10 @@ export class Slot<ItemBase extends Item = Item>{
         this.quantity=add-ret
         return ret
     }
+    clear(){
+        this.item=null
+        this.quantity=0
+    }
     /**
      * Remove Item From `Slot`
      * @param quantity Remove amount
