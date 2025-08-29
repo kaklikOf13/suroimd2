@@ -1,4 +1,4 @@
-import { ClientGameObject2D, Sprite2D } from "../engine/mod.ts";
+import { Sprite2D } from "../engine/mod.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { Sound } from "../engine/resources.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -6,7 +6,8 @@ import { random } from "common/scripts/engine/random.ts";
 import { DamageSplash } from "common/scripts/packets/update_packet.ts";
 import { type Player } from "./player.ts";
 import { ease } from "common/scripts/engine/mod.ts";
-export class DamageSplashOBJ extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class DamageSplashOBJ extends GameObject{
     stringType:string="damage_splash"
     numberType: number=8
 

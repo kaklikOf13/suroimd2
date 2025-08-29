@@ -1,11 +1,11 @@
-import { ClientGameObject2D } from "../engine/mod.ts";
 import { Container2D, Sprite2D } from "../engine/container.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { CreatureData } from "common/scripts/others/objectsEncode.ts";
-import { CreatureDef, Creatures } from "../../../../common/scripts/definitions/objects/creatures.ts";
+import { CreatureDef, Creatures } from "common/scripts/definitions/objects/creatures.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
-export class Creature extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class Creature extends GameObject{
     stringType:string="creature"
     numberType: number=10
 

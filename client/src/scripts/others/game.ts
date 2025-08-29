@@ -191,7 +191,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
     this.camera.addObject(this.light_map)
-    this.light_map.ambient=0
+    this.light_map.ambient=0.6
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
     this.rain_particles_emitter=this.particles.add_emiter({

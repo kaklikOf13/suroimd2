@@ -2,16 +2,16 @@ import { CircleHitbox2D, Client, NullVec2, Numeric, random, RectHitbox2D, v2, Ve
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
-import { GInventory,GunItem,LItem} from "../inventory/inventory.ts";
-import { DamageSplash, UpdatePacket } from "../../../../common/scripts/packets/update_packet.ts";
+import { GInventory,GunItem,LItem} from "../player/inventory.ts";
+import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
 import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Armors, type EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
+import { Armors, type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
-import { AccessoriesManager } from "../inventory/accesories.ts";
+import { AccessoriesManager } from "../player/accesories.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Loot } from "./loot.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
@@ -23,15 +23,13 @@ import { type VehicleSeat } from "./vehicle.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { BotAi } from "../player/simple_bot_ai.ts";
 
 export class Player extends ServerGameObject{
-    movement:Vec2
     oldPosition:Vec2
     stringType:string="player"
     numberType: number=1
     name:string=""
-    using_item:boolean=false
-    using_item_down:boolean=false
     rotation:number=0
     recoil?:{speed:number,delay:number}
 
@@ -97,9 +95,25 @@ export class Player extends ServerGameObject{
     boost_t:number=0
 
     friendly_fire:boolean=true
+
+    input={
+        movement:v2.new(0,0),
+        rotation:0,
+        using_item:false,
+        using_item_down:false,
+        interaction:false,
+        reload:false,
+
+        hand:0,
+        use_slot:-1,
+
+        drop:0,
+        drop_kind:0,
+    }
+
+    ai?:BotAi
     constructor(){
         super()
-        this.movement=v2.new(0,0)
         this.oldPosition=this.position
         this.inventory=new GInventory(this)
 
@@ -109,8 +123,6 @@ export class Player extends ServerGameObject{
 
         this.accessories=new AccessoriesManager(this,3)
     }
-    interaction_input:boolean=false
-    reloading_input:boolean=false
     interact(user: Player): void {
         if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
         this.revive()
@@ -216,9 +228,10 @@ export class Player extends ServerGameObject{
         }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
-            if(this.seat.pillot)this.seat.vehicle.move(this.movement,this.reloading_input,dt)
+            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt)
         }else{
-            this.position=v2.add(this.position,v2.add(v2.scale(this.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
+            this.position=v2.add(this.position,v2.add(v2.scale(this.input.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
+            this.rotation=this.input.rotation
             if(this.parachute){
                 speed*=1.7+(0.5+this.parachute.value)
                 this.parachute.value-=dt*0.05
@@ -248,7 +261,8 @@ export class Player extends ServerGameObject{
                 source:this.downedBySource
             })
         }else if(!this.parachute&&!this.seat){
-            if(this.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_feast)){
+            this.attacking-=dt
+            if(this.input.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_lobby)){
                 this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
             }
             
@@ -266,7 +280,7 @@ export class Player extends ServerGameObject{
                     case "obstacle":
                         if((obj as Obstacle).def.noCollision)break
                         if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
-                            if(can_interact&&this.interaction_input&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
+                            if(can_interact&&this.input.interaction&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
                                 (obj as Obstacle).kill({
                                     amount:(obj as Obstacle).health,
                                     position:this.position,
@@ -282,20 +296,63 @@ export class Player extends ServerGameObject{
                         }
                         break
                     case "loot":
-                        if(can_interact&&this.interaction_input&&this.hb.collidingWith((obj as Loot).hb)){
+                        if(can_interact&&this.input.interaction&&this.hb.collidingWith((obj as Loot).hb)){
                             (obj as Loot).interact(this)
                             can_interact=false
                         }
                 }
             }
         }
-        this.using_item_down=false
-        this.interaction_input=false
+        this.update_input()
+        this.input.using_item_down=false
+        this.input.interaction=false
         this.invensibility_time-=dt
 
         this.actions.update(dt)
         this.inventory.update()
         this.dirtyPart=true
+        
+        if(this.ai)this.ai.AI(this,dt)
+    }
+    update_input(){
+        if(this.input.hand>=0&&this.input.hand<3){
+            this.inventory.set_current_weapon_index(this.input.hand)
+        }
+        if(this.input.reload&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
+            (this.inventory.currentWeapon as GunItem).reloading=true
+            this.input.reload=false
+        }
+        if(this.input.interaction&&this.seat){
+            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
+            this.seat.clear_player()
+            this.input.interaction=false
+        }
+        if(!this.downed&&!this.parachute){
+            if(this.input.use_slot!==-1){
+                const item=this.inventory.slots[this.input.use_slot]?.item
+                if(item){
+                    item.on_use(this,item)
+                }
+            }
+        }
+        if(this.input.drop>0){
+            const drop=this.input.drop
+            switch(this.input.drop_kind){
+                case 1:
+                    this.inventory.drop_weapon(Numeric.clamp(drop,0,2) as (0|1|2))
+                    break
+                case 2:
+                    this.inventory.drop_ammo(drop)
+                    break
+                case 3:
+                    this.inventory.drop_slot(drop)
+                    break
+                case 4:
+                    this.inventory.drop_item(drop)
+                    break
+            }
+            this.input.drop=-1
+        }
     }
     clear(){
         this.inventory.clear()
@@ -304,47 +361,18 @@ export class Player extends ServerGameObject{
         this.dirty=true
     }
     process_action(action:ActionPacket){
-        this.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        if(!this.using_item&&action.UsingItem){
-            this.using_item_down=true
+        this.input.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
+        if(!this.input.using_item&&action.UsingItem){
+            this.input.using_item_down=true
         }
-        this.using_item=action.UsingItem
-        if(this.seat?.rotation===undefined)this.rotation=action.angle
-        this.interaction_input=action.interact
-        this.reloading_input=action.Reloading
-        if(action.hand>=0&&action.hand<3){
-            this.inventory.set_current_weapon_index(action.hand)
-        }
-        if(action.Reloading&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
-            (this.inventory.currentWeapon as GunItem).reloading=true
-        }
-        if(action.interact&&this.seat){
-            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.angle))
-            this.seat.clear_player()
-            this.interaction_input=false
-        }
-        if(!this.downed&&!this.parachute){
-            if(action.use_slot!==-1){
-                const item=this.inventory.slots[action.use_slot]?.item
-                if(item){
-                    item.on_use(this,item)
-                }
-            }
-        }
-        switch(action.drop_kind){
-            case 1:
-                this.inventory.drop_weapon(Numeric.clamp(action.drop,0,2) as (0|1|2))
-                break
-            case 2:
-                this.inventory.drop_ammo(action.drop)
-                break
-            case 3:
-                this.inventory.drop_slot(action.drop)
-                break
-            case 4:
-                this.inventory.drop_item(action.drop)
-                break
-        }
+        this.input.using_item=action.UsingItem
+        this.input.rotation=action.angle
+        this.input.interaction=action.interact
+        this.input.reload=action.Reloading
+        this.input.hand=action.hand
+        this.input.use_slot=action.use_slot
+        this.input.drop_kind=action.drop_kind
+        this.input.drop=action.drop
         /*
         if(action.cellphoneAction){
             if(this.handItem&&this.handItem instanceof OtherItem){
@@ -645,16 +673,16 @@ export class Player extends ServerGameObject{
             this.game.livingPlayers.splice(idx,1);
         }
     }
+    attacking=0
     override getData(): PlayerData {
         return {
             position:this.position,
             rotation:this.rotation,
-            using_item:this.using_item,
-            using_item_down:this.using_item_down,
             dead:this.dead,
             left_handed:this.left_handed,
             parachute:this.parachute,
             driving:this.seat!==undefined,
+            attacking:this.attacking>0,
             full:{
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,

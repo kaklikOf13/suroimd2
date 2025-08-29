@@ -14,6 +14,7 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     font-size: 24px;
     pointer-events: none;
+    transition: opacity 2s linear;
     *{
         padding: 5px;
         pointer-events: auto;
@@ -29,6 +30,7 @@
         margin-left: auto;
         margin-right: auto;
     }
+    opacity: 0;
 }
 #gameover-you-dead {
     position: absolute;

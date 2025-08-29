@@ -511,12 +511,12 @@ export class AnimatedContainer2D extends Container2D{
     }
 }
 
-type Light2D = {
+export type Light2D = {
     mat: GLMaterial2D<GL2D_LightMatArgs>
     pos: Vec2
     model: Model2D
     destroyed: boolean
-};
+}
 
 export class Lights2D extends Container2DObject {
     override object_type = "lights";

@@ -1,10 +1,11 @@
-import { ClientGameObject2D, Container2D, Sprite2D } from "../engine/mod.ts";
+import { Container2D, Sprite2D } from "../engine/mod.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { PlayerBodyData } from "common/scripts/others/objectsEncode.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { random } from "common/scripts/engine/random.ts";
-export class PlayerBody extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class PlayerBody extends GameObject{
     stringType:string="player_body"
     numberType: number=8
 

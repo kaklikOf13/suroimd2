@@ -48,7 +48,7 @@ export class GunItem extends LItem{
       return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
     on_use(user:Player,_slot?:LItem){
-      if(this.def.fireMode===FireMode.Single&&!user.using_item_down)return
+      if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
       if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
         this.shot(user)
         this.use_delay=this.def.fireDelay
@@ -59,6 +59,7 @@ export class GunItem extends LItem{
     }
     reload(user:Player){
       if(!this.def.reload||this.use_delay>0||user.downed)return
+      user.attacking=0
       if(this.ammo>=this.def.reload.capacity||!user.inventory.ammos[this.def.ammoType]){
         this.reloading=false
         return
@@ -120,9 +121,7 @@ export class GunItem extends LItem{
         user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
       }
 
-      user.current_animation={
-        type:PlayerAnimationType.Shooting
-      }
+      user.attacking=this.def.fireDelay
       user.dirty=true
       user.privateDirtys.current_weapon=true
     }
@@ -183,12 +182,13 @@ export class ConsumibleItem extends LItem{
             break
         }
       }
-      user.current_animation={
-        type:PlayerAnimationType.Consuming,
-        item:this.def.idNumber!
-      }
-      user.dirty=true
     }
+    user.current_animation={
+      type:PlayerAnimationType.Consuming,
+      item:this.def.idNumber!
+    }
+    user.dirty=true
+    user.attacking=0
     user.privateDirtys.action=true
     user.actions.play(new ConsumingAction(this))
   }
@@ -311,6 +311,11 @@ export class GInventory extends Inventory<LItem>{
         s.item.limit_per_slot=backpack.max[s.item.def.idString]??15
       }
     }
+    if(this.slots.length>backpack.slots){
+      while(this.slots.length>backpack.slots){
+        this.slots.pop()
+      }
+    }
     while(this.slots.length<backpack.slots){
       this.slots.push(new Slot<LItem>())
     }
@@ -354,6 +359,7 @@ export class GInventory extends Inventory<LItem>{
       if(this.currentWeaponDef!.switchDelay&&this.currentWeapon.use_delay<=this.currentWeaponDef!.switchDelay){
         this.currentWeapon!.use_delay=this.currentWeaponDef!.switchDelay
       }
+      this.owner.attacking=0
     }
 
     this.owner.current_animation=undefined

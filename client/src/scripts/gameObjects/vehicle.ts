@@ -1,11 +1,11 @@
-import { ClientGameObject2D } from "../engine/mod.ts";
 import { Container2D, Sprite2D } from "../engine/container.ts";
 import { VehicleData } from "common/scripts/others/objectsEncode.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
-export class Vehicle extends ClientGameObject2D{
+import { GameObject } from "../others/gameObject.ts";
+export class Vehicle extends GameObject{
     stringType:string="vehicle"
     numberType: number=9
 
@@ -36,6 +36,7 @@ export class Vehicle extends ClientGameObject2D{
         if(def.frame.base_scale){
             this.main_sprite.scale=v2.new(def.frame.base_scale,def.frame.base_scale)
         }
+        if(def.frame.zindex)this.container.zIndex=def.frame.zindex
         const hotspot=v2.new(.5,.5)
         for(const w of def.wheels.defs){
             const spr=new Sprite2D()

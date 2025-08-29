@@ -12,7 +12,7 @@
   "game": {
     "max_games": 5,
     "config": {
-      "deenable_lobby": false,
+      "deenable_lobby": true,
       "gameTps": 100,
       "maxPlayers": 70,
       "netTps": 60,

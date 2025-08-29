@@ -303,8 +303,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.players.push(p)
         this.livingPlayers.push(p)
 
-        p.pvpEnabled=this._pvpEnabled
-        p.interactionsEnabled=this._interactionsEnabled
+        p.pvpEnabled=this._pvpEnabled||this.config.deenable_lobby
+        p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_lobby
 
         p.username=username
 
@@ -315,8 +315,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
 
-        p.position=v2.new(100,100)
-
         if(connected){
             this.send_killfeed_message({
                 type:KillFeedMessageType.join,
@@ -325,13 +323,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
             })
             this.modeManager.on_player_join(p)
         }
-        this.add_airdrop(v2.duplicate(p.position))
         return p
     }
     override on_run(): void {
-        for(let i=0;i<9;i++){
-            //this.add_bot()
-        }
     }
     async activate_player(username:string,packet:JoinPacket,client:Client){
         const p=this.add_player(client.ID,username,packet) as Player;
@@ -403,6 +397,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
+        this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
         if(this.replay)this.replay.start()
         console.log(`Game ${this.id} Started`)
     }

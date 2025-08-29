@@ -13,6 +13,7 @@ import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
+import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100);
@@ -41,26 +42,32 @@ import { HideElement } from "../engine/utils.ts";
     let regions:Record<string,RegionDef>={}
     const gui=new GuiManager()
 
-    if(offline){
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
+    function NewGameServer(){
         gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-            deenable_feast:true,
             gameTps:100,
             maxPlayers:10,
             teamSize:1,
-            netTps:30
+            netTps:30,
+            deenable_lobby:Math.random()<=0.3,
         },{
             database:{
                 enabled:false
             }
         })
         gs.mainloop()
+        for(let i=0;i<9;i++){
+            const bot=gs.add_bot()
+            bot.ai=new SimpleBotAi()
+        }
         gs.subscribe_db={
             "localhost":{
                 skins:[1,2]
             }
         }
+    }
+
+    if(offline){
+        NewGameServer()
     }
     if(api){
         regions=await(await fetch(`${API_BASE}/get-regions`)).json()
@@ -124,6 +131,12 @@ import { HideElement } from "../engine/utils.ts";
             this.game.guiManager.clear()
             HideElement(this.game.guiManager.content.gameOver)
             this.game.happening=false
+
+            if(gs){
+                gs.clock.stop()
+                gs.running=false
+                NewGameServer()
+            }
         }
 
     }

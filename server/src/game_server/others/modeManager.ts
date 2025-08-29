@@ -4,7 +4,7 @@ import { type Game } from "./game.ts";
 import { GroupManager, TeamsManager } from "./teams.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { v2 } from "common/scripts/engine/geometry.ts";
+import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 
@@ -21,16 +21,17 @@ export class GamemodeManager{
     constructor(game:Game){
         this.game=game
         this.team_size=game.config.teamSize
-        this.battle_plane_enabled=this.battle_plane_enabled&&game.config.deenable_lobby
+        this.battle_plane_enabled=this.battle_plane_enabled&&!game.config.deenable_lobby
     }
     can_down(_player:Player):boolean{
         return false
     }
-    call_battle_plane(){
+    call_battle_plane(direction:number=Angle.deg2rad(45)){
         this.battle_plane=this.game.add_vehicle(v2.new(0,0),Vehicles.getFromString("battle_plane"),Layers.Normal)
         this.closed=true
         this.game.pvpEnabled=true
-        this.battle_plane.velocity=v2.new(4,4)
+        this.battle_plane.velocity=v2.scale(v2.from_RadAngle(direction),10)
+        this.battle_plane.angle=direction
         for(const p of this.game.players){
             p.clear()
             if(!p.dead){

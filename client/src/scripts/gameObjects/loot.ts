@@ -6,7 +6,6 @@ import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/m
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
-import { Debug } from "../others/config.ts";
 import { ease } from "common/scripts/engine/utils.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 export class Loot extends GameObject{

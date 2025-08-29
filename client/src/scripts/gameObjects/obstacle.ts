@@ -7,6 +7,7 @@ import { Sound } from "../engine/resources.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { GraphicsParticlesConfig } from "../others/config.ts";
+import { GameObject } from "../others/gameObject.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
     if(def.variations){
@@ -14,7 +15,7 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     }
     return spr_id
 }
-export class Obstacle extends ClientGameObject2D{
+export class Obstacle extends GameObject{
     stringType:string="obstacle"
     numberType: number=4
     name:string=""

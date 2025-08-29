@@ -2,6 +2,71 @@ const newsS=document.querySelector("#updates-section") as HTMLDivElement
 
 const news=[
     {
+      "title":"Alpha 1.3.0",
+      content:`
+<h2 id="news">News</h2>
+<hr>
+<h3 id="main">Main</h3>
+<ul>
+<li><strong>Map!</strong></li>
+<li><strong>Dynamic Lights</strong></li>
+<li>Opitional Friendly Fire</li>
+<li>Planes</li>
+<li>Battle Plane</li>
+<li>Gores</li>
+</ul>
+<hr>
+<h3 id="creatures">Creatures</h3>
+<ul>
+<li>Chicken (Chicken Jockey)</li>
+<li>Bots Simple AI(I Want Put A Tree After)</li>
+</ul>
+<hr>
+<h3 id="weapons">Weapons</h3>
+<ul>
+<li><strong>DUAL WEAPONS/PISTOL!</strong></li>
+<li>Pfeifer Zelikas - 308Sub revolver (banned in 40 countrys)</li>
+<li>M9 - 9MM Pistol(Classic And Mayble Stopable)</li>
+<li>M870 World Image</li>
+</ul>
+<hr>
+<h3 id="items">Items</h3>
+<ul>
+<li>Consumibles Sounds</li>
+<li>Consumibles Animation</li>
+<li>Consumibles Particles</li>
+</ul>
+<hr>
+<h3 id="graphics">Graphics</h3>
+<ul>
+<li>Vignetting</li>
+<li>Rain</li>
+<li>Tilt Shift</li>
+<li>Color Adjust<h2 id="changes">Changes</h2>
+</li>
+</ul>
+<hr>
+<h3 id="main">Main</h3>
+<ul>
+<li>Movement Is Now By Axis</li>
+<li>10 Ping Emulation</li>
+</ul>
+<hr>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Barrel Smoke</li>
+<li>Keys</li>
+<li>Addiction Damage</li>
+<li>Parachute</li>
+</ul>
+<hr>
+<ul>
+<li>Game Over</li>
+<li>Settings<h1 id="play-the-game">Play The Game</h1>
+</ul>
+      `,
+    },
+    {
       "title":"Alpha 1.2.0",
       content:`
 <h2 id="news">News</h2>

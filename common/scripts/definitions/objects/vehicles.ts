@@ -1,10 +1,12 @@
 import { Definition, Definitions } from "../../engine/definitions.ts";
 import { v2, Vec2 } from "../../engine/geometry.ts";
+import { zIndexes } from "../../others/constants.ts";
 
 export interface VehicleDef extends Definition{
     frame:{
         base?:string
         base_scale?:number
+        zindex?:number
     }
     movimentation:{
         acceleration:number
@@ -38,7 +40,7 @@ export interface VehicleDef extends Definition{
 }
 
 
-export const Vehicles=new Definitions<VehicleDef,null>((g)=>{
+export const Vehicles=new Definitions<VehicleDef,null>((_g)=>{
 })
 
 Vehicles.insert(
@@ -115,7 +117,8 @@ Vehicles.insert(
     {
         idString:"battle_plane",
         frame:{
-            base_scale:2.5
+            base_scale:13,
+            zindex:zIndexes.Planes
         },
         movimentation:{
             acceleration:0,
