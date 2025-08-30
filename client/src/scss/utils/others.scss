@@ -25,31 +25,6 @@
     }
 }
 
-.text-input {
-    color: #fff;
-    background: rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(7, 170, 238, 0.5);
-    border-radius: 10px;
-    font-family: "Russo-One";
-    font-size: 20px;
-    padding: 15px;
-    outline: none;
-    transition: all 0.3s ease;
-    
-    &:focus {
-        border-color: rgba(7, 170, 238, 0.8);
-        box-shadow: 0 0 15px rgba(7, 170, 238, 0.2);
-    }
-
-    &::placeholder {
-        text-align: center;
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-    @media screen and (max-width: palette.$screen_large) {
-        font-size: 16px;
-    }
-}
 .span{
     color: #eee;
     font-size: 30px;

@@ -85,15 +85,21 @@ export class Tween<T> {
         this.game.removeTween(this as unknown as Tween<unknown>);
     }
 }
-export function HideElement(elem:HTMLElement){
-    elem.style.display="none"
+export function HideElement(elem:HTMLElement,opacity=false){
     elem.style.pointerEvents="none"
-    elem.style.opacity="0"
+    if(opacity){
+        elem.style.opacity="0"
+    }else{
+        elem.style.display="none"
+    }
 }
-export function ShowElement(elem:HTMLElement){
-    elem.style.display = ""
+export function ShowElement(elem:HTMLElement,opacity=false){
+    if(opacity){
+        elem.style.opacity="1"
+    }else{
+        elem.style.display = ""
+    }
     elem.style.pointerEvents = ""
-    elem.style.opacity="1"
 }
 export function ToggleElement(elem:HTMLElement){
     if(elem.style.display==="none")ShowElement(elem)

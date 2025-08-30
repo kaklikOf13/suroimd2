@@ -1,6 +1,6 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, offline, Offline_Settings } from "./config.ts";
+import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, Offline_Settings } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
@@ -33,85 +33,71 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
     GameSave.default_values=ConfigDefaultValues
     GameSave.init("suroimd2-config")
 
-    const menu_manager=new MenuManager(GameSave)
+    const menu_manager=new MenuManager(GameSave,resources)
     menu_manager.start()
-
-    let loaded=false
-    let gs:OfflineGameServer|undefined
 
     let regions:Record<string,RegionDef>={}
     const gui=new GuiManager()
 
-    function NewGameServer(){
-        gs = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-            gameTps:100,
-            maxPlayers:10,
-            teamSize:1,
-            netTps:30,
-            deenable_lobby:Math.random()<=0.3,
-        },{
-            database:{
-                enabled:false
-            }
-        })
-        gs.mainloop()
-        for(let i=0;i<9;i++){
-            const bot=gs.add_bot()
-            bot.ai=new SimpleBotAi()
-        }
-        gs.subscribe_db={
-            "localhost":{
-                skins:[1,2]
-            }
-        }
-    }
-
-    if(offline){
-        NewGameServer()
-    }
     if(api){
         regions=await(await fetch(`${API_BASE}/get-regions`)).json()
     }
-    const current_region="local"
-    
-    const spg=await(await fetch("atlases/atlas-common-data.json")).json()
-    for(const s of spg[GameSave.get_variable("cv_graphics_resolution")]){
-        await resources.load_spritesheet("",s)
-    }
-    resources.load_group("/sounds/game/common.json").then(()=>{
-        const lister=()=>{
-            setTimeout(()=>{
-                if(app.game)return
-                //sounds.set_music(resources.get_audio("menu_music"))
-            },1000)
-            loaded=true
-            document.removeEventListener("mousedown",lister)
-        }
-        document.addEventListener("mousedown",lister)
-    })
 
+    const current_region="local"
     //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
+    interface JoinConfig{
+        offline:boolean
+    }
     class App{
         game:Game
 
         elements={
-            play_button:document.querySelector("#btn-play") as HTMLButtonElement
+            play_button_normal:document.querySelector("#btn-play-normal") as HTMLButtonElement,
+            play_button_campaign:document.querySelector("#btn-play-campaign") as HTMLButtonElement
         }
 
+        game_server?:OfflineGameServer
+
         constructor(){
-            this.elements.play_button.addEventListener("click",(_e)=>{this.playGame()})
+            this.elements.play_button_normal.addEventListener("click",(_e)=>{this.playGame({offline:false})})
+            this.elements.play_button_campaign.addEventListener("click",(_e)=>{this.playGame({offline:true})})
             this.game=new Game(inputs,sounds,GameSave,resources,renderer)
             this.game.listners_init()
             this.game.init_gui(gui)
             this.game.request_animation_frame=false
             this.game.onstop=this.closeGame.bind(this)
         }
-        async playGame(){
-            if(this.game.happening||!loaded)return
+        async playGame(join_config:JoinConfig){
+            if(this.game.happening||!menu_manager.loaded)return
             let socket:BasicSocket
-            if(offline){
-                socket=gs?.clients.fake_connect(Offline_Settings.ping) as BasicSocket
+            if(join_config.offline){
+                if(this.game_server){
+                    this.game_server.running=false
+                    this.game_server=undefined
+                }
+                this.game_server = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
+                    gameTps:100,
+                    maxPlayers:10,
+                    teamSize:1,
+                    netTps:30,
+                    deenable_lobby:Math.random()<=0.3,
+                },{
+                    database:{
+                        enabled:false
+                    }
+                })
+                this.game_server.mainloop()
+                for(let i=0;i<9;i++){
+                    const bot=this.game_server.add_bot()
+                    bot.ai=new SimpleBotAi()
+                }
+                this.game_server.subscribe_db={
+                    "localhost":{
+                        skins:[1,2]
+                    }
+                }
+                socket=this.game_server.clients.fake_connect(Offline_Settings.ping) as BasicSocket
             }else{
                 const ser=new IPLocation(regions[current_region].host,regions[current_region].port)
                 const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())
@@ -132,10 +118,8 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
             HideElement(this.game.guiManager.content.gameOver)
             this.game.happening=false
 
-            if(gs){
-                gs.clock.stop()
-                gs.running=false
-                NewGameServer()
+            if(this.game_server){
+                this.game_server.running=false
             }
         }
 

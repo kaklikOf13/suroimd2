@@ -162,7 +162,7 @@
       <div id="tiltshift-gfx"></div>-
       <canvas id="game-canvas"></canvas>
     </div>
-    <tabs-container id="settings-tabs" class="background-menu">
+    <!--<tabs-container id="settings-tabs" class="background-menu">
       <tab text="Graphics">
         <div>
           <span>Textures</span>
@@ -187,10 +187,9 @@
       <tab text="Sounds">
 
       </tab>
-    </tabs-container>
+    </tabs-container>-->
     <div id="menu">
-      <img id="title-section" src="img/menu/logos/title.png"></img>
-
+      <!--
       <div id="account-status" class="background-menu-green">
       </div>
       <div id="updates-section" class="background-menu">
@@ -227,15 +226,9 @@
           <a href="https://youtube.com/@kaklik123" target="_blank" class="social-link">
             <i class="social-icon youtube"></i>
           </a>
-          <!--<a href="https://instagram.com/your-profile" target="_blank" class="social-link">
-            <i class="social-icon instagram"></i>
-          </a>-->
           <a href="https://github.com/kaklikOf13/suroimd2" target="_blank" class="social-link">
             <i class="social-icon github"></i>
           </a>
-          <!--<a href="https://x.com/your-profile" target="_blank" class="social-link">
-            <i class="social-icon twitter"></i>
-          </a>-->
           <a href="/forum/"><button class="social-link">MD</button></a>
         </div>
       </div>
@@ -259,8 +252,55 @@
             </div>
         </tab>
       </tabs-container>
-
+    </div>-->
+    <div id="menu-options">
+      <img id="title-section" src="img/menu/logos/title.png"></img>
+      <a href="/?menu=play"><button id="play-button-m" class="btn-blue">Play</button></a>
+      <a href="/?menu=loadout"><button id="loadout-button-m" class="btn-blue">Loadout</button></a>
     </div>
+    <kl-md-submenu id="menu-play-submenu" class="md-menu-game" style="opacity: 0;">
+      <kl-md-submenu-content>
+          <kl-md-menu-options>
+            <button id="btn-play-normal" class="btn-green">Normal</button>
+            <button id="btn-play-campaign" class="btn-green">Campaign</button>
+            <p></p>
+            <select id="select-region" class="select-blue">
+                <option>North America</option>
+            </select>
+            <select id="select-match-mode" class="select-blue">
+                <option>Ranked</option>
+                <option>Casual</option>
+            </select>
+            <select id="select-team-size" class="select-blue">
+                <option>Solo</option>
+                <option>Duo</option>
+                <option>Squad</option>
+            </select>
+          </kl-md-menu-options>
+          <kl-md-extra>
+            <div id="gamemode-image"></div>
+          </kl-md-extra>
+          <a href="/"><button class="btn-red close-btn">X</button></a>
+      </kl-md-submenu-content>
+    </kl-md-submenu>
+    <kl-md-submenu id="menu-loadout-submenu" class="md-menu-game" style="opacity: 0;">
+      <kl-md-submenu-content>
+          <kl-md-menu-options>
+            <button class="btn-green">Skins</button>
+            <p></p>
+            <input class="input-green" placeholder="Name" id="insert-name"></input>
+          </kl-md-menu-options>
+          <kl-md-extra id="loadout-sm-extra">
+            <div id="loadout-sm-extra-content">
+
+            </div>
+            <div id="loadout-sm-extra-view">
+
+            </div>
+          </kl-md-extra>
+          <a href="/"><button class="btn-red close-btn">X</button></a>
+      </kl-md-submenu-content>
+    </kl-md-submenu>
     <script type="module" src="./src/scripts/others/index.ts" async></script>
   </body>
 </html>

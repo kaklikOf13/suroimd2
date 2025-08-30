@@ -1,7 +1,7 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path, { resolve } from "node:path";
 import { type UserConfig } from "vite";
-import { spritesheet } from "./plugins/image-spritesheet-plugin";
+import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
 import { AudiosLists } from "./plugins/audio_list.ts";
 const config: UserConfig = {
     build: {
@@ -40,7 +40,7 @@ const config: UserConfig = {
 
     plugins: [
         svelte(),
-        spritesheet({"common":"common"},undefined,[
+        spritesheet({"common":"common","normal":"normal"},undefined,[
             {name:"very-low",scale:0.35},
             {name:"low",scale:0.5},
             {name:"medium",scale:0.75},

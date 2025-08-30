@@ -1,11 +1,16 @@
+import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { type GameConsole } from "../engine/console.ts";
-import { HideElement, ShowElement, ToggleElement } from "../engine/utils.ts";
-import { api_server, forum, offline } from "../others/config.ts";
+import { ResourcesManager } from "../engine/resources.ts";
+import { HideElement, ShowElement } from "../engine/utils.ts";
+import { api } from "../others/config.ts";
 
 export class MenuManager{
     save:GameConsole
     content={
         insert_name:document.body.querySelector("#insert-name") as HTMLInputElement,
+        menu_p:document.body.querySelector("#menu-options") as HTMLDivElement,
+
+        /*
 
         btn_settings:document.body.querySelector("#btn-settings") as HTMLButtonElement,
 
@@ -28,16 +33,62 @@ export class MenuManager{
             btn:document.body.querySelector("#btn-login") as HTMLButtonElement,
         },
         ac_status:document.body.querySelector("#account-status") as HTMLDivElement,
-        sections_tab:document.body.querySelector("#sections-tabs") as HTMLDivElement,
+        sections_tab:document.body.querySelector("#sections-tabs") as HTMLDivElement,*/
+
+        submenus:{
+            play:document.body.querySelector("#menu-play-submenu") as HTMLElement,
+            loadout:document.body.querySelector("#menu-loadout-submenu") as HTMLElement,
+            extras:{
+                loadout_c:document.body.querySelector("#loadout-sm-extra-content") as HTMLElement,
+                loadout_v:document.body.querySelector("#loadout-sm-extra-view") as HTMLElement
+            },
+        }
     }
-    constructor(save:GameConsole){
+    resources:ResourcesManager
+    submenu_param:boolean
+    constructor(save:GameConsole,resources:ResourcesManager){
         this.save=save
-        this.content.btn_settings.addEventListener("click",()=>{
+        /*this.content.btn_settings.addEventListener("click",()=>{
             ToggleElement(this.content.settings_tabs)
-        })
+        })*/
+        const params = new URLSearchParams(self.location.search);
+        const submenu = params.get("menu")
+        this.load_menu(submenu)
+        this.submenu_param=!!params
+        this.resources=resources
+    }
+    load_menu(submenu:string|null){
+        HideElement(this.content.submenus.play,true)
+        HideElement(this.content.submenus.loadout,true)
+        if(submenu){
+            HideElement(this.content.menu_p)
+            switch(submenu){
+                case "play":
+                    this.load_resources()
+                    ShowElement(this.content.submenus.play,true)
+                    break
+                case "loadout":
+                    this.load_resources(["common"]).then(()=>{
+                        ShowElement(this.content.submenus.loadout,true)
+                        this.show_your_skins()
+                    })
+                    break
+            }
+        }
+    }
+    loaded=false
+    async load_resources(textures:string[]=["normal","common"]){
+        for(const tt of textures){
+            const spg=await(await fetch(`atlases/atlas-${tt}-data.json`)).json()
+            for(const s of spg[this.save.get_variable("cv_graphics_resolution")]){
+                await this.resources.load_spritesheet("",s)
+            }
+        }
+        await this.resources.load_group("/sounds/game/common.json")
+        this.loaded=true
     }
     accounts_system_init(){
-        this.content.registry.btn.addEventListener("click",async()=>{
+        /*this.content.registry.btn.addEventListener("click",async()=>{
             const password=this.content.registry.password.value
             const passwc=this.content.registry.confirm_password.value
             if(password!==passwc)return
@@ -75,7 +126,7 @@ export class MenuManager{
                 body: JSON.stringify({ name, password })
             });
             this.update_account()
-        })
+        })*/
         this.no_logged()
         this.update_account()
     }
@@ -85,7 +136,7 @@ export class MenuManager{
             this.save.set_variable("cv_loadout_name",this.content.insert_name.value)
         })
 
-        this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
+        /*this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
         this.content.settings.graphics_textures.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_resolution",this.content.settings.graphics_textures.value)
         })
@@ -95,26 +146,63 @@ export class MenuManager{
             this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
         })
         HideElement(this.content.settings_tabs)
-        HideElement(this.content.section_tabs)
+        HideElement(this.content.section_tabs)*/
 
-        if(!offline||forum)this.accounts_system_init()
+        if(api)this.accounts_system_init()
     }
     no_logged(){
-        this.content.ac_status.innerHTML=""
+        /*this.content.ac_status.innerHTML=""
         const btn=document.createElement("button") as HTMLButtonElement
         btn.classList.add("btn-green")
         btn.innerText="Account"
         btn.addEventListener("click",()=>{
             ShowElement(this.content.section_tabs)
         })
-        this.content.ac_status.appendChild(btn)
+        this.content.ac_status.appendChild(btn)*/
     }
     logged(name:string){
-        this.content.ac_status.innerHTML=`
-            <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`
+        /*this.content.ac_status.innerHTML=`
+            <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`*/
+    }
+    your_skins:string[]=["default_skin","widower","kaklik"]
+    show_your_skins(){
+        this.content.submenus.extras.loadout_c.innerHTML=""
+        let sel=this.save.get_variable("cv_loadout_skin")
+        if(!Skins.exist(sel))sel="default_skin"
+        for(const s of this.your_skins){
+            const skin=document.createElement("div")
+            skin.id="skin-sel-"+s
+            skin.innerHTML=`
+<div class="name text">${s}</div>
+<img src="${this.resources.get_sprite(s+"_body").src}" class="simage"></div>
+            `
+            skin.classList.add("skin-view-menu")
+            if(s===sel){
+                skin.classList.add("skin-view-menu-selected")
+            }
+            skin.addEventListener("click",this.update_sel_skin.bind(this,s))
+            this.content.submenus.extras.loadout_c.appendChild(skin)
+        }
+        this.update_ss_view(sel)
+    }
+    update_sel_skin(sel=""){
+        if(!Skins.exist(sel))sel="default_skin"
+        this.save.set_variable("cv_loadout_skin",sel)
+        const ss=this.content.submenus.extras.loadout_c.querySelectorAll(".skin-view-menu-selected")
+        ss.forEach((v,_)=>{
+            v.classList.remove("skin-view-menu-selected")
+        })
+        const skin=this.content.submenus.extras.loadout_c.querySelector("#skin-sel-"+sel) as HTMLDivElement
+        skin.classList.add("skin-view-menu-selected")
+        this.update_ss_view(sel)
+    }
+    update_ss_view(sel:string){
+        this.content.submenus.extras.loadout_v.innerHTML=`
+            <img src="${this.resources.get_sprite(sel+"_body").src}" class="simage"></div>
+        `
     }
     update_account(){
-        fetch(`${api_server.toString("http")}/get-your-status`,{
+        /*fetch(`${api_server.toString("http")}/get-your-status`,{
             credentials: "include",
         }).then((a)=>a.json()).then((aa)=>{
             if(!aa.user){
@@ -124,9 +212,9 @@ export class MenuManager{
             }
             HideElement(this.content.section_tabs)
             this.logged(aa.user.name)
-        })
+        })*/
     }
     game_start(){
-        HideElement(this.content.settings_tabs)
+        //HideElement(this.content.settings_tabs)
     }
 }

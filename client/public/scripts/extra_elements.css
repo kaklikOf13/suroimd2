@@ -170,3 +170,30 @@ kl-joystick .knob {
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
+
+kl-md-submenu{
+    width: fit-content;
+    height: fit-content;
+}
+kl-md-submenu-content {
+    display: flex;
+    gap: 50px; /*Default*/
+    flex-direction: row;
+    width: fit-content;
+    height: fit-content;
+}
+kl-md-menu-options {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+}
+
+kl-md-menu-options button,
+kl-md-menu-options select {
+    width: 200px;
+    height: 35px;
+}
+
+kl-md-extra {
+    position: relative;
+}

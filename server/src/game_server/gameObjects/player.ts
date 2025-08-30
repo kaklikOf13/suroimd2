@@ -392,9 +392,6 @@ export class Player extends ServerGameObject{
         if(Math.random()<=0.75)this.inventory.set_backpack(Backpacks.getFromString(random.choose(["tactical_pack"/*,"regular_pack","basic_pack"*/])))
         if(Math.random()<=0.75)this.helmet=Armors.getFromString(random.choose(["tactical_helmet","basic_helmet","regular_helmet"]))
         if(Math.random()<=0.75)this.vest=Armors.getFromString(random.choose(["tactical_vest","basic_vest","regular_vest"]))
-        
-        this.skin=Skins.getFromString(random.choose(["default_skin","widower","kaklik","kitty"]))
-        //
 
         this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,random.choose([100,200,300]))
         this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,random.choose([100,200,300]))
