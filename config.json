@@ -26,6 +26,11 @@
     "local": {
       "host": "localhost",
       "port": 8080
+    },
+    "na": {
+      "host": "na.suroimd.io",
+      "port": 443,
+      "ssh":true
     }
   },
   "database": {

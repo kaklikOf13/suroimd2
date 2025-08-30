@@ -70,6 +70,7 @@ export enum zIndexes{
     ParachutePlayers,
     Rain1,
     Planes,
+    DeadZone,
     Lights,
     DamageSplashs,
     Minimap

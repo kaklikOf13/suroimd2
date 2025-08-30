@@ -6,7 +6,6 @@ import { Obstacle } from "./obstacle.ts";
 import { type Player } from "./player.ts";
 import { ColorM, Renderer } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Debug } from "../others/config.ts";
 import { Creature } from "./creature.ts";
 const images=[
     "bullet_normal"

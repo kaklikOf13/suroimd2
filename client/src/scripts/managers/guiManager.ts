@@ -218,13 +218,13 @@ export class GuiManager{
             this.game.action.UsingItem=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
-            this.game.input_manager.emit("actiondown","interact")
+            this.game.input_manager.emit("actiondown",{action:"interact"})
         })
         this.mobile_content.btn_inventory.addEventListener("click",()=>{
             this.set_all_inventory(!this.all_inventory_enabled)
         })
         this.mobile_content.btn_reload.addEventListener("click",()=>{
-            this.game.input_manager.emit("actiondown","reload")
+            this.game.input_manager.emit("actiondown",{action:"reload"})
         })
 
     }
@@ -255,8 +255,8 @@ export class GuiManager{
     }={normal:{},all:{}}
     update_ammos(ammos:Record<string,number>){
         const ak=Object.keys(ammos)
-        const ack=Object.keys(this.ammos_cache)
-        if(ack.length===ak.length){
+        const ack=Object.keys(this.ammos_cache.normal)
+        if(ack.length===ak.length&&ack.length>0){
             for(const a of ak){
                 const c1=this.ammos_cache.normal[a].querySelector(".count") as HTMLSpanElement
                 c1.innerText=`${ammos[a]}`

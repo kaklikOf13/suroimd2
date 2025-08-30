@@ -31,6 +31,7 @@ import { WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
 import { ClientParticle2D, RainParticle2D } from "../engine/game.ts";
+import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -54,6 +55,8 @@ export class Game extends ClientGame2D<GameObject>{
   light_map=new Lights2D()
 
   minimap:MinimapManager=new MinimapManager(this)
+
+  dead_zone:DeadZoneManager=new DeadZoneManager(this)
 
   //0.14=l6 32x
   //0.27=l5 16x
@@ -219,6 +222,7 @@ export class Game extends ClientGame2D<GameObject>{
       }),
       enabled:true
     })
+    this.dead_zone.append()
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)

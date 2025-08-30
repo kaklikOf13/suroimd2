@@ -185,7 +185,7 @@ export class Graphics2D extends Container2DObject {
 
     repeat_size:number=1
 
-    private command: Graphics2DCommand[] = [];
+    command: Graphics2DCommand[] = [];
     paths:number[][]=[]
 
     beginPath(): this {
@@ -280,7 +280,7 @@ export class Graphics2D extends Container2DObject {
                     gl.draw(currentModel!,currentMat,cam.matrix,this._real_position,this._real_scale)
                     break
                 case "model": {
-                    gl.draw(cmd.model,currentMat,cam.matrix,this._real_position,v2.new(1,1),)
+                    gl.draw(cmd.model,currentMat,cam.matrix,this._real_position,v2.new(1,1))
                     break;
                 }
                 case "path":
