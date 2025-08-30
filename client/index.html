@@ -164,36 +164,13 @@
     </div>
     <!--<tabs-container id="settings-tabs" class="background-menu">
       <tab text="Graphics">
-        <div>
-          <span>Textures</span>
-          <select class="select-blue" id="settings-graphics-texture">
-            <option value="very-low">Very Low</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="very-high">Very High</option>
-          </select>
-        </div>
-
-        <div>
-          <span>Particles</span>
-          <select class="select-blue" id="settings-graphics-particles">
-            <option value="0">No</option>
-            <option value="1">Normal</option>
-            <option value="2">Advanced</option>
-          </select>
-        </div>
       </tab>
       <tab text="Sounds">
 
       </tab>
     </tabs-container>-->
     <div id="menu">
-      <!--
-      <div id="account-status" class="background-menu-green">
-      </div>
-      <div id="updates-section" class="background-menu">
-        <h2>Updates</h2>
+      <!--<div id="account-status" class="background-menu-green">
       </div>
 
       <div id="top-left-section">
@@ -216,21 +193,6 @@
       <div id="about-section" class="background-menu">
         <h2>About</h2>
         <p>Comming Soon</p>
-      </div>
-
-      <div id="social-section" class="background-menu">
-        <div id="social-links">
-          <a href="https://discord.gg/7czkBvtmSU" target="_blank" class="social-link">
-            <i class="social-icon discord"></i>
-          </a>
-          <a href="https://youtube.com/@kaklik123" target="_blank" class="social-link">
-            <i class="social-icon youtube"></i>
-          </a>
-          <a href="https://github.com/kaklikOf13/suroimd2" target="_blank" class="social-link">
-            <i class="social-icon github"></i>
-          </a>
-          <a href="/forum/"><button class="social-link">MD</button></a>
-        </div>
       </div>
       
       <tabs-container id="sections-tabs" class="background-menu">
@@ -280,6 +242,9 @@
           </kl-md-menu-options>
           <kl-md-extra>
             <div id="gamemode-image"></div>
+            <div id="campaign-levels">
+              <button class="btn-blue">1</button>
+            </div>
           </kl-md-extra>
           <a href="/"><button class="btn-red close-btn">X</button></a>
       </kl-md-submenu-content>
@@ -305,21 +270,96 @@
     <kl-md-submenu id="menu-settings-submenu" class="md-menu-game" style="opacity: 0;">
       <kl-md-submenu-content>
           <kl-md-menu-options>
-            <button class="btn-green">Graphics</button>
-            <button class="btn-green">Game</button>
-            <button class="btn-green">Keys</button>
+            <button class="btn-green" id="btn-settings-graphics">Graphics</button>
+            <button class="btn-green" id="btn-settings-game">Game</button>
+            <button class="btn-green" id="btn-settings-sounds">Sounds</button>
+            <button class="btn-green" id="btn-settings-keys">Keys</button>
           </kl-md-menu-options>
           <kl-md-extra id="loadout-sm-extra">
+            <div class="background-menu-md background-menu-ss background-menu" id="settings-sm-graphics">
+              <div>
+                <span>Textures</span>
+                <select class="select-blue" id="settings-graphics-texture">
+                  <option value="very-low">Very Low</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="very-high">Very High</option>
+                </select>
+              </div>
+              <div>
+                <span>Particles</span>
+                <select class="select-blue" id="settings-graphics-particles">
+                  <option value="0">No</option>
+                  <option value="1">Normal</option>
+                  <option value="2">Advanced</option>
+                </select>
+              </div>
+            </div><div class="background-menu-md background-menu-ss background-menu" id="settings-sm-game">
+              <div>
+                <span>Friendly Fire</span>
+                <input type="checkbox" class="checkbox-blue" id="settings-game-friendly-fire"></input>
+              </div>
+            </div>
+            <div class="background-menu-md background-menu-ss background-menu" id="settings-sm-sounds">
+              <div>
+                <span>Master Volume</span>
+                <input type="range" min="0" max="100" class="slider-blue" id="settings-sounds-master-volume"></input>
+              </div>
+            </div>
           </kl-md-extra>
           <a href="/"><button class="btn-red close-btn">X</button></a>
       </kl-md-submenu-content>
     </kl-md-submenu><kl-md-submenu id="menu-about-submenu" class="md-menu-game" style="opacity: 0;">
       <kl-md-submenu-content>
           <kl-md-menu-options>
-            <button class="btn-green">Social</button>
-            <button class="btn-green">News</button>
+            <button id="btn-about-social" class="btn-green">Social</button>
+            <button id="btn-about-news" class="btn-green">News</button>
+            <button id="btn-about-credits" class="btn-green">Credits</button>
           </kl-md-menu-options>
-          <kl-md-extra id="loadout-sm-extra">
+          <kl-md-extra id="about-sm-extra">
+            <div id="about-sm-social" class="background-menu-md background-menu">
+              <div id="social-links">
+                <a href="https://discord.gg/7czkBvtmSU" target="_blank" class="social-link">
+                  <i class="social-icon discord"></i>
+                </a>
+                <a href="https://youtube.com/@kaklik123" target="_blank" class="social-link">
+                  <i class="social-icon youtube"></i>
+                </a>
+                <a href="https://github.com/kaklikOf13/suroimd2" target="_blank" class="social-link">
+                  <i class="social-icon github"></i>
+                </a>
+                <a href="/forum/"><button class="social-link">MD</button></a>
+              </div>
+            </div>      
+            <div id="about-sm-news" class="background-menu-md background-menu updates-section">
+              <h2>News</h2>
+            </div>
+            <div id="about-sm-credits" class="background-menu-md background-menu updates-section">
+              <div id="update-item">
+                <h2>Suroimd.io 2</h2>
+                <h3>Designers</h3>
+                <li>@kaklik</li>
+                <li>@yourhumbledrastic</li>
+                <li>@cheerfulbull_29688</li>
+                <h3>Menu Designers</h3>
+                <li>@kaklik</li>
+                <li>@namerio</li>
+                <h3>Sound Designers</h3>
+                <li>@kaklik</li>
+                <li>@teardwop</li>
+                <li>Web</li>
+                <h3>Programmers</h3>
+                <li>@kaklik</li>
+                <h3>Game Designers</h3>
+                <li>@kaklik</li>
+                <h3>Created By</h3>
+                <li>@kaklik</li>
+                <h3>Special Thanks</h3>
+                <li>@1092384</li>
+                <li>@hasanger</li>
+              </div>
+            </div>
           </kl-md-extra>
           <a href="/"><button class="btn-red close-btn">X</button></a>
       </kl-md-submenu-content>

@@ -105,3 +105,12 @@ export function ToggleElement(elem:HTMLElement){
     if(elem.style.display==="none")ShowElement(elem)
     else HideElement(elem)
 }
+
+export function ShowTab(tab:string,tabs:Record<string,HTMLElement>,opacity?:boolean){
+    for(const t of Object.values(tabs)){
+        HideElement(t,opacity)
+    }
+    if(tabs[tab]){
+        ShowElement(tabs[tab],opacity)
+    }
+}

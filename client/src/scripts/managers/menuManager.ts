@@ -4,6 +4,8 @@ import { ResourcesManager } from "../engine/resources.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { api, API_BASE } from "../others/config.ts";
 import { RegionDef } from "common/scripts/config/config.ts";
+import { ShowTab } from "../engine/mod.ts";
+import { SoundManager } from "../engine/sounds.ts";
 
 export class MenuManager{
     save:GameConsole
@@ -13,15 +15,19 @@ export class MenuManager{
 
         select_region:document.body.querySelector("#select-region") as HTMLButtonElement,
 
-        /*
+        settings:{
+            graphics_textures:document.body.querySelector("#settings-graphics-texture") as HTMLSelectElement,
+            graphics_particles:document.body.querySelector("#settings-graphics-particles") as HTMLSelectElement,
 
+            game_friendly_fire:document.body.querySelector("#settings-game-friendly-fire") as HTMLInputElement,
+
+            sounds_master_volume:document.body.querySelector("#settings-sounds-master-volume") as HTMLInputElement,
+        },
+
+        /*
         btn_settings:document.body.querySelector("#btn-settings") as HTMLButtonElement,
 
         settings_tabs:document.body.querySelector("#settings-tabs") as HTMLDivElement,
-        settings:{
-            graphics_textures:document.body.querySelector("#settings-graphics-texture") as HTMLSelectElement,
-            graphics_particles:document.body.querySelector("#settings-graphics-particles") as HTMLSelectElement
-        },
         section_tabs:document.body.querySelector("#sections-tabs") as HTMLDivElement,
         registry:{
             name:document.body.querySelector("#input-register-name") as HTMLInputElement,
@@ -47,22 +53,51 @@ export class MenuManager{
                 loadout_c:document.body.querySelector("#loadout-sm-extra-content") as HTMLElement,
                 loadout_v:document.body.querySelector("#loadout-sm-extra-view") as HTMLElement
             },
+            buttons:{
+                campaign:document.body.querySelector("#btn-play-campaign") as HTMLButtonElement,
+
+                graphics:document.body.querySelector("#btn-settings-graphics") as HTMLButtonElement,
+                game:document.body.querySelector("#btn-settings-game") as HTMLButtonElement,
+                sounds:document.body.querySelector("#btn-settings-sounds") as HTMLButtonElement,
+                keys:document.body.querySelector("#btn-settings-keys") as HTMLButtonElement,
+
+                social:document.body.querySelector("#btn-about-social") as HTMLButtonElement,
+                news:document.body.querySelector("#btn-about-news") as HTMLButtonElement,
+                credits:document.body.querySelector("#btn-about-credits") as HTMLButtonElement,
+            }
         }
     }
     resources:ResourcesManager
     submenu_param:boolean
-    constructor(save:GameConsole,resources:ResourcesManager){
+    sounds:SoundManager
+    constructor(save:GameConsole,resources:ResourcesManager,sounds:SoundManager){
         this.save=save
         /*this.content.btn_settings.addEventListener("click",()=>{
             ToggleElement(this.content.settings_tabs)
         })*/
         const params = new URLSearchParams(self.location.search);
         const submenu = params.get("menu")
+        this.sounds=sounds
+        this.menu_tabs["play"]={
+            "campaign":document.body.querySelector("#campaign-levels") as HTMLElement,
+            "gamemode":document.body.querySelector("#gamemode-image") as HTMLElement,
+        }
+        this.menu_tabs["settings"]={
+            "graphics":document.body.querySelector("#settings-sm-graphics") as HTMLElement,
+            "game":document.body.querySelector("#settings-sm-game") as HTMLElement,
+            "sounds":document.body.querySelector("#settings-sm-sounds") as HTMLElement,
+        }
+        this.menu_tabs["about"]={
+            "social":document.body.querySelector("#about-sm-social") as HTMLElement,
+            "news":document.body.querySelector("#about-sm-news") as HTMLElement,
+            "credits":document.body.querySelector("#about-sm-credits") as HTMLElement,
+        }
         this.load_menu(submenu)
         this.submenu_param=!!params
         this.resources=resources
         this.update_api()
     }
+    menu_tabs:Record<string,Record<string,HTMLElement>>={}
     load_menu(submenu:string|null){
         HideElement(this.content.submenus.play,true)
         HideElement(this.content.submenus.loadout,true)
@@ -74,6 +109,7 @@ export class MenuManager{
                 case "play":
                     this.load_resources()
                     ShowElement(this.content.submenus.play,true)
+                    ShowTab("gamemode",this.menu_tabs["play"])
                     break
                 case "loadout":
                     this.load_resources(["common"]).then(()=>{
@@ -83,12 +119,15 @@ export class MenuManager{
                     break
                 case "settings":
                     ShowElement(this.content.submenus.settings,true)
+                    ShowTab("graphics",this.menu_tabs["settings"])
                     break
                 case "about":
                     ShowElement(this.content.submenus.about,true)
+                    ShowTab("social",this.menu_tabs["about"])
                     break
                 }
         }
+        
     }
     loaded=false
     async load_resources(textures:string[]=["normal","common"]){
@@ -169,12 +208,34 @@ export class MenuManager{
             this.save.set_variable("cv_game_region",this.content.select_region.value)
         })
 
-        /*this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
+        this.content.submenus.buttons.campaign.addEventListener("click",(_)=>ShowTab("campaign",this.menu_tabs["play"]))
+
+        this.content.submenus.buttons.graphics.addEventListener("click",(_)=>ShowTab("graphics",this.menu_tabs["settings"]))
+        this.content.submenus.buttons.game.addEventListener("click",(_)=>ShowTab("game",this.menu_tabs["settings"]))
+        this.content.submenus.buttons.sounds.addEventListener("click",(_)=>ShowTab("sounds",this.menu_tabs["settings"]))
+
+        this.content.submenus.buttons.social.addEventListener("click",(_)=>ShowTab("social",this.menu_tabs["about"]))
+        this.content.submenus.buttons.news.addEventListener("click",(_)=>ShowTab("news",this.menu_tabs["about"]))
+        this.content.submenus.buttons.credits.addEventListener("click",(_)=>ShowTab("credits",this.menu_tabs["about"]))
+
+        this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
         this.content.settings.graphics_textures.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_resolution",this.content.settings.graphics_textures.value)
         })
+        
+        this.content.settings.game_friendly_fire.checked=this.save.get_variable("cv_game_friendly_fire")==="true"
+        this.content.settings.game_friendly_fire.addEventListener("click",()=>{
+            this.save.set_variable("cv_game_friendly_fire",this.content.settings.game_friendly_fire.checked?"true":"false")
+        })
 
-        this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
+        this.content.settings.sounds_master_volume.addEventListener("change",()=>{
+            this.save.set_variable("cv_sounds_master_volume",this.content.settings.sounds_master_volume.value)
+            this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
+        })
+        this.content.settings.sounds_master_volume.value=this.save.get_variable("cv_sounds_master_volume")
+        this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
+
+        /*this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
         this.content.settings.graphics_particles.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
         })

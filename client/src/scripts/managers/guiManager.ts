@@ -255,8 +255,8 @@ export class GuiManager{
     }={normal:{},all:{}}
     update_ammos(ammos:Record<string,number>){
         const ak=Object.keys(ammos)
-        const ack=Object.keys(this.ammos_cache)
-        if(ack.length===ak.length){
+        const ack=Object.keys(this.ammos_cache.normal)
+        if(ack.length===ak.length&&ack.length>0){
             for(const a of ak){
                 const c1=this.ammos_cache.normal[a].querySelector(".count") as HTMLSpanElement
                 c1.innerText=`${ammos[a]}`

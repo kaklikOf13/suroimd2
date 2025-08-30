@@ -31,7 +31,10 @@ export const ConfigCasters=Object.freeze({
     cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
     cv_graphics_particles:Casters.toInt,
 
-    cv_game_region:Casters.toString
+    cv_game_region:Casters.toString,
+    cv_game_friendly_fire:Casters.toString,
+
+    cv_sounds_master_volume:Casters.toInt,
 })
 export const ConfigDefaultValues={
     cv_loadout_skin:"",
@@ -40,7 +43,10 @@ export const ConfigDefaultValues={
     cv_graphics_resolution:"high",
     cv_graphics_particles:GraphicsParticlesConfig.Advanced,
 
-    cv_game_region:"na"
+    cv_game_region:"na",
+    cv_game_friendly_fire:"false",
+
+    cv_sounds_master_volume:100,
 }
 export const ConfigDefaultActions={
     "fire":{

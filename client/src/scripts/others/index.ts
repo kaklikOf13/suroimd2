@@ -32,7 +32,7 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
     GameSave.default_values=ConfigDefaultValues
     GameSave.init("suroimd2-config")
 
-    const menu_manager=new MenuManager(GameSave,resources)
+    const menu_manager=new MenuManager(GameSave,resources,sounds)
     menu_manager.start()
 
     const gui=new GuiManager()
