@@ -171,13 +171,13 @@ kl-joystick .knob {
     pointer-events: none;
 }
 
-kl-md-submenu{
+/*kl-md-submenu{
     width: fit-content;
     height: fit-content;
 }
 kl-md-submenu-content {
     display: flex;
-    gap: 50px; /*Default*/
+    gap: 50px;
     flex-direction: row;
     width: fit-content;
     height: fit-content;
@@ -196,4 +196,4 @@ kl-md-menu-options select {
 
 kl-md-extra {
     position: relative;
-}
+}*/

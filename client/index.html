@@ -16,10 +16,10 @@
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="/scripts/extra_elements.js"></script>
+    <link rel="stylesheet" href="/scripts/extra_elements.css">
   </head>
   <body>
-    <script src="scripts/extra_elements.js"></script>
-    <link rel="stylesheet" href="scripts/extra_elements.css">
     <div id="game" style="display: none;">
       <div id="game-gui">
         <div id="game-mobile-gui" style="display: none; pointer-events: none;">
@@ -299,6 +299,10 @@
               <div>
                 <span>Friendly Fire</span>
                 <input type="checkbox" class="checkbox-blue" id="settings-game-friendly-fire"></input>
+              </div>
+              <div>
+                <span>Ping Emulation</span>
+                <input type="range" min="5" max="260" class="slider-blue" id="settings-game-ping"></input>
               </div>
             </div>
             <div class="background-menu-md background-menu-ss background-menu" id="settings-sm-sounds">

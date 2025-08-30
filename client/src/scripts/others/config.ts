@@ -13,11 +13,8 @@ export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
 //export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
 export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
-export const Offline_Settings={
-    ping:10
-}
-export const api=true
-export const forum=true
+export const api=false
+export const forum=false
 export enum GraphicsParticlesConfig {
     None=0,
     Normal,
@@ -33,6 +30,7 @@ export const ConfigCasters=Object.freeze({
 
     cv_game_region:Casters.toString,
     cv_game_friendly_fire:Casters.toString,
+    cv_game_ping:Casters.toInt,
 
     cv_sounds_master_volume:Casters.toInt,
 })
@@ -45,8 +43,10 @@ export const ConfigDefaultValues={
 
     cv_game_region:"na",
     cv_game_friendly_fire:"false",
+    cv_game_ping:5,
 
     cv_sounds_master_volume:100,
+    
 }
 export const ConfigDefaultActions={
     "fire":{

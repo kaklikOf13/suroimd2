@@ -1,6 +1,6 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import {  ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, Offline_Settings } from "./config.ts";
+import {  ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
@@ -89,7 +89,7 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
                         skins:[1,2]
                     }
                 }
-                socket=this.game_server.clients.fake_connect(Offline_Settings.ping) as BasicSocket
+                socket=this.game_server.clients.fake_connect(GameSave.get_variable("cv_game_ping")) as BasicSocket
             }else{
                 const reg=menu_manager.regions[GameSave.get_variable("cv_game_region")]
                 const ser=new IPLocation(reg.host,reg.port)

@@ -3,7 +3,6 @@ import { type IOption, MaxRectsPacker } from "maxrects-packer";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
 import { SpritesheetJSON } from "../../../src/scripts/engine/resources.ts";
-
 export const cacheDir = ".spritesheet-cache";
 export type CacheData = {
     lastModified: number
