@@ -2,13 +2,16 @@ import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { type GameConsole } from "../engine/console.ts";
 import { ResourcesManager } from "../engine/resources.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
-import { api } from "../others/config.ts";
+import { api, API_BASE } from "../others/config.ts";
+import { RegionDef } from "common/scripts/config/config.ts";
 
 export class MenuManager{
     save:GameConsole
     content={
         insert_name:document.body.querySelector("#insert-name") as HTMLInputElement,
         menu_p:document.body.querySelector("#menu-options") as HTMLDivElement,
+
+        select_region:document.body.querySelector("#select-region") as HTMLButtonElement,
 
         /*
 
@@ -38,6 +41,8 @@ export class MenuManager{
         submenus:{
             play:document.body.querySelector("#menu-play-submenu") as HTMLElement,
             loadout:document.body.querySelector("#menu-loadout-submenu") as HTMLElement,
+            settings:document.body.querySelector("#menu-settings-submenu") as HTMLElement,
+            about:document.body.querySelector("#menu-about-submenu") as HTMLElement,
             extras:{
                 loadout_c:document.body.querySelector("#loadout-sm-extra-content") as HTMLElement,
                 loadout_v:document.body.querySelector("#loadout-sm-extra-view") as HTMLElement
@@ -56,10 +61,13 @@ export class MenuManager{
         this.load_menu(submenu)
         this.submenu_param=!!params
         this.resources=resources
+        this.update_api()
     }
     load_menu(submenu:string|null){
         HideElement(this.content.submenus.play,true)
         HideElement(this.content.submenus.loadout,true)
+        HideElement(this.content.submenus.settings,true)
+        HideElement(this.content.submenus.about,true)
         if(submenu){
             HideElement(this.content.menu_p)
             switch(submenu){
@@ -73,11 +81,18 @@ export class MenuManager{
                         this.show_your_skins()
                     })
                     break
-            }
+                case "settings":
+                    ShowElement(this.content.submenus.settings,true)
+                    break
+                case "about":
+                    ShowElement(this.content.submenus.about,true)
+                    break
+                }
         }
     }
     loaded=false
     async load_resources(textures:string[]=["normal","common"]){
+        if(this.loaded)return
         for(const tt of textures){
             const spg=await(await fetch(`atlases/atlas-${tt}-data.json`)).json()
             for(const s of spg[this.save.get_variable("cv_graphics_resolution")]){
@@ -86,6 +101,21 @@ export class MenuManager{
         }
         await this.resources.load_group("/sounds/game/common.json")
         this.loaded=true
+    }
+    regions:Record<string,RegionDef>={}
+    async update_api(){
+        this.content.select_region.innerHTML=""
+        if(api){
+            this.regions=await(await fetch(`${API_BASE}/get-regions`)).json()
+        }else{
+            this.regions={
+                "local":{host:"localhost",port:8000}
+            }
+        }
+        for(const region of Object.keys(this.regions)){
+            this.content.select_region.insertAdjacentHTML("beforeend",`<option value=${region}>${region}</option>`)
+        }
+        this.content.select_region.value=this.save.get_variable("cv_game_region")
     }
     accounts_system_init(){
         /*this.content.registry.btn.addEventListener("click",async()=>{
@@ -134,6 +164,9 @@ export class MenuManager{
         this.content.insert_name.value=this.save.get_variable("cv_loadout_name")
         this.content.insert_name.addEventListener("change",()=>{
             this.save.set_variable("cv_loadout_name",this.content.insert_name.value)
+        })
+        this.content.select_region.addEventListener("change",()=>{
+            this.save.set_variable("cv_game_region",this.content.select_region.value)
         })
 
         /*this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")

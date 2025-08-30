@@ -78,7 +78,6 @@ export class Player extends ServerGameObject{
     current_animation?:PlayerAnimation
 
     pvpEnabled:boolean=false
-    interactionsEnabled:boolean=false
 
     team?:Team
     teamId?:number
@@ -273,7 +272,7 @@ export class Player extends ServerGameObject{
             }
             //Collision
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
-            let can_interact=this.interactionsEnabled
+            let can_interact=this.game.config.deenable_lobby||this.game.pvpEnabled
             for(const obj of objs){
                 if(obj.id===this.id)continue
                 switch(obj.stringType){

@@ -29,13 +29,18 @@ export const ConfigCasters=Object.freeze({
     cv_loadout_skin:Casters.toString,
 
     cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
-    cv_graphics_particles:Casters.toInt
+    cv_graphics_particles:Casters.toInt,
+
+    cv_game_region:Casters.toString
 })
 export const ConfigDefaultValues={
     cv_loadout_skin:"",
     cv_loadout_name:"",
+
     cv_graphics_resolution:"high",
-    cv_graphics_particles:GraphicsParticlesConfig.Advanced
+    cv_graphics_particles:GraphicsParticlesConfig.Advanced,
+
+    cv_game_region:"na"
 }
 export const ConfigDefaultActions={
     "fire":{

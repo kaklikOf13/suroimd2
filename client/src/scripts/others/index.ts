@@ -1,20 +1,19 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { api, API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, Offline_Settings } from "./config.ts";
+import {  ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, Offline_Settings } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
 import { BasicSocket, Client, IPLocation, OfflineClientsManager } from "common/scripts/engine/mod.ts";
-import {RegionDef} from "common/scripts/config/config.ts"
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
 import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
-(async() => {
+(() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100);
     inputs.bind(document.body,canvas)
@@ -36,14 +35,7 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
     const menu_manager=new MenuManager(GameSave,resources)
     menu_manager.start()
 
-    let regions:Record<string,RegionDef>={}
     const gui=new GuiManager()
-
-    if(api){
-        regions=await(await fetch(`${API_BASE}/get-regions`)).json()
-    }
-
-    const current_region="local"
     //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
     interface JoinConfig{
@@ -99,7 +91,8 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
                 }
                 socket=this.game_server.clients.fake_connect(Offline_Settings.ping) as BasicSocket
             }else{
-                const ser=new IPLocation(regions[current_region].host,regions[current_region].port)
+                const reg=menu_manager.regions[GameSave.get_variable("cv_game_region")]
+                const ser=new IPLocation(reg.host,reg.port)
                 const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())
                 socket=new WebSocket(ser.toString("ws") + "/api/" + ghost + "/ws") as unknown as BasicSocket
             }
