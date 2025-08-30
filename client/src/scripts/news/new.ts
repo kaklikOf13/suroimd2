@@ -2,6 +2,22 @@ const newsS=document.querySelector("#about-sm-news") as HTMLDivElement
 
 const news=[
     {
+      "title":"Alpha 1.3.1",
+      content:`
+<h2 id="news">News</h2>
+<hr>
+<h3 id="main">Main</h3>
+<ul>
+<li><strong>New Menu!</strong></li>
+</ul>
+<hr>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Ammo Bug</li>
+</ul>
+      `
+    },
+    {
       "title":"Alpha 1.3.0",
       content:`
 <h2 id="news">News</h2>
