@@ -108,6 +108,8 @@ export class Player extends ServerGameObject{
 
         drop:0,
         drop_kind:0,
+
+        is_mobile:false
     }
 
     ai?:BotAi
@@ -361,7 +363,9 @@ export class Player extends ServerGameObject{
     }
     process_action(action:ActionPacket){
         this.input.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        if(!this.input.using_item&&action.UsingItem){
+        if(this.input.is_mobile){
+            this.input.using_item_down=action.UsingItem
+        }else if(!this.input.using_item&&action.UsingItem){
             this.input.using_item_down=true
         }
         this.input.using_item=action.UsingItem
@@ -383,7 +387,7 @@ export class Player extends ServerGameObject{
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
 
         this.inventory.set_weapon(1,random.choose(["hp18","m870","spas12","uzi","vector"]))
-        this.inventory.set_weapon(2,random.choose(["pfeifer_zeliska","m9","pfeifer_zeliska_dual","m9_dual"/*,"awp","awms","kar98k","mp5","ak47","ar15"*/]))
+        this.inventory.set_weapon(2,random.choose(["pfeifer_zeliska","m9","pfeifer_zeliska_dual","m9_dual","awp","awms","kar98k","mp5","ak47","ar15"]))
         this.inventory.set_current_weapon_index(1)
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity

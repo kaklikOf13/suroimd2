@@ -30,7 +30,7 @@ import { Creature } from "../gameObjects/creature.ts";
 import { WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
-import { ClientParticle2D, RainParticle2D } from "../engine/game.ts";
+import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -316,6 +316,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.activePlayer?.onDestroy()
     this.activePlayer=undefined
     const p=new JoinPacket(playerName)
+    p.is_mobile=isMobile
     p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
     this.client.emit(p)
     this.activePlayerId=this.client.ID

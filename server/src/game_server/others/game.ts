@@ -294,6 +294,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.livingPlayers.push(p)
 
         p.pvpEnabled=this._pvpEnabled||this.config.deenable_lobby
+        p.input.is_mobile=packet.is_mobile
 
         p.username=username
 
