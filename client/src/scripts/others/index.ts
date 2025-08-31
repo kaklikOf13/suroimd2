@@ -16,7 +16,7 @@ import { TreeBotAi } from "../../../../server/src/game_server/player/simple_bot_
 import { ConfigType } from "common/scripts/config/config.ts";
 (() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
-    const inputs=new InputManager(100);
+    const inputs=new InputManager(100)
     inputs.bind(document.body,canvas)
 
     document.body.appendChild(canvas)
