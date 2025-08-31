@@ -123,11 +123,11 @@ export const JSKeys:Record<Key,number>={
   [Key.Arrow_Left]: 37,
   [Key.Arrow_Right]: 39,
 
-  [Key.Mouse_Left]: 300,
-  [Key.Mouse_Middle]: 301,
-  [Key.Mouse_Right]: 302,
-  [Key.Mouse_Option1]: 303,
-  [Key.Mouse_Option2]: 304
+  [Key.Mouse_Left]: 1000,
+  [Key.Mouse_Middle]: 1001,
+  [Key.Mouse_Right]: 1002,
+  [Key.Mouse_Option1]: 1003,
+  [Key.Mouse_Option2]: 1004
 }
 export const KeyNames: Record<number, Key> = {
     65: Key.A,
@@ -183,11 +183,11 @@ export const KeyNames: Record<number, Key> = {
     37: Key.Arrow_Left,
     39: Key.Arrow_Right,
   
-    300: Key.Mouse_Left,
-    301: Key.Mouse_Middle,
-    302: Key.Mouse_Right,
-    303: Key.Mouse_Option1,
-    304: Key.Mouse_Option2
+    1000: Key.Mouse_Left,
+    1001: Key.Mouse_Middle,
+    1002: Key.Mouse_Right,
+    1003: Key.Mouse_Option1,
+    1004: Key.Mouse_Option2
 }
 
 export enum KeyEvents{
@@ -199,58 +199,73 @@ export enum MouseEvents{
 }
 
 export class KeyListener{
-    private keys:number[]
+    keys:number[]
     private keysdown:number[]
     private keysup:number[]
+    mouse_b:Record<number,boolean>
+    mouse_b_down:number[]
+    mouse_b_up:number[]
 
     public listener:SignalManager
     constructor(){
         this.keys=[]
         this.keysdown=[]
         this.keysup=[]
+
+        this.mouse_b=[]
+        this.mouse_b_down=[]
+        this.mouse_b_up=[]
         this.listener=new SignalManager()
     }
     bind(elem:HTMLElement){
         elem.addEventListener("keydown",(e:KeyboardEvent)=>{
-            this.keysdown.push(e.keyCode)
-            this.keys.push(e.keyCode)
-            this.listener.emit(KeyEvents.KeyDown,KeyNames[e.keyCode])
+            const k=KeyNames[e.keyCode]
+            this.keys.push(k)
+            this.listener.emit(KeyEvents.KeyDown,k)
         })
         elem.addEventListener("keyup",(e:KeyboardEvent)=>{
-            this.keysup.push(e.keyCode)    
-            for(const i of this.keysup){
-                let index=this.keys.indexOf(i)
-                while(index!=-1){
-                    this.keys.splice(index,1)
-                    index=this.keys.indexOf(i)
-                }
-            }
-            this.listener.emit(KeyEvents.KeyUp,KeyNames[e.keyCode])
+            const k=KeyNames[e.keyCode]
+            this.keysup.push(k)
+            this.listener.emit(KeyEvents.KeyUp,k)
         })
         elem.addEventListener("mousedown",(e:MouseEvent)=>{
-            this.keysdown.push(e.button+300)
-            this.keys.push(e.button+300)
-            
-            this.listener.emit(KeyEvents.KeyDown,KeyNames[e.button+300])
+            const b=KeyNames[e.button+1000]
+            this.mouse_b[b]=true
+            if (!this.mouse_b_down.includes(b)) {
+                this.mouse_b_down.push(b)
+                this.listener.emit(KeyEvents.KeyDown,b)
+            }
         })
         elem.addEventListener("mouseup",(e:MouseEvent)=>{
-            this.keys.splice(this.keys.indexOf(e.button+300))
-            this.keysup.push(e.button+300)
-            this.listener.emit(KeyEvents.KeyUp,KeyNames[e.button+300])
+            const b=KeyNames[e.button+1000]
+            if (!this.mouse_b_up.includes(b)) {
+                this.mouse_b_up.push(b)
+                this.mouse_b[b]=false
+                this.listener.emit(KeyEvents.KeyUp,b)
+            }
         })
     }
     tick(){
-        this.keysdown=[]
-        this.keysup=[]
+        this.keysdown.length=0
+        this.mouse_b_down.length=0
+        for(const i of this.keysup){
+            let index=this.keys.indexOf(i)
+            while(index!=-1){
+                this.keys.splice(index,1)
+                index=this.keys.indexOf(i)
+            }
+        }
+        this.keysup.length=0
+        this.mouse_b_up.length=0
     }
     keyPress(key:Key):boolean{
-        return this.keys.includes(JSKeys[key])
+        return this.keys.includes(key)||this.mouse_b[key]
     }
     keyDown(key:Key):boolean{
-        return this.keysdown.includes(JSKeys[key])
+        return this.keysdown.includes(key)||this.mouse_b_down.includes(key)
     }
     keyUp(key:Key):boolean{
-        return this.keysup.includes(JSKeys[key])
+        return this.keysup.includes(key)||this.mouse_b_down.includes(key)
     }
 }
 
@@ -398,20 +413,20 @@ export class GamepadManager {
     }
 }
 export interface InputAction {
-    keys: number[];    // Teclado / mouse
-    buttons: number[]; // Gamepad
+    keys: number[]    // Keyboard / mouse
+    buttons: number[] // Gamepad
 }
 
 export interface ActionEvent {
-    action: string;
+    action: string
 }
 export interface AxisActionEvent extends ActionEvent{
     value:Vec2
 }
 export class InputManager {
-    gamepad: GamepadManager;
-    mouse: MousePosListener;
-    keys: KeyListener;
+    gamepad: GamepadManager
+    mouse: MousePosListener
+    keys: KeyListener
 
     actions: Map<string, InputAction> = new Map();
     private activeActions: Set<string> = new Set();
@@ -483,8 +498,8 @@ export class InputManager {
         }
 
         for (const [action, { keys, buttons }] of this.actions.entries()) {
-            const keyPressed = keys.some(k => this.keys.keyPress(k));
-            const buttonPressed = buttons.some(b => this.pressedButtons.has(b));
+            const keyPressed = keys.some(k => this.keys.keyPress(k))
+            const buttonPressed = buttons.some(b => this.pressedButtons.has(b))
 
             const isPressed = keyPressed || buttonPressed;
             const wasActive = this.activeActions.has(action);
