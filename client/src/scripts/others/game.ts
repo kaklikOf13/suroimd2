@@ -13,7 +13,7 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import { ClientRotation, Debug } from "./config.ts";
+import { Debug } from "./config.ts";
 import { type DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
@@ -168,7 +168,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   set_lookTo_angle(angle:number){
     this.action.angle=angle;
-    if(ClientRotation&&this.activePlayer&&!this.activePlayer.driving){
+    if(this.save.get_variable("cv_game_client_rot")&&this.activePlayer&&!this.activePlayer.driving){
       (this.activePlayer as Player).container.rotation=this.action.angle
     }
   }

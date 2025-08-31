@@ -20,6 +20,7 @@ export class MenuManager{
             graphics_particles:document.body.querySelector("#settings-graphics-particles") as HTMLSelectElement,
 
             game_friendly_fire:document.body.querySelector("#settings-game-friendly-fire") as HTMLInputElement,
+            game_client_rotation:document.body.querySelector("#settings-game-client-rotation") as HTMLInputElement,
             game_ping:document.body.querySelector("#settings-game-ping") as HTMLInputElement,
 
             sounds_master_volume:document.body.querySelector("#settings-sounds-master-volume") as HTMLInputElement,
@@ -227,6 +228,10 @@ export class MenuManager{
         this.content.settings.game_friendly_fire.checked=this.save.get_variable("cv_game_friendly_fire")==="true"
         this.content.settings.game_friendly_fire.addEventListener("click",()=>{
             this.save.set_variable("cv_game_friendly_fire",this.content.settings.game_friendly_fire.checked?"true":"false")
+        })
+        this.content.settings.game_client_rotation.checked=this.save.get_variable("cv_game_client_rot")==="true"
+        this.content.settings.game_client_rotation.addEventListener("click",()=>{
+            this.save.set_variable("cv_game_client_rot",this.content.settings.game_client_rotation.checked?"true":"false")
         })
         this.content.settings.game_ping.addEventListener("change",()=>{
             this.save.set_variable("cv_game_ping",this.content.settings.game_ping.value)

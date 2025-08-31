@@ -1,4 +1,4 @@
-import { Angle, Hitbox2D, LootTableItemRet, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, Hitbox2D, LootTableItemRet, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
@@ -44,7 +44,7 @@ export class Obstacle extends ServerGameObject{
         if(args.variation){
             this.variation=args.variation
         }else if(this.def.variations){
-            this.variation=random.int(1,this.def.variations)
+            this.variation=Numeric.clamp(random.int(1,this.def.variations+1),1,this.def.variations)
         }
         if(args.rotation){
             this.rotation=args.rotation

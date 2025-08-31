@@ -5,10 +5,10 @@ import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/it
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { ClientRotation, Debug, GraphicsParticlesConfig } from "../others/config.ts";
+import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
+import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
 import { ABParticle2D, ClientGame2D, type ClientParticle2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
@@ -157,12 +157,12 @@ export class Player extends GameObject{
                 this.sprites.weapon2.rotation=def.image.rotation
                 this.sprites.weapon2.zIndex=def.image.zIndex??2
                 this.sprites.weapon2.hotspot=def.image.hotspot??v2.new(.5,.5)
-                this.sprites.weapon.position.y+=(def as GunDef).dual_offset!
+                this.sprites.weapon.position.y+=(def as GunDef&DualAdditional).dual_offset!
 
                 this.sprites.left_arm.visible=true
                 this.sprites.right_arm.visible=true
-                this.sprites.left_arm.position=v2.new(DefaultFistRig.left!.position.x,-(def as GunDef).dual_offset!)
-                this.sprites.right_arm.position=v2.new(DefaultFistRig.right!.position.x,(def as GunDef).dual_offset!)
+                this.sprites.left_arm.position=v2.new(DefaultFistRig.left!.position.x,-(def as GunDef&DualAdditional).dual_offset!)
+                this.sprites.right_arm.position=v2.new(DefaultFistRig.right!.position.x,(def as GunDef&DualAdditional).dual_offset!)
                 this.sprites.left_arm.rotation=0
                 this.sprites.right_arm.rotation=0
 
@@ -415,7 +415,7 @@ export class Player extends GameObject{
                     life_time:0.4,
                     position:v2.add(
                         this.position,
-                        v2.mult(v2.from_RadAngle(this.rotation),d.caseParticle.position)
+                        v2.rotate_RadAngle(d.caseParticle.position,this.rotation)
                     ),
                     frame:{
                         image:d.caseParticle.frame??"casing_"+d.ammoType,
@@ -586,9 +586,11 @@ export class Player extends GameObject{
         }
 
         this.manager.cells.updateObject(this)
-        if(this.id!==this.game.activePlayerId||!ClientRotation){
+        if(this.id!==this.game.activePlayerId||!this.game.save.get_variable("cv_game_client_rot")){
             this.rotation=Numeric.lerp_rad(this.rotation,data.rotation,0.85)
             this.container.rotation=this.rotation
+        }else{
+            this.rotation=data.rotation
         }
         if(this.id===this.game.activePlayerId){
             this.game.update_camera()

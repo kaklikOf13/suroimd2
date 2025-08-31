@@ -19,11 +19,11 @@ import { type Loot } from "../gameObjects/loot.ts";
 import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 export abstract class LItem extends Item{
-  abstract on_use(user:Player,slot?:LItem):void
-  abstract update(user:Player):void
-  abstract itemType:InventoryItemType
-  abstract def:Definition
-  droppable:boolean=true
+    abstract on_use(user:Player,slot?:LItem):void
+    abstract update(user:Player):void
+    abstract itemType:InventoryItemType
+    abstract def:Definition
+    droppable:boolean=true
 }
 export class GunItem extends LItem{
     def:GunDef
@@ -34,126 +34,126 @@ export class GunItem extends LItem{
 
     type="gun"
     constructor(def?:GunDef,droppable=true){
-      super()
-      this.def=def!
-      this.tags.push("gun")
-      this.cap=this.def.size
-      this.droppable=droppable
+        super()
+        this.def=def!
+        this.tags.push("gun")
+        this.cap=this.def.size
+        this.droppable=droppable
     }
     reloading=false
     itemType=InventoryItemType.gun
 
     dd:boolean=false
     is(other: LItem): boolean {
-      return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
+        return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
     on_use(user:Player,_slot?:LItem){
-      if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
-      if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
-        this.shot(user)
-        this.use_delay=this.def.fireDelay
-      }
+        if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
+        if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
+            this.shot(user)
+            this.use_delay=this.def.fireDelay
+        }
     }
     has_mana(user:Player){
-      return user.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
+        return user.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
     }
     reload(user:Player){
-      if(!this.def.reload||this.use_delay>0||user.downed)return
-      user.attacking=0
-      if(this.ammo>=this.def.reload.capacity||!user.inventory.ammos[this.def.ammoType]){
-        this.reloading=false
-        return
-      }
-      user.privateDirtys.action=true
-      user.current_animation={
-        type:PlayerAnimationType.Reloading,
-        alt_reload:this.ammo===0,
-      }
-      user.dirty=true
-      user.actions.play(new ReloadAction(this))
+        if(!this.def.reload||this.use_delay>0||user.downed)return
+        user.attacking=0
+        if(this.ammo>=this.def.reload.capacity||!user.inventory.ammos[this.def.ammoType]){
+            this.reloading=false
+            return
+        }
+        user.privateDirtys.action=true
+        user.current_animation={
+            type:PlayerAnimationType.Reloading,
+            alt_reload:this.ammo===0,
+        }
+        user.dirty=true
+        user.actions.play(new ReloadAction(this))
     }
     shot(user:Player){
-      user.actions.cancel()
-      user.privateDirtys.action=true
-      this.reloading=false
-      if(this.def.reload)this.ammo--
-      if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
-      const position=v2.add(
-        user.position,
-        v2.rotate_RadAngle(v2.new(
-          this.def.lenght,
-          this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0
-        ),user.rotation)
-      )
-      if(this.def.dual_from){
-        this.dd=!this.dd
-      }
-      if(this.def.bullet){
-        const bc=this.def.bullet.count??1
-        const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
-        for(let i=0;i<bc;i++){
-          let ang=user.rotation
-          if(this.def.spread){
-            ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
-          }
-          const b=user.game.add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet.def,user,this.def.ammoType,this.def)
-          b.modifiers={
-            speed:user.modifiers.bullet_speed,
-            size:user.modifiers.bullet_size,
-          }
-          b.set_direction(ang)
+        user.actions.cancel()
+        user.privateDirtys.action=true
+        this.reloading=false
+        if(this.def.reload)this.ammo--
+        if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+        const position=v2.add(
+            user.position,
+            v2.rotate_RadAngle(v2.new(
+              this.def.lenght,
+              this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0
+            ),user.rotation)
+        )
+        if(this.def.dual_from){
+            this.dd=!this.dd
         }
-      }
-      if(this.def.projectile){
-        const pc=this.def.projectile.count??1
-        const patternPoint = getPatterningShape(pc, this.def.jitterRadius??1);
-        const def=Projectiles.getFromString(this.def.projectile.def)
-        for(let i=0;i<pc;i++){
-          let ang=user.rotation
-          if(this.def.spread){
-            ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
-          }
-          const p=user.game.add_projectile(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,def,user)
-          p.throw_projectile(ang,this.def.projectile.speed,this.def.projectile.angular_speed)
+        if(this.def.bullet){
+            const bc=this.def.bullet.count??1
+            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
+            for(let i=0;i<bc;i++){
+                let ang=user.rotation
+                if(this.def.spread){
+                  ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
+                }
+                const b=user.game.add_bullet(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,ang,this.def.bullet.def,user,this.def.ammoType,this.def)
+                b.modifiers={
+                  speed:user.modifiers.bullet_speed,
+                  size:user.modifiers.bullet_size,
+                }
+                b.set_direction(ang)
+            }
         }
-      }
-      if(this.def.recoil){
-        user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
-      }
+        if(this.def.projectile){
+            const pc=this.def.projectile.count??1
+            const patternPoint = getPatterningShape(pc, this.def.jitterRadius??1);
+            const def=Projectiles.getFromString(this.def.projectile.def)
+            for(let i=0;i<pc;i++){
+                let ang=user.rotation
+                if(this.def.spread){
+                  ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
+                }
+                const p=user.game.add_projectile(this.def.jitterRadius?v2.add(position,patternPoint[i]):position,def,user)
+                p.throw_projectile(ang,this.def.projectile.speed,this.def.projectile.angular_speed)
+            }
+        }
+        if(this.def.recoil){
+            user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
+        }
 
-      user.attacking=this.def.fireDelay
-      user.dirty=true
-      user.privateDirtys.current_weapon=true
+        user.attacking=this.def.fireDelay
+        user.dirty=true
+        user.privateDirtys.current_weapon=true
     }
     update(user:Player){
-      if(user.inventory.currentWeapon===this&&(this.ammo<=0||this.reloading)&&this.def.reload&&!user.actions.current_action){
-        this.reloading=true
-        this.reload(user)
-      }
-      this.use_delay-=1/user.game.tps
+        if(user.inventory.currentWeapon===this&&(this.ammo<=0||this.reloading)&&this.def.reload&&!user.actions.current_action){
+            this.reloading=true
+            this.reload(user)
+        }
+        this.use_delay-=1/user.game.tps
     }
 }
 export class AmmoItem extends LItem{
-  def:AmmoDef
-  cap: number
-  itemType: InventoryItemType.ammo=InventoryItemType.ammo
+    def:AmmoDef
+    cap: number
+    itemType: InventoryItemType.ammo=InventoryItemType.ammo
 
-  type="ammo"
-  constructor(def:AmmoDef,droppable=true){
-    super()
-    this.def=def
-    this.cap=def.size
-    this.droppable=droppable
-    this.tags.push("ammo",`ammo_${this.def.ammoType}`)
-  }
-  is(other: LItem): boolean {
-    return (other instanceof AmmoItem)&&other.def.idNumber==this.def.idNumber
-  }
-  on_use(_user: Player,_slot?:LItem): void {
-  }
-  update(_user: Player): void {
-    
-  }
+    type="ammo"
+    constructor(def:AmmoDef,droppable=true){
+        super()
+        this.def=def
+        this.cap=def.size
+        this.droppable=droppable
+        this.tags.push("ammo",`ammo_${this.def.ammoType}`)
+    }
+    is(other: LItem): boolean {
+        return (other instanceof AmmoItem)&&other.def.idNumber==this.def.idNumber
+    }
+    on_use(_user: Player,_slot?:LItem): void {
+    }
+    update(_user: Player): void {
+      
+    }
 }
 export class ConsumibleItem extends LItem{
   def:ConsumibleDef
@@ -162,388 +162,396 @@ export class ConsumibleItem extends LItem{
   type="healing"
   inventory:GInventory
   constructor(def:ConsumibleDef,droppable=true,inventory:GInventory){
-    super()
-    this.def=def
-    this.droppable=droppable
-    this.inventory=inventory
+      super()
+      this.def=def
+      this.droppable=droppable
+      this.inventory=inventory
   }
   is(other: LItem): boolean {
-    return (other instanceof ConsumibleItem)&&other.def.idNumber==this.def.idNumber
+      return (other instanceof ConsumibleItem)&&other.def.idNumber==this.def.idNumber
   }
   on_use(user: Player,_slot?:LItem): void {
-    if(this.def.condition){
-      for(const c of this.def.condition){
-        switch(c){
-          case ConsumibleCondition.UnfullHealth:
-            if(user.health>=user.maxHealth*(this.def.max_heal??1))return
-            break
-          case ConsumibleCondition.UnfullExtra:
-            if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.boost_def.type!==this.def.boost_type))return
-            break
+      if(this.def.condition){
+        for(const c of this.def.condition){
+          switch(c){
+              case ConsumibleCondition.UnfullHealth:
+                if(user.health>=user.maxHealth*(this.def.max_heal??1))return
+                break
+              case ConsumibleCondition.UnfullExtra:
+                if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.boost_def.type!==this.def.boost_type))return
+                break
+          }
         }
       }
-    }
-    user.current_animation={
-      type:PlayerAnimationType.Consuming,
-      item:this.def.idNumber!
-    }
-    user.dirty=true
-    user.attacking=0
-    user.privateDirtys.action=true
-    user.actions.play(new ConsumingAction(this))
+      user.current_animation={
+          type:PlayerAnimationType.Consuming,
+          item:this.def.idNumber!
+      }
+      user.dirty=true
+      user.attacking=0
+      user.privateDirtys.action=true
+      user.actions.play(new ConsumingAction(this))
   }
   update(_user: Player): void {
     
   }
 }
 export class OtherItem extends LItem{
-  def:OtherDef
-  cap: number
-  itemType: InventoryItemType.other=InventoryItemType.other
+    def:OtherDef
+    cap: number
+    itemType: InventoryItemType.other=InventoryItemType.other
 
-  type="other"
-  constructor(def:OtherDef,droppable:boolean=true){
-    super()
-    this.def=def
-    this.cap=def.size
-    this.droppable=droppable
-  }
-  is(other: LItem): boolean {
-    return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
-  }
-  on_use(_user: Player,_slot:SlotCap): void {
-    
-  }
-  cellphone_action(user:Player,action:CellphoneAction){
-    if(this.def.idString!=="cellphone")return
-    switch(action!.type){
-      case CellphoneActionType.GiveItem:
-        user.give_item(GameItems.valueNumber[action!.item_id],action!.count)
-        break
-      case CellphoneActionType.SpawnObstacle:
+    type="other"
+    constructor(def:OtherDef,droppable:boolean=true){
+        super()
+        this.def=def
+        this.cap=def.size
+        this.droppable=droppable
     }
-    
-  }
-  update(_user: Player): void {
-    
-  }
+    is(other: LItem): boolean {
+        return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
+    }
+    on_use(_user: Player,_slot:SlotCap): void {
+      
+    }
+    cellphone_action(user:Player,action:CellphoneAction){
+        if(this.def.idString!=="cellphone")return
+        switch(action!.type){
+          case CellphoneActionType.GiveItem:
+              user.give_item(GameItems.valueNumber[action!.item_id],action!.count)
+              break
+          case CellphoneActionType.SpawnObstacle:
+        }
+    }
+    update(_user: Player): void {
+      
+    }
 }
 export class MeleeItem extends LItem{
-  def:MeleeDef
-  itemType: InventoryItemType.melee=InventoryItemType.melee
-  use_delay:number=0
+    def:MeleeDef
+    itemType: InventoryItemType.melee=InventoryItemType.melee
+    use_delay:number=0
 
-  type="melee"
-  constructor(def:MeleeDef,droppable=true){
-    super()
-    this.limit_per_slot=1
-    this.def=def
-    this.droppable=droppable
-  }
-  is(other: LItem): boolean {
-    return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
-  }
-  attack(user:Player):void{
-    if(user.inventory.weaponIdx!==0)return
-    const position=v2.add(
-      user.position,
-      v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.offset,this.def.offset))
-    )
-    const hb=new CircleHitbox2D(position,this.def.radius)
-    const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
-    for(const c of collidibles){
-      if(!hb.collidingWith(c.hb))continue
-      if(c instanceof Obstacle){
-        c.damage({
-          amount:this.def.damage,
-          critical:false,
-          position:hb.position,
-          reason:DamageReason.Player,
-          owner:user,
-          source:this.def
-        })
-      }else if(c.stringType==="player"&&c.id!==user.id){
-        (c as Player).damage({
-          amount:this.def.damage,
-          critical:false,
-          position:hb.position,
-          reason:DamageReason.Player,
-          owner:user,
-          source:this.def
-        })
-      }
+    type="melee"
+    constructor(def:MeleeDef,droppable=true){
+      super()
+      this.limit_per_slot=1
+      this.def=def
+      this.droppable=droppable
     }
-  }
-  on_use(user: Player,_slot?:LItem): void {
-    if(this.use_delay<=0){
-      for(const t of this.def.damage_delays){
-        user.game.addTimeout(this.attack.bind(this,user),t)
-        this.use_delay=this.def.attack_delay
-      }
+    is(other: LItem): boolean {
+      return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
     }
-  }
-  update(user: Player): void {
-    if(this.use_delay>0)this.use_delay-=1/user.game.tps
-  }
+    attack(user:Player):void{
+        if(user.inventory.weaponIdx!==0)return
+        const position=v2.add(
+          user.position,
+          v2.mult(v2.from_RadAngle(user.rotation),v2.new(this.def.offset,this.def.offset))
+        )
+        const hb=new CircleHitbox2D(position,this.def.radius)
+        const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
+        for(const c of collidibles){
+            if(!hb.collidingWith(c.hb))continue
+              if(c instanceof Obstacle){
+                c.damage({
+                  amount:this.def.damage,
+                  critical:false,
+                  position:hb.position,
+                  reason:DamageReason.Player,
+                  owner:user,
+                  source:this.def
+                })
+              }else if(c.stringType==="player"&&c.id!==user.id){
+                (c as Player).damage({
+                  amount:this.def.damage,
+                  critical:false,
+                  position:hb.position,
+                  reason:DamageReason.Player,
+                  owner:user,
+                  source:this.def
+                })
+            }
+        }
+    }
+    on_use(user: Player,_slot?:LItem): void {
+        if(this.use_delay<=0){
+            for(const t of this.def.damage_delays){
+              user.game.addTimeout(this.attack.bind(this,user),t)
+              this.use_delay=this.def.attack_delay
+            }
+        }
+    }
+    update(user: Player): void {
+        if(this.use_delay>0)this.use_delay-=1/user.game.tps
+    }
 }
 export class GInventory extends Inventory<LItem>{
-  weapons:{
-    0?:MeleeItem,
-    1?:GunItem,
-    2?:GunItem
-  }={0:undefined,1:undefined,2:undefined}
-  owner:Player
+    weapons:{
+      0?:MeleeItem,
+      1?:GunItem,
+      2?:GunItem
+    }={0:undefined,1:undefined,2:undefined}
+    owner:Player
 
-  weaponIdx:number=-1
-  currentWeapon:GunItem|MeleeItem|undefined
-  currentWeaponDef:GunDef|MeleeDef|undefined
+    weaponIdx:number=-1
+    currentWeapon:GunItem|MeleeItem|undefined
+    currentWeaponDef:GunDef|MeleeDef|undefined
 
-  ammos:Record<string,number>={}
-  backpack!:BackpackDef
-  default_melee:string="survival_knife"
+    ammos:Record<string,number>={}
+    backpack!:BackpackDef
+    default_melee:string="survival_knife"
 
-  set_backpack(backpack?:BackpackDef){
-    if(!backpack)backpack=Backpacks.getFromString("null_pack")
-    if(this.backpack&&this.backpack.idString===backpack.idString)return
-    this.backpack=backpack
-    for(const s of this.slots){
-      if(s.item){
-        s.item.limit_per_slot=backpack.max[s.item.def.idString]??15
-      }
-    }
-    if(this.slots.length>backpack.slots){
-      while(this.slots.length>backpack.slots){
-        this.slots.pop()
-      }
-    }
-    while(this.slots.length<backpack.slots){
-      this.slots.push(new Slot<LItem>())
-    }
-    this.owner.privateDirtys.inventory=true
-  }
-
-  constructor(owner:Player,default_melee:string="survival_knife"){
-    super(4)
-    this.owner=owner
-    this.default_melee=default_melee
-    this.set_weapon(0,default_melee)
-    this.set_backpack()
-  }
-
-  set_current_weapon_index(idx:number){
-    if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
-  
-    if(this.currentWeapon){
-        switch(this.currentWeapon.type){
-          case "gun":
-            (this.currentWeapon as GunItem).reloading=false
-            break
-          case "melee":
-             (this.currentWeapon as MeleeItem).use_delay=(this.currentWeaponDef as MeleeDef).attack_delay
-            break
+    set_backpack(backpack?:BackpackDef){
+        if(!backpack)backpack=Backpacks.getFromString("null_pack")
+        if(this.backpack&&this.backpack.idString===backpack.idString)return
+        this.backpack=backpack
+        for(const s of this.slots){
+            if(s.item){
+              s.item.limit_per_slot=backpack.max[s.item.def.idString]??15
+            }
         }
-    }
-
-    const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
-    this.weaponIdx=idx
-
-    this.currentWeapon=val
-    this.currentWeaponDef=val?.def
-
-    this.owner.recoil=undefined
-    this.owner.privateDirtys.weapons=true
-    this.owner.privateDirtys.current_weapon=true
-    this.owner.privateDirtys.action=true
-    this.owner.actions.cancel()
-    if(this.currentWeapon){
-      if(this.currentWeaponDef!.switchDelay&&this.currentWeapon.use_delay<=this.currentWeaponDef!.switchDelay){
-        this.currentWeapon!.use_delay=this.currentWeaponDef!.switchDelay
-      }
-      this.owner.attacking=0
-    }
-
-    this.owner.current_animation=undefined
-    this.owner.dirty=true
-  }
-  set_weapon(slot:keyof typeof this.weapons=0,id:string=""){
-    this.drop_weapon(slot,false)
-    if(slot===0){
-      this.weapons[slot]=new MeleeItem(Melees.getFromString(id),true)
-    }else if(slot==1||slot==2){
-      this.weapons[slot]=new GunItem(Guns.getFromString(id),true)
-    }
-    this.owner.privateDirtys.weapons=true
-    this.owner.privateDirtys.current_weapon=true
-    if(slot===this.weaponIdx){this.weaponIdx=-1;this.set_current_weapon_index(slot)}
-  }
-  give_gun(id:string=""):boolean{
-      const dd=Guns.getFromString(id)
-      if(!this.weapons[1])this.set_weapon(1,id)
-      else if(!this.weapons[2])this.set_weapon(2,id)
-      else if(dd.dual&&!dd.dual_from){
-          if(this.weapons[1]?.def.idString==dd.idString)this.set_weapon(1,"dual_"+id)
-          else if(this.weapons[2]?.def.idString==dd.idString)this.set_weapon(2,"dual_"+id)
-          else return false
-      }
-      else if(this.weaponIdx>0){
-          this.set_weapon(this.weaponIdx as keyof typeof this.weapons,id)
-      }else{
-          return false
-      }
-      return true
-  }
-  drop_weapon(slot:keyof typeof this.weapons=0,normal:boolean=true){
-    if(!this.weapons[slot])return
-    if(this.weapons[slot].itemType===InventoryItemType.gun){
-        if(this.weapons[slot].ammo>0){
-            this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
+        if(this.slots.length>backpack.slots){
+            while(this.slots.length>backpack.slots){
+              this.slots.pop()
+            }
         }
-        if(this.weapons[slot].def.dual_from){
-            for(let i=0;i<2;i++)this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
+        while(this.slots.length<backpack.slots){
+            this.slots.push(new Slot<LItem>())
+        }
+        this.owner.privateDirtys.inventory=true
+    }
+
+    constructor(owner:Player,default_melee:string="survival_knife"){
+        super(4)
+        this.owner=owner
+        this.default_melee=default_melee
+        this.set_weapon(0,default_melee)
+        this.set_backpack()
+    }
+
+    set_current_weapon_index(idx:number){
+        if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
+      
+        if(this.currentWeapon){
+            switch(this.currentWeapon.type){
+              case "gun":
+                (this.currentWeapon as GunItem).reloading=false
+                break
+              case "melee":
+                (this.currentWeapon as MeleeItem).use_delay=(this.currentWeaponDef as MeleeDef).attack_delay
+                break
+            }
+        }
+
+        const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
+        this.weaponIdx=idx
+
+        this.currentWeapon=val
+        this.currentWeaponDef=val?.def
+
+        this.owner.recoil=undefined
+        this.owner.privateDirtys.weapons=true
+        this.owner.privateDirtys.current_weapon=true
+        this.owner.privateDirtys.action=true
+        this.owner.actions.cancel()
+        if(this.currentWeapon){
+          if(this.currentWeaponDef!.switchDelay&&this.currentWeapon.use_delay<=this.currentWeaponDef!.switchDelay){
+            this.currentWeapon!.use_delay=this.currentWeaponDef!.switchDelay
+          }
+          this.owner.attacking=0
+        }
+
+        this.owner.current_animation=undefined
+        this.owner.dirty=true
+    }
+    set_weapon(slot:keyof typeof this.weapons=0,id:string="",drop:boolean=true){
+        if(drop)this.drop_weapon(slot,false)
+        if(slot===0){
+          this.weapons[slot]=new MeleeItem(Melees.getFromString(id),true)
+        }else if(slot==1||slot==2){
+          this.weapons[slot]=new GunItem(Guns.getFromString(id),true)
+        }
+        this.owner.privateDirtys.weapons=true
+        this.owner.privateDirtys.current_weapon=true
+        if(slot===this.weaponIdx){this.weaponIdx=-1;this.set_current_weapon_index(slot)}
+    }
+    give_gun(id:string=""):boolean{
+        const dd=Guns.getFromString(id)
+        if(!this.weapons[1]){
+            this.set_weapon(1,id)
+            return true
+        }
+        if(!this.weapons[2]){
+            this.set_weapon(2,id)
+            return true
+        }
+        if(dd.dual&&!dd.dual_from){
+            if(this.weapons[1]?.def.idString===dd.idString){
+                this.set_weapon(1,id+"_dual",false)
+                return true
+            }else if(this.weapons[2]?.def.idString===dd.idString){
+                this.set_weapon(2,id+"_dual",false)
+                return true
+            }
+        }
+        if(this.weaponIdx>0){
+            this.set_weapon(this.weaponIdx as keyof typeof this.weapons,id)
+        }else if(this.weaponIdx===0){
+            return false
+        }
+        return true
+    }
+    drop_weapon(slot:keyof typeof this.weapons=0,normal:boolean=true){
+        if(!this.weapons[slot])return
+        if(this.weapons[slot].itemType===InventoryItemType.gun){
+            if(this.weapons[slot].ammo>0){
+                this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
+            }
+            if(this.weapons[slot].def.dual_from){
+                for(let i=0;i<2;i++)this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
+            }else{
+                this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+            }
         }else{
             this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
         }
-    }else{
-        this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+        //l.velocity.x=-3
+        this.weapons[slot]=undefined
+        this.owner.actions.cancel()
+        this.owner.privateDirtys.weapons=true
+        if(slot===this.weaponIdx&&normal)this.set_current_weapon_index(0)
+          if(slot===0){
+            this.set_weapon(slot,this.default_melee)
+          }
     }
-    //l.velocity.x=-3
-    this.weapons[slot]=undefined
-    this.owner.actions.cancel()
-    this.owner.privateDirtys.weapons=true
-    if(slot===this.weaponIdx&&normal)this.set_current_weapon_index(0)
-      if(slot===0){
-        this.set_weapon(slot,this.default_melee)
-      }
-  }
-  drop_ammo(idx:number=0){
-    const a=Ammos.getFromNumber(idx)
-    const rc=Math.min(a.drop_count??60,this.ammos[a.idString])
-    this.consume_ammo(a.idString,rc)
-    this.owner.game.add_loot(this.owner.position,a as unknown as GameItem,rc)
-  }
-  give_item(def:GameItem,count:number,drop_n:boolean=true):number{
-      switch(def.item_type){
-          case InventoryItemType.ammo:{
-              this.owner.privateDirtys.ammos=true
-              const max=this.backpack.max[def.idString]??0
-              const ac=this.ammos[def.idString]??0
-              const dp=Math.max((ac+count)-max,0)
-              this.ammos[def.idString]=Numeric.max(ac+count,max)
-              if(drop_n&&dp){
-                this.owner.game.add_loot(this.owner.position,def,dp)
+    drop_ammo(idx:number=0){
+      const a=Ammos.getFromNumber(idx)
+      const rc=Math.min(a.drop_count??60,this.ammos[a.idString])
+      this.consume_ammo(a.idString,rc)
+      this.owner.game.add_loot(this.owner.position,a as unknown as GameItem,rc)
+    }
+    give_item(def:GameItem,count:number,drop_n:boolean=true):number{
+        switch(def.item_type){
+            case InventoryItemType.ammo:{
+                this.owner.privateDirtys.ammos=true
+                const max=this.backpack.max[def.idString]??0
+                const ac=this.ammos[def.idString]??0
+                const dp=Math.max((ac+count)-max,0)
+                this.ammos[def.idString]=Numeric.max(ac+count,max)
+                if(drop_n&&dp){
+                  this.owner.game.add_loot(this.owner.position,def,dp)
+                }
+                return dp
               }
-              return dp
+            case InventoryItemType.consumible:{
+                const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
+                item.limit_per_slot=this.backpack.max[item.def.idString]??15
+                const ov=this.add(item,count)
+                if(ov){
+                  this.owner.game.add_loot(this.owner.position,def,ov)
+                }
+                this.owner.privateDirtys.inventory=true
+                break
             }
-          case InventoryItemType.consumible:{
-              const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
-              item.limit_per_slot=this.backpack.max[item.def.idString]??15
-              const ov=this.add(item,count)
-              if(ov){
-                this.owner.game.add_loot(this.owner.position,def,ov)
-              }
-              this.owner.privateDirtys.inventory=true
-              break
-          }
-          case InventoryItemType.equipament:
-              break
-          /*case InventoryItemType.other:
-              this.add(new OtherItem(def as unknown as OtherDef,droppable),count)
-              break*/
-      }
-      this.owner.privateDirtys.inventory=true
-      return count
-  }
-  drop_slot(si:number=0,count:number=10){
-    const s=this.slots[si]
-    if(s?.item&&s.quantity>0){
-      const c=Math.min(count,s.quantity)
-      this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,c)
-      s.remove(c)
-      this.owner.privateDirtys.inventory=true
-    }
-  }
-  drop_item(id:number,count:number=5){
-    for(const s in this.slots){
-      if(this.slots[s].item&&GameItems.keysString[this.slots[s].item.def.idString]===id){
-        this.drop_slot(s as unknown as number,count)
-        break
-      }
-    }
-  }
-  consume_ammo(a:string,val:number):number{
-    this.owner.privateDirtys.ammos=true
-    if(this.ammos[a]){
-      const con=Numeric.max(val,this.ammos[a])
-      this.ammos[a]=Numeric.max(this.ammos[a],this.ammos[a]-val)
-      if(this.ammos[a]===0){
-        delete this.ammos[a]
-      }
-      return con
-    }
-    return 0
-  }
-  clear(){
-    this.ammos={}
-    this.owner.vest=undefined
-    this.owner.helmet=undefined
-    this.set_backpack()
-    for(const s of this.slots){
-      s.clear()
-    }
-    this.owner.privateDirtys.inventory=true
-    this.owner.privateDirtys.weapons=true
-    this.owner.privateDirtys.ammos=true
-    this.weapons[1]=undefined
-    this.weapons[2]=undefined
-    this.set_weapon(0,this.default_melee)
-    this.set_current_weapon_index(0)
-  }
-  drop_all(){
-      this.drop_weapon(0)
-      this.drop_weapon(1)
-      this.drop_weapon(2)
-      const l:Loot[]=[]
-      for(const s of Object.keys(this.ammos)){
-          const def=Ammos.getFromString(s) as unknown as GameItem
-          //const pos=this.owner.hb.randomPoint()
-          const dir=random.float(-3.141592,3.141592)
-          const r=(this.owner.hb as CircleHitbox2D).radius
-          const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
-          while(this.ammos[s]>0){
-              const rc=Math.min(this.ammos[s],60)
-              const ll=this.owner.game.add_loot(pos,def,rc)
-              l.push(ll);
-              ll.push(random.float(1,7),dir+random.float(-0.03,0.03));
-              //(ll.hb as CircleHitbox2D).radius=0
-              this.ammos[s]-=rc
-              
-          }
-      }
-      if(this.owner.vest){
-        this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
-      }
-      if(this.owner.helmet){
-        this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
-      }
-      if(this.backpack&&this.backpack.level){
-        this.owner.game.add_loot(this.owner.position,this.backpack as unknown as GameItem,1)
-      }
-      if(this.owner.skin.idString!==this.owner.loadout.skin){
-        this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
-      }
-      for(const s of this.slots){
-        if(s.item&&s.quantity>0){
-          this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,s.quantity)
-          s.remove(s.quantity)
+            case InventoryItemType.equipament:
+                break
+            /*case InventoryItemType.other:
+                this.add(new OtherItem(def as unknown as OtherDef,droppable),count)
+                break*/
         }
-      }
-      for(const loot of l){
-        loot.is_new=true
-      }
-  }
-  update(){
-    this.weapons[0]?.update(this.owner)
-    this.weapons[1]?.update(this.owner)
-    this.weapons[2]?.update(this.owner)
-  }
+        this.owner.privateDirtys.inventory=true
+        return count
+    }
+    drop_slot(si:number=0,count:number=10){
+        const s=this.slots[si]
+        if(s?.item&&s.quantity>0){
+            const c=Math.min(count,s.quantity)
+            this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,c)
+            s.remove(c)
+            this.owner.privateDirtys.inventory=true
+        }
+    }
+    drop_item(id:number,count:number=5){
+        for(const s in this.slots){
+            if(this.slots[s].item&&GameItems.keysString[this.slots[s].item.def.idString]===id){
+              this.drop_slot(s as unknown as number,count)
+              break
+            }
+        }
+    }
+    consume_ammo(a:string,val:number):number{
+        this.owner.privateDirtys.ammos=true
+        if(this.ammos[a]){
+            const con=Numeric.max(val,this.ammos[a])
+            this.ammos[a]=Numeric.max(this.ammos[a],this.ammos[a]-val)
+            if(this.ammos[a]===0){
+                delete this.ammos[a]
+            }
+            return con
+        }
+        return 0
+    }
+    clear(){
+        this.ammos={}
+        this.owner.vest=undefined
+        this.owner.helmet=undefined
+        this.set_backpack()
+        for(const s of this.slots){
+          s.clear()
+        }
+        this.owner.privateDirtys.inventory=true
+        this.owner.privateDirtys.weapons=true
+        this.owner.privateDirtys.ammos=true
+        this.weapons[1]=undefined
+        this.weapons[2]=undefined
+        this.set_weapon(0,this.default_melee)
+        this.set_current_weapon_index(0)
+    }
+    drop_all(){
+        this.drop_weapon(0)
+        this.drop_weapon(1)
+        this.drop_weapon(2)
+        const l:Loot[]=[]
+        for(const s of Object.keys(this.ammos)){
+            const def=Ammos.getFromString(s) as unknown as GameItem
+            //const pos=this.owner.hb.randomPoint()
+            const dir=random.float(-3.141592,3.141592)
+            const r=(this.owner.hb as CircleHitbox2D).radius
+            const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
+            while(this.ammos[s]>0){
+                const rc=Math.min(this.ammos[s],60)
+                const ll=this.owner.game.add_loot(pos,def,rc)
+                l.push(ll);
+                ll.push(random.float(1,7),dir+random.float(-0.03,0.03));
+                //(ll.hb as CircleHitbox2D).radius=0
+                this.ammos[s]-=rc
+            }
+        }
+        if(this.owner.vest){
+            this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
+        }
+        if(this.owner.helmet){
+            this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
+        }
+        if(this.backpack&&this.backpack.level){
+            this.owner.game.add_loot(this.owner.position,this.backpack as unknown as GameItem,1)
+        }
+        if(this.owner.skin.idString!==this.owner.loadout.skin){
+            this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+        }
+        for(const s of this.slots){
+            if(s.item&&s.quantity>0){
+                this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,s.quantity)
+                s.remove(s.quantity)
+            }
+        }
+        for(const loot of l){
+            loot.is_new=true
+        }
+    }
+    update(){
+        this.weapons[0]?.update(this.owner)
+        this.weapons[1]?.update(this.owner)
+        this.weapons[2]?.update(this.owner)
+    }
 }

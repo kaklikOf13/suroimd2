@@ -30,6 +30,7 @@ export const ConfigCasters=Object.freeze({
 
     cv_game_region:Casters.toString,
     cv_game_friendly_fire:Casters.toString,
+    cv_game_client_rot:Casters.toString,
     cv_game_ping:Casters.toInt,
 
     cv_sounds_master_volume:Casters.toInt,
@@ -43,6 +44,7 @@ export const ConfigDefaultValues={
 
     cv_game_region:"na",
     cv_game_friendly_fire:"false",
+    cv_game_client_rot:"true",
     cv_game_ping:5,
 
     cv_sounds_master_volume:100,
@@ -118,7 +120,6 @@ export const ConfigDefaultActions={
         keys:[Key.I]
     }
 }
-export const ClientRotation=false
 export const Debug={
     hitbox:false,
     force_mobile:false
