@@ -58,6 +58,7 @@ export class Game extends ClientGame2D<GameObject>{
   //1=l-1 0.5x
   //1.5=l-2 0.25x
   //1.75=l-3 0.1x
+  //2=l-4 0.05x
   flying_position:number=0
   happening:boolean=false
 

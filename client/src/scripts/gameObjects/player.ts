@@ -1,11 +1,11 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, model2d, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { Debug, GraphicsDConfig } from "../others/config.ts";
+import { GraphicsDConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
@@ -56,7 +56,9 @@ export class Player extends GameObject{
         muzzle_flash_light?:Light2D
         consumible_particle:string
         consumible_particles?:ParticlesEmitter2D<ClientParticle2D>
-    }={consumible_particle:"healing_particle"}
+        mount_anims:KeyFrameSpriteDef[]
+        mount_open:string
+    }={consumible_particle:"healing_particle",mount_anims:[],mount_open:""}
     sound_animation:{
         animation?:SoundInstance
         weapon:{
@@ -193,7 +195,6 @@ export class Player extends GameObject{
         }
         this.container.updateZIndex()
     }
-
     set_skin(skin:SkinDef){
         if(this.skin==skin.idString)return
         this.skin=skin.idString
@@ -222,20 +223,21 @@ export class Player extends GameObject{
 
         const ms1=skin.frame?.mount?.normal??"player_mounth_1_1"
         const ms2=skin.frame?.mount?.closed??"player_mounth_1_2"
+        this.anims.mount_open=ms2
         this.sprites.mounth.frame=this.game.resources.get_sprite(ms1)
+        this.anims.mount_anims.length=0
         if(!skin.animation?.no_auto_talk){
-            this.sprites.mounth.frames=[
-                {delay:random.float(8,14),image:ms1}
-            ]
+            this.anims.mount_anims.push({delay:random.float(8,14),image:ms1})
             const c=random.int(10,20)
             for(let i=0;i<c;i++){
-                this.sprites.mounth.frames.push(
+                this.anims.mount_anims.push(
                     {delay:0.15,image:ms1},
                     {delay:0.15,image:ms2}
                 )
             }
-            this.sprites.mounth.frames.push({delay:random.float(1,5),image:ms1})
+            this.anims.mount_anims.push({delay:random.float(1,5),image:ms1})
         }
+        this.sprites.mounth.frames=this.anims.mount_anims
         if(!skin.animation?.no){
             if(skin.animation?.frames){
                 this.sprites.body.frames=[...skin.animation.frames]
@@ -255,7 +257,7 @@ export class Player extends GameObject{
         //#region AA
         this.sprites={
             body:this.container.add_animated_sprite("body",{scale:1.333333,zIndex:4}),
-            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2.new(0.45,0.5),scale:1.4,position:v2.new(0.3,0),zIndex:4}),
+            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2.new(0.3,0.5),scale:1.4,position:v2.new(0.3,0),zIndex:4}),
             backpack:this.container.add_animated_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34,zIndex:3}),
             helmet:this.container.add_animated_sprite("helmet",{zIndex:5}),
             left_arm:this.container.add_animated_sprite("left_arm"),
@@ -312,6 +314,10 @@ export class Player extends GameObject{
         this.sprites.muzzle_flash.visible=false
         this.current_animation=undefined
         if(this.sound_animation.animation)this.sound_animation.animation.stop()
+        if(!this.sprites.mounth.frames&&this.anims.mount_anims){
+            this.sprites.mounth.frames=this.anims.mount_anims
+            this.sprites.mounth.current_delay=1000
+        }
         this.sound_animation.animation=undefined
         this.anims.consumible_particles!.enabled=false
         this.attacking=0
@@ -345,6 +351,10 @@ export class Player extends GameObject{
                 const def=Consumibles.getFromNumber(this.current_animation.item)
                 const sound=this.game.resources.get_audio((def.sounds?.using)??`using_${def.idString}`)
                 if(sound){
+                    if(def.drink){
+                        this.sprites.mounth.frames=undefined
+                        this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_open)
+                    }
                     this.sound_animation.animation=this.game.sounds.play(sound,{
                         position:this.position,
                         max_distance:5,

@@ -460,6 +460,7 @@ export class AnimatedContainer2D extends Container2D{
                     switch(action.type){
                         case "sprite":
                             this.get_spr(action.fuser).set_frame(action,this.game.resources)
+                            this.updateZIndex()
                             break
                         case "tween":{
                             const fuser=this.get_spr(action.fuser)

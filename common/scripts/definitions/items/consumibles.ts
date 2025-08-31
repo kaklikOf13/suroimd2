@@ -1,5 +1,5 @@
 import { AKeyFrame } from "../../engine/definitions.ts";
-import { v2 } from "../../engine/geometry.ts";
+import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts"
 import { DefaultFistRig, ItemQuality } from "../../others/item.ts";
 import { BoostType } from "../player/boosts.ts";
@@ -10,7 +10,7 @@ export enum ConsumibleCondition{
     UnfullExtra
 }
 export const ConsumiblesAnimations={
-    drinking:(frame:string="soda",time:number=2)=>[
+    drinking:(frame:string="soda",time:number=2,hotspot?:Vec2)=>[
         {
             actions:[
                 {
@@ -20,7 +20,8 @@ export const ConsumiblesAnimations={
                     visible:true,
                     scale:1.1,
                     rotation:-0.2,
-                    hotspot:v2.new(0.5,.5),
+                    hotspot:hotspot??v2.new(0.5,.5),
+                    zIndex:6,
                     position:DefaultFistRig.right!.position
                 },
                 {
@@ -34,7 +35,7 @@ export const ConsumiblesAnimations={
                     visible:true,   
                     type:"sprite",
                     fuser:"right_arm",
-                }
+                },
             ],
             time:0
         },
@@ -58,11 +59,6 @@ export const ConsumiblesAnimations={
                 }
             ],
             time:0.5
-        },
-        {
-            actions:[
-            ],
-            time:time-0.5
         }
     ]
 }satisfies Record<string,()=>AKeyFrame[]>
@@ -82,6 +78,7 @@ export interface ConsumibleDef extends Definition{
     sounds?:{
         using?:string
     }
+    drink?:boolean
     animation?:AKeyFrame[]
 }
 export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
@@ -116,6 +113,7 @@ Consumibles.insert(
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("soda",2.5),
+        drink:true
     },
     {
         idString:"inhaler",
@@ -131,7 +129,7 @@ Consumibles.insert(
         use_delay:6,
         boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Rare,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
     },
 
     //Shield
@@ -147,6 +145,7 @@ Consumibles.insert(
             using:"using_small_potion"
         },
         animation:ConsumiblesAnimations.drinking("small_blue_potion",2.65),
+        drink:true
     },
     {
         idString:"blue_potion",
@@ -158,7 +157,8 @@ Consumibles.insert(
         sounds:{
             using:"using_potion"
         },
-        animation:ConsumiblesAnimations.drinking("blue_potion",4.5),
+        animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2.new(0.5,0.35)),
+        drink:true
     },
     {
         idString:"blue_pills",
@@ -180,6 +180,7 @@ Consumibles.insert(
             using:"using_small_potion"
         },
         animation:ConsumiblesAnimations.drinking("small_purple_potion",2.6),
+        drink:true
     },
     {
         idString:"purple_potion",
@@ -191,7 +192,8 @@ Consumibles.insert(
         sounds:{
             using:"using_potion"
         },
-        animation:ConsumiblesAnimations.drinking("purple_potion",4.5),
+        animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2.new(0.5,0.35)),
+        drink:true
     },
     {
         idString:"purple_pills",
