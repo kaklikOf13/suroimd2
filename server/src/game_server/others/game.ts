@@ -75,16 +75,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
     get pvpEnabled():boolean{
         return this._pvpEnabled
     }
-    private _interactionsEnabled:boolean=false
-    get interactionsEnabled():boolean{
-        return this._interactionsEnabled
-    }
-    set interactionsEnabled(v:boolean){
-        this._interactionsEnabled=v
-        for(const p of this.livingPlayers){
-            p.interactionsEnabled=v
-        }
-    }
     string_id=""
     Config:ConfigType
 
@@ -304,7 +294,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.livingPlayers.push(p)
 
         p.pvpEnabled=this._pvpEnabled||this.config.deenable_lobby
-        p.interactionsEnabled=this._interactionsEnabled||this.config.deenable_lobby
 
         p.username=username
 
@@ -351,6 +340,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }else{
             p.username=""
+            const s=Skins.getFromNumber(packet.skin)
+            p.skin=s
+            p.loadout.skin=s.idString
         }
         
 

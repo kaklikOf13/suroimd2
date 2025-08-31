@@ -13,6 +13,7 @@ import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
 import { TreeBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
+import { ConfigType } from "common/scripts/config/config.ts";
 (() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100);
@@ -76,9 +77,9 @@ import { TreeBotAi } from "../../../../server/src/game_server/player/simple_bot_
                     deenable_lobby:true,
                 },{
                     database:{
-                        enabled:false
-                    }
-                })
+                        enabled:false,
+                    },
+                } as ConfigType)
                 this.game_server.mainloop()
                 for(let i=0;i<9;i++){
                     const bot=this.game_server.add_bot()

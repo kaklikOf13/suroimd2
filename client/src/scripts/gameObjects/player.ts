@@ -250,6 +250,7 @@ export class Player extends GameObject{
             weapon:this.container.add_animated_sprite("weapon"),
             weapon2:this.container.add_animated_sprite("weapon2")
         }
+        this.sprites.body.scale=v2.new(1.333333,1.333333)
         this.anims.consumible_particles=this.game.particles.add_emiter({
             delay:0.5,
             particle:()=>new ABParticle2D({

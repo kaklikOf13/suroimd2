@@ -38,7 +38,4 @@ export const EaseBotBRTree:ActionTreeDef<BotWorld,BotSettings> = new SelectorNod
     new ConditionNode(ctx => (ctx.object.player.health < 30), "Low Health?"),
     new DoActionNode<BotWorld,BotSettings,{ slot:number }>("use_slot",{slot:0},"heal"),
   ], "If Low HP"),
-  new SelectorNode<BotWorld,BotSettings>([
-    new ActionNode()
-  ])
 ])
