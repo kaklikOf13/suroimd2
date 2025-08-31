@@ -22,7 +22,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
 import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Graphics2D, Lights2D } from "../engine/container.ts";
+import { Graphics2D, Lights2D, Sprite2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
@@ -67,6 +67,8 @@ export class Game extends ClientGame2D<GameObject>{
   minimap:MinimapManager=new MinimapManager(this)
 
   dead_zone:DeadZoneManager=new DeadZoneManager(this)
+
+  fake_crosshair=new Sprite2D()
 
   listners_init(){
     this.input_manager.add_axis("movement",
@@ -155,7 +157,10 @@ export class Game extends ClientGame2D<GameObject>{
       }
     })
     this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
-      this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
+      if(!isMobile){
+        this.fake_crosshair.visible=false
+        this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
+      }
     })
     
     this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e: { stick: string; axis: Vec2; })=>{
@@ -194,6 +199,11 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
     this.camera.addObject(this.light_map)
+    this.camera.addObject(this.fake_crosshair)
+
+    this.fake_crosshair.zIndex=zIndexes.DamageSplashs
+    this.fake_crosshair.hotspot=v2.new(.5,.5)
+
     this.light_map.ambient=0.6
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
@@ -273,6 +283,10 @@ export class Game extends ClientGame2D<GameObject>{
       const gridSize=GameConstants.collision.chunckSize
       this.minimap.position=v2.duplicate(this.camera.position)
       this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
+      if(this.fake_crosshair.visible){
+        this.fake_crosshair.position=v2.add(this.activePlayer.position,v2.scale(v2.from_RadAngle(this.activePlayer.rotation),2/this.camera.zoom))
+        this.fake_crosshair.scale=v2.new(1/this.camera.zoom,1/this.camera.zoom)
+      }
     }
   }
   planes:Map<number,Plane>=new Map()
@@ -321,6 +335,9 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.emit(p)
     this.activePlayerId=this.client.ID
     console.log("Joined As:",this.activePlayerId)
+
+    this.fake_crosshair.frame=this.resources.get_sprite("crosshair_1")
+    this.fake_crosshair.visible=false
 
     this.guiManager.players_name={}
     this.guiManager.start()

@@ -314,6 +314,11 @@
         img{align-self: center;
         }
     }
+    @media screen and (max-width: palette.$screen_medium) {
+        .killfeed-message{
+            font-size: 9px;
+        }
+    }
 }
 #information-killbox{
     width: fit-content;
@@ -327,6 +332,12 @@
     top: 40%;
     padding: 15px;
     margin: auto;
+    @media screen and (max-width: palette.$screen_medium) {
+        top: 20%;
+        border-radius: 5px;
+        font-size: 10px;
+        padding: 7px;
+    }
 }
 #killeader-container{
     #killeader-container-icon{
