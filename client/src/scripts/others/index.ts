@@ -12,7 +12,7 @@ import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
-import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
+import { TreeBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 (() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100);
@@ -73,7 +73,7 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
                     maxPlayers:10,
                     teamSize:1,
                     netTps:30,
-                    deenable_lobby:Math.random()<=0.3,
+                    deenable_lobby:true,
                 },{
                     database:{
                         enabled:false
@@ -82,7 +82,14 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
                 this.game_server.mainloop()
                 for(let i=0;i<9;i++){
                     const bot=this.game_server.add_bot()
-                    bot.ai=new SimpleBotAi()
+                    bot.ai=new TreeBotAi(bot,{
+                        decision_update_rate:1,
+                        reaction_time:0.3,
+                        accuracy:0.5,
+                        bravery:0.4,
+                        teamwork:1,
+                        like_regen:1
+                    })
                 }
                 this.game_server.subscribe_db={
                     "localhost":{

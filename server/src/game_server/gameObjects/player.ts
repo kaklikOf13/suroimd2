@@ -467,19 +467,23 @@ export class Player extends ServerGameObject{
             if(this.actions.current_action){
                 up.priv.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
-            this.camera_hb.min.x=this.position.x-(30/2)
-            this.camera_hb.min.y=this.position.y-(30/2)
-            this.camera_hb.max.x=this.position.x+(30/2)
-            this.camera_hb.max.y=this.position.y+(30/2)
-            /*const objs=[
-                ...Object.values(this.manager.objects[this.layer].objects),
-            ]*/
-            const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
+            const objs=this.get_objects()
             const o=this.game.scene.objects.encode_list(objs,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm
             this.client.emit(up)
         }
+    }
+    get_objects(){
+        this.camera_hb.min.x=this.position.x-(30/2)
+        this.camera_hb.min.y=this.position.y-(30/2)
+        this.camera_hb.max.x=this.position.x+(30/2)
+        this.camera_hb.max.y=this.position.y+(30/2)
+        /*const objs=[
+            ...Object.values(this.manager.objects[this.layer].objects),
+        ]*/
+        const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
+        return objs
     }
     damage(params:DamageParams){
         if(this.dead||!this.pvpEnabled||this.parachute||this.imortal||this.invensibility_time>0)return

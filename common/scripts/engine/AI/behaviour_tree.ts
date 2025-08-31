@@ -3,12 +3,19 @@ export enum NodeStatus {
   Failure = 'FAILURE',
   Running = 'RUNNING',
 }
-
+export interface Default_Tree_Settings{ reaction_time: number; decision_update_rate: number }
 export interface TickContext<OBJ, Settings> {
   object: OBJ
   blackboard: Blackboard
-  settings: Settings & { reaction_time: number; decision_update_rate: number }
+  settings: Settings&Default_Tree_Settings
+  tree:BehaviourTree<OBJ,Settings>
   dt: number
+}
+export interface ActionDefinition<OBJ, Settings, Params = undefined> {
+  name: string
+  onStart?: (ctx: TickContext<OBJ, Settings>, params: Params) => void
+  onTick: (ctx: TickContext<OBJ, Settings>, params: Params) => NodeStatus
+  onReset?: (ctx: TickContext<OBJ, Settings>, params: Params) => void
 }
 
 export class Blackboard {
@@ -45,7 +52,7 @@ export class SequenceNode<OBJ, Settings> extends CompositeNode<OBJ, Settings> {
     this.runningIndex = 0
     return NodeStatus.Success
   }
-  reset(ctx: TickContext<OBJ, Settings>) { this.runningIndex = 0; super.reset(ctx) }
+  override reset(ctx: TickContext<OBJ, Settings>) { this.runningIndex = 0; super.reset(ctx) }
 }
 
 export class SelectorNode<OBJ, Settings> extends CompositeNode<OBJ, Settings> {
@@ -59,7 +66,7 @@ export class SelectorNode<OBJ, Settings> extends CompositeNode<OBJ, Settings> {
     this.runningIndex = 0
     return NodeStatus.Failure
   }
-  reset(ctx: TickContext<OBJ, Settings>) { this.runningIndex = 0; super.reset(ctx) }
+  override reset(ctx: TickContext<OBJ, Settings>) { this.runningIndex = 0; super.reset(ctx) }
 }
 
 export class ParallelNode<OBJ, Settings> extends CompositeNode<OBJ, Settings> {
@@ -96,7 +103,7 @@ export class ConditionNode<OBJ, Settings> implements BTNode<OBJ, Settings> {
   tick(ctx: TickContext<OBJ, Settings>) { return this.fn(ctx) ? NodeStatus.Success : NodeStatus.Failure }
 }
 
-export class Inverter<OBJ, Settings> implements BTNode<OBJ, Settings> {
+export class InverterNode<OBJ, Settings> implements BTNode<OBJ, Settings> {
   child: BTNode<OBJ, Settings>
   name?: string
   constructor(child: BTNode<OBJ, Settings>, name?: string) { this.child = child; this.name = name }
@@ -108,7 +115,7 @@ export class Inverter<OBJ, Settings> implements BTNode<OBJ, Settings> {
   }
 }
 
-export class Succeeder<OBJ, Settings> implements BTNode<OBJ, Settings> {
+export class SucceederNode<OBJ, Settings> implements BTNode<OBJ, Settings> {
   child: BTNode<OBJ, Settings>
   name?: string
   constructor(child: BTNode<OBJ, Settings>, name?: string) { this.child = child; this.name = name }
@@ -118,7 +125,7 @@ export class Succeeder<OBJ, Settings> implements BTNode<OBJ, Settings> {
   }
 }
 
-export class Failer<OBJ, Settings> implements BTNode<OBJ, Settings> {
+export class FailerNode<OBJ, Settings> implements BTNode<OBJ, Settings> {
   child: BTNode<OBJ, Settings>
   name?: string
   constructor(child: BTNode<OBJ, Settings>, name?: string) { this.child = child; this.name = name }
@@ -164,37 +171,91 @@ export class RepeatNode<OBJ, Settings> implements BTNode<OBJ, Settings> {
 }
 
 export type ActionTreeDef<OBJ, Settings> = BTNode<OBJ, Settings>
+export class DoActionNode<OBJ, Settings, Params = any> implements BTNode<OBJ, Settings> {
+  name?: string
+  private actionName: string
+  private params: Params
+  private started = false
 
-export class BehaviourTree<OBJ extends { id?: string }, Settings extends {}> {
+  constructor(actionName: string, params: Params, name?: string) {
+    this.actionName = actionName
+    this.params = params
+    this.name = name ?? `Do(${actionName})`
+  }
+
+  tick(ctx: TickContext<OBJ, Settings>) {
+    const tree = (ctx as any).tree as BehaviourTree<OBJ, Settings>
+    const action = tree.getAction(this.actionName)
+    if (!action) throw new Error(`Action ${this.actionName} not registered`)
+
+    if (!this.started) {
+      if (action.onStart) action.onStart(ctx, this.params)
+      this.started = true
+    }
+
+    return action.onTick(ctx, this.params)
+  }
+
+  reset(ctx: TickContext<OBJ, Settings>) {
+    const tree = (ctx as any).tree as BehaviourTree<OBJ, Settings>
+    const action = tree.getAction(this.actionName)
+    if (this.started && action?.onReset) {
+      action.onReset(ctx, this.params)
+    }
+    this.started = false
+  }
+}
+
+export class BehaviourTree<OBJ, Settings> {
   object: OBJ
   settings: { reaction_time: number; decision_update_rate: number } & Settings
-  tree: ActionTreeDef<OBJ, typeof this.settings>
+  tree: ActionTreeDef<OBJ, Settings>
   blackboard: Blackboard = new Blackboard()
   last_update: number
   private rootStatus: NodeStatus | null = null
 
-  constructor(object: OBJ, settings: { reaction_time: number; decision_update_rate: number } & Settings, tree: ActionTreeDef<OBJ, typeof settings>) {
+  actions = new Map<string, ActionDefinition<OBJ, Settings,any>>()
+
+  constructor(
+    object: OBJ,
+    settings: { reaction_time: number; decision_update_rate: number } & Settings,
+    tree: ActionTreeDef<OBJ, typeof settings>,
+    actions:ActionDefinition<OBJ, Settings,any>[]=[]
+  ) {
     this.object = object
     this.settings = settings
     this.tree = tree
     this.last_update = settings.decision_update_rate
+    for(const a of actions){
+      this.registerAction(a)
+    }
+  }
+
+  registerAction<Params = any>(
+    action: ActionDefinition<OBJ, Settings, Params>
+  ) {
+    this.actions.set(action.name, action)
+  }
+
+  getAction(name: string) {
+    return this.actions.get(name)
   }
 
   update(dt: number) {
     this.last_update -= dt
     if (this.last_update <= 0) {
-      const ctx: TickContext<OBJ, typeof this.settings> = { object: this.object, blackboard: this.blackboard, settings: this.settings, dt }
+      const ctx: TickContext<OBJ, Settings> = { tree:this,object: this.object, blackboard: this.blackboard, settings: this.settings, dt }
       this.rootStatus = this.tree.tick(ctx)
       this.last_update = this.settings.decision_update_rate
     }
-    const continuousCtx: TickContext<OBJ, typeof this.settings> = { object: this.object, blackboard: this.blackboard, settings: this.settings, dt }
+    const continuousCtx: TickContext<OBJ, Settings> = { tree:this, object: this.object, blackboard: this.blackboard, settings: this.settings, dt }
     if (this.rootStatus === NodeStatus.Running) {
       this.tree.tick(continuousCtx)
     }
   }
 
   reset() {
-    const ctx: TickContext<OBJ, typeof this.settings> = { object: this.object, blackboard: this.blackboard, settings: this.settings, dt: 0 }
+    const ctx: TickContext<OBJ, Settings> = { tree:this,object: this.object, blackboard: this.blackboard, settings: this.settings, dt: 0 }
     if (this.tree.reset) this.tree.reset(ctx)
     this.rootStatus = null
     this.blackboard.clear()
