@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, NullHitbox2D, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -167,13 +167,26 @@ export class Game extends ClientGame2D<GameObject>{
       if(e.stick==="left"){
         this.action.Movement=e.axis
       }else if(e.stick==="right"){
-        this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x))
+        this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x),true)
+        this.fake_crosshair.visible=true
       }
     })
   }
-  set_lookTo_angle(angle:number){
+  set_lookTo_angle(angle:number,aim_assist:boolean=false){
+    if(!this.activePlayer)return
+    if(aim_assist){
+      for(const o of this.scene.objects.objects[this.activePlayer.layer].orden){
+        const obj=this.scene.objects.objects[this.activePlayer.layer].objects[o]
+        if(obj.id===this.activePlayerId||obj.stringType!=="player")continue
+        const ang=v2.lookTo(this.activePlayer.position,obj.position)
+        if(Math.abs(angle-ang)<=0.2){
+          angle=ang
+          break
+        }
+      }
+    }
     this.action.angle=angle;
-    if(this.save.get_variable("cv_game_client_rot")&&this.activePlayer&&!this.activePlayer.driving){
+    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving){
       (this.activePlayer as Player).container.rotation=this.action.angle
     }
   }
