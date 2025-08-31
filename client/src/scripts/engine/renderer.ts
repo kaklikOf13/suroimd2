@@ -1,8 +1,7 @@
-import { NullVec2, RectHitbox2D, Vec2, matrix4, v2 } from "common/scripts/engine/mod.ts"
+import { NullVec2, RectHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts"
 import { type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
-import { Matrix, model2d, Model2D } from "common/scripts/engine/models.ts";
-import { type Camera2D } from "./container.ts";
+import { Matrix, Model2D } from "common/scripts/engine/models.ts";
 export interface Color {
     r: number; // Red
     g: number; // Green

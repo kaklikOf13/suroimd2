@@ -43,4 +43,14 @@ Skins.insert(
         idString:"kitty",
         rarity:ItemQuality.Mythic,
     },
+    {
+        idString:"nick_winner",
+        frame:{
+            mount:{
+                closed:"player_mounth_1_2",
+                normal:"player_mounth_2_1"
+            }
+        },
+        rarity:ItemQuality.Uncommon,
+    },
 )
