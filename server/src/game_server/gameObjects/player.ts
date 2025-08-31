@@ -475,10 +475,10 @@ export class Player extends ServerGameObject{
         }
     }
     get_objects(){
-        this.camera_hb.min.x=this.position.x-(30/2)
-        this.camera_hb.min.y=this.position.y-(30/2)
-        this.camera_hb.max.x=this.position.x+(30/2)
-        this.camera_hb.max.y=this.position.y+(30/2)
+        this.camera_hb.min.x=this.position.x-(37/2)
+        this.camera_hb.min.y=this.position.y-(37/2)
+        this.camera_hb.max.x=this.position.x+(37/2)
+        this.camera_hb.max.y=this.position.y+(37/2)
         /*const objs=[
             ...Object.values(this.manager.objects[this.layer].objects),
         ]*/

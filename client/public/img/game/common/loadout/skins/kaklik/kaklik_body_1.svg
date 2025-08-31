@@ -26,7 +26,7 @@
      showgrid="false"
      units="px"
      inkscape:zoom="3.1037318"
-     inkscape:cx="68.78816"
+     inkscape:cx="68.949257"
      inkscape:cy="15.304157"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -178,11 +178,7 @@
          sodipodi:nodetypes="cscsccscccccccccccccsccccccccccccccccccscccccccccccccccccccccccccscccscc" /></g><g
        id="g20"
        inkscape:label="Face"
-       transform="matrix(0,-1.0318763,1.0048666,0,-163.73156,257.59434)"><path
-         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;fill:#e2902a;stroke-width:1.16876;stroke-dasharray:none;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
-         d="m 241.26332,196.90206 c -0.51247,0.55414 -0.90292,0.76059 -1.40571,0.92084 -0.73377,0.23387 -1.67782,0.36351 -2.62972,0.36958 -0.95189,0.006 -1.91294,-0.1126 -2.68271,-0.3448 -0.76977,-0.2322 -1.32713,-0.57238 -1.56975,-0.9704 -0.45996,0.18701 -0.12823,1.27209 1.24671,1.68684 0.90704,0.27361 1.96478,0.39691 3.01333,0.39022 1.04854,-0.007 2.08709,-0.14288 2.96032,-0.42119 1.30276,-0.41522 1.54283,-1.47145 1.06753,-1.63109 z"
-         id="path14"
-         sodipodi:nodetypes="ccscsccsc" /><g
+       transform="matrix(0,-1.0318763,1.0048666,0,-163.73156,257.59434)"><g
          id="g38"
          inkscape:label="Eyes"
          transform="matrix(0.72087807,0,0,0.72087807,64.124243,52.673392)"><g

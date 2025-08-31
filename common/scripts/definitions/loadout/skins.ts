@@ -8,10 +8,15 @@ export interface SkinDef extends Definition{
         base_tint?:number
         arm?:string
         arm_tint?:string
+        mount?:{
+            normal:string
+            closed:string
+        }
     }
     animation?:{
         frames:{delay:number,image:string}[]
         no?:boolean
+        no_auto_talk:boolean
     }
     rarity:ItemQuality,
 }

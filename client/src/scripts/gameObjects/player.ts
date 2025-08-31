@@ -37,6 +37,7 @@ export class Player extends GameObject{
     container!:AnimatedContainer2D
     sprites!:{
         body:Sprite2D,
+        mounth:Sprite2D,
         helmet:Sprite2D,
         backpack:Sprite2D,
         left_arm:Sprite2D,
@@ -200,7 +201,7 @@ export class Player extends GameObject{
         const bf=skin.frame?.base??(skin.idString+"_body")
         this.sprites.body.frame=this.game.resources.get_sprite(bf)
         const arf=skin.frame?.arm??(skin.idString+"_arm")
-        this.sprites.left_arm.frame=this.game.resources.get_sprite(arf)
+        this.sprites.left_arm.frame=
         this.sprites.right_arm.frame=this.game.resources.get_sprite(arf)
 
         this.sprites.left_arm.zIndex=1
@@ -217,11 +218,24 @@ export class Player extends GameObject{
         this.sprites.left_arm.hotspot=v2.new(1,0.5)
         this.sprites.right_arm.hotspot=v2.new(1,0.5)
 
-        this.sprites.backpack.zIndex=3
-        this.sprites.body.zIndex=4
-        this.sprites.helmet.zIndex=5
         this.sprites.weapon.zIndex=2
 
+        const ms1=skin.frame?.mount?.normal??"player_mounth_1_1"
+        const ms2=skin.frame?.mount?.closed??"player_mounth_1_2"
+        this.sprites.mounth.frame=this.game.resources.get_sprite(ms1)
+        if(!skin.animation?.no_auto_talk){
+            this.sprites.mounth.frames=[
+                {delay:random.float(8,14),image:ms1}
+            ]
+            const c=random.int(10,20)
+            for(let i=0;i<c;i++){
+                this.sprites.mounth.frames.push(
+                    {delay:0.15,image:ms1},
+                    {delay:0.15,image:ms2}
+                )
+            }
+            this.sprites.mounth.frames.push({delay:random.float(1,5),image:ms1})
+        }
         if(!skin.animation?.no){
             if(skin.animation?.frames){
                 this.sprites.body.frames=[...skin.animation.frames]
@@ -240,9 +254,10 @@ export class Player extends GameObject{
         this.container=new AnimatedContainer2D(this.game as unknown as ClientGame2D)
         //#region AA
         this.sprites={
-            body:this.container.add_animated_sprite("body"),
-            backpack:this.container.add_animated_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34}),
-            helmet:this.container.add_animated_sprite("helmet"),
+            body:this.container.add_animated_sprite("body",{scale:1.333333,zIndex:4}),
+            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2.new(0.45,0.5),scale:1.4,position:v2.new(0.3,0),zIndex:4}),
+            backpack:this.container.add_animated_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34,zIndex:3}),
+            helmet:this.container.add_animated_sprite("helmet",{zIndex:5}),
             left_arm:this.container.add_animated_sprite("left_arm"),
             right_arm:this.container.add_animated_sprite("right_arm"),
             muzzle_flash:this.container.add_animated_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
@@ -250,7 +265,6 @@ export class Player extends GameObject{
             weapon:this.container.add_animated_sprite("weapon"),
             weapon2:this.container.add_animated_sprite("weapon2")
         }
-        this.sprites.body.scale=v2.new(1.333333,1.333333)
         this.anims.consumible_particles=this.game.particles.add_emiter({
             delay:0.5,
             particle:()=>new ABParticle2D({

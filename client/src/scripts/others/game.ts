@@ -49,15 +49,6 @@ export class Game extends ClientGame2D<GameObject>{
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
   scope_zoom:number=0.53
-  flying_position:number=0
-  happening:boolean=false
-
-  light_map=new Lights2D()
-
-  minimap:MinimapManager=new MinimapManager(this)
-
-  dead_zone:DeadZoneManager=new DeadZoneManager(this)
-
   //0.14=l6 32x
   //0.27=l5 16x
   //0.35=l4 8x
@@ -67,6 +58,14 @@ export class Game extends ClientGame2D<GameObject>{
   //1=l-1 0.5x
   //1.5=l-2 0.25x
   //1.75=l-3 0.1x
+  flying_position:number=0
+  happening:boolean=false
+
+  light_map=new Lights2D()
+
+  minimap:MinimapManager=new MinimapManager(this)
+
+  dead_zone:DeadZoneManager=new DeadZoneManager(this)
 
   listners_init(){
     this.input_manager.add_axis("movement",
