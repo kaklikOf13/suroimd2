@@ -15,7 +15,7 @@ export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
 export const api=false
 export const forum=false
-export enum GraphicsParticlesConfig {
+export enum GraphicsDConfig {
     None=0,
     Normal,
     Advanced,
@@ -27,6 +27,8 @@ export const ConfigCasters=Object.freeze({
 
     cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
     cv_graphics_particles:Casters.toInt,
+    cv_graphics_lights:Casters.toInt,
+    cv_graphics_climate:Casters.toString,
 
     cv_game_region:Casters.toString,
     cv_game_friendly_fire:Casters.toString,
@@ -40,7 +42,9 @@ export const ConfigDefaultValues={
     cv_loadout_name:"",
 
     cv_graphics_resolution:"high",
-    cv_graphics_particles:GraphicsParticlesConfig.Advanced,
+    cv_graphics_particles:GraphicsDConfig.Advanced,
+    cv_graphics_lights:GraphicsDConfig.Advanced,
+    cv_graphics_climate:"true",
 
     cv_game_region:"na",
     cv_game_friendly_fire:"false",

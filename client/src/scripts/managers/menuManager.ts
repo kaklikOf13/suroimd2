@@ -18,6 +18,8 @@ export class MenuManager{
         settings:{
             graphics_textures:document.body.querySelector("#settings-graphics-texture") as HTMLSelectElement,
             graphics_particles:document.body.querySelector("#settings-graphics-particles") as HTMLSelectElement,
+            graphics_lights:document.body.querySelector("#settings-graphics-lights") as HTMLSelectElement,
+            graphics_climate:document.body.querySelector("#settings-graphics-climate") as HTMLInputElement,
 
             game_friendly_fire:document.body.querySelector("#settings-game-friendly-fire") as HTMLInputElement,
             game_client_rotation:document.body.querySelector("#settings-game-client-rotation") as HTMLInputElement,
@@ -220,11 +222,24 @@ export class MenuManager{
         this.content.submenus.buttons.news.addEventListener("click",(_)=>ShowTab("news",this.menu_tabs["about"]))
         this.content.submenus.buttons.credits.addEventListener("click",(_)=>ShowTab("credits",this.menu_tabs["about"]))
 
+        //Graphics
         this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
         this.content.settings.graphics_textures.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_resolution",this.content.settings.graphics_textures.value)
         })
-        
+        this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
+        this.content.settings.graphics_particles.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
+        })
+        this.content.settings.graphics_lights.value=this.save.get_variable("cv_graphics_lights")
+        this.content.settings.graphics_lights.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_lights",this.content.settings.graphics_lights.value)
+        })
+        this.content.settings.graphics_climate.checked=this.save.get_variable("cv_graphics_climate")==="true"
+        this.content.settings.graphics_climate.addEventListener("click",()=>{
+            this.save.set_variable("cv_graphics_climate",this.content.settings.graphics_climate.checked?"true":"false")
+        })
+        //Game
         this.content.settings.game_friendly_fire.checked=this.save.get_variable("cv_game_friendly_fire")==="true"
         this.content.settings.game_friendly_fire.addEventListener("click",()=>{
             this.save.set_variable("cv_game_friendly_fire",this.content.settings.game_friendly_fire.checked?"true":"false")
@@ -238,6 +253,7 @@ export class MenuManager{
         })
         this.content.settings.game_ping.value=this.save.get_variable("cv_game_ping")
 
+        //Sounds
         this.content.settings.sounds_master_volume.addEventListener("change",()=>{
             this.save.set_variable("cv_sounds_master_volume",this.content.settings.sounds_master_volume.value)
             this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
@@ -245,10 +261,7 @@ export class MenuManager{
         this.content.settings.sounds_master_volume.value=this.save.get_variable("cv_sounds_master_volume")
         this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
 
-        /*this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
-        this.content.settings.graphics_particles.addEventListener("change",()=>{
-            this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
-        })
+        /*
         HideElement(this.content.settings_tabs)
         HideElement(this.content.section_tabs)*/
 

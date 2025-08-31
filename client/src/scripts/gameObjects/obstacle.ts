@@ -6,7 +6,7 @@ import { ParticlesEmitter2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { GraphicsParticlesConfig } from "../others/config.ts";
+import { GraphicsDConfig } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
@@ -64,7 +64,7 @@ export class Obstacle extends GameObject{
         this.update_frame()
         const ac=random.int(8,13)
         if(this.emitter_1)this.emitter_1.enabled=false
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Normal){
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
                 this._add_own_particle(this.hb.randomPoint(),2)
             }
@@ -99,7 +99,7 @@ export class Obstacle extends GameObject{
         
     }
     on_hitted(position:Vec2){
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Normal)this._add_own_particle(position)
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
             this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{
                 volume:1,
@@ -161,7 +161,7 @@ export class Obstacle extends GameObject{
             this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
             this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
 
-            if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
+            if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
                 if(!this.emitter_1){
                     this.emitter_1=this.game.particles.add_emiter({
                         delay:0.3,

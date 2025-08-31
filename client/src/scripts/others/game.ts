@@ -220,7 +220,7 @@ export class Game extends ClientGame2D<GameObject>{
         position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
         rotation:Angle.deg2rad(45),
       }),
-      enabled:true
+      enabled:this.save.get_variable("cv_graphics_climate")==="true"
     })
     this.dead_zone.append()
   }
@@ -287,6 +287,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   connect(client:Client,playerName:string){
     this.client=client
+    this.light_map.quality=this.save.get_variable("cv_graphics_lights")
     this.client.on("update",(up:UpdatePacket)=>{
       this.guiManager.update_gui(up.priv)
       this.proccess_private(up.priv)

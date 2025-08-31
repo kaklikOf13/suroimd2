@@ -5,7 +5,7 @@ import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/it
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { Debug, GraphicsParticlesConfig } from "../others/config.ts";
+import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
@@ -166,7 +166,7 @@ export class Player extends GameObject{
                 this.sprites.left_arm.rotation=0
                 this.sprites.right_arm.rotation=0
 
-                this.sprites.weapon2.position.y-=(def as GunDef).dual_offset!
+                this.sprites.weapon2.position.y-=(def as GunDef&DualAdditional).dual_offset!
                 this.sprites.weapon.frame=this.game.resources.get_sprite(`${df.idString}_world`)
                 this.sprites.weapon2.frame=this.game.resources.get_sprite(`${df.idString}_world`)
             }else{
@@ -408,7 +408,7 @@ export class Player extends GameObject{
                 this.sprites.muzzle_flash.visible=false
             },dur)
         }
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(d.caseParticle&&!d.caseParticle.at_begin){
                 const p=new ABParticle2D({
                     direction:this.rotation+(3.141592/2),
@@ -492,7 +492,7 @@ export class Player extends GameObject{
         }
     }
     broke_shield(){
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Advanced){
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
             for(let p=0;p<14;p++){
                 const a=random.rad()
                 this.game.particles.add_particle(new ABParticle2D({
@@ -515,7 +515,7 @@ export class Player extends GameObject{
                 }))
             }
         }
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsParticlesConfig.Normal){
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal){
             this.game.particles.add_particle(new ABParticle2D({
                 direction:0,
                 life_time:0.4,
