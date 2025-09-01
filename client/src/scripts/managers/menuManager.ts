@@ -68,6 +68,7 @@ export class MenuManager{
 
                 social:document.body.querySelector("#btn-about-social") as HTMLButtonElement,
                 news:document.body.querySelector("#btn-about-news") as HTMLButtonElement,
+                rules:document.body.querySelector("#btn-about-rules") as HTMLButtonElement,
                 credits:document.body.querySelector("#btn-about-credits") as HTMLButtonElement,
             }
         }
@@ -95,6 +96,7 @@ export class MenuManager{
         this.menu_tabs["about"]={
             "social":document.body.querySelector("#about-sm-social") as HTMLElement,
             "news":document.body.querySelector("#about-sm-news") as HTMLElement,
+            "rules":document.body.querySelector("#about-sm-rules") as HTMLElement,
             "credits":document.body.querySelector("#about-sm-credits") as HTMLElement,
         }
         this.load_menu(submenu)
@@ -221,6 +223,7 @@ export class MenuManager{
 
         this.content.submenus.buttons.social.addEventListener("click",(_)=>ShowTab("social",this.menu_tabs["about"]))
         this.content.submenus.buttons.news.addEventListener("click",(_)=>ShowTab("news",this.menu_tabs["about"]))
+        this.content.submenus.buttons.rules.addEventListener("click",(_)=>ShowTab("rules",this.menu_tabs["about"]))
         this.content.submenus.buttons.credits.addEventListener("click",(_)=>ShowTab("credits",this.menu_tabs["about"]))
 
         //Graphics

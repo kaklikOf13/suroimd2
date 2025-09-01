@@ -12,7 +12,7 @@ export class NetStream {
 
     get buffer(): ArrayBufferLike { return this._view.buffer; }
 
-    index = 0;
+    index = 0
     length = 0
 
     constructor(

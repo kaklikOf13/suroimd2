@@ -70,7 +70,7 @@ import { ConfigType } from "common/scripts/config/config.ts";
                     this.game_server=undefined
                 }
                 this.game_server = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-                    gameTps:60,
+                    gameTps:30,
                     maxPlayers:10,
                     teamSize:1,
                     netTps:20,
