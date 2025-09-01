@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, NullHitbox2D, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -172,14 +172,14 @@ export class Game extends ClientGame2D<GameObject>{
       }
     })
   }
-  set_lookTo_angle(angle:number,aim_assist:boolean=false){
+  set_lookTo_angle(angle:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
     if(!this.activePlayer)return
     if(aim_assist){
       for(const o of this.scene.objects.objects[this.activePlayer.layer].orden){
         const obj=this.scene.objects.objects[this.activePlayer.layer].objects[o]
         if(obj.id===this.activePlayerId||obj.stringType!=="player")continue
         const ang=v2.lookTo(this.activePlayer.position,obj.position)
-        if(Math.abs(angle-ang)<=0.2){
+        if(Math.abs(angle-ang)<=aim_assist_help){
           angle=ang
           break
         }
@@ -243,7 +243,7 @@ export class Game extends ClientGame2D<GameObject>{
         position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
         rotation:Angle.deg2rad(45),
       }),
-      enabled:this.save.get_variable("cv_graphics_climate")==="true"
+      enabled:this.save.get_variable("cv_graphics_climate")
     })
     this.dead_zone.append()
   }
@@ -326,6 +326,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("joined",(jp:JoinedPacket)=>{
       this.guiManager.process_joined_packet(jp)
       this.happening=true
+      this.mainloop()
     })
     this.client.on("map",(mp:MapPacket)=>{
       this.terrain.process_map(mp.map)
@@ -354,7 +355,10 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.guiManager.players_name={}
     this.guiManager.start()
-    this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/300)
+    const zoom=this.scope_zoom*(this.renderer.canvas.width/300)
+    if(this.scope_zoom!==this.camera.zoom){
+      this.camera.zoom=zoom
+    }
     this.renderer.fullCanvas()
   }
   init_gui(gui:GuiManager){

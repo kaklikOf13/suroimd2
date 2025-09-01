@@ -928,6 +928,7 @@ export class Camera2D{
         for(const o of objects){
             this.container.add_child(o);
         }
+        this.container.updateZIndex();
     }
 
     resize(): void {
@@ -957,7 +958,6 @@ export class Camera2D{
             this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
         this.container.update(dt,resources);
-        this.container.updateZIndex();  
     }
 
     draw(renderer:Renderer){

@@ -1,6 +1,5 @@
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
-import { type Camera2D, type Sprite, type Renderer } from "../engine/mod.ts";
-import { Debug } from "../others/config.ts";
+import { type Camera2D, type Renderer } from "../engine/mod.ts";
 import { ProjectileDef, Projectiles } from "common/scripts/definitions/projectiles.ts";
 import { Angle, CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { GameObject } from "../others/gameObject.ts";

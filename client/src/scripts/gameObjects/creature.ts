@@ -43,14 +43,19 @@ export class Creature extends GameObject{
         this.main_sprite.zIndex=2
     }
     override updateData(data: CreatureData): void {
-        this.container.rotation=Numeric.lerp_rad(this.container.rotation,data.angle,0.75)
-        if(v2.distance(this.position,data.position)<=1){
-            this.position=v2.lerp(this.position,data.position,0.8)
+        if(this.game.save.get_variable("cv_game_interpolation")){
+            this.container.rotation=Numeric.lerp_rad(this.container.rotation,data.angle,0.75)
+            if(v2.distance(this.position,data.position)<=1){
+                this.position=v2.lerp(this.position,data.position,0.8)
+            }else{
+                this.position=data.position
+            }
         }else{
+            this.container.rotation=data.angle
             this.position=data.position
         }
-        this.hb.translate(data.position)
-        this.container.position=data.position
+        this.hb.translate(this.position)
+        this.container.position=this.position
         if(data.full){
             this.set_def(Creatures.getFromNumber(data.full.def))
             this.hb=this.def.hitbox.transform(this.position)

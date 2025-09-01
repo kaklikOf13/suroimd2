@@ -197,7 +197,7 @@ export class GuiManager{
             this.game.action.Movement.x=e.detail.x
             this.game.action.Movement.y=e.detail.y
             if(!rotating){
-                this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),true)
+                this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),true,0.25)
             }
         })
         this.mobile_content.left_joystick.addEventListener("joystickend",()=>{

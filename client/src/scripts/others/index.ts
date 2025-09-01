@@ -12,7 +12,7 @@ import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
-import { TreeBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
+import { SimpleBotAi, TreeBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 (() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
@@ -70,10 +70,10 @@ import { ConfigType } from "common/scripts/config/config.ts";
                     this.game_server=undefined
                 }
                 this.game_server = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-                    gameTps:100,
+                    gameTps:60,
                     maxPlayers:10,
                     teamSize:1,
-                    netTps:30,
+                    netTps:20,
                     deenable_lobby:true,
                 },{
                     database:{
@@ -83,14 +83,15 @@ import { ConfigType } from "common/scripts/config/config.ts";
                 this.game_server.mainloop()
                 for(let i=0;i<9;i++){
                     const bot=this.game_server.add_bot()
-                    bot.ai=new TreeBotAi(bot,{
+                    bot.ai=new SimpleBotAi()
+                    /*bot.ai=new TreeBotAi(bot,{
                         decision_update_rate:1,
                         reaction_time:0.3,
                         accuracy:0.5,
                         bravery:0.4,
                         teamwork:1,
                         like_regen:1
-                    })
+                    })*/
                 }
                 this.game_server.subscribe_db={
                     "localhost":{
@@ -110,7 +111,6 @@ import { ConfigType } from "common/scripts/config/config.ts";
 
             this.game.running=true
             menu_manager.game_start()
-            this.game.mainloop()
         }
         closeGame(){
             menu_manager.update_account()
