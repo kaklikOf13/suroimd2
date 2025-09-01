@@ -25,13 +25,19 @@ export class Plane{
         this.game.camera.addObject(this.container)
         this.container.zIndex=zIndexes.Planes
     }
-    dest_pos:Vec2=v2.new(0,0)
+    dest_pos?:Vec2
     initial=true
     update(dt:number){
-        this.container.position=v2.lerp(this.container.position,this.dest_pos,1/(1+dt*8))
+        if(this.dest_pos){
+            this.container.position=v2.lerp(this.container.position,this.dest_pos,this.game.inter_global)
+        }
     }
     updateData(data:PlaneData){
-        this.dest_pos=data.pos
+        if(this.game.save.get_variable("cv_game_interpolation")){
+            this.dest_pos=data.pos
+        }else{
+            this.container.position=data.pos
+        }
         if(data.complete){
             this.free()
         }

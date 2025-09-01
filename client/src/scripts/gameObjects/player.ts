@@ -295,8 +295,16 @@ export class Player extends GameObject{
         }
     }
     update(dt:number): void {
-        this.container.position=this.position
         this.attacking-=dt
+        if(this.dest_pos){
+            this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
+        }
+        if(this.dest_rot){
+            this.rotation=Numeric.lerp_rad(this.rotation,this.dest_rot!,this.game.inter_global)
+        }
+        this.container.position=this.position
+        this.container.rotation=this.rotation
+        this.manager.cells.updateObject(this)
     }
     override onDestroy(): void {
         this.anims.consumible_particles!.destroyed=true
@@ -566,6 +574,8 @@ export class Player extends GameObject{
             },"players")
         }
     }
+    dest_pos?:Vec2
+    dest_rot?:number
     override updateData(data:PlayerData){
         if(data.dead&&!this.dead){
             this.dead=data.dead
@@ -588,6 +598,7 @@ export class Player extends GameObject{
             this.container.zIndex=zIndexes.Players
         }
         if(data.full){
+            this.position=data.position
             this.set_helmet(data.full.helmet)
             this.set_backpack(data.full.backpack)
             this.set_skin(Skins.getFromNumber(data.full.skin))
@@ -604,24 +615,17 @@ export class Player extends GameObject{
         }
         this.set_driving(data.driving)
         if(this.game.save.get_variable("cv_game_interpolation")){
-            if(v2.distance(this.position,data.position)<=1){
-                this.position=v2.lerp(this.position,data.position,0.85)
-            }else{
-                this.position=data.position
-            }
-            if(this.id!==this.game.activePlayerId||!this.game.save.get_variable("cv_game_client_rot")){
-                this.rotation=Numeric.lerp_rad(this.rotation,data.rotation,0.85)
-                this.container.rotation=this.rotation
-            }else{
-                this.rotation=data.rotation
+            this.dest_pos=data.position
+            if(!(this.id===this.game.activePlayerId&&this.game.save.get_variable("cv_game_client_rot"))){
+                this.dest_rot=data.rotation
             }
         }else{
             this.position=data.position
-            this.rotation=data.rotation
-            this.container.rotation=this.rotation
+            if(!(this.id===this.game.activePlayerId&&this.game.save.get_variable("cv_game_client_rot"))){
+                this.rotation=data.rotation
+            }
         }
-
-        this.manager.cells.updateObject(this)
+            
         if(this.id===this.game.activePlayerId){
             this.game.update_camera()
             this.game.sounds.listener_position=this.position

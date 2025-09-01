@@ -19,6 +19,7 @@ export class MenuManager{
             graphics_textures:document.body.querySelector("#settings-graphics-texture") as HTMLSelectElement,
             graphics_particles:document.body.querySelector("#settings-graphics-particles") as HTMLSelectElement,
             graphics_lights:document.body.querySelector("#settings-graphics-lights") as HTMLSelectElement,
+            graphics_post_proccess:document.body.querySelector("#settings-graphics-post-proccess") as HTMLSelectElement,
             graphics_climate:document.body.querySelector("#settings-graphics-climate") as HTMLInputElement,
 
             game_friendly_fire:document.body.querySelector("#settings-game-friendly-fire") as HTMLInputElement,
@@ -238,6 +239,10 @@ export class MenuManager{
         this.content.settings.graphics_lights.value=this.save.get_variable("cv_graphics_lights")
         this.content.settings.graphics_lights.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_lights",this.content.settings.graphics_lights.value)
+        })
+        this.content.settings.graphics_post_proccess.value=this.save.get_variable("cv_graphics_post_proccess")
+        this.content.settings.graphics_post_proccess.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_post_proccess",this.content.settings.graphics_post_proccess.value)
         })
         this.content.settings.graphics_climate.checked=this.save.get_variable("cv_graphics_climate")
         this.content.settings.graphics_climate.addEventListener("click",()=>{

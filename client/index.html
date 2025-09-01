@@ -159,7 +159,8 @@
       </div>
       <div id="vignetting-gfx"></div>
       <div id="bloom-gfx"></div>
-      <div id="tiltshift-gfx"></div>-
+      <div id="tiltshift-gfx"></div>
+      <div id="recolor-gfx"></div>
       <canvas id="game-canvas"></canvas>
     </div>
     <!--<tabs-container id="settings-tabs" class="background-menu">
@@ -249,7 +250,7 @@
           <a href="/"><button class="btn-red close-btn">X</button></a>
       </kl-md-submenu-content>
     </kl-md-submenu>
-    <kl-md-submenu id="menu-loadout-submenu" class="md-menu-game" style="opacity: 0;">0
+    <kl-md-submenu id="menu-loadout-submenu" class="md-menu-game" style="opacity: 0;">
       <kl-md-submenu-content>
           <kl-md-menu-options>
             <button class="btn-green">Skins</button>
@@ -298,6 +299,14 @@
               <div>
                 <span>Lights</span>
                 <select class="select-blue" id="settings-graphics-lights">
+                  <option value="0">No</option>
+                  <option value="1">Normal</option>
+                  <option value="2">Advanced</option>
+                </select>
+              </div>
+              <div>
+                <span>Post Proccess</span>
+                <select class="select-blue" id="settings-graphics-post-proccess">
                   <option value="0">No</option>
                   <option value="1">Normal</option>
                   <option value="2">Advanced</option>

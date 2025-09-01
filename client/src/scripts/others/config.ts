@@ -28,6 +28,7 @@ export const ConfigCasters=Object.freeze({
     cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
     cv_graphics_particles:Casters.toInt,
     cv_graphics_lights:Casters.toInt,
+    cv_graphics_post_proccess:Casters.toInt,
     cv_graphics_climate:Casters.toBoolean,
 
     cv_game_region:Casters.toString,
@@ -45,6 +46,7 @@ export const ConfigDefaultValues={
     cv_graphics_resolution:"high",
     cv_graphics_particles:GraphicsDConfig.Advanced,
     cv_graphics_lights:GraphicsDConfig.Advanced,
+    cv_graphics_post_proccess:GraphicsDConfig.Advanced,
     cv_graphics_climate:true,
 
     cv_game_region:"na",

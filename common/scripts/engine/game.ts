@@ -72,6 +72,9 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
 
     signals:SignalManager=new SignalManager()
 
+    inter_global:number=1
+    inter_const:number=0.09
+
     constructor(tps: number,objects:Array<new()=>DefaultGameObject>){
         this.tps=tps
         this.clock=new Clock(tps,1,this.update.bind(this))
@@ -84,6 +87,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     dt:number=0
     last_time:number=0
     update(dt:number) {
+        this.inter_global=1/(1+dt/this.inter_const)
         if(this.request_animation_frame){
             const ldt=dt
             dt=(dt-this.last_time)/1000

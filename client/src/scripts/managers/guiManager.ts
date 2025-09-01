@@ -12,7 +12,7 @@ import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from 
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { type Player } from "../gameObjects/player.ts";
 import { isMobile } from "../engine/game.ts";
-import { Debug } from "../others/config.ts";
+import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
@@ -81,6 +81,12 @@ export class GuiManager{
 
         all_inventory:document.querySelector("#all-inventory") as HTMLDivElement,
         close_all_inventory:document.querySelector("#close-all-inventory") as HTMLButtonElement,
+
+        post_proccess:{
+            vignetting:document.querySelector("#vignetting-gfx") as HTMLDivElement,
+            tiltshift:document.querySelector("#tiltshift-gfx") as HTMLDivElement,
+            recolor:document.querySelector("#recolor-gfx") as HTMLDivElement,
+        }
     }
     mobile_content={
         gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
@@ -252,6 +258,15 @@ export class GuiManager{
             this.game.client.on("gameover",this.show_game_over.bind(this))
         }
         this.set_all_inventory(false)
+        HideElement(this.content.post_proccess.tiltshift)
+        HideElement(this.content.post_proccess.recolor)
+        HideElement(this.content.post_proccess.vignetting)
+        if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
+            ShowElement(this.content.post_proccess.tiltshift)
+        }else if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Normal){
+            ShowElement(this.content.post_proccess.vignetting)
+            ShowElement(this.content.post_proccess.recolor)
+        }
     }
     ammos_cache:{
         normal:Record<string,HTMLDivElement>,

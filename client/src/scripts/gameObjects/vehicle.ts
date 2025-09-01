@@ -1,7 +1,7 @@
 import { Container2D, Sprite2D } from "../engine/container.ts";
 import { VehicleData } from "common/scripts/others/objectsEncode.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
-import { v2 } from "common/scripts/engine/geometry.ts";
+import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 import { GameObject } from "../others/gameObject.ts";
@@ -24,6 +24,12 @@ export class Vehicle extends GameObject{
         this.container.destroy()
     }
     update(dt:number): void {
+        if(this.dest_pos){
+            //this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
+            this.container.position=v2.lerp(this.container.position,this.dest_pos,this.game.inter_global)
+            this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.dest_rot!,this.game.inter_global)
+            this.manager.cells.updateObject(this)
+        }
         this.dir=Numeric.lerp_rad(this.dir,this.dest_dir,1/(1+dt*1000))
         for(const w of this.movable_wheels){
             w.rotation=this.dir
@@ -61,10 +67,19 @@ export class Vehicle extends GameObject{
     }
     dir:number=0
     dest_dir:number=0
+
+    dest_rot?:number
+    dest_pos?:Vec2
     override updateData(data: VehicleData): void {
-        this.container.rotation=data.rotation
-        this.container.position=data.position
-        this.manager.cells.updateObject(this)
+        if(this.game.save.get_variable("cv_game_interpolation")&&!data.full){
+            this.dest_pos=data.position
+            this.dest_rot=data.rotation
+        }else{
+            this.position=data.position
+            this.container.rotation=data.rotation
+            this.container.position=data.position
+            this.manager.cells.updateObject(this)
+        }
         if(data.full){
             this.set_def(Vehicles.getFromNumber(data.full.def))
         }

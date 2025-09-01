@@ -226,7 +226,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
                     break
             }
         }
-        this.netUpdate()
         if(this.killing_game){
             this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
             if(this.clock.timeScale<=0.05){
@@ -250,11 +249,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
             type:0
         })
     }
-    privatesDirtysInter=0
     override on_stop():void{
         super.on_stop()
         if(this.replay)this.replay.stop()
-        clearInterval(this.privatesDirtysInter)
+        clearInterval(this.net_interval)
         for(const p of this.players){
             this.status.players.push({
                 kills:p.status.kills,
@@ -275,12 +273,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         for(const p of Object.values(this.connectedPlayers)){
             p.update2()
         }
-        if(this.nd<=0){
-            this.scene.objects.update_to_net()
-            this.nd=1/this.config.netTps
-        }else{
-            this.nd-=this.dt
-        }
+        this.scene.objects.update_to_net()
+        this.scene.objects.apply_destroy_queue()
     }
     add_player(id:number|undefined,username:string,packet:JoinPacket,layer:number=Layers.Normal,connected=true):Player{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player
@@ -386,12 +380,14 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return p
     }
     fineshed:boolean=false
+    net_interval=0
     start(){
         if(this.started||!this.modeManager.startRules())return
         this.started=true
         this.modeManager.on_start()
         this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
         if(this.replay)this.replay.start()
+        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.config.netTps)
         console.log(`Game ${this.id} Started`)
     }
     finish(){

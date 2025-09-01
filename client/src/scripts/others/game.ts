@@ -187,7 +187,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
     this.action.angle=angle;
     if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving){
-      (this.activePlayer as Player).container.rotation=this.action.angle
+      (this.activePlayer as Player).rotation=this.action.angle
     }
   }
   rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>

@@ -238,7 +238,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     public allowJoin:boolean
     public id:ID=1
     fps:number=0
-    override destroy_queue: boolean=false;
+    override destroy_queue:boolean=false;
     constructor(tps:number,id:ID,client:OfflineClientsManager,packetManager:PacketsManager,objects:Array<new()=>DefaultGameObject>){
         super(tps,objects)
         this.id=id
@@ -263,7 +263,6 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     abstract handleConnections(client:Client,username:string):void
     update_delay:number=3
     override on_update(): void {
-        this.scene.objects.apply_destroy_queue()
         this.fps++
     }
 }

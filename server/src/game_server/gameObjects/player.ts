@@ -336,7 +336,7 @@ export class Player extends ServerGameObject{
                 }
             }
         }
-        if(this.input.drop>0){
+        if(this.input.drop>=0){
             const drop=this.input.drop
             switch(this.input.drop_kind){
                 case 1:

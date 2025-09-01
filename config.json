@@ -13,9 +13,9 @@
     "max_games": 5,
     "config": {
       "deenable_lobby": true,
-      "gameTps": 50,
+      "gameTps": 60,
       "maxPlayers": 70,
-      "netTps": 20,
+      "netTps": 22,
       "teamSize": 1
     },
     "host": {
