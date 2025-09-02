@@ -18,7 +18,16 @@ export abstract class Container2DObject {
     abstract object_type: string;
 
     parent?: Container2D;
-    zIndex: number = 0;
+    _zIndex: number = 0;
+    get zIndex():number{
+        return this._zIndex
+    }
+    set zIndex(val:number){
+        this._zIndex=val
+        if(this.parent){
+            this.parent.updateZIndex()
+        }
+    }
 
     id_on_parent:number=0
 
@@ -37,7 +46,7 @@ export abstract class Container2DObject {
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
-        if(this.parent)this.parent.update_deletions()
+        if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1)
     }
 
     update(_dt:number,_resources:ResourcesManager): void {
@@ -394,7 +403,8 @@ export class Container2D extends Container2DObject{
     }
     draw(cam:CamA,renderer:Renderer,objects?:Container2DObject[]):void{
         if(!objects)objects=this.children
-        for(const c of objects){
+        for(let o =0;o<objects.length;o++){
+            const c=objects[o]
             if(c.visible)c.draw(cam,renderer)
         }
     }
