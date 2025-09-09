@@ -26,7 +26,7 @@ export const GameConstants={
             skin:0.45
         }
     },
-    tps:100,
+    tps:25,
     collision:{
         threads:2,
         chunckSize:6

@@ -23,6 +23,7 @@ import { type VehicleSeat } from "./vehicle.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { EffectDef, EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { BotAi } from "../player/simple_bot_ai.ts";
 
 export class Player extends ServerGameObject{
@@ -123,6 +124,12 @@ export class Player extends ServerGameObject{
         this.left_handed=Math.random()<=.1
 
         this.accessories=new AccessoriesManager(this,3)
+
+        this.side_effect({
+            type:SideEffectType.AddEffect,
+            duration:30,
+            effect:"blue_effect"
+        })
     }
     interact(user: Player): void {
         if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
@@ -151,12 +158,23 @@ export class Player extends ServerGameObject{
         mana_consume:1,
     }
 
+    effects:Map<number,EffectInstance>=new Map()
+
     privateDirtys={
         inventory:true,
         weapons:true,
         current_weapon:true,
         action:true,
         ammos:true,
+    }
+
+    apply_modifiers(mods:Partial<PlayerModifiers>){
+        this.modifiers.boost*=mods.boost??1
+        this.modifiers.bullet_size*=mods.bullet_size??1
+        this.modifiers.bullet_speed*=mods.bullet_speed??1
+        this.modifiers.damage*=mods.damage??1
+        this.modifiers.health*=mods.health??1
+        this.modifiers.speed*=mods.speed??1
     }
 
     update_modifiers(){
@@ -168,13 +186,15 @@ export class Player extends ServerGameObject{
 
         for(const acc of this.accessories.slots){
             if(acc.item){
-                const mods=acc.item.modifiers
-                this.modifiers.boost*=mods.boost??1
-                this.modifiers.bullet_size*=mods.bullet_size??1
-                this.modifiers.bullet_speed*=mods.bullet_speed??1
-                this.modifiers.damage*=mods.damage??1
-                this.modifiers.health*=mods.health??1
-                this.modifiers.speed*=mods.speed??1
+                this.apply_modifiers(acc.item.modifiers)
+            }
+        }
+
+        for(const e of this.effects.values()){
+            for(const sf of e.effect.side_effects){
+                if(sf.type===SideEffectType.Modify){
+                    this.apply_modifiers(sf.modify)
+                }
             }
         }
 
@@ -182,6 +202,63 @@ export class Player extends ServerGameObject{
         this.maxBoost=100*this.modifiers.boost
 
         this.health=Math.min(this.health,this.maxHealth)
+    }
+    side_effect(sf:SideEffect){
+        switch(sf.type){
+            case SideEffectType.AddEffect:{
+                const def=Effects.getFromString(sf.effect)
+                if(this.effects.has(def.idNumber!)){
+                    this.effects.get(def.idNumber!)!.time+=sf.duration
+                }else{
+                    this.effects.set(def.idNumber!,{
+                        effect:def,
+                        tick_time:0,
+                        time:sf.duration
+                    })
+                }
+                break
+            }
+            case SideEffectType.Damage:
+                this.piercingDamage({
+                    amount:sf.amount,
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.SideEffect,
+                })
+                break
+            case SideEffectType.Heal:
+                if(sf.health){
+                    this.health=Math.min(this.health+sf.health.amount,this.maxHealth*(sf.health.max??1))
+                }
+                if(sf.boost){
+                    this.boost=Math.max(this.boost-sf.boost.amount,0)
+                    if(sf.boost!==undefined&&this.boost_def.type!==sf.boost.def.type){
+                        this.boost_def=sf.boost.def
+                        this.boost=sf.boost.amount
+                    }else{
+                        this.boost=Math.min(this.boost+sf.boost.amount,this.maxBoost*(sf.boost.max??1))
+                    }
+                }
+                if(sf.global){
+                    if(this.health<this.maxHealth){
+                        this.health=Math.min(this.health+sf.global.amount,this.maxHealth)
+                    }else if(this.boost>0&&!sf.boost){
+                        this.boost=Math.min(this.boost+sf.global.amount,this.maxBoost)
+                    }else if(this.boost_def.type===sf.global.boost?.type){
+                        this.boost=Math.min(this.boost+sf.global.amount,this.maxBoost)
+                    }else if(sf.global.boost){
+                        this.boost=Math.min(sf.global.amount,this.maxBoost)
+                        this.boost_def=sf.global.boost
+                    }
+                }
+                break
+            case SideEffectType.Parachute:
+                this.parachute={
+                    value:1
+                }
+                this.seat?.clear_player()
+                break
+        }
     }
 
     update(dt:number): void {
@@ -225,6 +302,19 @@ export class Player extends ServerGameObject{
                     this.boost_t-=dt
                 }
                 break
+            }
+        }
+        for(const e of this.effects.values()){
+            e.tick_time-=dt
+            e.time-=dt
+            if(e.tick_time<=0){
+                for(const sf of e.effect.side_effects){
+                    this.side_effect(sf)
+                }
+                e.tick_time=2
+            }
+            if(e.time<0){
+                this.effects.delete(e.effect.idNumber!)
             }
         }
         if(this.seat){

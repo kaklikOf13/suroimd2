@@ -41,6 +41,7 @@ export enum DamageReason{
     Explosion,
     SafeZone,
     Abstinence,
+    SideEffect,
     Disconnect,
     Bleend
 }
