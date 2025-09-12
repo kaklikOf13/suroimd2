@@ -16,10 +16,10 @@
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="/scripts/extra_elements.js"></script>
+    <link rel="stylesheet" href="/scripts/extra_elements.css">
   </head>
   <body>
-    <script src="scripts/extra_elements.js"></script>
-    <link rel="stylesheet" href="scripts/extra_elements.css">
     <div id="game" style="display: none;">
       <div id="game-gui">
         <div id="game-mobile-gui" style="display: none; pointer-events: none;">
@@ -159,7 +159,8 @@
       </div>
       <div id="vignetting-gfx"></div>
       <div id="bloom-gfx"></div>
-      <div id="tiltshift-gfx"></div>-
+      <div id="tiltshift-gfx"></div>
+      <div id="recolor-gfx"></div>
       <canvas id="game-canvas"></canvas>
     </div>
     <!--<tabs-container id="settings-tabs" class="background-menu">
@@ -295,10 +296,42 @@
                   <option value="2">Advanced</option>
                 </select>
               </div>
+              <div>
+                <span>Lights</span>
+                <select class="select-blue" id="settings-graphics-lights">
+                  <option value="0">No</option>
+                  <option value="1">Normal</option>
+                  <option value="2">Advanced</option>
+                </select>
+              </div>
+              <div>
+                <span>Post Proccess</span>
+                <select class="select-blue" id="settings-graphics-post-proccess">
+                  <option value="0">No</option>
+                  <option value="1">Normal</option>
+                  <option value="2">Advanced</option>
+                </select>
+              </div>
+              <div>
+                <span>Climate</span>
+                <input type="checkbox" class="checkbox-blue" id="settings-graphics-climate"></input>
+              </div>
             </div><div class="background-menu-md background-menu-ss background-menu" id="settings-sm-game">
               <div>
                 <span>Friendly Fire</span>
                 <input type="checkbox" class="checkbox-blue" id="settings-game-friendly-fire"></input>
+              </div>
+              <div>
+                <span>Client Interpolation</span>
+                <input type="checkbox" class="checkbox-blue" id="settings-game-interpolation"></input>
+              </div>
+              <div>
+                <span>Client Side Rotation</span>
+                <input type="checkbox" class="checkbox-blue" id="settings-game-client-rotation"></input>
+              </div>
+              <div>
+                <span>Ping Emulation</span>
+                <input type="range" min="5" max="260" class="slider-blue" id="settings-game-ping"></input>
               </div>
             </div>
             <div class="background-menu-md background-menu-ss background-menu" id="settings-sm-sounds">
@@ -315,6 +348,7 @@
           <kl-md-menu-options>
             <button id="btn-about-social" class="btn-green">Social</button>
             <button id="btn-about-news" class="btn-green">News</button>
+            <button id="btn-about-rules" class="btn-green">Rules</button>
             <button id="btn-about-credits" class="btn-green">Credits</button>
           </kl-md-menu-options>
           <kl-md-extra id="about-sm-extra">
@@ -334,6 +368,63 @@
             </div>      
             <div id="about-sm-news" class="background-menu-md background-menu updates-section">
               <h2>News</h2>
+            </div><div id="about-sm-Rules" class="background-menu-md background-menu updates-section">
+              <div id="update-item">
+<h2>Rules</h2>
+<h3>Scripts, Hack, Autoclickers, Macro and other</h3>
+<h4>What Is A Hack?</h4>
+<p>
+Hack Is An External Program That Gives Any Type Of Advantage (Except Cosmetic And Optimisations).
+If The Program Has Developer Approval, It Will Not Be A Hack
+(Example: Better Client For Suroimd, Where It Optimizes, Etc.)
+</p>
+<h3>Smurf</h3>
+<p>Smurf Are Illegal In ChampionShips, But Not In Ranked Matches(But Dont Abuse Of Smurf In Ranked Matches Else Warn)</p>
+<h3>Account Share</h3>
+<p>
+Account Share Are Allowed.
+but remember what the user does with his account is YOUR responsibility.
+share your account just with peoples when you trust
+</p>
+<h3>Fake News</h3>
+<p>
+content spreading any lie is prohibited.
+example: I Play The New Update Of Suroimd.io 2 Before Everyone.
+If fake news is something that is not meant to be taken seriously, like jokes and memes: there shouldn't even be a punishment.
+But if it's something serious, like: YouTube, Tiktok Or Instagram videos with the sole purpose of making money.
+Spreading fake news about the game's future on credible sites, except forums.
+This rule only applies to fake news. Criticism of the game is not considered fake news.
+Without Power Abuse And Censure.
+<h3>Toxic Behaviour</h3>
+<p>
+Toxic Behaviour Are Not Allowed.
+Racism, Xenofoby, Swearing And Another Things.
+Toxic Behaviour Is Just Allowed In Private Rooms.
+But In Public Rooms No.
+</p>
+<h3>Glitchs, Bugs And Exploits</h3>
+<p>
+Bugs And Exploit Are Allowed.
+Example Of Bug:
+You Are Playing And You Kill Someone hitting the air.
+this is a bug(luck).
+Example Of Exploit:
+Quickswitch And Overclock
+Glitchs:
+Glitchs Are Allowed Just To Report. If You Want Report A Glith For Developers You Have Permition To Do The Glitch.
+Example Of Glithcs:
+Infinity Ammo. Infinity Consumibles
+</p>
+<h3>Most important rule</h3>
+<p>
+do not commit crimes, the punishment will vary depending on how heavy it was on your country
+This rule is above everyone, even me, everyone has to follow it.
+<h4>Examples</h4>
+<p>
+copyright theft, scan, harassment, doxing
+</p>
+</p>
+              </div>
             </div>
             <div id="about-sm-credits" class="background-menu-md background-menu updates-section">
               <div id="update-item">
@@ -342,6 +433,7 @@
                 <li>@kaklik</li>
                 <li>@yourhumbledrastic</li>
                 <li>@cheerfulbull_29688</li>
+                <li>@littlethief69</li>
                 <h3>Menu Designers</h3>
                 <li>@kaklik</li>
                 <li>@namerio</li>

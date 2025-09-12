@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { Numeric } from "common/scripts/engine/mod.ts";
+import { Numeric, v2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
@@ -12,7 +12,7 @@ import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from 
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { type Player } from "../gameObjects/player.ts";
 import { isMobile } from "../engine/game.ts";
-import { Debug } from "../others/config.ts";
+import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
@@ -81,6 +81,12 @@ export class GuiManager{
 
         all_inventory:document.querySelector("#all-inventory") as HTMLDivElement,
         close_all_inventory:document.querySelector("#close-all-inventory") as HTMLButtonElement,
+
+        post_proccess:{
+            vignetting:document.querySelector("#vignetting-gfx") as HTMLDivElement,
+            tiltshift:document.querySelector("#tiltshift-gfx") as HTMLDivElement,
+            recolor:document.querySelector("#recolor-gfx") as HTMLDivElement,
+        }
     }
     mobile_content={
         gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
@@ -190,11 +196,15 @@ export class GuiManager{
     }
     mobile_init(){
         this.mobile_open()
+        let rotating=false
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.left_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             this.game.action.Movement.x=e.detail.x
             this.game.action.Movement.y=e.detail.y
+            if(!rotating){
+                this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),true,0.3)
+            }
         })
         this.mobile_content.left_joystick.addEventListener("joystickend",()=>{
             this.game.action.Movement.x=0
@@ -203,19 +213,19 @@ export class GuiManager{
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
-            this.game.action.angle=Math.atan2(e.detail.y,e.detail.x);
-            if(this.game.activePlayer&&!this.game.activePlayer.driving){
-                (this.game.activePlayer as Player).container.rotation=this.game.action.angle
-                const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-                if(dist>0.9){
-                    this.game.action.UsingItem=true
-                }else{
-                    this.game.action.UsingItem=false
-                }
+            rotating=true
+            this.game.fake_crosshair.visible=true
+            const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
+            if(dist>0.9){
+                this.game.action.UsingItem=true
+            }else{
+                this.game.action.UsingItem=false
             }
+            this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x))
         })
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
             this.game.action.UsingItem=false
+            rotating=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
             this.game.input_manager.emit("actiondown",{action:"interact"})
@@ -248,6 +258,15 @@ export class GuiManager{
             this.game.client.on("gameover",this.show_game_over.bind(this))
         }
         this.set_all_inventory(false)
+        HideElement(this.content.post_proccess.tiltshift)
+        HideElement(this.content.post_proccess.recolor)
+        HideElement(this.content.post_proccess.vignetting)
+        if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
+            ShowElement(this.content.post_proccess.tiltshift)
+        }else if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Normal){
+            ShowElement(this.content.post_proccess.vignetting)
+            ShowElement(this.content.post_proccess.recolor)
+        }
     }
     ammos_cache:{
         normal:Record<string,HTMLDivElement>,

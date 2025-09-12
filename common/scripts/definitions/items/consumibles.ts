@@ -1,8 +1,9 @@
 import { AKeyFrame } from "../../engine/definitions.ts";
-import { v2 } from "../../engine/geometry.ts";
+import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts"
 import { DefaultFistRig, ItemQuality } from "../../others/item.ts";
-import { BoostType } from "../player/boosts.ts";
+import { Boosts, BoostType } from "../player/boosts.ts";
+import { SideEffect, SideEffectType } from "../player/effects.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 
 export enum ConsumibleCondition{
@@ -10,7 +11,7 @@ export enum ConsumibleCondition{
     UnfullExtra
 }
 export const ConsumiblesAnimations={
-    drinking:(frame:string="soda",time:number=2)=>[
+    drinking:(frame:string="soda",time:number=2,hotspot?:Vec2)=>[
         {
             actions:[
                 {
@@ -20,7 +21,8 @@ export const ConsumiblesAnimations={
                     visible:true,
                     scale:1.1,
                     rotation:-0.2,
-                    hotspot:v2.new(0.5,.5),
+                    hotspot:hotspot??v2.new(0.5,.5),
+                    zIndex:6,
                     position:DefaultFistRig.right!.position
                 },
                 {
@@ -34,7 +36,7 @@ export const ConsumiblesAnimations={
                     visible:true,   
                     type:"sprite",
                     fuser:"right_arm",
-                }
+                },
             ],
             time:0
         },
@@ -58,30 +60,21 @@ export const ConsumiblesAnimations={
                 }
             ],
             time:0.5
-        },
-        {
-            actions:[
-            ],
-            time:time-0.5
         }
     ]
 }satisfies Record<string,()=>AKeyFrame[]>
 export interface ConsumibleDef extends Definition{
-    health?:number
-    boost?:number
-    boost_type?:BoostType
-    max_heal?:number
-    max_boost?:number
+    side_effects:SideEffect[]
     quality:ItemQuality
     use_delay:number
     condition?:ConsumibleCondition[]
-    parachute?:number
     frame?:{
         using_particle:string
     }
     sounds?:{
         using?:string
     }
+    drink?:boolean
     animation?:AKeyFrame[]
 }
 export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
@@ -90,8 +83,15 @@ export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
 Consumibles.insert(
     {
         idString:"gauze",
-        health:15,
-        max_heal:0.75,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                health:{
+                    amount:15,
+                    max:0.75
+                }
+            }
+        ],
         use_delay:3,
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullHealth],
@@ -101,7 +101,14 @@ Consumibles.insert(
     },
     {
         idString:"medikit",
-        health:100,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                health:{
+                    amount:100,
+                }
+            }
+        ],
         use_delay:5.5,
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullHealth]
@@ -110,121 +117,210 @@ Consumibles.insert(
     //Adrenaline
     {
         idString:"soda",
-        boost:25,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:25,
+                    def:Boosts[BoostType.Adrenaline]
+                }
+            }
+        ],
         use_delay:2.5,
-        boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("soda",2.5),
+        drink:true
     },
     {
         idString:"inhaler",
-        boost:50,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:50,
+                    def:Boosts[BoostType.Adrenaline]
+                }
+            }
+        ],
         use_delay:4.5,
-        boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullExtra],
     },
     {
         idString:"yellow_pills",
-        boost:100,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:100,
+                    def:Boosts[BoostType.Adrenaline]
+                }
+            }
+        ],
         use_delay:6,
-        boost_type:BoostType.Adrenaline,
         quality:ItemQuality.Rare,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
     },
 
     //Shield
     {
         idString:"small_blue_potion",
-        boost:25,
-        max_boost:0.5,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:25,
+                    max:.5,
+                    def:Boosts[BoostType.Shield]
+                }
+            }
+        ],
         use_delay:2.65,
-        boost_type:BoostType.Shield,
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullExtra],
         sounds:{
             using:"using_small_potion"
         },
         animation:ConsumiblesAnimations.drinking("small_blue_potion",2.65),
+        drink:true
     },
     {
         idString:"blue_potion",
-        boost:50,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:50,
+                    def:Boosts[BoostType.Shield]
+                }
+            }
+        ],
         use_delay:4.5,
-        boost_type:BoostType.Shield,
         quality:ItemQuality.Rare,
         condition:[ConsumibleCondition.UnfullExtra],
         sounds:{
             using:"using_potion"
         },
-        animation:ConsumiblesAnimations.drinking("blue_potion",4.5),
+        animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2.new(0.5,0.35)),
+        drink:true
     },
     {
         idString:"blue_pills",
-        boost:100,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:100,
+                    def:Boosts[BoostType.Shield]
+                }
+            }
+        ],
         use_delay:6,
-        boost_type:BoostType.Shield,
         quality:ItemQuality.Epic,
         condition:[ConsumibleCondition.UnfullExtra]
     },
     //Mana
     {
         idString:"small_purple_potion",
-        boost:50,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:25,
+                    def:Boosts[BoostType.Mana]
+                }
+            }
+        ],
         use_delay:2.6,
-        boost_type:BoostType.Mana,
         quality:ItemQuality.Rare,
         condition:[ConsumibleCondition.UnfullExtra],
         sounds:{
             using:"using_small_potion"
         },
         animation:ConsumiblesAnimations.drinking("small_purple_potion",2.6),
+        drink:true
     },
     {
         idString:"purple_potion",
-        boost:40,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:50,
+                    def:Boosts[BoostType.Mana]
+                }
+            }
+        ],
         use_delay:4.5,
-        boost_type:BoostType.Mana,
         quality:ItemQuality.Epic,
         condition:[ConsumibleCondition.UnfullExtra],
         sounds:{
             using:"using_potion"
         },
-        animation:ConsumiblesAnimations.drinking("purple_potion",4.5),
+        animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2.new(0.5,0.35)),
+        drink:true
     },
     {
         idString:"purple_pills",
-        boost:100,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:100,
+                    def:Boosts[BoostType.Mana]
+                }
+            }
+        ],
         use_delay:4.5,
-        boost_type:BoostType.Mana,
         quality:ItemQuality.Legendary,
         condition:[ConsumibleCondition.UnfullExtra]
     },
     //Addiction
     {
         idString:"small_red_crystal",
-        boost:25,
         use_delay:1.5,
-        boost_type:BoostType.Addiction,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:25,
+                    def:Boosts[BoostType.Addiction]
+                }
+            }
+        ],
         quality:ItemQuality.Epic,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("small_red_crystal",1.4),
     },
     {
         idString:"red_crystal",
-        boost:50,
         use_delay:3,
-        boost_type:BoostType.Addiction,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:50,
+                    def:Boosts[BoostType.Addiction]
+                }
+            }
+        ],
         quality:ItemQuality.Epic,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("red_crystal",2.9),
     },
     {
         idString:"red_pills",
-        boost:100,
+        side_effects:[
+            {
+                type:SideEffectType.Heal,
+                boost:{
+                    amount:100,
+                    def:Boosts[BoostType.Addiction]
+                }
+            }
+        ],
         use_delay:4.5,
-        boost_type:BoostType.Addiction,
         quality:ItemQuality.Legendary,
         condition:[ConsumibleCondition.UnfullExtra]
     },
@@ -232,7 +328,11 @@ Consumibles.insert(
     {
         idString:"pocket_portal",
         use_delay:1.5,
-        parachute:1,
+        side_effects:[
+            {
+                type:SideEffectType.Parachute
+            }
+        ],
         quality:ItemQuality.Mythic
     },
 )

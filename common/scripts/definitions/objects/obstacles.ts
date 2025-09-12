@@ -1,7 +1,7 @@
 import { v2 } from "../../engine/geometry.ts";
 import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2, FrameTransform } from "../../engine/mod.ts";
 import { zIndexes } from "../../others/constants.ts";
-import { HitboxGroup2D, RectHitbox2D } from "../../engine/hitbox.ts";
+import { RectHitbox2D } from "../../engine/hitbox.ts";
 import { FloorType } from "../../others/terrain.ts";
 export enum  SpawnModeType{
     any,
@@ -92,18 +92,21 @@ Obstacles.insert(
     {
         idString:"stone",
         health:150,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.65),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.82),
         scale:{
-            destroy:0.7
+            destroy:0.7,
+            min:0.7,
+            max:1.1
         },
         frame_transform:{
-            scale:1.5
+            scale:2
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
         material:"stone",
         particle:"stone_particle",
-        spawnMode:Spawn.grass
+        spawnMode:Spawn.grass,
+        variations:2
     },
     {
         idString:"barrel",

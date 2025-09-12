@@ -18,8 +18,14 @@ export class MenuManager{
         settings:{
             graphics_textures:document.body.querySelector("#settings-graphics-texture") as HTMLSelectElement,
             graphics_particles:document.body.querySelector("#settings-graphics-particles") as HTMLSelectElement,
+            graphics_lights:document.body.querySelector("#settings-graphics-lights") as HTMLSelectElement,
+            graphics_post_proccess:document.body.querySelector("#settings-graphics-post-proccess") as HTMLSelectElement,
+            graphics_climate:document.body.querySelector("#settings-graphics-climate") as HTMLInputElement,
 
             game_friendly_fire:document.body.querySelector("#settings-game-friendly-fire") as HTMLInputElement,
+            game_client_interpolation:document.body.querySelector("#settings-game-interpolation") as HTMLInputElement,
+            game_client_rotation:document.body.querySelector("#settings-game-client-rotation") as HTMLInputElement,
+            game_ping:document.body.querySelector("#settings-game-ping") as HTMLInputElement,
 
             sounds_master_volume:document.body.querySelector("#settings-sounds-master-volume") as HTMLInputElement,
         },
@@ -63,6 +69,7 @@ export class MenuManager{
 
                 social:document.body.querySelector("#btn-about-social") as HTMLButtonElement,
                 news:document.body.querySelector("#btn-about-news") as HTMLButtonElement,
+                rules:document.body.querySelector("#btn-about-rules") as HTMLButtonElement,
                 credits:document.body.querySelector("#btn-about-credits") as HTMLButtonElement,
             }
         }
@@ -90,6 +97,7 @@ export class MenuManager{
         this.menu_tabs["about"]={
             "social":document.body.querySelector("#about-sm-social") as HTMLElement,
             "news":document.body.querySelector("#about-sm-news") as HTMLElement,
+            "rules":document.body.querySelector("#about-sm-rules") as HTMLElement,
             "credits":document.body.querySelector("#about-sm-credits") as HTMLElement,
         }
         this.load_menu(submenu)
@@ -216,18 +224,49 @@ export class MenuManager{
 
         this.content.submenus.buttons.social.addEventListener("click",(_)=>ShowTab("social",this.menu_tabs["about"]))
         this.content.submenus.buttons.news.addEventListener("click",(_)=>ShowTab("news",this.menu_tabs["about"]))
+        this.content.submenus.buttons.rules.addEventListener("click",(_)=>ShowTab("rules",this.menu_tabs["about"]))
         this.content.submenus.buttons.credits.addEventListener("click",(_)=>ShowTab("credits",this.menu_tabs["about"]))
 
+        //Graphics
         this.content.settings.graphics_textures.value=this.save.get_variable("cv_graphics_resolution")
         this.content.settings.graphics_textures.addEventListener("change",()=>{
             this.save.set_variable("cv_graphics_resolution",this.content.settings.graphics_textures.value)
         })
-        
-        this.content.settings.game_friendly_fire.checked=this.save.get_variable("cv_game_friendly_fire")==="true"
-        this.content.settings.game_friendly_fire.addEventListener("click",()=>{
-            this.save.set_variable("cv_game_friendly_fire",this.content.settings.game_friendly_fire.checked?"true":"false")
+        this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
+        this.content.settings.graphics_particles.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
         })
+        this.content.settings.graphics_lights.value=this.save.get_variable("cv_graphics_lights")
+        this.content.settings.graphics_lights.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_lights",this.content.settings.graphics_lights.value)
+        })
+        this.content.settings.graphics_post_proccess.value=this.save.get_variable("cv_graphics_post_proccess")
+        this.content.settings.graphics_post_proccess.addEventListener("change",()=>{
+            this.save.set_variable("cv_graphics_post_proccess",this.content.settings.graphics_post_proccess.value)
+        })
+        this.content.settings.graphics_climate.checked=this.save.get_variable("cv_graphics_climate")
+        this.content.settings.graphics_climate.addEventListener("click",()=>{
+            this.save.set_variable("cv_graphics_climate",this.content.settings.graphics_climate.checked)
+        })
+        //Game
+        this.content.settings.game_friendly_fire.checked=this.save.get_variable("cv_game_friendly_fire")
+        this.content.settings.game_friendly_fire.addEventListener("click",()=>{
+            this.save.set_variable("cv_game_friendly_fire",this.content.settings.game_friendly_fire.checked)
+        })
+        this.content.settings.game_client_interpolation.checked=this.save.get_variable("cv_game_interpolation")
+        this.content.settings.game_client_interpolation.addEventListener("click",()=>{
+            this.save.set_variable("cv_game_interpolation",this.content.settings.game_client_interpolation.checked)
+        })
+        this.content.settings.game_client_rotation.checked=this.save.get_variable("cv_game_client_rot")
+        this.content.settings.game_client_rotation.addEventListener("click",()=>{
+            this.save.set_variable("cv_game_client_rot",this.content.settings.game_client_rotation.checked)
+        })
+        this.content.settings.game_ping.addEventListener("change",()=>{
+            this.save.set_variable("cv_game_ping",this.content.settings.game_ping.value)
+        })
+        this.content.settings.game_ping.value=this.save.get_variable("cv_game_ping")
 
+        //Sounds
         this.content.settings.sounds_master_volume.addEventListener("change",()=>{
             this.save.set_variable("cv_sounds_master_volume",this.content.settings.sounds_master_volume.value)
             this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
@@ -235,10 +274,7 @@ export class MenuManager{
         this.content.settings.sounds_master_volume.value=this.save.get_variable("cv_sounds_master_volume")
         this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
 
-        /*this.content.settings.graphics_particles.value=this.save.get_variable("cv_graphics_particles")
-        this.content.settings.graphics_particles.addEventListener("change",()=>{
-            this.save.set_variable("cv_graphics_particles",this.content.settings.graphics_particles.value)
-        })
+        /*
         HideElement(this.content.settings_tabs)
         HideElement(this.content.section_tabs)*/
 
@@ -258,7 +294,7 @@ export class MenuManager{
         /*this.content.ac_status.innerHTML=`
             <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`*/
     }
-    your_skins:string[]=["default_skin","widower","kaklik"]
+    your_skins:string[]=["default_skin","nick_winner","widower","kaklik"]
     show_your_skins(){
         this.content.submenus.extras.loadout_c.innerHTML=""
         let sel=this.save.get_variable("cv_loadout_skin")

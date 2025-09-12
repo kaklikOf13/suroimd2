@@ -23,7 +23,7 @@ export class BasicSocket{
     readonly CLOSING = 2;
     readonly CLOSED = 3;
 
-    send:((this:BasicSocket,_data: ArrayBuffer|Uint8Array) => void)|null=null;
+    send:((this:BasicSocket,_data: ArrayBuffer|Uint8Array|SharedArrayBuffer) => void)|null=null;
     // deno-lint-ignore no-explicit-any
     onmessage:((this:BasicSocket,_ev: MessageEvent<any>) => void)|null=null;
     close:((this:BasicSocket,_code?: number, _reason?: string) => void)|null=(code?: number, reason?: string)=>{
@@ -160,10 +160,14 @@ export class Client{
      * Send A `Packet` To `Server/Client`
      * @param packet To Send
      */
-    emit(packet:Packet):void{
+    emit(packet: Packet): void {
         if (this.ws.readyState !== WebSocket.OPEN) return;
-        if(this.ws.send)this.ws.send(this.manager.encode(packet,new NetStream(new ArrayBuffer(1024*30))).buffer as ArrayBuffer)
+        const stream = new NetStream(new ArrayBuffer(1024 * 30))
+        this.manager.encode(packet, stream)
+        const usedBuffer = stream.buffer.slice(0, stream.length)
+        if (this.ws.send) this.ws.send(usedBuffer)
     }
+
     /**
      * On Recev A `Packet` From `Server/Client`
      * @param name Name Of `Packet`, you can change the Packet Name In Property `MyPacket.Name`(readonly)
@@ -174,8 +178,9 @@ export class Client{
         this.signals.on(name,callback)
     }
     sendStream(stream:NetStream){
-        if (this.ws.readyState !== WebSocket.OPEN) return;
-        if(this.ws.send)this.ws.send(stream.buffer as ArrayBuffer)
+        if (this.ws.readyState !== WebSocket.OPEN) return
+        const usedBuffer = stream.buffer.slice(0, stream.length)
+        if (this.ws.send) this.ws.send(usedBuffer)
     }
     /**
      * Disconnect Websocket
@@ -233,7 +238,7 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     public allowJoin:boolean
     public id:ID=1
     fps:number=0
-    override destroy_queue: boolean=false;
+    override destroy_queue:boolean=false;
     constructor(tps:number,id:ID,client:OfflineClientsManager,packetManager:PacketsManager,objects:Array<new()=>DefaultGameObject>){
         super(tps,objects)
         this.id=id
@@ -258,7 +263,6 @@ export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=Ba
     abstract handleConnections(client:Client,username:string):void
     update_delay:number=3
     override on_update(): void {
-        this.scene.objects.apply_destroy_queue()
         this.fps++
     }
 }

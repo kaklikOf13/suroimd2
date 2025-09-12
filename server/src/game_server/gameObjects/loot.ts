@@ -126,7 +126,7 @@ export class Loot extends ServerGameObject{
             }
             
         }
-        this.velocity=v2.scale(this.velocity,GameConstants.loot.velocityDecay)
+        this.velocity=v2.scale(this.velocity,1/(1+dt*GameConstants.loot.velocityDecay))
     }
     push(speed:number,angle:number){
         this.velocity=v2.add(this.velocity,v2.scale(v2.from_RadAngle(angle),speed))

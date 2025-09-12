@@ -13,12 +13,9 @@ export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
 //export const api_server=new IPLocation("na.suroimd.io",443,true,true,"")
 export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
-export const Offline_Settings={
-    ping:10
-}
 export const api=true
-export const forum=true
-export enum GraphicsParticlesConfig {
+export const forum=false
+export enum GraphicsDConfig {
     None=0,
     Normal,
     Advanced,
@@ -30,23 +27,36 @@ export const ConfigCasters=Object.freeze({
 
     cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
     cv_graphics_particles:Casters.toInt,
+    cv_graphics_lights:Casters.toInt,
+    cv_graphics_post_proccess:Casters.toInt,
+    cv_graphics_climate:Casters.toBoolean,
 
     cv_game_region:Casters.toString,
-    cv_game_friendly_fire:Casters.toString,
+    cv_game_friendly_fire:Casters.toBoolean,
+    cv_game_interpolation:Casters.toBoolean,
+    cv_game_client_rot:Casters.toBoolean,
+    cv_game_ping:Casters.toInt,
 
     cv_sounds_master_volume:Casters.toInt,
 })
 export const ConfigDefaultValues={
-    cv_loadout_skin:"",
+    cv_loadout_skin:"default_skin",
     cv_loadout_name:"",
 
     cv_graphics_resolution:"high",
-    cv_graphics_particles:GraphicsParticlesConfig.Advanced,
+    cv_graphics_particles:GraphicsDConfig.Advanced,
+    cv_graphics_lights:GraphicsDConfig.Advanced,
+    cv_graphics_post_proccess:GraphicsDConfig.Advanced,
+    cv_graphics_climate:true,
 
     cv_game_region:"na",
-    cv_game_friendly_fire:"false",
+    cv_game_friendly_fire:true,
+    cv_game_interpolation:true,
+    cv_game_client_rot:true,
+    cv_game_ping:5,
 
     cv_sounds_master_volume:100,
+    
 }
 export const ConfigDefaultActions={
     "fire":{
@@ -118,7 +128,6 @@ export const ConfigDefaultActions={
         keys:[Key.I]
     }
 }
-export const ClientRotation=false
 export const Debug={
     hitbox:false,
     force_mobile:false

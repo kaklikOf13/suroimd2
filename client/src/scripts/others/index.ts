@@ -1,6 +1,6 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import {  ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, Offline_Settings } from "./config.ts";
+import {  ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
@@ -13,9 +13,10 @@ import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
 import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
+import { ConfigType } from "common/scripts/config/config.ts";
 (() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
-    const inputs=new InputManager(100);
+    const inputs=new InputManager(100)
     inputs.bind(document.body,canvas)
 
     document.body.appendChild(canvas)
@@ -69,27 +70,35 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
                     this.game_server=undefined
                 }
                 this.game_server = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-                    gameTps:100,
+                    gameTps:60,
                     maxPlayers:10,
                     teamSize:1,
-                    netTps:30,
-                    deenable_lobby:Math.random()<=0.3,
+                    netTps:22,
+                    deenable_lobby:true,
                 },{
                     database:{
-                        enabled:false
-                    }
-                })
+                        enabled:false,
+                    },
+                } as ConfigType)
                 this.game_server.mainloop()
                 for(let i=0;i<9;i++){
                     const bot=this.game_server.add_bot()
                     bot.ai=new SimpleBotAi()
+                    /*bot.ai=new TreeBotAi(bot,{
+                        decision_update_rate:1,
+                        reaction_time:0.3,
+                        accuracy:0.5,
+                        bravery:0.4,
+                        teamwork:1,
+                        like_regen:1
+                    })*/
                 }
                 this.game_server.subscribe_db={
                     "localhost":{
                         skins:[1,2]
                     }
                 }
-                socket=this.game_server.clients.fake_connect(Offline_Settings.ping) as BasicSocket
+                socket=this.game_server.clients.fake_connect(GameSave.get_variable("cv_game_ping")) as BasicSocket
             }else{
                 const reg=menu_manager.regions[GameSave.get_variable("cv_game_region")]
                 const ser=new IPLocation(reg.host,reg.port)
@@ -102,7 +111,6 @@ import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bo
 
             this.game.running=true
             menu_manager.game_start()
-            this.game.mainloop()
         }
         closeGame(){
             menu_manager.update_account()

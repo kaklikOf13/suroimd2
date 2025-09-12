@@ -26,7 +26,7 @@ export class VehicleSeat{
     }
     set_player(p:Player){
         if(this.player)return
-        if(p.seat)p.seat.clear_player(p)
+        if(p.seat)p.seat.clear_player()
         this.player=p
         p.seat=this
         if(this.vehicle.def.battle_plane)this.player.parachute={value:1}

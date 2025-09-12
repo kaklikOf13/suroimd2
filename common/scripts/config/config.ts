@@ -7,6 +7,10 @@ export interface GameConfig{
     netTps:number
     deenable_lobby:boolean
 }
+export interface GamemodeConfig{
+    team_size:number
+    enabled:boolean
+}
 export interface RegionDef{
     host:string
     port:number
@@ -14,15 +18,16 @@ export interface RegionDef{
 }
 export interface ConfigType {
   api: {
-    host: HostConfig;
+    host: HostConfig
     global:string
   };
   game: {
-    max_games: number;
-    config: GameConfig;
-    host: HostConfig;
+    max_games: number
+    config: GameConfig
+    host: HostConfig
+    modes:GamemodeConfig[]
   };
-  regions: Record<string, RegionDef>;
+  regions: Record<string, RegionDef>
   database: {
     enabled: boolean;
     files: {

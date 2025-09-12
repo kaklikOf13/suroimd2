@@ -18,7 +18,16 @@ export abstract class Container2DObject {
     abstract object_type: string;
 
     parent?: Container2D;
-    zIndex: number = 0;
+    _zIndex: number = 0;
+    get zIndex():number{
+        return this._zIndex
+    }
+    set zIndex(val:number){
+        this._zIndex=val
+        if(this.parent){
+            this.parent.updateZIndex()
+        }
+    }
 
     id_on_parent:number=0
 
@@ -37,7 +46,7 @@ export abstract class Container2DObject {
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
-        if(this.parent)this.parent.update_deletions()
+        if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1)
     }
 
     update(_dt:number,_resources:ResourcesManager): void {
@@ -394,7 +403,8 @@ export class Container2D extends Container2DObject{
     }
     draw(cam:CamA,renderer:Renderer,objects?:Container2DObject[]):void{
         if(!objects)objects=this.children
-        for(const c of objects){
+        for(let o =0;o<objects.length;o++){
+            const c=objects[o]
             if(c.visible)c.draw(cam,renderer)
         }
     }
@@ -460,6 +470,7 @@ export class AnimatedContainer2D extends Container2D{
                     switch(action.type){
                         case "sprite":
                             this.get_spr(action.fuser).set_frame(action,this.game.resources)
+                            this.updateZIndex()
                             break
                         case "tween":{
                             const fuser=this.get_spr(action.fuser)
@@ -528,6 +539,8 @@ export class Lights2D extends Container2DObject {
     downscale = 1.0;
     ambientColor: Color = { r: 1, g: 1, b: 1, a: 1 };
 
+    quality:number=2 // 0 = None, 1=Just Global Light, 2 All Lights
+
     ambient_light?:GLMaterial2D<GL2D_LightMatArgs>
     get ambient() {
         return 1-this.ambientColor.a
@@ -573,6 +586,11 @@ export class Lights2D extends Container2DObject {
     render(renderer: WebglRenderer, camera: Camera2D) {
         this.renderer = renderer;
         const gl = renderer.gl;
+        if(this.quality==0){
+            if (this.lightTexture) gl.deleteTexture(this.lightTexture);
+            if (this.lightFBO) gl.deleteFramebuffer(this.lightFBO);
+            return
+        }
 
         const w = Math.max(1, camera.width*camera.meter_size*this.downscale);
         const h = Math.max(1, camera.height*camera.meter_size*this.downscale);
@@ -595,10 +613,12 @@ export class Lights2D extends Container2DObject {
         if(!this.ambient_light)this.ambient_light=renderer.factorys2D.light.create({color:this.ambientColor})
         this.ambient_light!.color=this.ambientColor
         renderer.draw(this.screenModel,this.ambient_light,camera.projectionMatrix,camera.visual_position,v2.new(1,1))
-        for (let i = 0; i < this.lights.length; i++) {
-            const L = this.lights[i];
-            if (L.destroyed) { this.lights.splice(i, 1); i--; continue; }
-            renderer.draw(L.model, L.mat,camera.projectionMatrix, L.pos, v2.new(1,1));
+        if(this.quality>=2){
+            for (let i = 0; i < this.lights.length; i++) {
+                const L = this.lights[i];
+                if (L.destroyed) { this.lights.splice(i, 1); i--; continue; }
+                renderer.draw(L.model, L.mat,camera.projectionMatrix, L.pos, v2.new(1,1));
+            }
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -649,7 +669,7 @@ export class Lights2D extends Container2DObject {
     }
 
     draw(cam:CamA,renderer: WebglRenderer) {
-        if (!this.lightTexture) return;
+        if (!this.lightTexture||this.quality===0) return;
 
         const mat = renderer.factorys2D.texture.create({
             texture: this.lightTexture,
@@ -918,6 +938,7 @@ export class Camera2D{
         for(const o of objects){
             this.container.add_child(o);
         }
+        this.container.updateZIndex();
     }
 
     resize(): void {
@@ -947,7 +968,6 @@ export class Camera2D{
             this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
         this.container.update(dt,resources);
-        this.container.updateZIndex();  
     }
 
     draw(renderer:Renderer){

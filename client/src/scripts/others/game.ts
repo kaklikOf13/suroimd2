@@ -13,7 +13,7 @@ import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
-import { ClientRotation, Debug } from "./config.ts";
+import { Debug } from "./config.ts";
 import { type DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
@@ -22,7 +22,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
 import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Graphics2D, Lights2D } from "../engine/container.ts";
+import { Graphics2D, Lights2D, Sprite2D } from "../engine/container.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
@@ -30,7 +30,7 @@ import { Creature } from "../gameObjects/creature.ts";
 import { WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
-import { ClientParticle2D, RainParticle2D } from "../engine/game.ts";
+import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -49,15 +49,6 @@ export class Game extends ClientGame2D<GameObject>{
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
   scope_zoom:number=0.53
-  flying_position:number=0
-  happening:boolean=false
-
-  light_map=new Lights2D()
-
-  minimap:MinimapManager=new MinimapManager(this)
-
-  dead_zone:DeadZoneManager=new DeadZoneManager(this)
-
   //0.14=l6 32x
   //0.27=l5 16x
   //0.35=l4 8x
@@ -67,6 +58,17 @@ export class Game extends ClientGame2D<GameObject>{
   //1=l-1 0.5x
   //1.5=l-2 0.25x
   //1.75=l-3 0.1x
+  //2=l-4 0.05x
+  flying_position:number=0
+  happening:boolean=false
+
+  light_map=new Lights2D()
+
+  minimap:MinimapManager=new MinimapManager(this)
+
+  dead_zone:DeadZoneManager=new DeadZoneManager(this)
+
+  fake_crosshair=new Sprite2D()
 
   listners_init(){
     this.input_manager.add_axis("movement",
@@ -155,21 +157,37 @@ export class Game extends ClientGame2D<GameObject>{
       }
     })
     this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
-      this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
+      if(!isMobile){
+        this.fake_crosshair.visible=false
+        this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
+      }
     })
     
     this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e: { stick: string; axis: Vec2; })=>{
       if(e.stick==="left"){
         this.action.Movement=e.axis
       }else if(e.stick==="right"){
-        this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x))
+        this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x),true)
+        this.fake_crosshair.visible=true
       }
     })
   }
-  set_lookTo_angle(angle:number){
+  set_lookTo_angle(angle:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
+    if(!this.activePlayer)return
+    if(aim_assist){
+      for(const o of this.scene.objects.objects[this.activePlayer.layer].orden){
+        const obj=this.scene.objects.objects[this.activePlayer.layer].objects[o]
+        if(obj.id===this.activePlayerId||obj.stringType!=="player")continue
+        const ang=v2.lookTo(this.activePlayer.position,obj.position)
+        if(Math.abs(angle-ang)<=aim_assist_help){
+          angle=ang
+          break
+        }
+      }
+    }
     this.action.angle=angle;
-    if(ClientRotation&&this.activePlayer&&!this.activePlayer.driving){
-      (this.activePlayer as Player).container.rotation=this.action.angle
+    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving){
+      (this.activePlayer as Player).rotation=this.action.angle
     }
   }
   rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
@@ -194,6 +212,11 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
     this.camera.addObject(this.light_map)
+    this.camera.addObject(this.fake_crosshair)
+
+    this.fake_crosshair.zIndex=zIndexes.DamageSplashs
+    this.fake_crosshair.hotspot=v2.new(.5,.5)
+
     this.light_map.ambient=0.6
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
@@ -220,7 +243,7 @@ export class Game extends ClientGame2D<GameObject>{
         position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
         rotation:Angle.deg2rad(45),
       }),
-      enabled:true
+      enabled:this.save.get_variable("cv_graphics_climate")
     })
     this.dead_zone.append()
   }
@@ -273,6 +296,10 @@ export class Game extends ClientGame2D<GameObject>{
       const gridSize=GameConstants.collision.chunckSize
       this.minimap.position=v2.duplicate(this.camera.position)
       this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
+      if(this.fake_crosshair.visible){
+        this.fake_crosshair.position=v2.add(this.activePlayer.position,v2.scale(v2.from_RadAngle(this.activePlayer.rotation),2/this.camera.zoom))
+        this.fake_crosshair.scale=v2.new(1/this.camera.zoom,1/this.camera.zoom)
+      }
     }
   }
   planes:Map<number,Plane>=new Map()
@@ -287,6 +314,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   connect(client:Client,playerName:string){
     this.client=client
+    this.light_map.quality=this.save.get_variable("cv_graphics_lights")
     this.client.on("update",(up:UpdatePacket)=>{
       this.guiManager.update_gui(up.priv)
       this.proccess_private(up.priv)
@@ -298,6 +326,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("joined",(jp:JoinedPacket)=>{
       this.guiManager.process_joined_packet(jp)
       this.happening=true
+      this.mainloop()
     })
     this.client.on("map",(mp:MapPacket)=>{
       this.terrain.process_map(mp.map)
@@ -315,14 +344,21 @@ export class Game extends ClientGame2D<GameObject>{
     this.activePlayer?.onDestroy()
     this.activePlayer=undefined
     const p=new JoinPacket(playerName)
+    p.is_mobile=isMobile
     p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
     this.client.emit(p)
     this.activePlayerId=this.client.ID
     console.log("Joined As:",this.activePlayerId)
-    
+
+    this.fake_crosshair.frame=this.resources.get_sprite("crosshair_1")
+    this.fake_crosshair.visible=false
+
     this.guiManager.players_name={}
     this.guiManager.start()
-    this.camera.zoom=this.scope_zoom*(this.renderer.canvas.width/300)
+    const zoom=this.scope_zoom*(this.renderer.canvas.width/300)
+    if(this.scope_zoom!==this.camera.zoom){
+      this.camera.zoom=zoom
+    }
     this.renderer.fullCanvas()
   }
   init_gui(gui:GuiManager){

@@ -62,22 +62,8 @@ export class ConsumingAction extends Action<Player>{
     }
     on_execute(user:Player){
         const def=this.item.def
-        if(def.health){
-            user.health=Math.min(user.health+def.health,user.maxHealth*(def.max_heal??1))
-        }
-        if(def.boost){
-            if(def.boost_type!==undefined&&def.boost_type!==user.boost_def.type){
-                user.boost_def=Boosts[def.boost_type]
-                user.boost=def.boost
-            }else{
-                user.boost=Math.min(user.boost+def.boost,user.maxBoost*(def.max_boost??1))
-            }
-        }
-        if(def.parachute){
-            user.parachute={
-                value:def.parachute
-            }
-            user.seat?.clear_player()
+        for(const s of def.side_effects){
+            user.side_effect(s)
         }
         user.current_animation=undefined
         user.dirty=true

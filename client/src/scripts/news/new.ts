@@ -2,6 +2,58 @@ const newsS=document.querySelector("#about-sm-news") as HTMLDivElement
 
 const news=[
     {
+      "title":"Alpha 1.4",
+      content:`
+<h2 id="news">News</h2>
+<hr>
+<h3 id="mains">Mains</h3>
+<ul>
+<li>Mobile And Control Aim Assist</li>
+<li>Mounth Animations</li>
+<li>Nick Winner(A Skin Gived If You Complete The Campaing Level 1. And Will Be The Skin Of The Campaing Level 1)</li>
+<li>Mobile Now Autofire</li>
+</ul>
+<hr>
+<h3 id="menu">Menu</h3>
+<ul>
+<li>Rules</li>
+<li>Ilumation No/Just Brightness/All Option</li>
+<li>Climate On/Off Option</li>
+<li>Ping Emulation Option</li>
+<li>Client Interpolation Option</li>
+<li>Client Side Rotation Option</li>
+</ul>
+<hr>
+<h2 id="changes">Changes</h2>
+<hr>
+<h3 id="player">Player</h3>
+<ul>
+<li>Human Skins Now Have Diferent Eyes</li>
+</ul>
+<hr>
+<h3 id="obstacles">Obstacles</h3>
+<ul>
+<li>Dead Tree Rework</li>
+<li>Stone Rework And Broken Variation<h3 id="others">Others</h3>
+</li>
+<li>Some Optimisations</li>
+</ul>
+<hr>
+<h2 id="fixes">Fixes</h2>
+<hr>
+<h3 id="weapons">Weapons</h3>
+<ul>
+<li>Dual Guns Pickup</li>
+</ul>
+<hr>
+<h3 id="controls">Controls</h3>
+<ul>
+<li>Mouse And Keyboard Keys<h1 id="play-the-game">Play The Game</h1>
+The Is Just Playable In Offline Mode.
+</ul>      
+`
+    },
+    {
       "title":"Alpha 1.3.1",
       content:`
 <h2 id="news">News</h2>

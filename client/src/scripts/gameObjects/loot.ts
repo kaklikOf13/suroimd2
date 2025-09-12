@@ -23,11 +23,11 @@ export class Loot extends GameObject{
         this.game.camera.addObject(this.container)
     }
     update(dt:number): void {
-        if(v2.distance(this.position,this.dest_pos)<=1){
-            this.position=v2.lerp(this.position,this.dest_pos,1/(1+dt*8))
-        }else{
-            this.position=this.dest_pos
+        if(this.dest_pos){
+            this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
         }
+        this.container.position=this.position
+        this.manager.cells.updateObject(this)
     }
     constructor(){
         super()
@@ -51,11 +51,13 @@ export class Loot extends GameObject{
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_loot"),camera.visual_position)
         }*/
     }
-    dest_pos:Vec2=v2.new(0,0)
+    dest_pos?:Vec2
     override updateData(data:LootData){
-        this.dest_pos=data.position
-        this.container.position=this.position
-        this.manager.cells.updateObject(this)
+        if(this.game.save.get_variable("cv_game_interpolation")&&!data.full){
+            this.dest_pos=data.position
+        }else{
+            this.position=data.position
+        }
         if(data.full){
             this.item=GameItems.valueNumber[data.full.item]
             switch(this.item.item_type){

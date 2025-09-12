@@ -1,3 +1,4 @@
+@use "../palette.scss";
 #minimap-canvas{
     position: absolute;
     left: 8px;
@@ -7,6 +8,10 @@
     opacity: 70%;
     background-color: #000;
     height: 300px;
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 100px;
+        border-width: 2px;
+    }
 }
 #fullmap-canvas{
     position: absolute;
@@ -19,4 +24,9 @@
     height: 50%;
     opacity: 90%;
     border-radius: 10px;
+    @media screen and (max-width: palette.$screen_medium) {
+        height: 100px;
+        border-width: 2px;
+        height: 70%;
+    }
 }

@@ -5,7 +5,7 @@ export { GameOverPacket } from "../packets/gameOver.ts"
 import { JoinPacket } from "../packets/join_packet.ts"
 import { ActionPacket } from "../packets/action_packet.ts"
 import { GameOverPacket } from "../packets/gameOver.ts"
-import { UpdatePacket } from "../packets/update_packet.ts";
+import { UpdatePacket } from "../packets/update_packet.ts"
 import { KillFeedPacket } from "../packets/killfeed_packet.ts";
 import { JoinedPacket } from "../packets/joined_packet.ts";
 import { MapPacket } from "../packets/map_packet.ts";
@@ -17,16 +17,16 @@ export const GameConstants={
         max_name_size:25,
     },
     loot:{
-        velocityDecay:0.97,
+        velocityDecay:1.7,
         radius:{
-            ammo:0.38,
+            ammo:0.4,
             gun:0.54,
             consumible:0.4,
             equipament:0.4,
             skin:0.45
         }
     },
-    tps:100,
+    tps:25,
     collision:{
         threads:2,
         chunckSize:6

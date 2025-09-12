@@ -1,10 +1,10 @@
-import { Container2D, Sprite2D } from "../engine/container.ts";
-import { v2 } from "common/scripts/engine/geometry.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
-import { CreatureData } from "common/scripts/others/objectsEncode.ts";
-import { CreatureDef, Creatures } from "common/scripts/definitions/objects/creatures.ts";
+import { Container2D, Sprite2D } from "../engine/container.ts"
+import { v2, Vec2 } from "common/scripts/engine/geometry.ts"
+import { zIndexes } from "common/scripts/others/constants.ts"
+import { CreatureData } from "common/scripts/others/objectsEncode.ts"
+import { CreatureDef, Creatures } from "common/scripts/definitions/objects/creatures.ts"
+import { GameObject } from "../others/gameObject.ts"
 import { Numeric } from "common/scripts/engine/utils.ts";
-import { GameObject } from "../others/gameObject.ts";
 export class Creature extends GameObject{
     stringType:string="creature"
     numberType: number=10
@@ -29,6 +29,12 @@ export class Creature extends GameObject{
         this.container.destroy()
     }
     update(dt:number): void {
+        if(this.dest_pos){
+            this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
+            this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.dest_rot!,this.game.inter_global)
+        }
+        this.container.position=this.position
+        this.manager.cells.updateObject(this)
     }
     kill(){
         if(this.dead)return
@@ -42,15 +48,16 @@ export class Creature extends GameObject{
         this.main_sprite.hotspot=v2.new(.5,.5)
         this.main_sprite.zIndex=2
     }
+    dest_pos?:Vec2
+    dest_rot?:number
     override updateData(data: CreatureData): void {
-        this.container.rotation=Numeric.lerp_rad(this.container.rotation,data.angle,0.75)
-        if(v2.distance(this.position,data.position)<=1){
-            this.position=v2.lerp(this.position,data.position,0.8)
+        if(this.game.save.get_variable("cv_game_interpolation")&&!data.full){
+            this.dest_pos=data.position
+            this.dest_rot=data.angle
         }else{
+            this.container.rotation=data.angle
             this.position=data.position
         }
-        this.hb.translate(data.position)
-        this.container.position=data.position
         if(data.full){
             this.set_def(Creatures.getFromNumber(data.full.def))
             this.hb=this.def.hitbox.transform(this.position)
@@ -58,6 +65,5 @@ export class Creature extends GameObject{
                 this.kill()
             }
         }
-        this.manager.cells.updateObject(this)
     }
 }

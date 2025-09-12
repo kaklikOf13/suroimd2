@@ -45,13 +45,12 @@ export class GamemodeManager{
         }
     }
     on_start(){
-        this.game.interactionsEnabled=true
         if(this.battle_plane_enabled){
             this.call_battle_plane()
         }else{
+            this.game.pvpEnabled=true
             this.game.addTimeout(()=>{
                 this.closed=true
-                this.game.pvpEnabled=true
                 console.log(`Game ${this.game.id} Clossed`)
             },50)
         }

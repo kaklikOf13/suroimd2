@@ -23,6 +23,7 @@ import { type VehicleSeat } from "./vehicle.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { EffectDef, EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { BotAi } from "../player/simple_bot_ai.ts";
 
 export class Player extends ServerGameObject{
@@ -108,6 +109,8 @@ export class Player extends ServerGameObject{
 
         drop:0,
         drop_kind:0,
+
+        is_mobile:false
     }
 
     ai?:BotAi
@@ -121,6 +124,12 @@ export class Player extends ServerGameObject{
         this.left_handed=Math.random()<=.1
 
         this.accessories=new AccessoriesManager(this,3)
+
+        this.side_effect({
+            type:SideEffectType.AddEffect,
+            duration:30,
+            effect:"blue_effect"
+        })
     }
     interact(user: Player): void {
         if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
@@ -149,12 +158,23 @@ export class Player extends ServerGameObject{
         mana_consume:1,
     }
 
+    effects:Map<number,EffectInstance>=new Map()
+
     privateDirtys={
         inventory:true,
         weapons:true,
         current_weapon:true,
         action:true,
         ammos:true,
+    }
+
+    apply_modifiers(mods:Partial<PlayerModifiers>){
+        this.modifiers.boost*=mods.boost??1
+        this.modifiers.bullet_size*=mods.bullet_size??1
+        this.modifiers.bullet_speed*=mods.bullet_speed??1
+        this.modifiers.damage*=mods.damage??1
+        this.modifiers.health*=mods.health??1
+        this.modifiers.speed*=mods.speed??1
     }
 
     update_modifiers(){
@@ -166,13 +186,15 @@ export class Player extends ServerGameObject{
 
         for(const acc of this.accessories.slots){
             if(acc.item){
-                const mods=acc.item.modifiers
-                this.modifiers.boost*=mods.boost??1
-                this.modifiers.bullet_size*=mods.bullet_size??1
-                this.modifiers.bullet_speed*=mods.bullet_speed??1
-                this.modifiers.damage*=mods.damage??1
-                this.modifiers.health*=mods.health??1
-                this.modifiers.speed*=mods.speed??1
+                this.apply_modifiers(acc.item.modifiers)
+            }
+        }
+
+        for(const e of this.effects.values()){
+            for(const sf of e.effect.side_effects){
+                if(sf.type===SideEffectType.Modify){
+                    this.apply_modifiers(sf.modify)
+                }
             }
         }
 
@@ -180,6 +202,63 @@ export class Player extends ServerGameObject{
         this.maxBoost=100*this.modifiers.boost
 
         this.health=Math.min(this.health,this.maxHealth)
+    }
+    side_effect(sf:SideEffect){
+        switch(sf.type){
+            case SideEffectType.AddEffect:{
+                const def=Effects.getFromString(sf.effect)
+                if(this.effects.has(def.idNumber!)){
+                    this.effects.get(def.idNumber!)!.time+=sf.duration
+                }else{
+                    this.effects.set(def.idNumber!,{
+                        effect:def,
+                        tick_time:0,
+                        time:sf.duration
+                    })
+                }
+                break
+            }
+            case SideEffectType.Damage:
+                this.piercingDamage({
+                    amount:sf.amount,
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.SideEffect,
+                })
+                break
+            case SideEffectType.Heal:
+                if(sf.health){
+                    this.health=Math.min(this.health+sf.health.amount,this.maxHealth*(sf.health.max??1))
+                }
+                if(sf.boost){
+                    this.boost=Math.max(this.boost-sf.boost.amount,0)
+                    if(sf.boost!==undefined&&this.boost_def.type!==sf.boost.def.type){
+                        this.boost_def=sf.boost.def
+                        this.boost=sf.boost.amount
+                    }else{
+                        this.boost=Math.min(this.boost+sf.boost.amount,this.maxBoost*(sf.boost.max??1))
+                    }
+                }
+                if(sf.global){
+                    if(this.health<this.maxHealth){
+                        this.health=Math.min(this.health+sf.global.amount,this.maxHealth)
+                    }else if(this.boost>0&&!sf.boost){
+                        this.boost=Math.min(this.boost+sf.global.amount,this.maxBoost)
+                    }else if(this.boost_def.type===sf.global.boost?.type){
+                        this.boost=Math.min(this.boost+sf.global.amount,this.maxBoost)
+                    }else if(sf.global.boost){
+                        this.boost=Math.min(sf.global.amount,this.maxBoost)
+                        this.boost_def=sf.global.boost
+                    }
+                }
+                break
+            case SideEffectType.Parachute:
+                this.parachute={
+                    value:1
+                }
+                this.seat?.clear_player()
+                break
+        }
     }
 
     update(dt:number): void {
@@ -223,6 +302,19 @@ export class Player extends ServerGameObject{
                     this.boost_t-=dt
                 }
                 break
+            }
+        }
+        for(const e of this.effects.values()){
+            e.tick_time-=dt
+            e.time-=dt
+            if(e.tick_time<=0){
+                for(const sf of e.effect.side_effects){
+                    this.side_effect(sf)
+                }
+                e.tick_time=2
+            }
+            if(e.time<0){
+                this.effects.delete(e.effect.idNumber!)
             }
         }
         if(this.seat){
@@ -334,7 +426,7 @@ export class Player extends ServerGameObject{
                 }
             }
         }
-        if(this.input.drop>0){
+        if(this.input.drop>=0){
             const drop=this.input.drop
             switch(this.input.drop_kind){
                 case 1:
@@ -361,7 +453,9 @@ export class Player extends ServerGameObject{
     }
     process_action(action:ActionPacket){
         this.input.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
-        if(!this.input.using_item&&action.UsingItem){
+        if(this.input.is_mobile){
+            this.input.using_item_down=action.UsingItem
+        }else if(!this.input.using_item&&action.UsingItem){
             this.input.using_item_down=true
         }
         this.input.using_item=action.UsingItem
@@ -383,7 +477,7 @@ export class Player extends ServerGameObject{
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
 
         this.inventory.set_weapon(1,random.choose(["hp18","m870","spas12","uzi","vector"]))
-        this.inventory.set_weapon(2,random.choose(["pfeifer_zeliska","m9","dual_pfeifer_zeliska","dual_m9","awp","awms","kar98k","mp5","ak47","ar15"]))
+        this.inventory.set_weapon(2,random.choose(["pfeifer_zeliska","m9","pfeifer_zeliska_dual","m9_dual","awp","awms","kar98k","mp5","ak47","ar15"]))
         this.inventory.set_current_weapon_index(1)
         this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
         this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
@@ -467,19 +561,23 @@ export class Player extends ServerGameObject{
             if(this.actions.current_action){
                 up.priv.action={delay:this.actions.current_delay,type:this.actions.current_action.type}
             }
-            this.camera_hb.min.x=this.position.x-(30/2)
-            this.camera_hb.min.y=this.position.y-(30/2)
-            this.camera_hb.max.x=this.position.x+(30/2)
-            this.camera_hb.max.y=this.position.y+(30/2)
-            /*const objs=[
-                ...Object.values(this.manager.objects[this.layer].objects),
-            ]*/
-            const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
+            const objs=this.get_objects()
             const o=this.game.scene.objects.encode_list(objs,this.view_objects)
             this.view_objects=o.last
             up.objects=o.strm
             this.client.emit(up)
         }
+    }
+    get_objects(){
+        this.camera_hb.min.x=this.position.x-(37/2)
+        this.camera_hb.min.y=this.position.y-(37/2)
+        this.camera_hb.max.x=this.position.x+(37/2)
+        this.camera_hb.max.y=this.position.y+(37/2)
+        /*const objs=[
+            ...Object.values(this.manager.objects[this.layer].objects),
+        ]*/
+        const objs=this.manager.cells.get_objects(this.camera_hb,this.layer)
+        return objs
     }
     damage(params:DamageParams){
         if(this.dead||!this.pvpEnabled||this.parachute||this.imortal||this.invensibility_time>0)return

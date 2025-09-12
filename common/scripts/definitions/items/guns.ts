@@ -7,6 +7,7 @@ export enum FireMode{
     Auto,
     Single
 }
+export interface DualAdditional{dual_offset:number}
 export interface GasParticle{
     count:number
     size:{
@@ -83,7 +84,7 @@ export type GunDef={
         frame?:string
     }
     gasParticles?:GasParticle
-    dual?:DeepPartial<GunDef>&{dual_offset:number}
+    dual?:DeepPartial<GunDef>&DualAdditional
 }&({
     dual_from?:undefined
 }|{
@@ -95,7 +96,7 @@ export const Guns=new Definitions<GunDef,GameItem>((g)=>{
     g.item_type=InventoryItemType.gun
     if(g.dual&&!g.dual_from){
         const dd=mergeDeep({},g,g.dual,{dual_from:g.idString}) as GunDef
-        dd.idString="dual_"+dd.idString
+        dd.idString=dd.idString+"_dual"
         Guns.insert(dd)
     }
 })
@@ -158,7 +159,7 @@ export const GasParticles={
 Guns.insert(
     {
         idString:"m9",
-        fireDelay:0.25,
+        fireDelay:0.2,
         spread:0.7,
         lenght:0.8,
         size:6,
@@ -173,7 +174,7 @@ Guns.insert(
                 radius:0.02,
                 range:100,
                 falloff:0.8,
-                speed:28,
+                speed:31,
                 obstacleMult:1.2,
                 tracer:tracers.small
             }
@@ -212,7 +213,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:60,
+                damage:55,
                 radius:0.02,
                 range:230,
                 falloff:0.7,
@@ -222,7 +223,7 @@ Guns.insert(
             }
         },
         reload:{
-            delay:4,
+            delay:3.2,
             capacity:5,
         },
         recoil:{
@@ -238,7 +239,7 @@ Guns.insert(
             fireDelay:0.8,
             reload:{
                 capacity:10,
-                delay:7
+                delay:6
             }
         }
     },
