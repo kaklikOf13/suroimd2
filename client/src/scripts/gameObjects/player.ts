@@ -376,7 +376,7 @@ export class Player extends GameObject{
                     this.anims.consumible_particle=def.frame.using_particle
                 }if(def.boost_type){
                     this.anims.consumible_particle=`boost_${Boosts[def.boost_type].name}_particle`
-                }else if(def.health){
+                }else{
                     this.anims.consumible_particle="healing_particle"
                 }
                 this.anims.consumible_particles!.enabled=true

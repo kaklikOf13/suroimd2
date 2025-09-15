@@ -56,9 +56,9 @@ import { ConfigType } from "common/scripts/config/config.ts";
             this.elements.play_button_normal.addEventListener("click",(_e)=>{this.playGame({offline:false})})
             this.elements.play_button_campaign.addEventListener("click",(_e)=>{this.playGame({offline:true})})
             this.game=new Game(inputs,sounds,GameSave,resources,renderer)
+            this.game.clock.request_animation_frame=false
             this.game.listners_init()
             this.game.init_gui(gui)
-            this.game.request_animation_frame=false
             this.game.onstop=this.closeGame.bind(this)
         }
         async playGame(join_config:JoinConfig){
@@ -80,6 +80,7 @@ import { ConfigType } from "common/scripts/config/config.ts";
                         enabled:false,
                     },
                 } as ConfigType)
+                this.game_server.clock.request_animation_frame=false
                 this.game_server.mainloop()
                 for(let i=0;i<9;i++){
                     const bot=this.game_server.add_bot()

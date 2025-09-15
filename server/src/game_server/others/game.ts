@@ -164,7 +164,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
                         {id:"oak_tree",count:40},
                         {id:"stone",count:30},
                         {id:"bush",count:20},
-                        {id:"wood_crate",count:10},
+                        {id:"wood_crate",count:15},
+                        {id:"copper_crate",count:3},
                         {id:"barrel",count:8},
 
                         {id:"pig",count:10},

@@ -58,7 +58,7 @@ export class Bullet extends ServerGameObject{
                     if((obj as Player).hb&&!(obj as Player).dead&&(!this.owner||((obj as Player).id===this.owner.id&&this.reflectionCount>0)||(obj as Player).id!==this.owner.id)&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))&&!(obj as Player).parachute){
                         const dmg:number=this.damage
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
-                        *(this.critical?(this.defs.criticalMult??1.5):1);
+                        *(this.critical?(this.defs.criticalMult??1.25):1);
                         (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         this.destroy()
                         break
@@ -69,7 +69,7 @@ export class Bullet extends ServerGameObject{
                     if((obj as Creature).hb&&!(obj as Creature).dead){
                         const dmg:number=this.damage
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
-                        *(this.critical?(this.defs.criticalMult??1.5):1);
+                        *(this.critical?(this.defs.criticalMult??1.25):1);
                         (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         this.destroy()
                         break

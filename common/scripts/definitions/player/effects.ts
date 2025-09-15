@@ -9,6 +9,10 @@ export enum EffectType{
 }
 export interface EffectDef extends Definition{
     effect_type:EffectType
+    particles?:{
+        delay:number
+        frame:string
+    }
     side_effects:SideEffect[]
 }
 export enum SideEffectType{
@@ -79,8 +83,24 @@ Effects.insert(
         ],
     },
     {
+        idString:"kill_haste",
+        effect_type:EffectType.Buff,
+        side_effects:[
+            {
+                type:SideEffectType.Modify,
+                modify:{
+                    speed:2
+                }
+            },
+        ],
+    },
+    {
         idString:"blue_effect",
         effect_type:EffectType.Buff,
+        particles:{
+            delay:0.3,
+            frame:"boost_addiction_particle"
+        },
         side_effects:[
             {
                 type:SideEffectType.Heal,

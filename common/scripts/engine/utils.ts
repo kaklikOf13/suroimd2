@@ -96,6 +96,8 @@ export class Clock {
     public callback: (dt:number)=>void;
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
+    request_animation_frame:boolean=false
+
     constructor(targetFPS: number, timeScale: number, callback: (dt:number)=>void) {
         this.frameDuration = 1000 / targetFPS
         this.lastFrameTime = Date.now()
@@ -117,9 +119,8 @@ export class Clock {
     clear_interval(id:number){
         if(this.intervals.has(id))this.intervals.delete(id)
     }
-
-    public start() {
-        this.interval=setInterval(() => {
+    tick(){
+        if(this.request_animation_frame){
             const currentTime = Date.now()
             const elapsedTime = currentTime - this.lastFrameTime
             this.lastFrameTime = Date.now()
@@ -128,9 +129,25 @@ export class Clock {
             for(const i of this.intervals.values()){
                 i(dt)
             }
-        }, this.frameDuration)
+            self.requestAnimationFrame(this.tick.bind(this))
+        }
+    }
+    public start() {
+        if(!this.request_animation_frame){
+            this.interval=setInterval(() => {
+                const currentTime = Date.now()
+                const elapsedTime = currentTime - this.lastFrameTime
+                this.lastFrameTime = Date.now()
+                const dt=(elapsedTime/1000)*this.timeScale
+                this.callback(dt)
+                for(const i of this.intervals.values()){
+                    i(dt)
+                }
+            }, this.frameDuration)
+        }
     }
     public stop(){
+        if(!this.request_animation_frame)
         clearInterval(this.interval)
     }
 }

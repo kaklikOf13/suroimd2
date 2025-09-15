@@ -9,6 +9,7 @@ import { GameItems } from "common/scripts/definitions/alldefs.ts"
 import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -26,7 +27,7 @@ export class Loot extends ServerGameObject{
     interact(user: Player): void {
         switch(this.item.item_type){
             case InventoryItemType.gun:{
-                const r=user.inventory.give_gun(this.item.idString)
+                const r=user.inventory.give_gun(this.item as unknown as GunDef)
                 if(r)this.destroy()
                 break
             }

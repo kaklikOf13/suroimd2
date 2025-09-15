@@ -68,8 +68,6 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
 
     timeouts:{c:()=>void,delay:number}[]=[]
 
-    request_animation_frame:boolean=false
-
     signals:SignalManager=new SignalManager()
 
     inter_global:number=1
@@ -88,11 +86,6 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     last_time:number=0
     update(dt:number) {
         this.inter_global=1/(1+dt/this.inter_const)
-        if(this.request_animation_frame){
-            const ldt=dt
-            dt=(dt-this.last_time)/1000
-            this.last_time=ldt
-        }
         this.signals.emit("update")
         this.dt=dt
         this.on_update(dt)
@@ -115,10 +108,6 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(this.destroy_queue){
             this.scene.objects.apply_destroy_queue()
         }
-        
-        if(this.request_animation_frame){
-            self.requestAnimationFrame(this.update.bind(this))
-        }
     }
     addTimeout(callback:()=>void,delay:number):number{
         this.timeouts.push({c:callback,delay:delay})
@@ -131,11 +120,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
         // Start
         this.on_run()
         this.signals.emit("start")
-        if(!this.request_animation_frame){
-            this.clock.start()
-        }else{
-            self.requestAnimationFrame(this.update.bind(this))
-        }
+        this.clock.start()
     }
     instantiate(scene:Scene2D):Scene2DInstance<DefaultGameObject>{
         return new Scene2DInstance<DefaultGameObject>(scene,this)

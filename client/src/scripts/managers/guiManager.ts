@@ -570,7 +570,7 @@ export class GuiManager{
 
             if(priv.current_weapon.slot===0){
                 //
-            }else{
+            }else if(wp&&(wp as GunDef).reload){
                 this.content.hand_info_count.innerText=`${priv.current_weapon.ammo}/${(wp as GunDef).reload?.capacity}`
             }
             this.currentWeapon.classList.add("weapon-slot-selected")

@@ -7,8 +7,8 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Armors, type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
 import { AccessoriesManager } from "../player/accesories.ts";
@@ -17,13 +17,11 @@ import { type Loot } from "./loot.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Group, type Team } from "../others/teams.ts";
 import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
-import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
 import { type VehicleSeat } from "./vehicle.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
-import { EffectDef, EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { BotAi } from "../player/simple_bot_ai.ts";
 
 export class Player extends ServerGameObject{
@@ -124,12 +122,6 @@ export class Player extends ServerGameObject{
         this.left_handed=Math.random()<=.1
 
         this.accessories=new AccessoriesManager(this,3)
-
-        this.side_effect({
-            type:SideEffectType.AddEffect,
-            duration:30,
-            effect:"blue_effect"
-        })
     }
     interact(user: Player): void {
         if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
@@ -475,31 +467,9 @@ export class Player extends ServerGameObject{
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
-
-        this.inventory.set_weapon(1,random.choose(["hp18","m870","spas12","uzi","vector"]))
-        this.inventory.set_weapon(2,random.choose(["pfeifer_zeliska","m9","pfeifer_zeliska_dual","m9_dual","awp","awms","kar98k","mp5","ak47","ar15"]))
-        this.inventory.set_current_weapon_index(1)
-        this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
-        this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
-
-        if(Math.random()<=0.75)this.inventory.set_backpack(Backpacks.getFromString(random.choose(["tactical_pack"/*,"regular_pack","basic_pack"*/])))
-        if(Math.random()<=0.75)this.helmet=Armors.getFromString(random.choose(["tactical_helmet","basic_helmet","regular_helmet"]))
-        if(Math.random()<=0.75)this.vest=Armors.getFromString(random.choose(["tactical_vest","basic_vest","regular_vest"]))
-
-        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,random.choose([100,200,300]))
-        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,random.choose([100,200,300]))
-        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,random.choose([120,240,400]))
-        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,random.choose([15,30,60,90]))
-        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,random.choose([10,20,30]))
-
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["gauze","medikit"])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["soda",/*"inhaler","yellow_pills"*/])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose([/*"small_blue_potion",*/"blue_potion"/*,"blue_pills"*/])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose([/*"small_purple_potion",*/"purple_potion"/*,"purple_pills"*/])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_red_crystal","red_crystal","red_pills"])) as unknown as GameItem,4)
-
-        this.boost=100
-        this.boost_def=Boosts[random.choose([BoostType.Shield,BoostType.Adrenaline])]
+        if(this.game.gamemode.player.respawn?.max_respawn){
+            this.respawn_count=this.game.gamemode.player.respawn.max_respawn
+        }
     }
     damagesSplash:DamageSplash[]=[]
 
@@ -694,13 +664,29 @@ export class Player extends ServerGameObject{
         this.health=this.maxHealth*0.3
         this.boost=0
     }
+    respawn_count:number=0
+    respawn():boolean{
+        if(this.respawn_count<=0)return false
+        if(this.game.gamemode.player.respawn?.max_respawn){
+            this.respawn_count--
+        }
+        this.game.addTimeout(()=>{
+            this.dead=false
+            this.health=this.maxHealth
+            this.boost=0
+            this.manager.cells.registry(this)
+            this.dirty=true
+            if(this.game.gamemode.player.respawn?.insert_inventory){
+                this.inventory.gift(this.game.gamemode.player.respawn.insert_inventory)
+            }
+        },2)
+        return true
+    }
     kill(params:DamageParams){
         if(this.dead)return
         this.dead=true
         this.update2()
-        this.inventory.drop_all();
         if(!this.is_npc){
-            this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
             this.game.modeManager.on_player_die(this);
             if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
                 this.game.send_killfeed_message({
@@ -739,15 +725,29 @@ export class Player extends ServerGameObject{
                     })
                 }
             }
+
+            //Respawn
+            if(!this.game.gamemode.player.respawn?.keep_inventory){
+                this.inventory.drop_all()
+            }
+            let sg=true
+            if(this.game.gamemode.player.respawn){
+                sg=!this.respawn()
+            }
+            if(sg){
+                this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
+                this.game.addTimeout(()=>{
+                    this.send_game_over(false)
+                },2)
+            }
+        }else{
+            this.inventory.drop_all()
         }
 
         this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
         for(let i=0;i<3;i++){
             this.game.add_player_gore(this,undefined,this.layer)
         }
-        this.game.addTimeout(()=>{
-            this.send_game_over(false)
-        },2)
         this.dirty=true
         this.game.scene.cells.unregistry(this)
         this.status.rank=this.game.livingPlayers.length+1
