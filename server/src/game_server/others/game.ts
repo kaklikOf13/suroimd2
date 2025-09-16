@@ -27,8 +27,8 @@ import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
-import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
-import { GamemodeManager, TeamsGamemodeManager } from "./modeManager.ts";
+import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
+import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
 import { PlaneData } from "common/scripts/packets/update_packet.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
@@ -43,13 +43,13 @@ export interface GameStatus{
     }[]
 }
 export class Game extends ServerGame2D<ServerGameObject>{
-    config:GameConfig
     map:GameMap
     gamemode:Gamemode
     subscribe_db?:Record<string,{
         skins:number[],
     }>
 
+    debug:GameDebugOptions={}
 
     players:Player[]=[]
     livingPlayers:Player[]=[]
@@ -80,8 +80,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
     replay?:ReplayRecorder2D
 
-    constructor(clients:OfflineClientsManager,id:ID,config:GameConfig,Config:ConfigType){
-        super(config.gameTps,id,clients,PacketManager,[
+    constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
+        super(Config.game.config.gameTps,id,clients,PacketManager,[
             Player,
             Loot,
             Bullet,
@@ -95,13 +95,12 @@ export class Game extends ServerGame2D<ServerGameObject>{
         for(const i of LayersL){
             this.scene.objects.add_layer(i)
         }
-        this.config=config
         this.Config=Config
-        this.clients
+        this.debug=Config.game.debug
         this.scene.objects.encoders=ObjectsE
         this.map=new GameMap(this)
         this.gamemode=DefaultGamemode
-        this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
+        this.modeManager=/*this.config.teamSize>1?new TeamsGamemodeManager(this):*/new SoloGamemodeManager(this)
         this.new_list=false
         /*this.map.generate(generation.island({
             generation:{
@@ -288,7 +287,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.players.push(p)
         this.livingPlayers.push(p)
 
-        p.pvpEnabled=this._pvpEnabled||this.config.deenable_lobby
+        p.pvpEnabled=this._pvpEnabled||this.debug.deenable_lobby===true
         p.input.is_mobile=packet.is_mobile
 
         p.username=username
@@ -383,12 +382,12 @@ export class Game extends ServerGame2D<ServerGameObject>{
     fineshed:boolean=false
     net_interval=0
     start(){
-        if(this.started||!this.modeManager.startRules())return
+        if(this.started||!this.modeManager.start_rules())return
         this.started=true
         this.modeManager.on_start()
         this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
         if(this.replay)this.replay.start()
-        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.config.netTps)
+        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.Config.game.config.netTps)
         console.log(`Game ${this.id} Started`)
     }
     finish(){

@@ -10,14 +10,13 @@ import (
 	"strings"
 )
 
-func (s *ApiServer) handleGetRegions(w http.ResponseWriter, r *http.Request) {
+func (s *ApiServer) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(s.Config.Regions)
-}
-
-func (s *ApiServer) handleGetShop(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(s.Config.Shop)
+	ret := make(map[string]any)
+	ret["regions"] = s.Config.Regions
+	ret["shop"] = s.Config.Shop
+	ret["modes"] = s.Config.Game.Modes
+	json.NewEncoder(w).Encode(ret)
 }
 
 func (s *ApiServer) handleRegister(w http.ResponseWriter, r *http.Request) {

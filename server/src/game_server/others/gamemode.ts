@@ -45,6 +45,10 @@ export interface Gamemode{
             keep_inventory?:boolean
             insert_inventory?:InventoryGift
         }
+        max:number
+    }
+    game:{
+        no_battle_plane?:boolean
     }
 }
 export const DefaultGamemode:Gamemode={
@@ -74,5 +78,9 @@ export const DefaultGamemode:Gamemode={
                 },
             }
         }*/
+       max:70
+    },
+    game:{
+        no_battle_plane:false
     }
 }

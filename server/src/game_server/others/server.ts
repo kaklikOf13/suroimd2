@@ -23,7 +23,7 @@ export class GameServer{
         this.games=[]
         this.game_handles={}
         this.config=config
-        this.addGame(config.game.config)
+        this.addGame()
         Deno.mkdirSync("database/games",{recursive:true})
         Deno.mkdirSync("database/replays",{recursive:true})
     }
@@ -40,14 +40,14 @@ export class GameServer{
             }
         }
         if(this.games.length<this.config.game.max_games){
-            const g=this.addGame(config)
+            const g=this.addGame()
             return g.id
         }
         return -1
     }
-    addGame(config?:GameConfig):Game{
+    addGame():Game{
         const id=this.games.length
-        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,config ?? this.config.game.config,this.config))
+        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,this.config))
         this.games[id].replay=new ServerReplayRecorder2D(this.games[id] as unknown as Game2D,ObjectsE)
         this.games[id].string_id=uuid.generate() as string
         this.games[id].mainloop()

@@ -2,11 +2,11 @@ const newsS=document.querySelector("#about-sm-news") as HTMLDivElement
 
 const news=[
     {
-      "title":"Alpha 1.4",
+      title:"Alpha 1.4",
       content:`
-<h2 id="news">News</h2>
+<h2>News</h2>
 <hr>
-<h3 id="mains">Mains</h3>
+<h3>Mains</h3>
 <ul>
 <li>Mobile And Control Aim Assist</li>
 <li>Mounth Animations</li>
@@ -14,7 +14,7 @@ const news=[
 <li>Mobile Now Autofire</li>
 </ul>
 <hr>
-<h3 id="menu">Menu</h3>
+<h3>Menu</h3>
 <ul>
 <li>Rules</li>
 <li>Ilumation No/Just Brightness/All Option</li>
@@ -24,31 +24,31 @@ const news=[
 <li>Client Side Rotation Option</li>
 </ul>
 <hr>
-<h2 id="changes">Changes</h2>
+<h2>Changes</h2>
 <hr>
-<h3 id="player">Player</h3>
+<h3>Player</h3>
 <ul>
 <li>Human Skins Now Have Diferent Eyes</li>
 </ul>
 <hr>
-<h3 id="obstacles">Obstacles</h3>
+<h3>Obstacles</h3>
 <ul>
 <li>Dead Tree Rework</li>
-<li>Stone Rework And Broken Variation<h3 id="others">Others</h3>
+<li>Stone Rework And Broken Variation<h3>Others</h3>
 </li>
 <li>Some Optimisations</li>
 </ul>
 <hr>
-<h2 id="fixes">Fixes</h2>
+<h2>Fixes</h2>
 <hr>
-<h3 id="weapons">Weapons</h3>
+<h3>Weapons</h3>
 <ul>
 <li>Dual Guns Pickup</li>
 </ul>
 <hr>
-<h3 id="controls">Controls</h3>
+<h3>Controls</h3>
 <ul>
-<li>Mouse And Keyboard Keys<h1 id="play-the-game">Play The Game</h1>
+<li>Mouse And Keyboard Keys<h1>Play The Game</h1>
 The Is Just Playable In Offline Mode.
 </ul>      
 `
@@ -56,14 +56,14 @@ The Is Just Playable In Offline Mode.
     {
       "title":"Alpha 1.3.1",
       content:`
-<h2 id="news">News</h2>
+<h2>News</h2>
 <hr>
-<h3 id="main">Main</h3>
+<h3>Main</h3>
 <ul>
 <li><strong>New Menu!</strong></li>
 </ul>
 <hr>
-<h2 id="fixes">Fixes</h2>
+<h2>Fixes</h2>
 <ul>
 <li>Ammo Bug</li>
 </ul>
@@ -72,9 +72,9 @@ The Is Just Playable In Offline Mode.
     {
       "title":"Alpha 1.3.0",
       content:`
-<h2 id="news">News</h2>
+<h2>News</h2>
 <hr>
-<h3 id="main">Main</h3>
+<h3>Main</h3>
 <ul>
 <li><strong>Map!</strong></li>
 <li><strong>Dynamic Lights</strong></li>
@@ -84,13 +84,13 @@ The Is Just Playable In Offline Mode.
 <li>Gores</li>
 </ul>
 <hr>
-<h3 id="creatures">Creatures</h3>
+<h3>Creatures</h3>
 <ul>
 <li>Chicken (Chicken Jockey)</li>
 <li>Bots Simple AI(I Want Put A Tree After)</li>
 </ul>
 <hr>
-<h3 id="weapons">Weapons</h3>
+<h3>Weapons</h3>
 <ul>
 <li><strong>DUAL WEAPONS/PISTOL!</strong></li>
 <li>Pfeifer Zelikas - 308Sub revolver (banned in 40 countrys)</li>
@@ -98,29 +98,29 @@ The Is Just Playable In Offline Mode.
 <li>M870 World Image</li>
 </ul>
 <hr>
-<h3 id="items">Items</h3>
+<h3>Items</h3>
 <ul>
 <li>Consumibles Sounds</li>
 <li>Consumibles Animation</li>
 <li>Consumibles Particles</li>
 </ul>
 <hr>
-<h3 id="graphics">Graphics</h3>
+<h3>Graphics</h3>
 <ul>
 <li>Vignetting</li>
 <li>Rain</li>
 <li>Tilt Shift</li>
-<li>Color Adjust<h2 id="changes">Changes</h2>
+<li>Color Adjust<h2>Changes</h2>
 </li>
 </ul>
 <hr>
-<h3 id="main">Main</h3>
+<h3>Main</h3>
 <ul>
 <li>Movement Is Now By Axis</li>
 <li>10 Ping Emulation</li>
 </ul>
 <hr>
-<h2 id="fixes">Fixes</h2>
+<h2>Fixes</h2>
 <ul>
 <li>Barrel Smoke</li>
 <li>Keys</li>
@@ -130,22 +130,22 @@ The Is Just Playable In Offline Mode.
 <hr>
 <ul>
 <li>Game Over</li>
-<li>Settings<h1 id="play-the-game">Play The Game</h1>
+<li>Settings<h1>Play The Game</h1>
 </ul>
       `,
     },
     {
       "title":"Alpha 1.2.0",
       content:`
-<h2 id="news">News</h2>
+<h2>News</h2>
 <hr>
-<h3 id="main">Main</h3>
+<h3>Main</h3>
 <ul>
 <li>Forum</li>
 <li>Users View</li>
 </ul>
 <hr>
-<h2 id="fixes">Fixes</h2>
+<h2>Fixes</h2>
 <hr>
 <ul>
 <li>Game Over</li>
@@ -156,9 +156,9 @@ The Is Just Playable In Offline Mode.
     {
       "title":"Alpha 1.1.0",
       "content":`
-<h2 id="news">News</h2>
+<h2>News</h2>
 <hr>
-<h3 id="mains">Mains</h3>
+<h3>Mains</h3>
 <ul>
 <li>Player Graphics</li>
 <li>Settings</li>
@@ -180,13 +180,13 @@ The Is Just Playable In Offline Mode.
 <li>Expanded Inventory</li>
 </ul>
 <hr>
-<h3 id="obstacles">Obstacles</h3>
+<h3>Obstacles</h3>
 <ul>
 <li>Crate</li>
 <li>Obstacles Residues</li>
 </ul>
 <hr>
-<h3 id="guns">Guns</h3>
+<h3>Guns</h3>
 <ul>
 <li>AR15 - 556mm Automatic</li>
 <li>MP5 - 9mm Automatic</li>
@@ -194,30 +194,30 @@ The Is Just Playable In Offline Mode.
 <li>Bullet Image</li>
 </ul>
 <hr>
-<h3 id="player">Player</h3>
+<h3">Player</h3>
 <ul>
 <li>Skins And Animations</li>
 <li>Shield Break Animation</li>
 </ul>
 <hr>
-<h3 id="melees">Melees</h3>
+<h3>Melees</h3>
 <ul>
 <li>Survival Knife</li>
 </ul>
 <hr>
-<h3 id="eastereggs">Eastereggs</h3>
+<h3>Eastereggs</h3>
 <ul>
 <li>Squid Game Easteregg</li>
 <li>You Died Easteregg</li>
 </ul>
 <hr>
-<h3 id="others">Others</h3>
+<h3>Others</h3>
 <ul>
 <li>Explosions Sprite</li>
 <li>Loot Physics</li>
 </ul>
 <hr>
-<h2 id="changes">Changes</h2>
+<h2>Changes</h2>
 <hr>
 <ul>
 <li>Particles Sprites</li>
@@ -227,7 +227,7 @@ The Is Just Playable In Offline Mode.
 <li>Renderer</li>
 </ul>
 <hr>
-<h3 id="others">Others</h3>
+<h3>Others</h3>
 <ul>
 <li>Bullet Through Obstacles</li>
 <li>Loot Tables</li>

@@ -1,50 +1,57 @@
 {
-  "api": {
-    "host": {
-      "port": 8000,
-      "https":false,
-      "cert":"./private/certificate.crt",
-      "key":"./private/private.key",
-      "ca": "./private/ca_bundle.crt"
+    "api": {
+        "host": {
+            "port": 8000,
+            "https":false,
+            "cert":"./private/certificate.crt",
+            "key":"./private/private.key",
+            "ca": "./private/ca_bundle.crt"
+        },
+        "global": "http://localhost:8000"
     },
-    "global": "http://localhost:8000"
-  },
-  "game": {
-    "max_games": 5,
-    "config": {
-      "deenable_lobby": true,
-      "gameTps": 60,
-      "maxPlayers": 70,
-      "netTps": 22,
-      "teamSize": 1
+    "game": {
+        "max_games": 5,
+        "debug":{
+            "deenable_lobby":true
+        },
+        "config": {
+            "gameTps": 60,
+            "netTps": 22
+        },
+        "modes":[
+            {
+                "team_size":[1],
+                "gamemode":"normal",
+                "enabled":true
+            }
+        ],
+        "host": {
+            "port": 8080
+        }
     },
-    "host": {
-      "port": 8080
+    "regions": {
+        "local": {
+            "host": "localhost",
+            "port": 8080
+        },
+        "na": {
+            "host": "na.suroimd.io",
+            "port": 443,
+            "ssh":true
+        }
+    },
+    "database": {
+        "enabled": false,
+        "files": {
+            "accounts": "database/accounts.db",
+            "forum":"database/forum.db"
+        },
+        "api_key": "your_api_key"
+    },
+    "shop": {
+        "skins": {
+            "1": 0,
+            "2": 0
+        }
     }
-  },
-  "regions": {
-    "local": {
-      "host": "localhost",
-      "port": 8080
-    },
-    "na": {
-      "host": "na.suroimd.io",
-      "port": 443,
-      "ssh":true
-    }
-  },
-  "database": {
-    "enabled": false,
-    "files": {
-      "accounts": "database/accounts.db",
-      "forum":"database/forum.db"
-    },
-    "api_key": "your_api_key"
-  },
-  "shop": {
-    "skins": {
-      "1": 0,
-      "2": 0
-    }
-  }
 }

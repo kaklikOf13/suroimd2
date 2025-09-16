@@ -7,24 +7,34 @@ import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Layers } from "common/scripts/others/constants.ts";
-
-export class GamemodeManager{
+export abstract class GamemodeManager{
     game:Game
-    closed:boolean=false
-    team_size:number=1
-    can_join():boolean{
-        return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.config.maxPlayers
-    }
     kill_leader?:Player
+    constructor(game:Game){
+        this.game=game
+    }
+    abstract can_join():boolean
+    abstract can_down(player:Player):boolean
+    abstract on_start():void
+    abstract on_finish():void
+    abstract start_rules():boolean
+    abstract on_player_join(player:Player):void
+    abstract on_player_die(player:Player):void
+    abstract is_ally(a:Player,b:Player):boolean
+}
+export class SoloGamemodeManager extends GamemodeManager{
+    closed:boolean=false
     battle_plane?:Vehicle
     battle_plane_enabled:boolean=true
     constructor(game:Game){
-        this.game=game
-        this.team_size=game.config.teamSize
-        this.battle_plane_enabled=this.battle_plane_enabled&&!game.config.deenable_lobby
+        super(game)
+        this.battle_plane_enabled=this.battle_plane_enabled&&!game.debug.deenable_lobby&&!game.gamemode.game.no_battle_plane
     }
     can_down(_player:Player):boolean{
         return false
+    }
+    can_join():boolean{
+        return !this.closed&&!this.game.fineshed&&this.game.livingPlayers.length<this.game.gamemode.player.max
     }
     call_battle_plane(direction:number=Angle.deg2rad(45)){
         this.battle_plane=this.game.add_vehicle(v2.new(0,0),Vehicles.getFromString("battle_plane"),Layers.Normal)
@@ -64,7 +74,7 @@ export class GamemodeManager{
             console.log(`Game ${this.game.id} Fineshed`)
         },2)
     }
-    startRules():boolean{
+    start_rules():boolean{
         return this.game.livingPlayers.length>1
     }
     on_player_join(_p:Player){
@@ -81,10 +91,12 @@ export class GamemodeManager{
         return false
     }
 }
-export class TeamsGamemodeManager extends GamemodeManager{
+export class TeamsGamemodeManager extends SoloGamemodeManager{
     teamsManager:TeamsManager
-    constructor(game:Game){
+    team_size:number
+    constructor(team_size:number,game:Game){
         super(game)
+        this.team_size=team_size
         this.teamsManager=new TeamsManager()
     }
     override can_down(player:Player):boolean{
@@ -124,12 +136,11 @@ export class TeamsGamemodeManager extends GamemodeManager{
 export class GroupGamemodeManager extends TeamsGamemodeManager{
     groupsManager:GroupManager=new GroupManager()
     f=0
-    groups_size:number
+    groups_count:number
 
-    constructor(game:Game,groups_size:number=2){
-        super(game)
-        this.groups_size=groups_size
-        this.team_size=4
+    constructor(team_size:number=4,groups_count:number=2,game:Game){
+        super(team_size,game)
+        this.groups_count=groups_count
     }
     override can_down(player:Player):boolean{
         return super.can_down(player)&&(player.team&&player.team.get_not_downed_players().length>1)!
@@ -141,7 +152,7 @@ export class GroupGamemodeManager extends TeamsGamemodeManager{
         }
         g.add_player(p)
         this.f++
-        if(this.f>=this.groups_size){
+        if(this.f>=this.groups_count){
             this.f=0
         }
         super.set_team_for_player(p)

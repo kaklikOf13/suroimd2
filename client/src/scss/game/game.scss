@@ -338,6 +338,25 @@
         padding: 7px;
     }
 }
+#information-interaction{
+    width: fit-content;
+    font-family: "Russo-One";
+    font-size: 15px;
+    height: fit-content;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    top: 50%;
+    padding: 15px;
+    margin: auto;
+    @media screen and (max-width: palette.$screen_medium) {
+        top: 20%;
+        border-radius: 5px;
+        font-size: 7px;
+        padding: 7px;
+    }
+}
 #killeader-container{
     #killeader-container-icon{
         width: 30px;

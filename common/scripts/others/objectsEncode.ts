@@ -34,6 +34,7 @@ export interface PlayerData extends EncodedData{
 export interface LootData extends EncodedData{
     full?:{
         item:number
+        count:number
     }
     position:Vec2
 }
@@ -207,7 +208,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             }
             if(full){
                 ret.full={
-                    item:stream.readUint16()
+                    item:stream.readUint16(),
+                    count:stream.readUint8()
                 }
             }
             return ret
@@ -218,6 +220,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writePosition(data.position)
             if(full){
                 stream.writeUint16(data.full!.item)
+                stream.writeUint8(data.full!.count)
             }
         }
     },

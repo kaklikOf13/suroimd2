@@ -1,42 +1,50 @@
 import { HostConfig } from "../engine/server_offline/offline_server.ts";
 
 export interface GameConfig{
-    maxPlayers:number
     gameTps:number
-    teamSize:number
     netTps:number
-    deenable_lobby:boolean
 }
 export interface GamemodeConfig{
-    team_size:number
+    team_size:number[]
+    gamemode:string
     enabled:boolean
+}
+export interface GameDebugOptions{
+    deenable_lobby?:boolean
 }
 export interface RegionDef{
     host:string
     port:number
     ssh?:boolean
 }
-export interface ConfigType {
-  api: {
-    host: HostConfig
-    global:string
-  };
-  game: {
-    max_games: number
-    config: GameConfig
-    host: HostConfig
+export interface ShopConfig{
+    skins: Partial<Record<number, number>>
+}
+export interface ApiSettingsS{
+    regions:Record<string,RegionDef>
     modes:GamemodeConfig[]
-  };
-  regions: Record<string, RegionDef>
-  database: {
-    enabled: boolean;
-    files: {
-      accounts: string;
-      forum: string;
+    shop:ShopConfig
+}
+export interface ConfigType {
+    api: {
+        host: HostConfig
+        global:string
     };
-    api_key: string;
-  };
-  shop: {
-    skins: Partial<Record<number, number>>;
-  };
+    game: {
+        max_games: number
+        config: GameConfig
+        debug:GameDebugOptions
+        host: HostConfig
+        modes:GamemodeConfig[]
+    }
+    regions: Record<string, RegionDef>
+    database: {
+        enabled: boolean
+        files: {
+            accounts: string
+            forum: string
+        }
+        api_key: string
+    }
+    shop: ShopConfig
 }

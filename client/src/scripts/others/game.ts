@@ -9,7 +9,7 @@ import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "../managers/guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
-import { SoundManager } from "../engine/sounds.ts";
+import { ManipulativeSoundInstance, SoundInstance, SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
@@ -32,6 +32,7 @@ import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
 import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
+import { Sound } from "../engine/resources.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -49,6 +50,9 @@ export class Game extends ClientGame2D<GameObject>{
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
   scope_zoom:number=0.53
+
+  music:ManipulativeSoundInstance
+  ambience:ManipulativeSoundInstance
   //0.14=l6 32x
   //0.27=l5 16x
   //0.35=l4 8x
@@ -104,6 +108,11 @@ export class Game extends ClientGame2D<GameObject>{
           break
         case "interact":
           this.action.interact=true
+          if(this.activePlayer&&this.activePlayer.current_interaction&&this.activePlayer.current_interaction.stringType==="loot"&&(this.activePlayer.current_interaction as Loot).pickup_sound){
+            this.sounds.play((this.activePlayer.current_interaction as Loot).pickup_sound!,{
+
+            },"loot")
+          }
           break
         case "weapon1":
           this.action.hand=0
@@ -246,6 +255,9 @@ export class Game extends ClientGame2D<GameObject>{
       enabled:this.save.get_variable("cv_graphics_climate")
     })
     this.dead_zone.append()
+
+    this.music=new ManipulativeSoundInstance("music",this.sounds)
+    this.ambience=new ManipulativeSoundInstance("ambience",this.sounds)
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)
@@ -288,7 +300,16 @@ export class Game extends ClientGame2D<GameObject>{
     }
     this.renderer.fullCanvas()
     this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
-    
+    if(!this.music.running){
+      if(Math.random()<=0.1){
+        this.music.set(random.choose([
+          this.resources.get_audio("game_normal_music_1"),
+          this.resources.get_audio("game_normal_music_2"),
+          this.resources.get_audio("game_normal_music_3"),
+          this.resources.get_audio("game_normal_music_4")
+        ]))
+      }
+    }
   }
   update_camera(){
     if(this.activePlayer){
@@ -324,6 +345,8 @@ export class Game extends ClientGame2D<GameObject>{
       this.guiManager.add_killfeed_message(kfp.message)
     })
     this.client.on("joined",(jp:JoinedPacket)=>{
+      this.guiManager.start()
+      this.ambience.set(this.resources.get_audio("rain_ambience"),true)
       this.guiManager.process_joined_packet(jp)
       this.happening=true
       this.mainloop()
@@ -354,7 +377,6 @@ export class Game extends ClientGame2D<GameObject>{
     this.fake_crosshair.visible=false
 
     this.guiManager.players_name={}
-    this.guiManager.start()
     const zoom=this.scope_zoom*(this.renderer.canvas.width/300)
     if(this.scope_zoom!==this.camera.zoom){
       this.camera.zoom=zoom

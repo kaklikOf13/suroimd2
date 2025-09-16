@@ -7,26 +7,28 @@ import (
 )
 
 type HostConfig struct {
-    Port int    `json:"port"`
-    Name string `json:"name,omitempty"`
-    HTTPS bool  `json:"https,omitempty"`
-    CertFile string `json:"cert,omitempty"`
-    KeyFile  string `json:"key,omitempty"`
-    CAFile   string `json:"ca,omitempty"`
+	Port     int    `json:"port"`
+	Name     string `json:"name,omitempty"`
+	HTTPS    bool   `json:"https,omitempty"`
+	CertFile string `json:"cert,omitempty"`
+	KeyFile  string `json:"key,omitempty"`
+	CAFile   string `json:"ca,omitempty"`
 }
 
 type GameConfigInner struct {
-	DeenableFeast bool `json:"deenable_feast"`
-	GameTps       int  `json:"gameTps"`
-	MaxPlayers    int  `json:"maxPlayers"`
-	NetTps        int  `json:"netTps"`
-	TeamSize      int  `json:"teamSize"`
+	GameTps int `json:"gameTps"`
+	NetTps  int `json:"netTps"`
 }
-
+type ModeConfig struct {
+	TeamSize []int  `json:"team_size"`
+	Enabled  bool   `json:"enabled"`
+	Gamemode string `json:"gamemode"`
+}
 type GameConfig struct {
 	MaxGames int             `json:"max_games"`
 	Config   GameConfigInner `json:"config"`
 	Host     HostConfig      `json:"host"`
+	Modes    []ModeConfig    `json:"modes"`
 }
 
 type RegionDef struct {

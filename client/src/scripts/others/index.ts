@@ -1,6 +1,6 @@
 import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import {  ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
+import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
 import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
@@ -14,13 +14,20 @@ import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
 import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-(() => {
+(async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)
     inputs.bind(document.body,canvas)
 
     document.body.appendChild(canvas)
     const sounds=new SoundManager()
+    sounds.volumes={
+        "players":1,
+        "music":1,
+        "loot":1,
+        "obstacles":1,
+        "ambience":1
+    }
 
     const renderer=new WebglRenderer(canvas)
 
@@ -37,7 +44,6 @@ import { ConfigType } from "common/scripts/config/config.ts";
     menu_manager.start()
 
     const gui=new GuiManager()
-    //await resources.load_audio("menu_music",{src:"sounds/musics/menu_music.mp3",volume:1})
 
     interface JoinConfig{
         offline:boolean
@@ -70,12 +76,15 @@ import { ConfigType } from "common/scripts/config/config.ts";
                     this.game_server=undefined
                 }
                 this.game_server = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-                    gameTps:60,
-                    maxPlayers:10,
-                    teamSize:1,
-                    netTps:22,
-                    deenable_lobby:true,
-                },{
+                    game:{
+                        config:{
+                            gameTps:60,
+                            netTps:22
+                        },
+                        debug:{
+                            deenable_lobby:true
+                        }
+                    },
                     database:{
                         enabled:false,
                     },
@@ -101,12 +110,11 @@ import { ConfigType } from "common/scripts/config/config.ts";
                 }
                 socket=this.game_server.clients.fake_connect(GameSave.get_variable("cv_game_ping")) as BasicSocket
             }else{
-                const reg=menu_manager.regions[GameSave.get_variable("cv_game_region")]
+                const reg=menu_manager.api_settings.regions[GameSave.get_variable("cv_game_region")]
                 const ser=new IPLocation(reg.host,reg.port)
                 const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())
                 socket=new WebSocket(ser.toString("ws") + "/api/" + ghost + "/ws") as unknown as BasicSocket
             }
-            sounds.set_music(null)
             const c=new Client(socket!,PacketManager)
             c.onopen=this.game.connect.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
 

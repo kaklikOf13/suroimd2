@@ -53,4 +53,4 @@ deno task dev
 ---
 ### 🎮 Play the Local Game
 Once the server is running, open:
-👉 (Local Game)[http://localhost:3000]
+👉 [Local Game](http://localhost:3000)

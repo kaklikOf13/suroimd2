@@ -3,12 +3,13 @@ import { type GameConsole } from "../engine/console.ts";
 import { ResourcesManager } from "../engine/resources.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { api, API_BASE } from "../others/config.ts";
-import { RegionDef } from "common/scripts/config/config.ts";
+import { ApiSettingsS, RegionDef } from "common/scripts/config/config.ts";
 import { ShowTab } from "../engine/mod.ts";
 import { SoundManager } from "../engine/sounds.ts";
 
 export class MenuManager{
     save:GameConsole
+    api_settings:ApiSettingsS
     content={
         insert_name:document.body.querySelector("#insert-name") as HTMLInputElement,
         menu_p:document.body.querySelector("#menu-options") as HTMLDivElement,
@@ -104,6 +105,27 @@ export class MenuManager{
         this.submenu_param=!!params
         this.resources=resources
         this.update_api()
+
+        this.api_settings={
+            modes:[
+                {
+                    enabled:true,
+                    gamemode:"normal",
+                    team_size:[1]
+                },
+            ],
+            regions:{
+                "local":{
+                    host:"localhost",
+                    port:8080
+                }
+            },
+            shop:{
+                skins:{
+
+                }
+            }
+        }
     }
     menu_tabs:Record<string,Record<string,HTMLElement>>={}
     load_menu(submenu:string|null){
@@ -147,19 +169,20 @@ export class MenuManager{
             }
         }
         await this.resources.load_group("/sounds/game/common.json")
+        await this.resources.load_audio("game_normal_music_1",{src:"sounds/musics/game/normal/game_normal_music_1.mp3",volume:1})
+        await this.resources.load_audio("game_normal_music_2",{src:"sounds/musics/game/normal/game_normal_music_2.mp3",volume:1})
+        await this.resources.load_audio("game_normal_music_3",{src:"sounds/musics/game/normal/game_normal_music_3.mp3",volume:1})
+        await this.resources.load_audio("game_normal_music_4",{src:"sounds/musics/game/normal/game_normal_music_4.mp3",volume:1})
+
+        await this.resources.load_audio("rain_ambience",{src:"sounds/ambience/rain_ambience.mp3",volume:1})
         this.loaded=true
     }
-    regions:Record<string,RegionDef>={}
     async update_api(){
         this.content.select_region.innerHTML=""
         if(api){
-            this.regions=await(await fetch(`${API_BASE}/get-regions`)).json()
-        }else{
-            this.regions={
-                "local":{host:"localhost",port:8000}
-            }
+            this.api_settings=await(await fetch(`${API_BASE}/get-settings`)).json()
         }
-        for(const region of Object.keys(this.regions)){
+        for(const region of Object.keys(this.api_settings.regions)){
             this.content.select_region.insertAdjacentHTML("beforeend",`<option value=${region}>${region}</option>`)
         }
         this.content.select_region.value=this.save.get_variable("cv_game_region")

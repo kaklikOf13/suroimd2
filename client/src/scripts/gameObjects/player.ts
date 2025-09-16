@@ -19,6 +19,8 @@ import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { ParticlesEmitter2D} from "common/scripts/engine/particles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
+import { type Loot } from "./loot.ts";
+import { type Obstacle } from "./obstacle.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -294,6 +296,7 @@ export class Player extends GameObject{
             this.game.activePlayer=this
         }
     }
+    current_interaction?:Loot|Obstacle|undefined
     update(dt:number): void {
         this.attacking-=dt
         if(this.dest_pos){
@@ -305,6 +308,35 @@ export class Player extends GameObject{
         this.container.position=this.position
         this.container.rotation=this.rotation
         this.manager.cells.updateObject(this)
+        const objs=this.manager.cells.get_objects(this.hb,this.layer)
+        this.current_interaction=undefined
+        if(this.game.activePlayerId===this.id){
+            this.game.guiManager.state.loot=false
+            this.game.guiManager.state.interact=false
+            this.game.guiManager.state.information_box_message=""
+            for(const o of objs){
+                if(this.hb.collidingWith(o.hb)){
+                    switch(o.stringType){
+                        case "loot":{
+                            this.game.guiManager.state.loot=true
+                            this.game.guiManager.state.information_box_message=`Take ${(o as Loot).item.idString}${(o as Loot).count>1?`(${(o as Loot).count})`:""}`
+                            break
+                        }
+                        case "obstacle":{
+                            if((o as Obstacle).def.interactDestroy&&!(o as Obstacle).dead){
+                                this.game.guiManager.state.interact=true
+                                this.game.guiManager.state.information_box_message=`Break`
+                            }
+                            break
+                        }
+                    }
+                }
+                if(this.game.guiManager.state.loot||this.game.guiManager.state.interact){
+                    this.current_interaction=o
+                    break
+                }
+            }
+        }
     }
     override onDestroy(): void {
         this.anims.consumible_particles!.destroyed=true
@@ -633,11 +665,8 @@ export class Player extends GameObject{
             if(data.full){
                 this.game.guiManager.update_equipaments()
             }
-            this.game.flying_position=data.parachute?.value??0
-            this.game.guiManager.update_hint({
-                driving:this.driving,
-                gun:!this.driving&&((this.current_weapon&&(this.current_weapon as unknown as GameItem).item_type===InventoryItemType.gun)??false)
-            })
+            this.game.guiManager.state.driving=this.driving
+            this.game.guiManager.state.gun=!this.driving&&this.current_weapon!==undefined&&Guns.exist(this.current_weapon.idString)
         }
     }
 }

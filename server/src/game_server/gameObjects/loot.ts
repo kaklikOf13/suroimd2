@@ -164,7 +164,8 @@ export class Loot extends ServerGameObject{
         return {
             position:this.position,
             full:{
-                item:GameItems.keysString[this.item.idString]
+                item:GameItems.keysString[this.item.idString],
+                count:this.count
             }
         }
     }

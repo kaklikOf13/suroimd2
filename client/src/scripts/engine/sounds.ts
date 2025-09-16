@@ -119,7 +119,6 @@ export class SoundInstance{
     }
     stop(){
         if(this.stopping)return
-
         this.setGain(0.0)
         this.stopTime=this.ctx.currentTime+0.1
         this.stopping=true
@@ -134,13 +133,42 @@ export class SoundInstance{
         this.playState=SoundPlayState.playFinished
     }
 }
+export class ManipulativeSoundInstance{
+    volume_id:string=""
+    instance:SoundInstance|null
+    manager:SoundManager
+    constructor(volume_id:string="",manager:SoundManager){
+        this.instance=null
+        this.volume_id=volume_id
+        this.manager=manager
+    }
+    get running():boolean{
+        return (this.instance&&this.instance.playState==SoundPlayState.playSucceeded) as boolean
+    }
+    set(sound:Sound|null|undefined,loop:boolean=false){
+        if(sound){
+            if(this.instance){
+                this.instance.stop()
+            }else{
+                this.instance=new SoundInstance(this.manager,this.manager.ctx)
+            }
+            let volume = sound.volume*this.manager.masterVolume*(this.manager.volumes[this.volume_id]===undefined?1:this.manager.volumes[this.volume_id])
+            volume = this.manager.mute ? 0 : volume
+            this.instance.start(this.manager.masterGainNode,sound.buffer,volume,loop,0,0)
+        }else{
+            if(this.instance){
+                this.instance.stop()
+            }
+            this.instance=null
+        }
+    }
+}
 export class SoundManager{
     ctx:AudioContext=new self.AudioContext()
     mute = false
     muteOld=false
     masterVolume=1
     masterVolumeOld=1
-    musicVolume=1
     volumes:Record<string,number>={}
     soundInstances: SoundInstance[]=[]
     playingInstances: SoundInstance[]=[]
@@ -150,8 +178,6 @@ export class SoundManager{
 
     masterGainNode!: GainNode
     compressorNode!: DynamicsCompressorNode
-
-    music:SoundInstance|null=null
     constructor(){
         // deno-lint-ignore ban-ts-comment
         // @ts-expect-error
@@ -165,24 +191,6 @@ export class SoundManager{
         this.compressorNode = this.ctx.createDynamicsCompressor()
         this.masterGainNode.connect(this.compressorNode)
         this.compressorNode.connect(this.ctx.destination)
-    }
-    set_music(sound:Sound|null,loop:boolean=false){
-        if(sound){
-            if(this.music){
-                this.music.stop()
-            }else{
-                this.music=new SoundInstance(this,this.ctx)
-            }
-            let volume = sound.volume*this.masterVolume*this.musicVolume
-            volume = this.mute ? 0 : volume
-            this.music.start(this.masterGainNode,sound.buffer,volume,loop,0,0)
-        }else{
-            if(this.music){
-                this.music.stop()
-            }
-            this.music=null
-        }
-
     }
     play(sound: Sound, params: Partial<SoundOptions>, volume_group?: string): SoundInstance | undefined {
         if (!sound) return;
@@ -258,5 +266,4 @@ export class SoundManager{
             }
         }
     }
-
 }

@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { Numeric, v2 } from "common/scripts/engine/mod.ts";
+import { Numeric } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
@@ -10,16 +10,19 @@ import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
-import { type Player } from "../gameObjects/player.ts";
 import { isMobile } from "../engine/game.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
+import { stat } from "node:fs";
 
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
+    loot:boolean
+    interact:boolean
+    information_box_message:string
 }
 export class GuiManager{
     game!:Game
@@ -71,6 +74,7 @@ export class GuiManager{
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
         
         information_killbox:document.querySelector("#information-killbox") as HTMLDivElement,
+        information_interact:document.querySelector("#information-interaction") as HTMLDivElement,
 
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
 
@@ -397,24 +401,43 @@ export class GuiManager{
         ShowElement(this.content.gameD)
         HideElement(this.content.menuD)
     }
-    state?:HelpGuiState
-    update_hint(state:HelpGuiState){
-        if(!this.state||
-            state.driving!==this.state.driving||
-            state.gun!==this.state.gun
-        ){
-            this.state=state
-            this.content.help_gui.innerHTML=``
-            if(state.driving){
-                this.content.help_gui.insertAdjacentHTML("beforeend",`
-                    <span>R - Reverse</span>
-                    <span>E - Leave</span>
-                    `)
-            }
-            if(state.gun){
-                this.content.help_gui.insertAdjacentHTML("beforeend",`
-                    <span>R - Reload</span>
-                    `)
+    state:HelpGuiState={
+        driving:false,
+        gun:false,
+        loot:false,
+        interact:false,
+        information_box_message:"a"
+    }
+    update_hint(){
+        const state=this.state
+        this.content.help_gui.innerHTML=``
+        if(state.driving){
+            this.content.help_gui.insertAdjacentHTML("beforeend",`
+                <span>R - Reverse</span>
+                <span>E - Leave</span>
+                `)
+        }
+        if(state.gun){
+            this.content.help_gui.insertAdjacentHTML("beforeend",`
+                <span>R - Reload</span>
+                `)
+        }
+        if(state.loot){
+            this.content.help_gui.insertAdjacentHTML("beforeend",`
+                <span>E - Take Loot</span>
+                `)
+        }
+        if(state.interact){
+            this.content.help_gui.insertAdjacentHTML("beforeend",`
+                <span>E - Interact</span>
+                `)
+        }
+        if(state.information_box_message!==this.content.information_interact.innerHTML){
+            if(state.information_box_message===""){
+                HideElement(this.content.information_interact)
+            }else{
+                ShowElement(this.content.information_interact)
+                this.content.information_interact.innerHTML=state.information_box_message
             }
         }
     }
@@ -650,6 +673,7 @@ export class GuiManager{
         }else{
             HideElement(this.content.action_info)
         }
+        this.update_hint()
     }
     set_health(health:number,max_health:number){
         const p=health/max_health

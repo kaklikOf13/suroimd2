@@ -223,12 +223,11 @@ export class Player extends ServerGameObject{
                     this.health=Math.min(this.health+sf.health.amount,this.maxHealth*(sf.health.max??1))
                 }
                 if(sf.boost){
-                    this.boost=Math.max(this.boost-sf.boost.amount,0)
-                    if(sf.boost!==undefined&&this.boost_def.type!==sf.boost.def.type){
+                    if(this.boost_def.type===sf.boost.def.type){
+                        this.boost=Math.min(this.boost+sf.boost.amount,this.maxBoost*(sf.boost.max??1))
+                    }else{
                         this.boost_def=sf.boost.def
                         this.boost=sf.boost.amount
-                    }else{
-                        this.boost=Math.min(this.boost+sf.boost.amount,this.maxBoost*(sf.boost.max??1))
                     }
                 }
                 if(sf.global){
@@ -345,7 +344,7 @@ export class Player extends ServerGameObject{
             })
         }else if(!this.parachute&&!this.seat){
             this.attacking-=dt
-            if(this.input.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_lobby)){
+            if(this.input.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.debug.deenable_lobby)){
                 this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
             }
             
@@ -356,7 +355,7 @@ export class Player extends ServerGameObject{
             }
             //Collision
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
-            let can_interact=this.game.config.deenable_lobby||this.game.pvpEnabled
+            let can_interact=this.game.debug.deenable_lobby||this.game.pvpEnabled
             for(const obj of objs){
                 if(obj.id===this.id)continue
                 switch(obj.stringType){
@@ -557,7 +556,7 @@ export class Player extends ServerGameObject{
             const is_ally=this.game.modeManager.is_ally(this,params.owner)
             if(
                 params.owner.id!==this.id&&
-                (this.game.modeManager.team_size>1&&is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
+                (is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
             )return
             mod*=params.owner.modifiers.damage
         }

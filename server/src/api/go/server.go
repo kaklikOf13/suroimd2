@@ -119,8 +119,7 @@ func (apiServer *ApiServer) HandleFunctions() {
 	r := mux.NewRouter()
 
 	api_r := r.PathPrefix("/").Subrouter()
-	api_r.HandleFunc("/get-regions", apiServer.handleGetRegions)
-	api_r.HandleFunc("/get-shop", apiServer.handleGetShop)
+	api_r.HandleFunc("/get-settings", apiServer.handleGetSettings)
 	api_r.HandleFunc("/register", apiServer.handleRegister)
 	api_r.HandleFunc("/login", apiServer.handleLogin)
 	api_r.HandleFunc("/get-your-status", apiServer.handleGetYourStatus)
