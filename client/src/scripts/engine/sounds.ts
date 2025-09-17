@@ -145,6 +145,13 @@ export class ManipulativeSoundInstance{
     get running():boolean{
         return (this.instance&&this.instance.playState==SoundPlayState.playSucceeded) as boolean
     }
+    update(){
+        if(this.instance?.ctx) {
+            if (this.instance.ctx.currentTime > this.instance.stopTime) {
+                this.instance.playState=SoundPlayState.playFinished
+            }
+        }
+    }
     set(sound:Sound|null|undefined,loop:boolean=false){
         if(sound){
             if(this.instance){
@@ -178,6 +185,8 @@ export class SoundManager{
 
     masterGainNode!: GainNode
     compressorNode!: DynamicsCompressorNode
+
+    manipulatives:ManipulativeSoundInstance[]=[]
     constructor(){
         // deno-lint-ignore ban-ts-comment
         // @ts-expect-error
@@ -191,6 +200,12 @@ export class SoundManager{
         this.compressorNode = this.ctx.createDynamicsCompressor()
         this.masterGainNode.connect(this.compressorNode)
         this.compressorNode.connect(this.ctx.destination)
+    }
+
+    add_manipulative_si(volume_id:string):ManipulativeSoundInstance{
+        const m=new ManipulativeSoundInstance(volume_id,this)
+        this.manipulatives.push(m)
+        return m
     }
     play(sound: Sound, params: Partial<SoundOptions>, volume_group?: string): SoundInstance | undefined {
         if (!sound) return;
@@ -244,6 +259,10 @@ export class SoundManager{
 
         if (masterVolume != masterVolumeOld) {
             this.masterGainNode.gain.setTargetAtTime(masterVolume, this.ctx.currentTime, 0.02);
+        }
+
+        for(const m of this.manipulatives){
+            m.update()
         }
 
         for (let i = this.playingInstances.length - 1; i >= 0; i--) {

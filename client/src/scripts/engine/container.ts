@@ -764,7 +764,7 @@ export class SubCanvas2D extends Container2DObject {
 
         gl.viewport(0, 0, w, h);
         gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT)
 
         if(this.camera.center_pos){
             const halfViewSize = v2.new(this.camera.size.x / 2, this.camera.size.y / 2)

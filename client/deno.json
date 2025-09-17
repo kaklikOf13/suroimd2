@@ -4,7 +4,7 @@
     "dev:electron":"npx electron electron/dev.js",
     "dev:window":"deno task dev & deno task dev:electron",
     "build": "deno run -A npm:vite build",
-    "install":"npm i vite @sveltejs/vite-plugin-svelte sass canvas maxrects-packer minimatch semver && deno install --allow-scripts=npm:electron@38.0.0,npm:canvas@3.1.2",
+    "install":"npm i vite @sveltejs/vite-plugin-svelte fdir sass canvas maxrects-packer minimatch semver electron",
     "clear":"rm -rf deno.lock && rm -rf package-lock.json && rm -rf package.json && rm -rf node_modules"
   },
   "nodeModulesDir": "auto",

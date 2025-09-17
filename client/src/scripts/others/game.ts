@@ -256,8 +256,8 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.dead_zone.append()
 
-    this.music=new ManipulativeSoundInstance("music",this.sounds)
-    this.ambience=new ManipulativeSoundInstance("ambience",this.sounds)
+    this.music=this.sounds.add_manipulative_si("music")
+    this.ambience=this.sounds.add_manipulative_si("ambience")
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)

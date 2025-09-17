@@ -136,7 +136,8 @@ export class MinimapManager{
                         image:GetObstacleBaseFrame(def,ob.variation),
                         position:ob.position,
                         rotation:ob.rotation,
-                        scale:ob.scale
+                        scale:ob.scale,
+                        hotspot:v2.new(0.5,0.5)
                     },this.game.resources)
                     this.objects.add_child(spr)
                     spr.cam=this.map.camera
@@ -144,6 +145,7 @@ export class MinimapManager{
                 }
             }
         }
+        this.objects.updateZIndex()
         this.render()
     }
 }
