@@ -15,7 +15,6 @@ import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
-import { stat } from "node:fs";
 
 export interface HelpGuiState{
     driving:boolean

@@ -33,6 +33,7 @@ import { Plane } from "./planes.ts";
 import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { Sound } from "../engine/resources.ts";
+import { Tween } from "svelte/motion";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -301,7 +302,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.renderer.fullCanvas()
     this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
     if(!this.music.running){
-      if(Math.random()<=0.1){
+      if(Math.random()<=0.00025){
         this.music.set(random.choose([
           this.resources.get_audio("game_normal_music_1"),
           this.resources.get_audio("game_normal_music_2"),
@@ -310,6 +311,13 @@ export class Game extends ClientGame2D<GameObject>{
         ]))
       }
     }
+
+    /*
+    Ambient
+    */
+   if(Math.random()<=0.004){
+    this.bolt()
+   }
   }
   update_camera(){
     if(this.activePlayer){
@@ -333,6 +341,25 @@ export class Game extends ClientGame2D<GameObject>{
       plane.updateData(p)
     }
   }
+  bolt_tween?:Tween
+  bolt(){
+    if(this.bolt_tween){
+      //
+    }else{
+      this.sounds.play(this.resources.get_audio(`thunder_${random.int(1,3)}`),{
+
+      },"ambience")
+      this.bolt_tween=this.addTween({
+        target:this.light_map,
+        to:{ambient:0},
+        duration:0.1,
+        yoyo:true,
+        onComplete:()=>{
+          this.bolt_tween=undefined
+        },
+      })
+    }
+  }
   connect(client:Client,playerName:string){
     this.client=client
     this.light_map.quality=this.save.get_variable("cv_graphics_lights")
@@ -346,7 +373,7 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.client.on("joined",(jp:JoinedPacket)=>{
       this.guiManager.start()
-      this.ambience.set(this.resources.get_audio("rain_ambience"),true)
+      this.ambience.set(this.resources.get_audio("storm_ambience"),true)
       this.guiManager.process_joined_packet(jp)
       this.happening=true
       this.mainloop()

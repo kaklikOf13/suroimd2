@@ -175,6 +175,11 @@ export class MenuManager{
         await this.resources.load_audio("game_normal_music_4",{src:"sounds/musics/game/normal/game_normal_music_4.mp3",volume:1})
 
         await this.resources.load_audio("rain_ambience",{src:"sounds/ambience/rain_ambience.mp3",volume:1})
+        await this.resources.load_audio("storm_ambience",{src:"sounds/ambience/storm_ambience.mp3",volume:1})
+
+        await this.resources.load_audio("thunder_1",{src:"sounds/ambience/thunder_1.mp3",volume:1})
+        await this.resources.load_audio("thunder_2",{src:"sounds/ambience/thunder_2.mp3",volume:1})
+        await this.resources.load_audio("thunder_3",{src:"sounds/ambience/thunder_3.mp3",volume:1})
         this.loaded=true
     }
     async update_api(){
