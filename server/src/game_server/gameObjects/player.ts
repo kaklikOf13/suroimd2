@@ -1,5 +1,5 @@
-import { CircleHitbox2D, Client, NullVec2, Numeric, random, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
-import { ActionPacket } from "common/scripts/packets/action_packet.ts"
+import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { ActionPacket, InputAction, InputActionType } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { GInventory,GunItem,LItem} from "../player/inventory.ts";
@@ -102,11 +102,7 @@ export class Player extends ServerGameObject{
         interaction:false,
         reload:false,
 
-        hand:0,
-        use_slot:-1,
-
-        drop:0,
-        drop_kind:0,
+        actions:[] as InputAction[],
 
         is_mobile:false
     }
@@ -397,9 +393,6 @@ export class Player extends ServerGameObject{
         if(this.ai)this.ai.AI(this,dt)
     }
     update_input(){
-        if(this.input.hand>=0&&this.input.hand<3){
-            this.inventory.set_current_weapon_index(this.input.hand)
-        }
         if(this.input.reload&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
             this.input.reload=false
@@ -410,30 +403,51 @@ export class Player extends ServerGameObject{
             this.input.interaction=false
         }
         if(!this.downed&&!this.parachute){
-            if(this.input.use_slot!==-1){
-                const item=this.inventory.slots[this.input.use_slot]?.item
-                if(item){
-                    item.on_use(this,item)
+            for(const a of this.input.actions){
+                switch(a.type){
+                    case InputActionType.drop:
+                        if(a.drop>=0){
+                            const drop=a.drop
+                            switch(a.drop_kind){
+                                case 1:
+                                    this.inventory.drop_weapon(Numeric.clamp(drop,0,2) as (0|1|2))
+                                    break
+                                case 2:
+                                    this.inventory.drop_ammo(drop)
+                                    break
+                                case 3:
+                                    this.inventory.drop_slot(drop)
+                                    break
+                                case 4:
+                                    this.inventory.drop_item(drop)
+                                    break
+                            }
+                        }
+                        break
+                    case InputActionType.use_item:{
+                        const item=this.inventory.slots[a.slot]?.item
+                        if(item){
+                            item.on_use(this,item)
+                        }
+                        break
+                    }
+                    case InputActionType.set_hand:
+                        if(!(a.hand>=0&&a.hand<3))break
+                        this.inventory.set_current_weapon_index(a.hand)
+                        break
+                    case InputActionType.debug_give:
+                        if(this.game.debug.debug_menu){
+                            this.inventory.give_item(GameItems.valueString[a.item],a.count,true)
+                        }
+                        break
+                    case InputActionType.debug_spawn:
+                        if(this.game.debug.debug_menu){
+                            this.game.add_loot(this.position,GameItems.valueString[a.item],a.count,this.layer)
+                        }
+                        break
                 }
             }
-        }
-        if(this.input.drop>=0){
-            const drop=this.input.drop
-            switch(this.input.drop_kind){
-                case 1:
-                    this.inventory.drop_weapon(Numeric.clamp(drop,0,2) as (0|1|2))
-                    break
-                case 2:
-                    this.inventory.drop_ammo(drop)
-                    break
-                case 3:
-                    this.inventory.drop_slot(drop)
-                    break
-                case 4:
-                    this.inventory.drop_item(drop)
-                    break
-            }
-            this.input.drop=-1
+            this.input.actions.length=0
         }
     }
     clear(){
@@ -443,26 +457,17 @@ export class Player extends ServerGameObject{
         this.dirty=true
     }
     process_action(action:ActionPacket){
-        this.input.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
+        this.input.movement=v2.normalizeSafe(v2.clamp1(action.movement,-1,1),NullVec2)
         if(this.input.is_mobile){
-            this.input.using_item_down=action.UsingItem
-        }else if(!this.input.using_item&&action.UsingItem){
+            this.input.using_item_down=action.use_weapon
+        }else if(!this.input.using_item&&action.use_weapon){
             this.input.using_item_down=true
         }
-        this.input.using_item=action.UsingItem
         this.input.rotation=action.angle
         this.input.interaction=action.interact
-        this.input.reload=action.Reloading
-        this.input.hand=action.hand
-        this.input.use_slot=action.use_slot
-        this.input.drop_kind=action.drop_kind
-        this.input.drop=action.drop
-        /*
-        if(action.cellphoneAction){
-            if(this.handItem&&this.handItem instanceof OtherItem){
-                this.handItem.cellphone_action(this,action.cellphoneAction)
-            }
-        }*/
+        this.input.using_item=action.use_weapon
+        this.input.reload=action.reload
+        this.input.actions=action.actions
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)

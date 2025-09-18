@@ -11,6 +11,7 @@ export interface GamemodeConfig{
 }
 export interface GameDebugOptions{
     deenable_lobby?:boolean
+    debug_menu:boolean
 }
 export interface RegionDef{
     host:string
@@ -24,6 +25,9 @@ export interface ApiSettingsS{
     regions:Record<string,RegionDef>
     modes:GamemodeConfig[]
     shop:ShopConfig
+    debug:{
+        debug_menu:boolean
+    }
 }
 export interface ConfigType {
     api: {

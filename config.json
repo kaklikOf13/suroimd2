@@ -12,7 +12,8 @@
     "game": {
         "max_games": 5,
         "debug":{
-            "deenable_lobby":true
+            "deenable_lobby":true,
+            "debug_menu":true
         },
         "config": {
             "gameTps": 60,

@@ -61,7 +61,7 @@ import { ConfigType } from "common/scripts/config/config.ts";
         constructor(){
             this.elements.play_button_normal.addEventListener("click",(_e)=>{this.playGame({offline:false})})
             this.elements.play_button_campaign.addEventListener("click",(_e)=>{this.playGame({offline:true})})
-            this.game=new Game(inputs,sounds,GameSave,resources,renderer)
+            this.game=new Game(inputs,menu_manager,sounds,GameSave,resources,renderer)
             this.game.clock.request_animation_frame=false
             this.game.listners_init()
             this.game.init_gui(gui)
@@ -82,7 +82,8 @@ import { ConfigType } from "common/scripts/config/config.ts";
                             netTps:22
                         },
                         debug:{
-                            deenable_lobby:true
+                            deenable_lobby:true,
+                            debug_menu:true,
                         }
                     },
                     database:{

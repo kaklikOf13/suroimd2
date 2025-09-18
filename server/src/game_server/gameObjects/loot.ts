@@ -24,11 +24,18 @@ export class Loot extends ServerGameObject{
         this.velocity=v2.new(0,0)
         
     }
+    reduce_count(count:number){
+        this.count-=count
+        this.destroy()
+        if(this.count>0){
+            this.game.add_loot(this.position,this.item,this.count,this.layer)
+        }
+    }
     interact(user: Player): void {
         switch(this.item.item_type){
             case InventoryItemType.gun:{
                 const r=user.inventory.give_gun(this.item as unknown as GunDef)
-                if(r)this.destroy()
+                if(r)this.reduce_count(1)
                 break
             }
             case InventoryItemType.ammo:
@@ -44,24 +51,24 @@ export class Loot extends ServerGameObject{
                         if(!user.helmet){
                             user.helmet=d
                             user.dirty=true
-                            this.destroy()
+                            this.reduce_count(1)
                         }else if(user.helmet.level<d.level){
                             user.game.add_loot(user.position,user.helmet as unknown as GameItem,1)
                             user.helmet=d
                             user.dirty=true
-                            this.destroy()
+                            this.reduce_count(1)
                         }
                         break
                     case EquipamentType.Vest:
                         if(!user.vest){
                             user.vest=d
                             user.dirty=true
-                            this.destroy()
+                            this.reduce_count(1)
                         }else if(user.vest.level<d.level){
                             user.game.add_loot(user.position,user.vest as unknown as GameItem,1)
                             user.vest=d
                             user.dirty=true
-                            this.destroy()
+                            this.reduce_count(1)
                         }
                         break
                 }
@@ -72,7 +79,7 @@ export class Loot extends ServerGameObject{
                 if(user.inventory.backpack.level<d.level){
                     user.dirty=true
                     user.inventory.set_backpack(d)
-                    this.destroy()
+                    this.reduce_count(1)
                 }
                 break
             }
@@ -80,15 +87,15 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.melee:
             case InventoryItemType.accessorie:
                 break
+            case InventoryItemType.scope:
+                
+                break
             case InventoryItemType.skin:
                 if(user.skin.idString!==this.item.idString){
                     this.game.add_loot(this.position,user.skin as unknown as GameItem,1)
                     user.skin=this.item as unknown as SkinDef
                     user.dirty=true
-                    this.count--
-                    if(this.count<=0){
-                        this.destroy()
-                    }
+                    this.reduce_count(1)
                 }
                 break
         }

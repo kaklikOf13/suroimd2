@@ -16,6 +16,9 @@ func (s *ApiServer) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	ret["regions"] = s.Config.Regions
 	ret["shop"] = s.Config.Shop
 	ret["modes"] = s.Config.Game.Modes
+	ret["debug"] = map[string]any{
+		"debug_menu": s.Config.Game.Debug.DebugMenu,
+	}
 	json.NewEncoder(w).Encode(ret)
 }
 

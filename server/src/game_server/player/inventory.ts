@@ -7,7 +7,6 @@ import { ConsumingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 import { ConsumibleCondition, ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { OtherDef } from "common/scripts/definitions/others.ts";
-import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
 import { GameItems, WeaponDef } from "common/scripts/definitions/alldefs.ts";
 import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
@@ -19,6 +18,7 @@ import { type Loot } from "../gameObjects/loot.ts";
 import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { InventoryGift } from "../others/gamemode.ts";
+import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 export abstract class LItem extends Item{
     abstract on_use(user:Player,slot?:LItem):void
     abstract update(user:Player):void
@@ -172,14 +172,16 @@ export class ConsumibleItem extends LItem{
       return (other instanceof ConsumibleItem)&&other.def.idNumber==this.def.idNumber
   }
   on_use(user: Player,_slot?:LItem): void {
+    if(this.def.side_effects[0].type!==SideEffectType.Heal)return
       if(this.def.condition){
         for(const c of this.def.condition){
           switch(c){
               case ConsumibleCondition.UnfullHealth:
-                if(user.health>=user.maxHealth*(this.def.max_heal??1))return
+                
+                if(user.health>=user.maxHealth*(this.def.side_effects[0].health?.max??1))return
                 break
               case ConsumibleCondition.UnfullExtra:
-                if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.boost_def.type!==this.def.boost_type))return
+                if(!(user.boost<user.maxBoost*(this.def.side_effects[0].boost?.max??1)||user.boost_def.type!==this.def.boost_type))return
                 break
           }
         }
@@ -214,15 +216,6 @@ export class OtherItem extends LItem{
     }
     on_use(_user: Player,_slot:SlotCap): void {
       
-    }
-    cellphone_action(user:Player,action:CellphoneAction){
-        if(this.def.idString!=="cellphone")return
-        switch(action!.type){
-          case CellphoneActionType.GiveItem:
-              user.give_item(GameItems.valueNumber[action!.item_id],action!.count)
-              break
-          case CellphoneActionType.SpawnObstacle:
-        }
     }
     update(_user: Player): void {
       

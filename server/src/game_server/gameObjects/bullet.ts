@@ -66,7 +66,7 @@ export class Bullet extends ServerGameObject{
                     break
                 }
                 case "creature":{
-                    if((obj as Creature).hb&&!(obj as Creature).dead){
+                    if((obj as Creature).hb&&!(obj as Creature).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
                         const dmg:number=this.damage
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
                         *(this.critical?(this.defs.criticalMult??1.25):1);

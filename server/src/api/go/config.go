@@ -24,8 +24,13 @@ type ModeConfig struct {
 	Enabled  bool   `json:"enabled"`
 	Gamemode string `json:"gamemode"`
 }
+type GameConfigDebug struct{
+	DebugMenu bool `json:"debug_menu"`
+	DeenableLobby bool `json:"deenable_lobby"`
+}
 type GameConfig struct {
 	MaxGames int             `json:"max_games"`
+	Debug GameConfigDebug `json"debug"`
 	Config   GameConfigInner `json:"config"`
 	Host     HostConfig      `json:"host"`
 	Modes    []ModeConfig    `json:"modes"`

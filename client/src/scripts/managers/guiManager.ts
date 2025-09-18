@@ -3,7 +3,7 @@ import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
-import { CellphoneActionType } from "common/scripts/packets/action_packet.ts";
+import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { BoostType,Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -46,10 +46,7 @@ export class GuiManager{
         helmet_slot:document.querySelector("#helmet-slot") as HTMLImageElement,
         vest_slot:document.querySelector("#vest-slot") as HTMLImageElement,
 
-        cellphone_actions:document.querySelector("#cellphone-actions") as HTMLDivElement,
-        cellphone_input_item_id:document.querySelector("#cellphone-insert-item-id") as HTMLInputElement,
-        cellphone_input_item_count:document.querySelector("#cellphone-insert-item-count") as HTMLInputElement,
-        cellphone_give_item:document.querySelector("#cellphone-give-item-button") as HTMLButtonElement,
+        debug_menu:document.querySelector("#game-debug-menu") as HTMLDivElement,
 
         gameOver:document.querySelector("#gameover-container") as HTMLDivElement,
         
@@ -89,6 +86,12 @@ export class GuiManager{
             vignetting:document.querySelector("#vignetting-gfx") as HTMLDivElement,
             tiltshift:document.querySelector("#tiltshift-gfx") as HTMLDivElement,
             recolor:document.querySelector("#recolor-gfx") as HTMLDivElement,
+        },
+        debug:{
+            input_item_id:document.querySelector("#debug-item-id") as HTMLInputElement,
+            input_item_count:document.querySelector("#debug-item-count") as HTMLInputElement,
+            btn_give:document.querySelector("#debug-give-item") as HTMLButtonElement,
+            btn_spawn:document.querySelector("#debug-spawn-item") as HTMLButtonElement,
         }
     }
     mobile_content={
@@ -120,10 +123,8 @@ export class GuiManager{
     }
     constructor(){
         this.set_health(100,100)
-        HideElement(this.content.cellphone_actions)
+        HideElement(this.content.debug_menu)
         HideElement(this.content.gameOver)
-
-        //Cellphone
 
         const deenable_act=()=>{
             this.game.can_act=false
@@ -132,39 +133,44 @@ export class GuiManager{
             this.game.can_act=true
         }
 
-        this.content.cellphone_input_item_id.onfocus=deenable_act
-        this.content.cellphone_input_item_id.onblur=enable_act
+        this.content.debug.input_item_id.onfocus=deenable_act
+        this.content.debug.input_item_id.onblur=enable_act
 
-        this.content.cellphone_input_item_count.onfocus=deenable_act
-        this.content.cellphone_input_item_count.onblur=enable_act
-        
-        this.content.cellphone_give_item.onclick=(_)=>{
-            this.game.action.cellphoneAction={
-                type:CellphoneActionType.GiveItem,
-                item_id:GameItems.keysString[this.content.cellphone_input_item_id.value],
-                count:parseInt(this.content.cellphone_input_item_count.value),
-            }
-        }
+        this.content.debug.input_item_count.onfocus=deenable_act
+        this.content.debug.input_item_count.onblur=enable_act
+
+        this.content.debug.btn_give.addEventListener("click",(_e)=>{
+            this.game.action.actions.push({
+                type:InputActionType.debug_give,
+                item:this.content.debug.input_item_id.value,
+                count:parseInt(this.content.debug.input_item_count.value)
+            })
+        })
+        this.content.debug.btn_spawn.addEventListener("click",(_e)=>{
+            this.game.action.actions.push({
+                type:InputActionType.debug_spawn,
+                item:this.content.debug.input_item_id.value,
+                count:parseInt(this.content.debug.input_item_count.value)
+            })
+        })
 
         const dropW=(w:number)=>{
             return (e:MouseEvent)=>{
                 if(e.button==2){
-                    this.game.action.drop=w
-                    this.game.action.drop_kind=1
+                    this.game.action.actions.push({type:InputActionType.drop,drop:w,drop_kind:1})
                 }
             }
         }
 
         const dropW2=(w:number)=>{
             return ()=>{
-                this.game.action.drop=w
-                this.game.action.drop_kind=1
+                this.game.action.actions.push({type:InputActionType.drop,drop:w,drop_kind:1})
             }
         }
         
         const selecW=(w:number)=>{
             return ()=>{
-                this.game.action.hand=w
+                this.game.action.actions.push({type:InputActionType.set_hand,hand:w})
             }
         }
         this.content.weapon2.addEventListener("mouseup",dropW(1))
@@ -203,15 +209,15 @@ export class GuiManager{
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.left_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
-            this.game.action.Movement.x=e.detail.x
-            this.game.action.Movement.y=e.detail.y
+            this.game.action.movement.x=e.detail.x
+            this.game.action.movement.y=e.detail.y
             if(!rotating){
                 this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),true,0.3)
             }
         })
         this.mobile_content.left_joystick.addEventListener("joystickend",()=>{
-            this.game.action.Movement.x=0
-            this.game.action.Movement.y=0
+            this.game.action.movement.x=0
+            this.game.action.movement.y=0
         })
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
@@ -220,14 +226,14 @@ export class GuiManager{
             this.game.fake_crosshair.visible=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
             if(dist>0.9){
-                this.game.action.UsingItem=true
+                this.game.action.use_weapon=true
             }else{
-                this.game.action.UsingItem=false
+                this.game.action.use_weapon=false
             }
             this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x))
         })
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
-            this.game.action.UsingItem=false
+                this.game.action.use_weapon=false
             rotating=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
@@ -289,15 +295,13 @@ export class GuiManager{
             const dropA=(a:number)=>{
                 return (e:MouseEvent)=>{
                     if(e.button==2){
-                        this.game.action.drop=a
-                        this.game.action.drop_kind=2
+                        this.game.action.actions.push({type:InputActionType.drop,drop:a,drop_kind:2})
                     }
                 }
             }
             const dropA2=(a:number)=>{
                 return ()=>{
-                    this.game.action.drop=a
-                    this.game.action.drop_kind=2
+                    this.game.action.actions.push({type:InputActionType.drop,drop:a,drop_kind:2})
                 }
             }
             this.content.ammos.innerHTML=""
@@ -332,21 +336,19 @@ export class GuiManager{
         const Ic=(i:number)=>{
             return (e:MouseEvent)=>{
                 if(e.button==2){
-                    this.game.action.drop=i
-                    this.game.action.drop_kind=3
+                    this.game.action.actions.push({type:InputActionType.drop,drop:i,drop_kind:3})
                 }
             }
         }
         const Ic2=(i:number)=>{
             return ()=>{
-                this.game.action.use_slot=i
+                this.game.action.actions.push({type:InputActionType.use_item,slot:i})
             }
         }
         
         const Ic3=(i:number)=>{
             return ()=>{
-                this.game.action.drop=i
-                this.game.action.drop_kind=4
+                this.game.action.actions.push({type:InputActionType.drop,drop:i,drop_kind:4})
             }
         }
         const items:Record<string,number>={}

@@ -114,6 +114,9 @@ export class MenuManager{
                     team_size:[1]
                 },
             ],
+            debug:{
+                debug_menu:true,
+            },
             regions:{
                 "local":{
                     host:"localhost",

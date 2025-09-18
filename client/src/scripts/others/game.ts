@@ -9,7 +9,7 @@ import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "../managers/guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
-import { ManipulativeSoundInstance, SoundInstance, SoundManager } from "../engine/sounds.ts";
+import { ManipulativeSoundInstance, SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
@@ -32,8 +32,10 @@ import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
 import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
-import { Sound } from "../engine/resources.ts";
 import { Tween } from "svelte/motion";
+import { ToggleElement } from "../engine/utils.ts";
+import { type MenuManager } from "../managers/menuManager.ts";
+import { InputActionType } from "common/scripts/packets/action_packet.ts";
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -41,6 +43,7 @@ export class Game extends ClientGame2D<GameObject>{
 
   action:ActionPacket=new ActionPacket()
   guiManager!:GuiManager
+  menuManager!:MenuManager
 
   can_act:boolean=true
 
@@ -96,16 +99,17 @@ export class Game extends ClientGame2D<GameObject>{
     )
     this.input_manager.on("axis",(a:AxisActionEvent)=>{
       if(a.action==="movement"){
-        this.action.Movement=a.value
+        this.action.movement=a.value
       }
     })
     this.input_manager.on("actiondown",(a:ActionEvent)=>{
+      if(!this.can_act)return
       switch(a.action){
         case "fire":
-          this.action.UsingItem=true
+          this.action.use_weapon=true
           break
         case "reload":
-          this.action.Reloading=true
+          this.action.reload=true
           break
         case "interact":
           this.action.interact=true
@@ -116,53 +120,57 @@ export class Game extends ClientGame2D<GameObject>{
           }
           break
         case "weapon1":
-          this.action.hand=0
+          this.action.actions.push({type:InputActionType.set_hand,hand:0})
           break
         case "weapon2":
-          this.action.hand=1
+          this.action.actions.push({type:InputActionType.set_hand,hand:1})
           break
         case "weapon3":
-          this.action.hand=2
+          this.action.actions.push({type:InputActionType.set_hand,hand:2})
           break
         case "full_map":
           this.minimap.set_full_map(!this.minimap.full_map)
           break
         case "use_item1":
-          this.action.use_slot=0
+          this.action.actions.push({type:InputActionType.use_item,slot:0})
           break
         case "use_item2":
-          this.action.use_slot=1
+          this.action.actions.push({type:InputActionType.use_item,slot:1})
           break
         case "use_item3":
-          this.action.use_slot=2
+          this.action.actions.push({type:InputActionType.use_item,slot:2})
           break
         case "use_item4":
-          this.action.use_slot=3
+          this.action.actions.push({type:InputActionType.use_item,slot:3})
           break
         case "use_item5":
-          this.action.use_slot=4
+          this.action.actions.push({type:InputActionType.use_item,slot:4})
           break
         case "use_item6":
-          this.action.use_slot=5
+          this.action.actions.push({type:InputActionType.use_item,slot:5})
           break
         case "use_item7":
-          this.action.use_slot=6
+          this.action.actions.push({type:InputActionType.use_item,slot:6})
           break
         case "previour_weapon":
-          this.action.hand=this.guiManager.currentWeaponIDX-1
+          this.action.actions.push({type:InputActionType.set_hand,hand:this.guiManager.currentWeaponIDX-1})
           break
         case "next_weapon":
-          this.action.hand=Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)
+          this.action.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)})
           break
         case "expanded_inventory":
           this.guiManager.set_all_inventory(!this.guiManager.all_inventory_enabled)
+          break
+        case "debug_menu":
+          if(!this.menuManager.api_settings.debug.debug_menu)break
+          ToggleElement(this.guiManager.content.debug_menu)
           break
       }
     })
     this.input_manager.on("actionup",(a:ActionEvent)=>{
       switch(a.action){
         case "fire":
-          this.action.UsingItem=false
+          this.action.use_weapon=false
           break
       }
     })
@@ -175,7 +183,7 @@ export class Game extends ClientGame2D<GameObject>{
     
     this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e: { stick: string; axis: Vec2; })=>{
       if(e.stick==="left"){
-        this.action.Movement=e.axis
+        this.action.movement=e.axis
       }else if(e.stick==="right"){
         this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x),true)
         this.fake_crosshair.visible=true
@@ -201,7 +209,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
-  constructor(input_manager:InputManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+  constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
       this.scene.objects.add_layer(i)
@@ -209,6 +217,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.scene.objects.encoders=ObjectsE;
 
     this.renderer.background=ColorM.hex("#000");
+
+    this.menuManager=menu
 
     if(Debug.hitbox){
       /*const hc=ColorM.hex("#ee000099")
@@ -286,15 +296,11 @@ export class Game extends ClientGame2D<GameObject>{
   }
   override on_update(dt:number): void {
     super.on_update(dt)
-    if(this.client&&this.client.opened){
+    if(this.client&&this.client.opened&&this.can_act){
       this.client.emit(this.action)
+      this.action.actions.length=0
       this.action.interact=false
-      this.action.cellphoneAction=undefined
-      this.action.Reloading=false
-      this.action.hand=-1
-      this.action.use_slot=-1
-      this.action.drop=-1
-      this.action.drop_kind=0
+      this.action.reload=false
     }
     for(const p of this.planes.values()){
       p.update(dt)

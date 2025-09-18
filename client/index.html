@@ -41,16 +41,6 @@
 
           <button id="gameover-menu-btn" class="btn-green"><span translation="return_to_menu">Return To Menu</span></button>
         </div>
-        <tabs-container id="cellphone-actions" header-position="bottom" class="background-menu">
-          <tab text="Give Item" id="cellphone-give-item-tab">
-            <input type="text" id="cellphone-insert-item-id" class="text-input" placeholder="Item-ID">
-            <input type="text" id="cellphone-insert-item-count" class="text-input" placeholder="Item-Count">
-            <button class="btn-blue" id="cellphone-give-item-button">Give Item</button>
-          </tab>
-          <tab text="Spawn Obstacle">
-            #2
-          </tab>
-        </tabs-container>
         <div id="bars-container">
           <div id="health-bar-container">
             <div id="health-bar-animation"></div>
@@ -162,6 +152,12 @@
       <div id="bloom-gfx"></div>
       <div id="tiltshift-gfx"></div>
       <div id="recolor-gfx"></div>
+      <div id="game-debug-menu" class="background-menu">
+        <input class="text-input" id="debug-item-id" placeholder="Object-ID">
+        <input class="text-input" id="debug-item-count" value="1" placeholder="Object-Count">
+        <button class="btn-blue" id="debug-give-item">Give Item</button>
+        <button class="btn-blue" id="debug-spawn-item">Spawn Item</button>
+      </div>
       <canvas id="game-canvas"></canvas>
     </div>
     </tabs-container>

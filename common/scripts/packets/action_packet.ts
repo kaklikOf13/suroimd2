@@ -1,89 +1,100 @@
 import { NetStream, Packet, v2, Vec2 } from "../engine/mod.ts"
-export enum CellphoneActionType{
-    GiveItem,
-    SpawnObstacle
+export enum InputActionType{
+  drop,
+  use_item,
+  set_hand,
+  debug_give,
+  debug_spawn
 }
-export type CellphoneAction=(
-    {
-        type:CellphoneActionType.GiveItem
-        item_id:number
-        count:number
-    }|
-    {
-        type:CellphoneActionType.SpawnObstacle
-    }
-)|undefined
+export type InputAction=({
+  type:InputActionType.drop,
+  drop_kind:number,
+  drop:number
+}|{
+  type:InputActionType.set_hand,
+  hand:number
+}|{
+  type:InputActionType.use_item,
+  slot:number
+}|{
+  type:InputActionType.debug_give|InputActionType.debug_spawn,
+  item:string,
+  count:number
+})
 export class ActionPacket extends Packet{
     ID=1
     Name="action"
-    Movement:Vec2
-    UsingItem:boolean
-    Reloading:boolean=false
-    angle:number
-    hand:number
-    cellphoneAction:CellphoneAction
-    interact:boolean=false
-    use_slot:number=-1
+    
+    movement:Vec2=v2.new(0,0)
+    angle:number=0
 
-    drop_kind:number=0
-    drop:number=0
+    use_weapon:boolean=false
+    interact:boolean=false
+    reload:boolean=false
+
+    actions:InputAction[]=[]
+
     constructor(){
         super()
-        this.Movement=v2.new(0,0)
-        this.UsingItem=false
-        this.angle=0
-        this.hand=0
     }
     encode(stream: NetStream): void {
-      stream.writeFloat(this.Movement.x,-1,1,3)
-      stream.writeFloat(this.Movement.y,-1,1,3)
-      stream.writeBooleanGroup(this.UsingItem,this.Reloading,this.cellphoneAction!==undefined,this.interact)
-      stream.writeRad(this.angle)
-      stream.writeInt8(this.hand)
-      stream.writeInt8(this.use_slot)
-      stream.writeInt8(this.drop)
-      stream.writeInt8(this.drop_kind)
-      if(this.cellphoneAction){
-        stream.writeUint8(this.cellphoneAction.type)
-        switch(this.cellphoneAction.type){
-          case CellphoneActionType.GiveItem:
-            stream.writeUint16(this.cellphoneAction.item_id)
-            .writeUint16(this.cellphoneAction.count)
+      stream.writeFloat(this.movement.x,-1,1,3)
+      .writeFloat(this.movement.y,-1,1,3)
+      .writeRad(this.angle)
+      .writeBooleanGroup(this.use_weapon,this.interact,this.reload)
+      .writeArray(this.actions,(i,_s)=>{
+        stream.writeUint8(i.type)
+        switch(i.type){
+          case InputActionType.drop:
+            stream.writeUint8(i.drop)
+            stream.writeUint8(i.drop_kind)
             break
-          case CellphoneActionType.SpawnObstacle:
+          case InputActionType.use_item:
+            stream.writeUint8(i.slot)
+            break
+          case InputActionType.set_hand:
+            stream.writeUint8(i.hand)
+            break
+          case InputActionType.debug_give:
+          case InputActionType.debug_spawn:
+            stream.writeStringSized(32,i.item)
+            .writeUint8(i.count)
             break
         }
-      }
+      },1)
     }
     decode(stream: NetStream): void {
-      this.Movement={
+      this.movement={
         x:stream.readFloat(-1,1,3),
         y:stream.readFloat(-1,1,3)
       }
-      const b=stream.readBooleanGroup()
-      this.UsingItem=b[0]
-      this.Reloading=b[1]
-      this.interact=b[3]
       this.angle=stream.readRad()
-      this.hand=stream.readInt8()
-      this.use_slot=stream.readInt8()
-      this.drop=stream.readInt8()
-      this.drop_kind=stream.readInt8()
-      if(b[2]){
-        switch(stream.readUint8() as CellphoneActionType){
-          case CellphoneActionType.GiveItem:
-            this.cellphoneAction={
-              type:CellphoneActionType.GiveItem,
-              item_id:stream.readUint16(),
-              count:stream.readUint16()
-            }
+      const bg=stream.readBooleanGroup()
+      this.use_weapon=bg[0]
+      this.interact=bg[1]
+      this.reload=bg[2]
+      this.actions=stream.readArray((_s)=>{
+        const ret={
+          type:stream.readUint8()
+        } as InputAction
+        switch(ret.type){
+          case InputActionType.drop:
+            ret["drop"]=stream.readUint8()
+            ret["drop_kind"]=stream.readUint8()
             break
-          case CellphoneActionType.SpawnObstacle:
-            this.cellphoneAction={
-              type:CellphoneActionType.SpawnObstacle,
-            }
+          case InputActionType.use_item:
+            ret["slot"]=stream.readUint8()
+            break
+          case InputActionType.set_hand:
+            ret["hand"]=stream.readUint8()
+            break
+          case InputActionType.debug_give:
+          case InputActionType.debug_spawn:
+            ret["item"]=stream.readStringSized(32)
+            ret["count"]=stream.readUint8()
             break
         }
-      }
+        return ret
+      },1)
     }
 }

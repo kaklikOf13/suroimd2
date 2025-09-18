@@ -49,7 +49,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         skins:number[],
     }>
 
-    debug:GameDebugOptions={}
+    debug!:GameDebugOptions
 
     players:Player[]=[]
     livingPlayers:Player[]=[]
