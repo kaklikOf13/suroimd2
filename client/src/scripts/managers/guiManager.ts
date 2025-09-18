@@ -492,12 +492,18 @@ export class GuiManager{
             case KillFeedMessageType.killleader_assigned:{
                 elem.innerHTML=`${this.players_name[msg.player.id].name} Become The Kill Leader`
                 this.assign_killleader(msg)
+                this.game.sounds.play(this.game.resources.get_audio("kill_leader_assigned"),{
+                    volume:0.4
+                },"player")
                 break
             }
             case KillFeedMessageType.killleader_dead:{
                 this.killleader=undefined
                 elem.innerHTML=`The Killleader Are Dead`
                 this.content.killeader_span.innerText="Waiting For A Kill Leader"
+                this.game.sounds.play(this.game.resources.get_audio("kill_leader_dead"),{
+                    volume:0.6
+                },"player")
                 break
             }
         }

@@ -341,7 +341,7 @@ export class Game extends ClientGame2D<GameObject>{
       plane.updateData(p)
     }
   }
-  bolt_tween?:Tween
+  bolt_tween?:Tween<Lights2D>
   bolt(){
     if(this.bolt_tween){
       //
@@ -350,14 +350,14 @@ export class Game extends ClientGame2D<GameObject>{
 
       },"ambience")
       this.bolt_tween=this.addTween({
-        target:this.light_map,
-        to:{ambient:0},
-        duration:0.1,
-        yoyo:true,
-        onComplete:()=>{
-          this.bolt_tween=undefined
+        target: this.light_map,
+        to: { ambient: 0 },
+        duration: 0.1,
+        yoyo: true,
+        onComplete: () => {
+          this.bolt_tween = undefined;
         },
-      })
+      }) as unknown as Tween<Lights2D>
     }
   }
   connect(client:Client,playerName:string){
