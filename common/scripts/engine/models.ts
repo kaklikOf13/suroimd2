@@ -189,6 +189,53 @@ export const model2d={
             verticesTranslated[3].x, verticesTranslated[3].y
         ]),tex_coords:new Float32Array()};
     },
+    outlineCircle(
+        radius: number,
+        width: number,
+        segments: number = 24,
+        center: Vec2 = v2.new(0, 0)
+    ): Model2D {
+        const vertices: number[] = [];
+
+        const angleStep = (Math.PI * 2) / segments;
+
+        const outer: Vec2[] = [];
+        const inner: Vec2[] = [];
+
+        for (let i = 0; i < segments; i++) {
+            const theta = i * angleStep;
+
+            const cos = Math.cos(theta);
+            const sin = Math.sin(theta);
+            outer.push({
+                x: center.x + cos * (radius + width),
+                y: center.y + sin * (radius + width),
+            });
+            inner.push({
+                x: center.x + cos * radius,
+                y: center.y + sin * radius,
+            });
+        }
+
+        for (let i = 0; i < segments; i++) {
+            const iNext = (i + 1) % segments
+
+            const i0 = inner[i]
+            const i1 = inner[iNext]
+            const o0 = outer[i]
+            const o1 = outer[iNext]
+
+            vertices.push(i0.x, i0.y, o0.x, o0.y, o1.x, o1.y)
+
+            vertices.push(i0.x, i0.y, o1.x, o1.y, i1.x, i1.y)
+        }
+
+        return {
+            vertices: new Float32Array(vertices),
+            tex_coords: new Float32Array([]),
+        };
+    },
+
     circle(
         radius: number,
         segments: number = 24,
@@ -220,7 +267,45 @@ export const model2d={
             vertices: new Float32Array(vertices),
             tex_coords: new Float32Array(tex_coords),
         };
-    },rect(
+    },
+    outline(model: Model2D, width: number): Model2D {
+        const vertices: number[] = []
+
+        const segments = model.vertices.length / 6
+        const angleStep = (Math.PI * 2) / segments
+
+        const outer: Vec2[] = []
+        const inner: Vec2[] = []
+
+        for (let i = 0; i < segments; i++) {
+            const theta = i * angleStep
+
+            const x = Math.cos(theta)
+            const y = Math.sin(theta)
+
+            outer.push({ x: (x * (width + 1)), y: (y * (width + 1)) })
+            inner.push({ x: (x * (1 - width)), y: (y * (1 - width)) })
+        }
+
+        for (let i = 0; i < segments; i++) {
+            const iNext = (i + 1) % segments
+
+            const i0 = inner[i]
+            const i1 = inner[iNext]
+            const o0 = outer[i]
+            const o1 = outer[iNext]
+
+            vertices.push(i0.x, i0.y, o0.x, o0.y, o1.x, o1.y)
+
+            vertices.push(i0.x, i0.y, o1.x, o1.y, i1.x, i1.y)
+        }
+
+        return {
+            vertices: new Float32Array(vertices),
+            tex_coords: new Float32Array([]),
+        }
+    },
+    rect(
         pos_min: Vec2 = v2.new(0, 0),
         pos_max: Vec2 = v2.new(1, 1),
         tex_min: Vec2 = v2.new(0, 0),

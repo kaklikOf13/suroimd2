@@ -299,6 +299,7 @@ export class Game extends ClientGame2D<GameObject>{
   }
   override on_update(dt:number): void {
     super.on_update(dt)
+    this.dead_zone.tick(dt)
     if(this.client&&this.client.opened&&this.can_act){
       this.client.emit(this.action)
       this.action.actions.length=0

@@ -251,6 +251,11 @@ export class Graphics2D extends Container2DObject {
     drawLine(a:Vec2,b:Vec2,width:number){
         this.command.push({type:"model",model:model2d.line(a,b,width)})
     }
+    drawModel(model:Model2D):Graphics2DCommand{
+        const c:Graphics2DCommand={type:"model",model:model}
+        this.command.push(c)
+        return c
+    }
     set_hitbox(hb:Hitbox2D){
         switch(hb.type){
             case HitboxType2D.rect:
@@ -289,7 +294,7 @@ export class Graphics2D extends Container2DObject {
                     gl.draw(currentModel!,currentMat,cam.matrix,this._real_position,this._real_scale)
                     break
                 case "model": {
-                    gl.draw(cmd.model,currentMat,cam.matrix,this._real_position,v2.new(1,1))
+                    gl.draw(cmd.model,currentMat,cam.matrix,this._real_position,this._real_scale)
                     break;
                 }
                 case "path":
