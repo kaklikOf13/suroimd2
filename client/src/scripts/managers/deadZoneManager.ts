@@ -5,6 +5,7 @@ import { Graphics2D } from "../engine/mod.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import { Color, ColorM } from "../engine/renderer.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
+import { DeadZoneUpdate } from "common/scripts/packets/update_packet.ts";
 export class DeadZoneManager{
     radius:number=5
     position:Vec2=v2.new(0,0)
@@ -25,23 +26,27 @@ export class DeadZoneManager{
         this.set_current(v2.new(20,20),10)
     }
 
-    dest_position:Vec2=v2.new(0,0)
+    /*dest_position:Vec2=v2.new(0,0)
     dest_radius:number=0
 
     begin_position:Vec2=v2.new(50,50)
     begin_radius:number=100
 
     current_t=0
-    final_t=80
+    final_t=80*/
 
     color:Color=ColorM.hex("#21f2")
 
     tick(dt:number){
-        if(this.current_t<this.final_t){
+        /*if(this.current_t<this.final_t){
             this.current_t+=dt
             const t=this.current_t/this.final_t
             this.set_current(v2.lerp(this.begin_position,this.dest_position,t),Numeric.lerp(this.begin_radius,this.dest_radius,t))
-        }
+        }*/
+    }
+
+    update_from_data(data:DeadZoneUpdate){
+        this.set_current(data.position,data.radius)
     }
 
     set_current(position:Vec2,radius:number){
@@ -50,7 +55,6 @@ export class DeadZoneManager{
 
         this.sprite.scale=v2.new(radius,radius)
         this.sprite.position=position
-
 
         if(!this.game.terrain.map)return
         const rm=Numeric.clamp(radius/this.game.terrain.map.size.x,0,1)

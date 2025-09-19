@@ -30,6 +30,7 @@ import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obs
 import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
 import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
 import { PlaneData } from "common/scripts/packets/update_packet.ts";
+import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -79,6 +80,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
     Config:ConfigType
 
     replay?:ReplayRecorder2D
+
+    deadzone:DeadZoneManager
 
     constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
         super(Config.game.config.gameTps,id,clients,PacketManager,[
@@ -210,9 +213,14 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 }
             }
         }),3)
+        this.deadzone=new DeadZoneManager(this,{
+            mode:DeadZoneMode.Staged,
+            stages:DeadZoneDefinition,
+        })
     }
     override on_update(): void {
         super.on_update()
+        this.deadzone.tick(this.dt)
         for(const p of this.planes){
             p.pos=v2.add(p.pos,v2.scale(p.velocity,this.dt))
             switch(p.type){
@@ -389,6 +397,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.replay)this.replay.start()
         this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.Config.game.config.netTps)
         console.log(`Game ${this.id} Started`)
+        this.deadzone.start()
     }
     finish(){
         if(this.fineshed)return

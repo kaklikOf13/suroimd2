@@ -3,7 +3,7 @@ import { ActionPacket, InputAction, InputActionType } from "common/scripts/packe
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { GInventory,GunItem,LItem} from "../player/inventory.ts";
-import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { DamageSplash, DeadZoneState, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
@@ -390,6 +390,15 @@ export class Player extends ServerGameObject{
         this.actions.update(dt)
         this.inventory.update()
         this.dirtyPart=true
+
+        if(this.game.deadzone.do_damage&&!this.game.deadzone.hitbox.pointInside(this.position)){
+            this.piercingDamage({
+                amount:this.game.deadzone.current_damage,
+                critical:false,
+                position:this.position,
+                reason:DamageReason.DeadZone,
+            })
+        }
         
         if(this.ai)this.ai.AI(this,dt)
     }
@@ -536,6 +545,9 @@ export class Player extends ServerGameObject{
                 current_weapon:false,
                 action:false,
                 ammos:false
+            }
+            if(this.game.deadzone.dirty){
+                up.priv.deadzone=this.game.deadzone.state
             }
 
             if(this.actions.current_action){

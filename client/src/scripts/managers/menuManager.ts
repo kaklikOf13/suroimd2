@@ -3,7 +3,7 @@ import { type GameConsole } from "../engine/console.ts";
 import { ResourcesManager } from "../engine/resources.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { api, API_BASE } from "../others/config.ts";
-import { ApiSettingsS, RegionDef } from "common/scripts/config/config.ts";
+import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { ShowTab } from "../engine/mod.ts";
 import { SoundManager } from "../engine/sounds.ts";
 

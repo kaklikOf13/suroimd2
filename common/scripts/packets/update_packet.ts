@@ -2,7 +2,7 @@ import { type GunDef, Guns } from "../definitions/items/guns.ts";
 import { type MeleeDef, Melees } from "../definitions/items/melees.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
-import { Vec2 } from "../engine/geometry.ts";
+import { v2, Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { ActionsType } from "../others/constants.ts";
 export interface DamageSplash{
@@ -20,6 +20,19 @@ export interface PlaneData{
     complete:boolean
     type:number
     id:number
+}
+export enum DeadZoneState{
+    Deenabled,
+    Advancing,
+    Waiting,
+    Finished
+}
+export interface DeadZoneUpdate{
+    state:DeadZoneState
+    position:Vec2
+    radius:number
+    new_position:Vec2
+    new_radius:number
 }
 export interface PrivateUpdate{
     dirty:{
@@ -52,6 +65,8 @@ export interface PrivateUpdate{
         ammo:number
     }
 
+    deadzone?:DeadZoneUpdate
+
     ammos:Record<number,number>
 
     damages:DamageSplash[]
@@ -62,14 +77,16 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     stream.writeUint8(priv.boost)
     stream.writeUint8(priv.max_boost)
     stream.writeUint8(priv.boost_type)
-    stream.writeBooleanGroup(
+    stream.writeBooleanGroup2(
         priv.dirty.inventory,
         priv.dirty.weapons,
         priv.dirty.current_weapon,
         priv.dirty.action,
         priv.dirty.ammos,
         priv.action!==undefined,
-        priv.damages!==undefined)
+        priv.damages!==undefined,
+        priv.deadzone!==undefined
+    )
     if(priv.dirty.inventory){
         stream.writeArray<InventoryItemData>(priv.inventory!,(i)=>{
             stream.writeUint16(i.idNumber)
@@ -105,6 +122,13 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             stream.writeUint16(i[1] as unknown as number)
         },1)
     }
+    if(priv.deadzone){
+        stream.writeUint8(priv.deadzone.state)
+        stream.writeFloat(priv.deadzone.radius,0,3000,3)
+        stream.writeFloat(priv.deadzone.new_radius,0,3000,3)
+        stream.writePosition(priv.deadzone.position)
+        stream.writePosition(priv.deadzone.new_position)
+    }
     stream.writeArray(priv.planes,(e)=>{
         stream.writeID(e.id)
         stream.writePosition(e.pos)
@@ -126,7 +150,9 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         dirtyAction,
         dirtyAmmos,
         hasAction,
-        hasDamages]=stream.readBooleanGroup()
+        hasDamages,
+        deadZone
+    ]=stream.readBooleanGroup2()
     priv.dirty={
         inventory:dirtyInventory,
         weapons:dirtyWeapons,
@@ -191,6 +217,15 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             priv.ammos[stream.readUint8()]=stream.readUint16()
         }
     }
+    if(deadZone){
+        priv.deadzone={
+            state:stream.readUint8(),
+            radius:stream.readFloat(0,3000,3),
+            new_radius:stream.readFloat(0,3000,3),
+            position:stream.readPosition(),
+            new_position:stream.readPosition()
+        }
+    }
     priv.planes=stream.readArray(()=>{
         return {
             id:stream.readID(),
@@ -231,7 +266,7 @@ export class UpdatePacket extends Packet{
         },
         damages:[],
         inventory:undefined,
-        planes:[]
+        planes:[],
     }
 
     objects?:NetStream

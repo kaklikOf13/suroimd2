@@ -351,6 +351,7 @@ export class Game extends ClientGame2D<GameObject>{
       const plane=this.planes.get(p.id)!
       plane.updateData(p)
     }
+    if(priv.deadzone!==undefined)this.dead_zone.update_from_data(priv.deadzone)
   }
   bolt_tween?:Tween<Lights2D>
   bolt(){
