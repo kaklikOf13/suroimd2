@@ -119,6 +119,9 @@ export class Game extends ClientGame2D<GameObject>{
             },"loot")
           }
           break
+        case "swamp_guns":
+          this.action.swamp_guns=true
+          break
         case "weapon1":
           this.action.actions.push({type:InputActionType.set_hand,hand:0})
           break
@@ -301,6 +304,7 @@ export class Game extends ClientGame2D<GameObject>{
       this.action.actions.length=0
       this.action.interact=false
       this.action.reload=false
+      this.action.swamp_guns=false
     }
     for(const p of this.planes.values()){
       p.update(dt)

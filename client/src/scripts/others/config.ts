@@ -71,6 +71,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.A],
         keys:[Key.E]
     },
+    "swamp_guns":{
+        buttons:[GamepadButtonID.L3],
+        keys:[Key.F]
+    },
     "full_map":{
         buttons:[GamepadButtonID.Select],
         keys:[Key.M]

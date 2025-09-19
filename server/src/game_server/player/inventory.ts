@@ -418,6 +418,18 @@ export class GInventory extends Inventory<LItem>{
             this.set_weapon(slot,this.default_melee)
           }
     }
+    swamp_guns(){
+        const gun1=this.weapons[1]
+        const gun2=this.weapons[2]
+        this.weapons[1]=gun2
+        this.weapons[2]=gun1
+        if(this.weaponIdx===1){
+            this.set_current_weapon_index(2)
+        }else if(this.weaponIdx===2){
+            this.set_current_weapon_index(1)
+        }
+        this.owner.privateDirtys.weapons=true
+    }
     drop_ammo(idx:number=0){
       const a=Ammos.getFromNumber(idx)
       const rc=Math.min(a.drop_count??60,this.ammos[a.idString])

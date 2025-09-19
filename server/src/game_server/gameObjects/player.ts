@@ -101,6 +101,7 @@ export class Player extends ServerGameObject{
         using_item_down:false,
         interaction:false,
         reload:false,
+        swamp_guns:false,
 
         actions:[] as InputAction[],
 
@@ -402,6 +403,10 @@ export class Player extends ServerGameObject{
             this.seat.clear_player()
             this.input.interaction=false
         }
+        if(this.input.swamp_guns){
+            this.inventory.swamp_guns()
+            this.input.swamp_guns=false
+        }
         if(!this.downed&&!this.parachute){
             for(const a of this.input.actions){
                 switch(a.type){
@@ -468,6 +473,7 @@ export class Player extends ServerGameObject{
         this.input.using_item=action.use_weapon
         this.input.reload=action.reload
         this.input.actions=action.actions
+        this.input.swamp_guns=action.swamp_guns
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
