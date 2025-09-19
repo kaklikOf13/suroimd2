@@ -1,29 +1,64 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { type Game } from "../others/game.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { Graphics2D } from "../engine/mod.ts";
+import { ABParticle2D, ClientParticle2D, Graphics2D } from "../engine/mod.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import { Color, ColorM } from "../engine/renderer.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
 import { DeadZoneUpdate } from "common/scripts/packets/update_packet.ts";
+import { ParticlesEmitter2D } from "common/scripts/engine/particles.ts";
+import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
+import { random } from "common/scripts/engine/random.ts";
 export class DeadZoneManager{
     radius:number=5
     position:Vec2=v2.new(0,0)
 
     sprite:Graphics2D=new Graphics2D()
     game:Game
+
+    pa!:ParticlesEmitter2D<ClientParticle2D>
     constructor(game:Game){
         this.game=game
         this.sprite.zIndex=zIndexes.DeadZone
         this.sprite.scale=v2.new(1,1)
         this.game.camera.addObject(this.sprite)
     }
+
+    hitbox:CircleHitbox2D=new CircleHitbox2D(v2.new(0,0),1)
     append(){
-        const model=model2d.outlineCircle(1,10*1000,150)
+        const model=model2d.outlineCircle(1,10*1000,200)
         this.sprite.fill_color(this.color)
         this.sprite.drawModel(model)
+        const model2=model2d.outlineCircle(0.997,0.003,200)
+        this.sprite.fill_color(ColorM.hex("#fff4"))
+        this.sprite.drawModel(model2)
 
         this.set_current(v2.new(20,20),10)
+        this.pa=this.game.particles.add_emiter({
+            delay:0.1,
+            particle:()=>{
+                const pos=v2.random2(this.game.camera.visual_position,v2.add(this.game.camera.visual_position,v2.new(this.game.camera.width,this.game.camera.height)))
+                if(this.hitbox.pointInside(pos))return undefined
+                return new ABParticle2D({
+                    frame:{
+                        image:"deadzone_particle"
+                    },
+                    position:pos,
+                    tint:this.color,
+                    speed:random.float(0.1,0.4),
+                    angle:random.float(-3.1415,3.1415),
+                    direction:random.float(-3.1415,3.1415),
+                    life_time:random.float(5,6),
+                    zIndex:zIndexes.DeadZone,
+                    scale:random.float(2,4),
+                    to:{
+                        speed:random.float(0.1,0.6),
+                        angle:random.float(-3.1415*2,3.1415*2),
+                    }
+                })
+            },
+            enabled:true
+        })
     }
 
     /*dest_position:Vec2=v2.new(0,0)
@@ -55,6 +90,9 @@ export class DeadZoneManager{
 
         this.sprite.scale=v2.new(radius,radius)
         this.sprite.position=position
+
+        this.hitbox.position=position
+        this.hitbox.radius=radius
 
         if(!this.game.terrain.map)return
         const rm=Numeric.clamp(radius/this.game.terrain.map.size.x,0,1)

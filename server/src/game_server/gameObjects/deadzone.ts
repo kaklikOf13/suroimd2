@@ -23,7 +23,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 2,
+        damage: 1,
         radius: 0.9,
         old_radius: 0.9,
         new_radius: 0.7,
@@ -31,7 +31,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Waiting,
-        damage: 2,
+        damage: 1,
         radius: 0.7,
         old_radius: 0.7,
         new_radius: 0.45,
@@ -39,7 +39,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 5,
+        damage: 2,
         radius: 0.7,
         old_radius: 0.7,
         new_radius: 0.45,
@@ -47,7 +47,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Waiting,
-        damage: 5,
+        damage: 2,
         radius: 0.45,
         old_radius: 0.45,
         new_radius: 0.25,
@@ -55,7 +55,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 10,
+        damage: 5,
         radius: 0.45,
         old_radius: 0.45,
         new_radius: 0.25,
@@ -63,7 +63,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Waiting,
-        damage: 10,
+        damage: 5,
         radius: 0.25,
         old_radius: 0.25,
         new_radius: 0.1,
@@ -71,7 +71,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 20,
+        damage: 10,
         radius: 0.25,
         old_radius: 0.25,
         new_radius: 0.1,
@@ -79,7 +79,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Waiting,
-        damage: 20,
+        damage: 10,
         radius: 0.1,
         old_radius: 0.1,
         new_radius: 0.0,
@@ -87,7 +87,7 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 50,
+        damage: 10,
         radius: 0.1,
         old_radius: 0.1,
         new_radius: 0.0,
@@ -106,9 +106,9 @@ export interface DeadZoneStage {
 
 /** modos de operação extra para procedural */
 export enum DeadZoneProceduralMode {
-  ShrinkOnly = "SHRINK_ONLY", // centro fixo, só encolhe
-  Moving = "MOVING",          // encolhe e centro se move (lerp)
-  Split = "SPLIT"             // escolhe novo centro longe -> cria "metade/metade" transição
+  ShrinkOnly = "SHRINK_ONLY",
+  Moving = "MOVING",
+  Split = "SPLIT"
 }
 
 export enum DeadZoneMode {
@@ -119,21 +119,20 @@ export enum DeadZoneMode {
 
 export interface DeadZoneConfig {
   mode: DeadZoneMode;
-  stages?: DeadZoneStage[];           // para Staged
-  initialRadius?: number;             // para Procedural (fração do mapa ou px)
-  initialPosition?: Vec2;             // em world coords (opcional)
+  stages?: DeadZoneStage[];
+  initialRadius?: number;
+  initialPosition?: Vec2;
   proceduralMode?: DeadZoneProceduralMode;
-  waitingTime?: number;               // defaults
+  waitingTime?: number;
   advanceTime?: number;
-  radiusDecay?: number;               // multiplicativo por etapa (0..1)
-  minRadius?: number;                 // mínima fração/px antes de terminar
+  radiusDecay?: number;
+  minRadius?: number;
   waitingDecay?: number;
   advanceDecay?: number;
-  damageLevels?: number[];            // opcional
-  timeSpeed?: number;                 // divisor de tempo (ex.: 15 -> como teu code)
-  // control for random pos generator
+  damageLevels?: number[];
+  timeSpeed?: number;
   randomPosAttempts?: number;
-  randomBias?: number;                // 0..1 how biased to edges (1 = strong edge bias)
+  randomBias?: number;
 }
 
 export class DeadZoneManager {

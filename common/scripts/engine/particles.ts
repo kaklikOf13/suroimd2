@@ -18,7 +18,7 @@ export abstract class Particle2D{
     }
 }
 export class ParticlesEmitter2D<Particle extends Particle2D>{
-    particle:()=>Particle
+    particle:()=>Particle|undefined
     delay:number
     enabled:boolean
 
@@ -31,7 +31,7 @@ export class ParticlesEmitter2D<Particle extends Particle2D>{
     }
 }
 export interface ParticlesEmitter2DConfig<Particle extends Particle2D>{
-    particle:()=>Particle
+    particle:()=>Particle|undefined
     delay:number
     enabled?:boolean
 }
@@ -63,7 +63,8 @@ export class ParticlesManager2D<Particle extends Particle2D=Particle2D>{
             if(this.emitters[i].enabled&&!this.emitters[i].destroyed){
                 if(this.emitters[i].current_delay<=0){
                     this.emitters[i].current_delay=this.emitters[i].delay
-                    this.add_particle(this.emitters[i].particle())
+                    const p=this.emitters[i].particle()
+                    if(p)this.add_particle(p)
                 }else{
                     this.emitters[i].current_delay-=dt
                 }
