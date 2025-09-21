@@ -393,7 +393,7 @@ export class Player extends ServerGameObject{
 
         if(this.game.deadzone.do_damage&&!this.game.deadzone.hitbox.pointInside(this.position)){
             this.piercingDamage({
-                amount:this.game.deadzone.current_damage,
+                amount:this.game.deadzone.damageAt(this.position),
                 critical:false,
                 position:this.position,
                 reason:DamageReason.DeadZone,

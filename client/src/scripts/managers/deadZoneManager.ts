@@ -9,6 +9,7 @@ import { DeadZoneUpdate } from "common/scripts/packets/update_packet.ts";
 import { ParticlesEmitter2D } from "common/scripts/engine/particles.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { random } from "common/scripts/engine/random.ts";
+import { GraphicsDConfig } from "../others/config.ts";
 export class DeadZoneManager{
     radius:number=5
     position:Vec2=v2.new(0,0)
@@ -57,27 +58,13 @@ export class DeadZoneManager{
                     }
                 })
             },
-            enabled:true
+            enabled:this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced
         })
     }
-
-    /*dest_position:Vec2=v2.new(0,0)
-    dest_radius:number=0
-
-    begin_position:Vec2=v2.new(50,50)
-    begin_radius:number=100
-
-    current_t=0
-    final_t=80*/
 
     color:Color=ColorM.hex("#21f2")
 
     tick(dt:number){
-        /*if(this.current_t<this.final_t){
-            this.current_t+=dt
-            const t=this.current_t/this.final_t
-            this.set_current(v2.lerp(this.begin_position,this.dest_position,t),Numeric.lerp(this.begin_radius,this.dest_radius,t))
-        }*/
     }
 
     update_from_data(data:DeadZoneUpdate){

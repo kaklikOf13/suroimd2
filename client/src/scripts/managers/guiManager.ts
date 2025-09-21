@@ -79,6 +79,8 @@ export class GuiManager{
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
 
+        debug_show:document.querySelector("#debug-show") as HTMLDivElement,
+
         all_inventory:document.querySelector("#all-inventory") as HTMLDivElement,
         close_all_inventory:document.querySelector("#close-all-inventory") as HTMLButtonElement,
 
@@ -628,6 +630,8 @@ export class GuiManager{
             }
             this.update_ammos(aa)
         }
+
+        this.content.debug_show.innerText=`FPS: ${this.game.fps}`
     }
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return

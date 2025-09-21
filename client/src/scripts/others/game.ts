@@ -78,6 +78,9 @@ export class Game extends ClientGame2D<GameObject>{
 
   fake_crosshair=new Sprite2D()
 
+  fps:number=60
+  frame_calc:number=0
+
   listners_init(){
     this.input_manager.add_axis("movement",
       {
@@ -272,6 +275,11 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.music=this.sounds.add_manipulative_si("music")
     this.ambience=this.sounds.add_manipulative_si("ambience")
+
+    setInterval(()=>{
+      this.fps=this.frame_calc
+      this.frame_calc=0
+    },1000)
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)
@@ -313,7 +321,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.renderer.fullCanvas()
     this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
     if(!this.music.running){
-      if(Math.random()<=0.00025){
+      if(Math.random()<=0.0002){
         this.music.set(random.choose([
           this.resources.get_audio("game_normal_music_1"),
           this.resources.get_audio("game_normal_music_2"),
@@ -326,9 +334,11 @@ export class Game extends ClientGame2D<GameObject>{
     /*
     Ambient
     */
-   if(Math.random()<=0.004){
+   if(Math.random()<=0.003){
     this.bolt()
    }
+   //FPS Show
+   this.frame_calc++
   }
   update_camera(){
     if(this.activePlayer){
