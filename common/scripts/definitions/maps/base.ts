@@ -86,15 +86,16 @@ LootTables.add_tables({
     ],
     "guns":[
         {table:"uncommon_guns",weight:25},
-        {table:"rare_guns",weight:9},
+        {table:"rare_guns",weight:17},
         {table:"epic_guns",weight:1},
         {table:"mythic_guns",weight:0.1},
         {table:"legendary_guns",weight:0.01}
     ],
     "special_guns":[
         {table:"uncommon_guns",weight:29},
-        {table:"rare_guns",weight:11},
+        {table:"rare_guns",weight:20},
         {table:"epic_guns",weight:3},
+        {table:"mythic_guns",weight:0.7},
         {table:"legendary_guns",weight:0.3}
     ],
     //Consumibles
@@ -107,7 +108,6 @@ LootTables.add_tables({
     "special_consumibles":[
         {table:"healing",weight:13},
         {table:"adrenaline",weight:6},
-        {table:"",weight:4},
         {table:"shield",count:2,weight:2},
         {table:"addiction",count:2,weight:0.7},
     ],
@@ -143,6 +143,13 @@ LootTables.add_tables({
         {item:"556mm",count:60,weight:1},
         {item:"308sub",count:5,weight:0.05},
     ],
+    "special_ammos":[
+        {item:"12g",count:15,weight:1},
+        {item:"9mm",count:80,weight:1},
+        {item:"762mm",count:80,weight:1},
+        {item:"556mm",count:80,weight:1},
+        {item:"308sub",count:10,weight:0.05},
+    ],
     //Equipments And Backpacks
     "armors":[
         {item:"basic_vest",weight:10},
@@ -159,8 +166,35 @@ LootTables.add_tables({
         {item:"tactical_pack",weight:0.05},
     ],
     "equipments":[
-        {table:"armors",weight:1},
-        {table:"backpacks",weight:1},
+        {item:"basic_vest",weight:10},
+        {item:"regular_vest",weight:1},
+        {item:"tactical_vest",weight:0.05},
+
+        {item:"basic_helmet",weight:10},
+        {item:"regular_helmet",weight:1},
+        {item:"tactical_helmet",weight:0.05},
+
+        {item:"basic_pack",weight:10},
+        {item:"regular_pack",weight:1},
+        {item:"tactical_pack",weight:0.05},
+    ],
+    "special_equipments":[
+        {item:"basic_vest",weight:10},
+        {item:"regular_vest",weight:3},
+        {item:"tactical_vest",weight:0.15},
+
+        {item:"basic_helmet",weight:10},
+        {item:"regular_helmet",weight:1},
+        {item:"tactical_helmet",weight:0.15},
+
+        {item:"basic_pack",weight:10},
+        {item:"regular_pack",weight:1},
+        {item:"tactical_pack",weight:0.15},
+    ],
+    "airdrop_equipments":[
+        {item:"tactical_vest",weight:1},
+        {item:"tactical_helmet",weight:1},
+        {item:"tactical_pack",weight:1},
     ],
     //Loot Tables
     "ground_loot":[
@@ -168,34 +202,29 @@ LootTables.add_tables({
         {weight:1,table:"equipments"},
         {weight:0.5,table:"guns"},
     ],
-    "wood_crate":{
-        content:[
-            {weight:2,table:"ammos"},
-            {weight:2,table:"consumibles"},
-            {weight:1,table:"equipments"},
-            {weight:0.5,table:"guns"},
-        ],
-        min:1,
-        max:2
-    },
-    "copper_crate":{
-        content:[
-            {weight:1.5,table:"consumibles"},
-            {weight:1.3,table:"ammos"},
-            {weight:0.5,table:"special_guns"},
-        ],
-        min:2,
-        max:5
-    },
+    "wood_crate":[
+        [{weight:10,table:"ammos"},{weight:1,table:""}],
+        [{weight:10,table:"consumibles"},{weight:1,table:""}],
+        [{weight:9.5,table:"equipments"},{weight:1,table:""}],
+        [{weight:1,table:"guns"}],
+    ],
+    "copper_crate":[
+        [{weight:10,table:"special_ammos"},{weight:1,table:""}],
+        [{weight:10,table:"consumibles"},{weight:1,table:""}],
+        [{weight:9.5,table:"special_equipments"},{weight:1,table:""}],
+        [{weight:1,table:"special_guns"}],
+    ],
     "iron_crate":[
-        [{weight:1,count:4,table:"special_consumibles"}],
-        [{weight:1,count:3,table:"ammos"}],
-        [{weight:1,count:1,table:"epic_guns"}],
+        [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
+        [{weight:10,table:"consumibles"},{weight:1,table:""}],
+        [{weight:1,table:"airdrop_equipments"}],
+        [{weight:1,table:"mythic_guns"}],
     ],
     "gold_crate":[
-        [{weight:1,count:5,table:"special_consumibles"}],
-        [{weight:1,count:4,table:"ammos"}],
-        [{weight:1,count:1,table:"legendary_guns"}],
+        [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
+        [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
+        [{weight:10,table:"airdrop_equipments"},{weight:1,count:2,table:"airdrop_equipments"}],
+        [{weight:1,table:"mythic_guns"}],
     ],
     //Animals
     "animal_medium":[

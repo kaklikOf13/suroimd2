@@ -39,6 +39,7 @@ export class MinimapManager{
 
         this.map.add_child(this.terrain_gfx)
         this.map.add_child(this.grid_gfx)
+        //this.map.add_child(this.game.dead_zone.map_sprite)
 
         this.map.zIndex=zIndexes.Minimap
 

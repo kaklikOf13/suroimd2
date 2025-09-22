@@ -15,6 +15,7 @@ export class DeadZoneManager{
     position:Vec2=v2.new(0,0)
 
     sprite:Graphics2D=new Graphics2D()
+    map_sprite:Graphics2D=new Graphics2D()
     game:Game
 
     pa!:ParticlesEmitter2D<ClientParticle2D>
