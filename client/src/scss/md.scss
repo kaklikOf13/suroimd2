@@ -24,3 +24,47 @@ kl-md-menu-options select {
 kl-md-extra {
     position: relative;
 }
+
+.emote-wheel{
+    position: absolute;
+    left: 1000px;
+    top: 300px;
+    width: fit-content;
+    height: fit-content;
+    .emote-wheel-part{
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        top: 0px;
+        width: 250px;
+        height: 250px;
+        background-image: url("/img/menu/gui/emote_wheel_part.svg");
+        background-repeat: no-repeat;
+        background-size: 250px 250px;
+        transform: translate(-50%,0%);
+        &:hover{
+            background-image: url("/img/menu/gui/emote_wheel_part_hover.svg");
+        }
+    }
+    .emote-wheel-center{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(75%, 75%);
+        width: 100px;
+        height: 100px;
+        background-image: url("/img/menu/gui/emote_wheel_center.svg");
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .wheel-part-top{
+        rotate: 90deg;
+    }
+    .wheel-part-right{
+        rotate: 180deg;
+    }
+    .wheel-part-bottom{
+        rotate: -90deg;
+    }
+}
