@@ -89,6 +89,7 @@ export interface ProjectileData extends EncodedData{
 export interface PlayerBodyData extends EncodedData{
     full?:{
         name:string
+        badge?:number
         gore_type:number
         gore_id:number
     }
@@ -355,8 +356,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 moving:stream.readBooleanGroup()[0]
             }
             if(full){
+                const b=stream.readUint16()
                 ret.full={
                     name:stream.readStringSized(30),
+                    badge:b===0?undefined:b-1,
                     gore_type:stream.readUint8(),
                     gore_id:stream.readUint8(),
                 }
@@ -369,6 +372,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writePosition(data.position)
             .writeBooleanGroup(data.moving)
             if(full){
+                stream.writeUint16((data.full!.badge??-1)+1)
                 stream.writeStringSized(30,data.full!.name)
                 stream.writeUint8(data.full!.gore_type)
                 stream.writeUint8(data.full!.gore_id)

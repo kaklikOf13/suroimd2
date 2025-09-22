@@ -23,6 +23,7 @@ import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
+import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
@@ -312,6 +313,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 type:KillFeedMessageType.join,
                 playerId:p.id,
                 playerName:p.name,
+                playerBadge:Badges.getFromString(p.loadout.badge).idNumber
             })
             this.modeManager.on_player_join(p)
         }
@@ -355,7 +357,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             if(lp.id===p.id)continue
             jp.players.push({
                 id:lp.id,
-                name:lp.name
+                name:lp.name,
+                badge:Badges.getFromString(lp.loadout.badge).idNumber
             })
         }
         if(this.modeManager.kill_leader){
@@ -422,7 +425,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return e
     }
     add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+        const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner_badge:owner.loadout.badge,owner,position:v2.duplicate(owner.position)}) as PlayerBody
         return b
     }
     add_player_gore(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{

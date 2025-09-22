@@ -25,6 +25,7 @@ export interface KillFeedMessageKillleader{
 export interface KillFeedMessageJoin{
     type:KillFeedMessageType.join
     playerId:number
+    playerBadge?:number
     playerName:string
 }
 export type KillFeedMessage=KillFeedMessageKill|KillFeedMessageJoin|KillFeedMessageKillleader
@@ -48,6 +49,7 @@ export class KillFeedPacket extends Packet{
             case KillFeedMessageType.join:
                 stream.writeID(this.message.playerId)
                 stream.writeStringSized(28,this.message.playerName)
+                stream.writeUint16((this.message.playerBadge??-1)+1)
                 break
             case KillFeedMessageType.killleader_dead:
             case KillFeedMessageType.killleader_assigned:
@@ -70,10 +72,13 @@ export class KillFeedPacket extends Packet{
                 msg["victimId"]=stream.readID()
                 msg["used"]=stream.readUint16()
                 break
-            case KillFeedMessageType.join:
+            case KillFeedMessageType.join:{
                 msg["playerId"]=stream.readID()
                 msg["playerName"]=stream.readStringSized(28)
+                const b=stream.readUint16()
+                msg["playerBadge"]=b===0?undefined:b-1
                 break
+            }
             case KillFeedMessageType.killleader_dead:
             case KillFeedMessageType.killleader_assigned:
                 msg["player"]={

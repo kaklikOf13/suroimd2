@@ -3,7 +3,7 @@ import { ActionPacket, InputAction, InputActionType } from "common/scripts/packe
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
 import { GInventory,GunItem,LItem} from "../player/inventory.ts";
-import { DamageSplash, DeadZoneState, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
@@ -34,7 +34,8 @@ export class Player extends ServerGameObject{
 
     skin:SkinDef=Skins.getFromString("default_skin")
     loadout={
-        skin:"default_skin"
+        skin:"default_skin",
+        badge:"stone_1_badge"
     }
     parachute?:{
         value:number

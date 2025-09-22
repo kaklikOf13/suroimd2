@@ -313,6 +313,11 @@
         img{align-self: center;
         }
     }
+    .badge-icon {
+        width: 18px;
+        margin-bottom: -3px;
+        margin-left: 3px;
+    }
     @media screen and (max-width: palette.$screen_medium) {
         .killfeed-message{
             font-size: 9px;

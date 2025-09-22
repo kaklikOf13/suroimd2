@@ -15,6 +15,7 @@ import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
+import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 
 export interface HelpGuiState{
     driving:boolean
@@ -390,10 +391,12 @@ export class GuiManager{
         }
         this.items=items
     }
-    players_name:Record<number,{name:string,badge:string}>={}
+    players_name:Record<number,{name:string,badge:string,full:string}>={}
     process_joined_packet(jp:JoinedPacket){
         for(const p of jp.players){
-            this.players_name[p.id]={name:p.name,badge:""}
+            const badge_frame=p.badge!==undefined?Badges.getFromNumber(p.badge).idString:""
+            const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/common/loadout/badges/${badge_frame}.svg">`
+            this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
         if(jp.kill_leader){
             this.assign_killleader({
@@ -468,13 +471,15 @@ export class GuiManager{
         this.content.killfeed.appendChild(elem)
         switch(msg.type){
             case KillFeedMessageType.join:{
-                this.players_name[msg.playerId]={badge:"",name:msg.playerName}
-                elem.innerHTML=`${this.players_name[msg.playerId].name} Join`
+                const badge_frame=msg.playerBadge!==undefined?Badges.getFromNumber(msg.playerBadge).idString:""
+                const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/common/loadout/badges/${badge_frame}.svg">`
+                this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
+                elem.innerHTML=`${this.players_name[msg.playerId].full} Join`
                 break
             }
             case KillFeedMessageType.kill:{
                 const dsd=DamageSources.valueNumber[msg.used]
-                elem.innerHTML=`${this.players_name[msg.killer.id].name} Killed ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                elem.innerHTML=`${this.players_name[msg.killer.id].full} Killed ${this.players_name[msg.victimId].full} With ${dsd.idString}`
                 if(msg.killer.id===this.game.activePlayer!.id){
                     this.content.information_killbox.innerText=`${msg.killer.kills} Kills`
                     ShowElement(this.content.information_killbox)
@@ -490,7 +495,7 @@ export class GuiManager{
             }
             case KillFeedMessageType.down:{
                 const dsd=DamageSources.valueNumber[msg.used]
-                elem.innerHTML=`${this.players_name[msg.killer.id].name} Knocked ${this.players_name[msg.victimId].name} With ${dsd.idString}`
+                elem.innerHTML=`${this.players_name[msg.killer.id].full} Knocked ${this.players_name[msg.victimId].full} With ${dsd.idString}`
                 break
             }
             case KillFeedMessageType.killleader_assigned:{
