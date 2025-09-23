@@ -41,6 +41,7 @@ export abstract class Container2DObject {
     _real_rotation: number = 0;
     _real_tint: Color = ColorM.default.white;
 
+    sync_rotation:boolean=true
     visible:boolean=true
 
     destroyed:boolean=false
@@ -51,16 +52,24 @@ export abstract class Container2DObject {
 
     update(_dt:number,_resources:ResourcesManager): void {
         if (this.parent) {
-            this._real_position = v2.add(
-                v2.rotate_RadAngle(
-                    v2.mult(this.parent._real_scale, this.position),
-                    this.parent._real_rotation
-                ),
-                this.parent._real_position
-            );
 
             this._real_scale = v2.mult(this.parent._real_scale, this.scale);
-            this._real_rotation = this.parent._real_rotation + this.rotation;
+            if(this.sync_rotation){
+                this._real_rotation = this.parent._real_rotation + this.rotation;
+                this._real_position = v2.add(
+                    v2.rotate_RadAngle(
+                        v2.mult(this.parent._real_scale, this.position),
+                        this.parent._real_rotation
+                    ),
+                    this.parent._real_position
+                );
+            }else{
+                this._real_rotation=this.rotation
+                this._real_position = v2.add(
+                    v2.mult(this.parent._real_scale, this.position),
+                    this.parent._real_position
+                );
+            }
 
             this._real_tint = {
                 r: this.parent._real_tint.r * this.tint.r,

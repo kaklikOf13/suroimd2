@@ -279,8 +279,10 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.clients.emit(p)
     }
     netUpdate(){
-        for(const p of Object.values(this.connectedPlayers)){
-            p.update2()
+        for(const p of this.players){
+            if(p.connected){
+                p.update2()
+            }
         }
         this.scene.objects.update_to_net()
         this.scene.objects.apply_destroy_queue()

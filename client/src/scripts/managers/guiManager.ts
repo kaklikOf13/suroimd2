@@ -16,6 +16,7 @@ import { HideElement, ShowElement } from "../engine/utils.ts";
 import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
 import { Badges } from "common/scripts/definitions/loadout/badges.ts";
+import { EmoteDef, Emotes} from "common/scripts/definitions/loadout/emotes.ts";
 
 export interface HelpGuiState{
     driving:boolean
@@ -99,6 +100,13 @@ export class GuiManager{
         emote_wheel:{
             main:document.querySelector("#emote-wheel") as HTMLDivElement,
             hover:document.querySelector("#emote-wheel-hover") as HTMLImageElement,
+
+            emotes:[
+                document.querySelector("#emote-wheel-right") as HTMLImageElement,
+                document.querySelector("#emote-wheel-bottom") as HTMLImageElement,
+                document.querySelector("#emote-wheel-left") as HTMLImageElement,
+                document.querySelector("#emote-wheel-top") as HTMLImageElement
+            ]
         }
     }
     mobile_content={
@@ -257,18 +265,43 @@ export class GuiManager{
     emote_wheel={
         positon:v2.new(0,0),
         active:false,
-        current_side:-1
+        current_side:-1,
+        emote:[
+        ] as EmoteDef[]
     }
-    begin_emote_wheel(position:Vec2){
+    begin_emote_wheel(position:Vec2,emotes?:EmoteDef[]){
         ShowElement(this.content.emote_wheel.main)
         this.content.emote_wheel.main.style.left=`${position.x*100}px`
         this.content.emote_wheel.main.style.top=`${position.y*100}px`
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
+
+        this.emote_wheel_set_emotes(emotes??[
+            Emotes.getFromString("emote_neutral"), //Right
+            Emotes.getFromString("emote_md_logo"), //Bottom
+            Emotes.getFromString("emote_sad"), //Left
+            Emotes.getFromString("emote_happy"), //Top
+        ])
+    }
+    emote_wheel_set_emotes(emote:EmoteDef[]){
+        for(const ev in this.content.emote_wheel.emotes){
+            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_sprite(emote[ev].idString).src
+        }
+        this.emote_wheel.emote=emote
     }
     end_emote_wheel(){
         HideElement(this.content.emote_wheel.main)
         this.emote_wheel.active=false
+        let selected_emote:EmoteDef|undefined=undefined
+        if(this.emote_wheel.current_side!==-1){
+            selected_emote=this.emote_wheel.emote[this.emote_wheel.current_side]
+        }
+        if(selected_emote){
+            this.game.action.actions.push({
+                type:InputActionType.emote,
+                emote:selected_emote
+            })
+        }
     }
     mobile_close(){
         HideElement(this.mobile_content.gui)
@@ -677,18 +710,23 @@ export class GuiManager{
 
                 if (norm >= 45 && norm < 135) {
                     sideClass += " wheel-hover-bottom"
+                    this.emote_wheel.current_side=1
                 } else if (norm >= 135 && norm < 225) {
                     sideClass += " wheel-hover-left"
+                    this.emote_wheel.current_side=2
                 } else if (norm >= 225 && norm < 315) {
                     sideClass += " wheel-hover-top"
+                    this.emote_wheel.current_side=3
                 } else {
                     sideClass += " wheel-hover-right"
+                    this.emote_wheel.current_side=0
                 }
 
                 if (this.content.emote_wheel.hover.className !== sideClass) {
                     this.content.emote_wheel.hover.className = sideClass
                 }
             } else {
+                this.emote_wheel.current_side=-1
                 if (this.content.emote_wheel.hover.src !== chsrc) {
                     this.content.emote_wheel.hover.src = chsrc
                     this.content.emote_wheel.hover.className = "wheel-hover wheel-hover-center"

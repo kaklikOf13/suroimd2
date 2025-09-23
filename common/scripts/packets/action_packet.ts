@@ -1,9 +1,11 @@
+import { EmoteDef, Emotes } from "../definitions/loadout/emotes.ts";
 import { NetStream, Packet, v2, Vec2 } from "../engine/mod.ts"
 export enum InputActionType{
   drop,
   use_item,
   set_hand,
   debug_give,
+  emote,
   debug_spawn
 }
 export type InputAction=({
@@ -16,6 +18,12 @@ export type InputAction=({
 }|{
   type:InputActionType.use_item,
   slot:number
+}|{
+  type:InputActionType.use_item,
+  slot:number
+}|{
+  type:InputActionType.emote,
+  emote:EmoteDef
 }|{
   type:InputActionType.debug_give|InputActionType.debug_spawn,
   item:string,
@@ -56,6 +64,9 @@ export class ActionPacket extends Packet{
           case InputActionType.set_hand:
             stream.writeUint8(i.hand)
             break
+          case InputActionType.emote:
+            stream.writeUint16(i.emote.idNumber!)
+            break
           case InputActionType.debug_give:
           case InputActionType.debug_spawn:
             stream.writeStringSized(32,i.item)
@@ -89,6 +100,9 @@ export class ActionPacket extends Packet{
             break
           case InputActionType.set_hand:
             ret["hand"]=stream.readUint8()
+            break
+          case InputActionType.emote:
+            ret["emote"]=Emotes.getFromNumber(stream.readUint16())
             break
           case InputActionType.debug_give:
           case InputActionType.debug_spawn:

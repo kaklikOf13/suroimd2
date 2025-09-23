@@ -23,6 +23,7 @@ import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { BotAi } from "../player/simple_bot_ai.ts";
+import { EmoteDef, Emotes } from "common/scripts/definitions/loadout/emotes.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -35,7 +36,10 @@ export class Player extends ServerGameObject{
     skin:SkinDef=Skins.getFromString("default_skin")
     loadout={
         skin:"default_skin",
-        badge:"stone_1_badge"
+        badge:"stone_1_badge",
+        emotes:{
+            die:"emote_sad",
+        }
     }
     parachute?:{
         value:number
@@ -106,6 +110,7 @@ export class Player extends ServerGameObject{
 
         actions:[] as InputAction[],
 
+        emote:undefined as EmoteDef|undefined,
         is_mobile:false
     }
 
@@ -403,6 +408,9 @@ export class Player extends ServerGameObject{
         
         if(this.ai)this.ai.AI(this,dt)
     }
+    override net_update(): void {
+        this.input.emote=undefined
+    }
     update_input(){
         if(this.input.reload&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
@@ -449,6 +457,9 @@ export class Player extends ServerGameObject{
                     case InputActionType.set_hand:
                         if(!(a.hand>=0&&a.hand<3))break
                         this.inventory.set_current_weapon_index(a.hand)
+                        break
+                    case InputActionType.emote:
+                        this.input.emote=a.emote
                         break
                     case InputActionType.debug_give:
                         if(this.game.debug.debug_menu){
@@ -708,6 +719,9 @@ export class Player extends ServerGameObject{
     kill(params:DamageParams){
         if(this.dead)return
         this.dead=true
+        if(this.loadout.emotes.die!==""){
+            this.game.addTimeout(()=>this.input.emote=Emotes.getFromString(this.loadout.emotes.die),0.5)
+        }
         this.update2()
         if(!this.is_npc){
             this.game.modeManager.on_player_die(this);
@@ -800,6 +814,7 @@ export class Player extends ServerGameObject{
             parachute:this.parachute,
             driving:this.seat!==undefined,
             attacking:this.attacking>0,
+            emote:this.input.emote,
             full:{
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,

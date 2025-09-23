@@ -33,6 +33,7 @@ export abstract class BaseObject2D{
     updateData(_data:EncodedData):void{}
     getData():EncodedData{return {full:{}}}
     abstract update(dt:number):void
+    net_update():void{}
     // deno-lint-ignore no-explicit-any
     abstract create(args:Record<string,any>):void
     onDestroy():void{}
@@ -370,6 +371,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const idx=this.objects[l].orden[j]
                 this.objects[l].objects[idx].dirty=false
                 this.objects[l].objects[idx].dirtyPart=false
+                this.objects[l].objects[idx].net_update()
             }
         }
         this.new_objects.length=0

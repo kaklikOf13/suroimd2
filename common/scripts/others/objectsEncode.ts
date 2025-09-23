@@ -1,3 +1,4 @@
+import { EmoteDef, Emotes } from "../definitions/loadout/emotes.ts";
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
 export enum PlayerAnimationType{
     Reloading,
@@ -26,6 +27,7 @@ export interface PlayerData extends EncodedData{
     left_handed:boolean
     driving:boolean
     attacking:boolean
+    emote?:EmoteDef
     parachute?:{
         value:number
     }
@@ -136,6 +138,9 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     value:stream.readFloat(0,1,1)
                 }
             }
+            if(bg1[5]){
+                ret.emote=Emotes.getFromNumber(stream.readUint16())
+            }
             if(full){
                 const bg2=stream.readBooleanGroup()
                 ret.full={
@@ -175,10 +180,14 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 data.left_handed,
                 data.driving,
                 data.attacking,
-                data.parachute!==undefined
+                data.parachute!==undefined,
+                data.emote!==undefined
             )
             if(data.parachute){
                 stream.writeFloat(data.parachute.value,0,1,1)
+            }
+            if(data.emote){
+                stream.writeUint16(data.emote.idNumber!)
             }
             if(full){
                 stream.writeBooleanGroup(data.full?.animation!==undefined)

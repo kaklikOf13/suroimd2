@@ -18,9 +18,11 @@ import { DefaultFistRig } from "common/scripts/others/item.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { ParticlesEmitter2D} from "common/scripts/engine/particles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
-import { Numeric } from "common/scripts/engine/utils.ts";
+import { ease, Numeric } from "common/scripts/engine/utils.ts";
 import { type Loot } from "./loot.ts";
 import { type Obstacle } from "./obstacle.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { Container2D } from "../engine/container.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -48,6 +50,10 @@ export class Player extends GameObject{
         weapon2:Sprite2D,
         muzzle_flash:Sprite2D,
         parachute:Sprite2D,
+
+        emote_container:Container2D,
+        emote_bg:Sprite2D,
+        emote_sprite:Sprite2D
     }
     anims:{
         fire?:{
@@ -60,6 +66,7 @@ export class Player extends GameObject{
         consumible_particles?:ParticlesEmitter2D<ClientParticle2D>
         mount_anims:KeyFrameSpriteDef[]
         mount_open:string
+        emote?:Tween<Vec2>
     }={consumible_particle:"healing_particle",mount_anims:[],mount_open:""}
     sound_animation:{
         animation?:SoundInstance
@@ -267,7 +274,11 @@ export class Player extends GameObject{
             muzzle_flash:this.container.add_animated_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
             parachute:this.container.add_animated_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5)}),
             weapon:this.container.add_animated_sprite("weapon"),
-            weapon2:this.container.add_animated_sprite("weapon2")
+            weapon2:this.container.add_animated_sprite("weapon2"),
+
+            emote_container:new Container2D(),
+            emote_bg:new Sprite2D(),
+            emote_sprite:new Sprite2D()
         }
         this.anims.consumible_particles=this.game.particles.add_emiter({
             delay:0.5,
@@ -295,6 +306,22 @@ export class Player extends GameObject{
         if(this.game.activePlayerId===this.id){
             this.game.activePlayer=this
         }
+
+        this.sprites.emote_container.sync_rotation=false
+        this.container.add_child(this.sprites.emote_container)
+        this.sprites.emote_container.position=v2.new(0,-1.5)
+        this.sprites.emote_container.add_child(this.sprites.emote_bg)
+        this.sprites.emote_container.add_child(this.sprites.emote_sprite)
+        this.sprites.emote_container.visible=false
+        this.sprites.emote_bg.set_frame({
+            image:"emote_background",
+            hotspot:v2.new(.5,.5),
+            scale:1.5
+        },this.game.resources)
+        this.sprites.emote_sprite.transform_frame({
+            hotspot:v2.new(.5,.5),
+            scale:2.6
+        })
     }
     current_interaction?:Loot|Obstacle|undefined
     update(dt:number): void {
@@ -310,6 +337,24 @@ export class Player extends GameObject{
         this.manager.cells.updateObject(this)
         const objs=this.manager.cells.get_objects(this.hb,this.layer)
         this.current_interaction=undefined
+        if(this.emote_time<2.5){
+            this.emote_time+=dt
+        }else{
+            this.anims.emote=this.game.addTween({
+                target:this.sprites.emote_container.scale,
+                duration:0.8,
+                to:{
+                    x:0,
+                    y:0
+                },
+                onComplete:()=>{
+                    if(this.emote_time<2.5)return
+                    this.sprites.emote_container.visible=false
+                    this.anims.emote=undefined
+                },
+                ease:ease.circOut
+            })
+        }
         if(this.game.activePlayerId===this.id){
             this.game.guiManager.state.loot=false
             this.game.guiManager.state.interact=false
@@ -362,6 +407,24 @@ export class Player extends GameObject{
         this.anims.consumible_particles!.enabled=false
         this.attacking=0
         this.container.stop_all_animations()
+    }
+    emote_time:number=0
+    add_emote(emote:EmoteDef){
+        this.game.sounds.play(this.game.resources.get_audio("emote_play"),{},"players")
+        this.sprites.emote_container.visible=true
+        this.emote_time=0
+        this.sprites.emote_sprite.frame=this.game.resources.get_sprite(emote.idString)
+        this.sprites.emote_container.scale=v2.new(0,0)
+        if(this.anims.emote)this.anims.emote.kill()
+        this.game.addTween({
+            target:this.sprites.emote_container.scale,
+            duration:0.9,
+            to:{
+                x:1,
+                y:1
+            },
+            ease:ease.elasticOut
+        })
     }
     play_animation(animation:PlayerAnimation){
         if(this.current_animation!==undefined)return
@@ -609,6 +672,9 @@ export class Player extends GameObject{
     dest_pos?:Vec2
     dest_rot?:number
     override updateData(data:PlayerData){
+        if(data.emote){
+            this.add_emote(data.emote)
+        }
         if(data.dead&&!this.dead){
             this.dead=data.dead
             this.container.destroy()
