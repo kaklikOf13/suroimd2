@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="30"
-   height="30.000002"
-   viewBox="-26 -28 29.999999 29.999998"
+   width="147.10332"
+   height="216.9426"
+   viewBox="-26 -28 147.10332 216.94258"
    version="1.1"
    id="svg14"
-   sodipodi:docname="emote_wheel_center.svg"
+   sodipodi:docname="emote_wheel_hover.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    inkscape:export-filename="MD.png"
    inkscape:export-xdpi="585.14288"
@@ -23,16 +23,17 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      inkscape:deskcolor="#505050"
-     inkscape:zoom="5.6568543"
-     inkscape:cx="46.050329"
-     inkscape:cy="16.528621"
+     inkscape:zoom="4"
+     inkscape:cx="96.5"
+     inkscape:cy="135.125"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg14"
-     showgrid="false" />
+     showgrid="false"
+     showguides="false" />
   <defs
      id="defs7">
     <clipPath
@@ -278,22 +279,9 @@
          cx="0" />
     </clipPath>
   </defs>
-  <g
-     id="g10"
-     style="display:inline;fill:#000000;fill-opacity:0.452288;stroke:none"
-     transform="translate(-54.50293,-54.503906)">
-    <g
-       id="g39">
-      <path
-         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;fill:#000000;fill-opacity:0.452288;stroke:none;stroke-width:0.5;stroke-dasharray:none;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
-         d="m 43.50293,26.503906 c -8.272941,0 -15,6.72706 -15,15 0,8.27294 6.727059,15.000001 15,15.000001 8.27294,0 15,-6.727061 15,-15.000001 0,-8.27294 -6.72706,-15 -15,-15 z m 0,1.913086 c 7.238963,0 13.086914,5.84795 13.086914,13.086914 0,7.238963 -5.847951,13.086914 -13.086914,13.086914 -7.238964,0 -13.086914,-5.847951 -13.086914,-13.086914 0,-7.238964 5.84795,-13.086914 13.086914,-13.086914 z"
-         id="path1"
-         sodipodi:nodetypes="ssssssssss" />
-      <path
-         d="m 45.889345,35.316905 h 3.535429 l -3.977358,6.187002 4.065744,6.187001 h -3.535429 l -2.474801,-3.888972 -2.4748,3.888972 H 37.4927 l 4.065744,-6.187001 -3.977359,-6.187002 h 3.517753 l 2.404092,3.888972 z"
-         id="text1"
-         style="font-size:26.6667px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';fill:#000000;fill-opacity:0.452288;stroke-width:0.331446"
-         aria-label="X" />
-    </g>
-  </g>
+  <path
+     style="opacity:1;fill:none;stroke:#1f327b;stroke-width:8.4;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+     d="m 116.45074,69.405372 c -6.36368,8.482755 -1.39856,17.443255 0.45266,21.195739 L 22.01039,184.74274 C -43.711767,132.41407 -29.202531,17.157622 24.040718,-23.800139 Z"
+     id="path2"
+     sodipodi:nodetypes="ccccc" />
 </svg>

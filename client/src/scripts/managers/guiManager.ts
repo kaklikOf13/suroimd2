@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { Numeric } from "common/scripts/engine/mod.ts";
+import { Angle, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
@@ -95,6 +95,10 @@ export class GuiManager{
             input_item_count:document.querySelector("#debug-item-count") as HTMLInputElement,
             btn_give:document.querySelector("#debug-give-item") as HTMLButtonElement,
             btn_spawn:document.querySelector("#debug-spawn-item") as HTMLButtonElement,
+        },
+        emote_wheel:{
+            main:document.querySelector("#emote-wheel") as HTMLDivElement,
+            hover:document.querySelector("#emote-wheel-hover") as HTMLImageElement,
         }
     }
     mobile_content={
@@ -193,6 +197,7 @@ export class GuiManager{
         this.clear()
         HideElement(this.content.gameD)
         ShowElement(this.content.menuD)
+        HideElement(this.content.emote_wheel.main)
         HideElement(this.content.information_killbox)
 
         this.content.close_all_inventory.addEventListener("click",this.set_all_inventory.bind(this,false))
@@ -248,7 +253,22 @@ export class GuiManager{
         this.mobile_content.btn_reload.addEventListener("click",()=>{
             this.game.input_manager.emit("actiondown",{action:"reload"})
         })
-
+    }
+    emote_wheel={
+        positon:v2.new(0,0),
+        active:false,
+        current_side:-1
+    }
+    begin_emote_wheel(position:Vec2){
+        ShowElement(this.content.emote_wheel.main)
+        this.content.emote_wheel.main.style.left=`${position.x*100}px`
+        this.content.emote_wheel.main.style.top=`${position.y*100}px`
+        this.emote_wheel.positon=position
+        this.emote_wheel.active=true
+    }
+    end_emote_wheel(){
+        HideElement(this.content.emote_wheel.main)
+        this.emote_wheel.active=false
     }
     mobile_close(){
         HideElement(this.mobile_content.gui)
@@ -635,6 +655,47 @@ export class GuiManager{
             }
             this.update_ammos(aa)
         }
+
+        if (this.emote_wheel.active) {
+            const angle = Angle.rad2deg(
+                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse.position)
+            )
+            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse.position)
+
+            const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
+            const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
+
+            // Normaliza ângulo para 0–360
+            let norm = (angle + 360) % 360
+
+            if (distance > 0.24) {
+                if (this.content.emote_wheel.hover.src !== shsrc) {
+                    this.content.emote_wheel.hover.src = shsrc
+                }
+
+                let sideClass = "wheel-hover"
+
+                if (norm >= 45 && norm < 135) {
+                    sideClass += " wheel-hover-bottom"
+                } else if (norm >= 135 && norm < 225) {
+                    sideClass += " wheel-hover-left"
+                } else if (norm >= 225 && norm < 315) {
+                    sideClass += " wheel-hover-top"
+                } else {
+                    sideClass += " wheel-hover-right"
+                }
+
+                if (this.content.emote_wheel.hover.className !== sideClass) {
+                    this.content.emote_wheel.hover.className = sideClass
+                }
+            } else {
+                if (this.content.emote_wheel.hover.src !== chsrc) {
+                    this.content.emote_wheel.hover.src = chsrc
+                    this.content.emote_wheel.hover.className = "wheel-hover wheel-hover-center"
+                }
+            }
+        }
+
 
         this.content.debug_show.innerText=`FPS: ${this.game.fps}`
     }

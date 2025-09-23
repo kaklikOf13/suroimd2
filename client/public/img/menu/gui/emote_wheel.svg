@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="36.127998"
-   height="74.001999"
-   viewBox="-26 -28 36.127997 74.00199"
+   width="300"
+   height="300"
+   viewBox="-26 -28 300 299.99997"
    version="1.1"
    id="svg14"
-   sodipodi:docname="emote_wheel_part_hover.svg"
+   sodipodi:docname="emote_wheel.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    inkscape:export-filename="MD.png"
    inkscape:export-xdpi="585.14288"
@@ -23,16 +23,17 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      inkscape:deskcolor="#505050"
-     inkscape:zoom="5.6568543"
-     inkscape:cx="43.31029"
-     inkscape:cy="39.156038"
+     inkscape:zoom="1"
+     inkscape:cx="104"
+     inkscape:cy="295.5"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg14"
-     showgrid="false" />
+     showgrid="false"
+     showguides="false" />
   <defs
      id="defs7">
     <clipPath
@@ -279,18 +280,55 @@
     </clipPath>
   </defs>
   <g
-     id="g10"
-     style="display:inline;fill:#000000;fill-opacity:0.452288;stroke:#034761;stroke-width:1;stroke-dasharray:none;stroke-opacity:1"
-     transform="matrix(0.96734675,0,0,0.98542659,-14.649913,-31.42862)">
+     id="g7"
+     transform="matrix(2.7272727,0,0,2.7272727,44.90909,48.363636)">
+    <circle
+       style="fill:#000000;fill-opacity:0.315287;stroke-width:1.00043"
+       id="path1"
+       cx="29"
+       cy="27"
+       r="55" />
     <g
-       id="g9"
-       style="display:inline;stroke:#034761;stroke-width:3.55049;stroke-dasharray:none;stroke-opacity:1"
-       transform="matrix(0.2816516,0,0,0.2816516,19.208002,-31.773135)">
+       id="g28">
       <path
-         style="fill:#000000;fill-opacity:0.402614;stroke:#034761;stroke-width:3.55049;stroke-dasharray:none;stroke-opacity:1"
-         d="m 20.17812,195.17048 c -24.9096097,24.7929 -24.0860097,104.15464 0,129.02553 l -68.031646,65.68572 c -78.997644,-12.9435 -81.634134,-242.90733 0,-262.7429 z"
-         id="path37"
-         sodipodi:nodetypes="ccccc" />
+         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#c0c0c0;stroke-width:0.835063;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="m -5.9209197,63.652737 c -0.4525915,0.452591 -1.2480866,0.390895 -1.7767854,-0.137805 -0.5287002,-0.528701 -0.5903974,-1.324195 -0.1378052,-1.776787 L 23.739581,30.163054 c 0.452592,-0.452593 1.248088,-0.390895 1.776788,0.137804 0.528698,0.5287 0.590396,1.324194 0.137803,1.776787 z"
+         id="path13"
+         sodipodi:nodetypes="sssssss" />
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#c0c0c0;stroke-width:0.835063;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="m 63.60475,63.776418 c 0.452591,0.452591 1.248087,0.390895 1.776785,-0.137805 0.528701,-0.528701 0.590398,-1.324195 0.137806,-1.776787 L 33.944249,30.286735 c -0.452592,-0.452593 -1.248088,-0.390895 -1.776788,0.137804 -0.528698,0.5287 -0.590396,1.324194 -0.137803,1.776787 z"
+         id="path26"
+         sodipodi:nodetypes="sssssss" />
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#c0c0c0;stroke-width:0.835063;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="m 65.704024,-7.6520481 c 0.452591,-0.452591 0.390895,-1.248087 -0.137805,-1.776785 -0.528701,-0.528701 -1.324195,-0.5903979 -1.776787,-0.137806 L 32.214341,22.008453 c -0.452593,0.452592 -0.390895,1.248088 0.137804,1.776788 0.5287,0.528698 1.324194,0.590396 1.776787,0.137803 z"
+         id="path27"
+         sodipodi:nodetypes="sssssss" />
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#c0c0c0;stroke-width:0.835063;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="m -5.7952154,-9.606912 c -0.452591,-0.452591 -1.248087,-0.390895 -1.776785,0.137805 -0.528701,0.528701 -0.590398,1.324195 -0.137806,1.776787 L 23.865286,23.882771 c 0.452592,0.452593 1.248088,0.390895 1.776788,-0.137804 0.528698,-0.5287 0.590396,-1.324194 0.137803,-1.776787 z"
+         id="path28"
+         sodipodi:nodetypes="sssssss" />
+    </g>
+    <g
+       id="g30"
+       transform="matrix(0.12260261,0,0,0.12260261,26.869185,28.587573)"
+       style="stroke-width:0;stroke-dasharray:none">
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#c0c0c0;stroke-width:0;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="m -2.1353373,0.13599281 a 4.5496504,4.5496504 0 0 0 0,6.43025839 4.5496504,4.5496504 0 0 0 6.4302585,0 L 36.895035,-26.033862 a 4.5496504,4.5496504 0 0 0 4e-6,-6.430263 4.5496504,4.5496504 0 0 0 -6.430263,4e-6 z"
+         id="path30" />
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#c0c0c0;stroke-width:0;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+         d="m 36.895039,0.13599281 a 4.5496504,4.5496504 0 0 1 0,6.43025839 4.5496504,4.5496504 0 0 1 -6.430258,0 L -2.135333,-26.033862 a 4.5496504,4.5496504 0 0 1 -4e-6,-6.430263 4.5496504,4.5496504 0 0 1 6.430263,4e-6 z"
+         id="path31" />
     </g>
   </g>
+  <circle
+     style="opacity:1;fill:none;fill-opacity:0.315287;stroke:#c0c0c0;stroke-width:5.1;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     id="path32"
+     cx="124"
+     cy="122"
+     r="14.009145" />
 </svg>

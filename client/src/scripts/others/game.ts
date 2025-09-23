@@ -111,6 +111,9 @@ export class Game extends ClientGame2D<GameObject>{
         case "fire":
           this.action.use_weapon=true
           break
+        case "emote_wheel":
+          this.guiManager.begin_emote_wheel(this.input_manager.mouse.position)
+          break
         case "reload":
           this.action.reload=true
           break
@@ -177,6 +180,9 @@ export class Game extends ClientGame2D<GameObject>{
       switch(a.action){
         case "fire":
           this.action.use_weapon=false
+          break
+        case "emote_wheel":
+          this.guiManager.end_emote_wheel()
           break
       }
     })

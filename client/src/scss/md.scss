@@ -27,44 +27,62 @@ kl-md-extra {
 
 .emote-wheel{
     position: absolute;
-    left: 1000px;
-    top: 300px;
     width: fit-content;
     height: fit-content;
+
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background-size: cover;
+
+    background-image: url("./img/menu/gui/emote_wheel.svg");
+    .wheel-hover{
+        position: absolute;
+        transform: translate(-50%,-50%);
+    }
     .emote-wheel-part{
         position: absolute;
-        left: 0px;
-        right: 0px;
-        bottom: 0px;
-        top: 0px;
-        width: 250px;
-        height: 250px;
-        background-image: url("/img/menu/gui/emote_wheel_part.svg");
-        background-repeat: no-repeat;
-        background-size: 250px 250px;
-        transform: translate(-50%,0%);
-        &:hover{
-            background-image: url("/img/menu/gui/emote_wheel_part_hover.svg");
-        }
-    }
-    .emote-wheel-center{
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(75%, 75%);
-        width: 100px;
-        height: 100px;
-        background-image: url("/img/menu/gui/emote_wheel_center.svg");
-        background-repeat: no-repeat;
-        background-size: cover;
+        transform: translate(-50%,-50%);
     }
     .wheel-part-top{
-        rotate: 90deg;
-    }
-    .wheel-part-right{
-        rotate: 180deg;
+        top: 20%;
+        left: 50%;
     }
     .wheel-part-bottom{
+        bottom: 0%;
+        left: 50%;
+    }
+    .wheel-part-left {
+        top: 50%;
+        left: 20%;
+    }
+    .wheel-part-right {
+        top: 50%;
+        right: 0%;
+    }
+
+    .wheel-hover-top{
+        left: -11%;
+        top: 12%;
+        rotate: 90deg;
+    }
+    .wheel-hover-bottom{
         rotate: -90deg;
+        top: 16%;
+        left: 61.5%;
+    }
+    .wheel-hover-left {
+        top: 50%;
+        left: 23%;
+        rotate: 0deg;
+    }
+    .wheel-hover-right {
+        top: -22.5%;
+        left: 28%;
+        rotate: 180deg;
+    }
+    .wheel-hover-center {
+        top: 50%;
+        left: 50%;
     }
 }

@@ -63,6 +63,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.R2],
         keys:[Key.Mouse_Left]
     },
+    "emote_wheel":{
+        buttons:[GamepadButtonID.L2],
+        keys:[Key.Mouse_Right]
+    },
     "reload":{
         buttons:[GamepadButtonID.X],
         keys:[Key.R]

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="109.47984"
-   height="109.47984"
-   viewBox="-26 -28 109.47984 109.47983"
+   width="34.918289"
+   height="34.918289"
+   viewBox="-26 -28 34.918289 34.918286"
    version="1.1"
    id="svg14"
-   sodipodi:docname="emote_wheel.svg"
+   sodipodi:docname="emote_wheel_hover_center.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    inkscape:export-filename="MD.png"
    inkscape:export-xdpi="585.14288"
@@ -24,15 +24,16 @@
      inkscape:pagecheckerboard="1"
      inkscape:deskcolor="#505050"
      inkscape:zoom="5.6568543"
-     inkscape:cx="85.648309"
-     inkscape:cy="56.303377"
+     inkscape:cx="-20.152543"
+     inkscape:cy="27.135222"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g10"
-     showgrid="false" />
+     inkscape:current-layer="svg14"
+     showgrid="false"
+     showguides="false" />
   <defs
      id="defs7">
     <clipPath
@@ -278,47 +279,10 @@
          cx="0" />
     </clipPath>
   </defs>
-  <g
-     id="g10"
-     style="display:inline;fill:#000000;fill-opacity:0.45228761;stroke:none"
-     transform="translate(-14.763013,-14.76399)">
-    <g
-       id="g39">
-      <path
-         style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;fill:#000000;fill-opacity:0.45228761;stroke:none;stroke-width:0.5;stroke-dasharray:none;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
-         d="m 43.50293,26.503906 c -8.272941,0 -15,6.72706 -15,15 0,8.27294 6.727059,15.000001 15,15.000001 8.27294,0 15,-6.727061 15,-15.000001 0,-8.27294 -6.72706,-15 -15,-15 z m 0,1.913086 c 7.238963,0 13.086914,5.84795 13.086914,13.086914 0,7.238963 -5.847951,13.086914 -13.086914,13.086914 -7.238964,0 -13.086914,-5.847951 -13.086914,-13.086914 0,-7.238964 5.84795,-13.086914 13.086914,-13.086914 z"
-         id="path1"
-         sodipodi:nodetypes="ssssssssss" />
-      <path
-         d="m 45.889345,35.316905 h 3.535429 l -3.977358,6.187002 4.065744,6.187001 h -3.535429 l -2.474801,-3.888972 -2.4748,3.888972 H 37.4927 l 4.065744,-6.187001 -3.977359,-6.187002 h 3.517753 l 2.404092,3.888972 z"
-         id="text1"
-         style="font-size:26.6667px;font-family:'Russo One';-inkscape-font-specification:'Russo One, Normal';fill:#000000;fill-opacity:0.45228761;stroke-width:0.331446"
-         aria-label="X" />
-    </g>
-    <g
-       id="g9"
-       style="display:inline"
-       transform="matrix(0.2816516,0,0,0.2816516,19.208002,-31.773135)">
-      <path
-         style="fill:#000000;fill-opacity:0.402614;stroke-width:1.58743;stroke-dasharray:none"
-         d="m 20.430772,326.24977 c 24.792901,24.90961 104.154638,24.08601 129.025528,0 l 65.68572,68.03165 c -12.9435,78.99764 -242.907323,81.63413 -262.742893,0 z"
-         id="path2"
-         sodipodi:nodetypes="ccccc" />
-      <path
-         style="fill:#000000;fill-opacity:0.402614;stroke-width:1.58743;stroke-dasharray:none"
-         d="m 20.17812,195.17048 c -24.9096097,24.7929 -24.0860097,104.15464 0,129.02553 l -68.031646,65.68572 c -78.997644,-12.9435 -81.634134,-242.90733 0,-262.7429 z"
-         id="path37"
-         sodipodi:nodetypes="ccccc" />
-      <path
-         style="fill:#000000;fill-opacity:0.402614;stroke-width:1.58743;stroke-dasharray:none"
-         d="m 152.33946,195.99989 c 24.90962,24.7929 24.08602,104.15464 0,129.02553 l 68.03165,65.68572 c 78.99765,-12.9435 81.63414,-242.90733 0,-262.7429 z"
-         id="path38"
-         sodipodi:nodetypes="ccccc" />
-      <path
-         style="fill:#000000;fill-opacity:0.402614;stroke-width:1.58743;stroke-dasharray:none"
-         d="m 21.260173,194.08843 c 24.7929,-24.90962 104.154637,-24.08602 129.025527,0 l 65.68572,-68.03165 c -12.9435,-78.997655 -242.907327,-81.634145 -262.742893,0 z"
-         id="path39"
-         sodipodi:nodetypes="ccccc" />
-    </g>
-  </g>
+  <circle
+     style="opacity:1;fill:none;fill-opacity:0.315287;stroke:#1f327b;stroke-width:6.9;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     id="path32"
+     cx="-8.5408554"
+     cy="-10.540855"
+     r="14.009145" />
 </svg>
