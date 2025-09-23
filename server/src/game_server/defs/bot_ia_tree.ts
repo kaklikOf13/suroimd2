@@ -2,6 +2,7 @@ import { ActionDefinition, ActionNode, ActionTreeDef, ConditionNode, DoActionNod
 import { Player } from "../gameObjects/player.ts";
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
+import { InputActionType } from "common/scripts/packets/action_packet.ts";
 export interface BotSettings{
     reaction_time:number,
     accuracy:number,
@@ -17,7 +18,12 @@ export const bots_actions={
     use_slot:{
         name: "use_slot",
         onStart: (ctx,{slot}) => {
-            ctx.object.player.input.use_slot=slot
+            ctx.object.player.input.actions.push(
+                {
+                    slot,
+                    type:InputActionType.use_item
+                }
+            )
         },
         onTick: (ctx, _a) => {
             return ctx.object.player.actions.current_delay>0?NodeStatus.Success:NodeStatus.Running

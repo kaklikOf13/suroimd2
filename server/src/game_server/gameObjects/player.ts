@@ -122,7 +122,7 @@ export class Player extends ServerGameObject{
 
         this.actions=new ActionsManager(this)
 
-        this.left_handed=Math.random()<=.1
+        this.left_handed=false
 
         this.accessories=new AccessoriesManager(this,3)
     }

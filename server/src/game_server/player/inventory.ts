@@ -244,6 +244,7 @@ export class MeleeItem extends LItem{
         )
         const hb=new CircleHitbox2D(position,this.def.radius)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
+        user.current_animation=undefined
         for(const c of collidibles){
             if(!hb.collidingWith(c.hb))continue
               if(c instanceof Obstacle){
@@ -269,6 +270,10 @@ export class MeleeItem extends LItem{
     }
     on_use(user: Player,_slot?:LItem): void {
         if(this.use_delay<=0){
+            user.current_animation={
+                type:PlayerAnimationType.Melee
+            }
+            user.dirty=true
             for(const t of this.def.damage_delays){
               user.game.addTimeout(this.attack.bind(this,user),t)
               this.use_delay=this.def.attack_delay
@@ -276,7 +281,9 @@ export class MeleeItem extends LItem{
         }
     }
     update(user: Player): void {
-        if(this.use_delay>0)this.use_delay-=1/user.game.tps
+        if(this.use_delay>0){
+            this.use_delay-=1/user.game.tps
+        }
     }
 }
 export class GInventory extends Inventory<LItem>{

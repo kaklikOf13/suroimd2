@@ -23,6 +23,7 @@ import { type Loot } from "./loot.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { Container2D } from "../engine/container.ts";
+import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -479,6 +480,15 @@ export class Player extends GameObject{
                     this.container.play_animation(def.animation,()=>{
                         this.current_animation=undefined
                         this.set_current_weapon.bind(this,this.current_weapon,true,!sound)
+                    })
+                }
+                break
+            }
+            case PlayerAnimationType.Melee:{
+                const def=this.current_weapon as MeleeDef
+                if(def.animation){
+                    this.container.play_animation(def.animation,()=>{
+                        this.current_animation=undefined
                     })
                 }
                 break

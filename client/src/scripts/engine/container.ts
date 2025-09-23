@@ -493,6 +493,7 @@ export class AnimatedContainer2D extends Container2D{
                                     this.current_animations[i].tweens.push(this.game.addTween({
                                         duration:nd,
                                         target:fuser.position,
+                                        yoyo:action.yoyo,
                                         ease:action.ease,
                                         to:action.to.position
                                     }))
@@ -501,6 +502,7 @@ export class AnimatedContainer2D extends Container2D{
                                     this.current_animations[i].tweens.push(this.game.addTween({
                                         duration:nd,
                                         target:fuser.hotspot,
+                                        yoyo:action.yoyo,
                                         ease:action.ease,
                                         to:action.to.hotspot
                                     }))
@@ -509,6 +511,7 @@ export class AnimatedContainer2D extends Container2D{
                                     this.current_animations[i].tweens.push(this.game.addTween({
                                         duration:nd,
                                         target:fuser,
+                                        yoyo:action.yoyo,
                                         ease:action.ease,
                                         to:{rotation:action.to.rotation}
                                     }))

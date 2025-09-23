@@ -1,3 +1,4 @@
+import { AKeyFrame } from "../../engine/definitions.ts";
 import { v2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts";
 import { DefaultFistRig, FistRig, ItemQuality, WeaponRig } from "../../others/item.ts";
@@ -16,6 +17,7 @@ export interface MeleeDef extends Definition{
     speed_mod?:number
     arms?:FistRig
     image?:WeaponRig
+    animation?:AKeyFrame[]
 }
 
 export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{
@@ -24,12 +26,12 @@ export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{
 Melees.insert(
     {
         idString:"survival_knife",
-        damage:18,
+        damage:15,
         offset:0.5,
         quality:ItemQuality.Common,
         radius:0.5,
         size:0,
-        attack_delay:0.55,
+        attack_delay:0.2,
         damage_delays:[0.1],
         arms:{
             right:{
@@ -48,8 +50,45 @@ Melees.insert(
             rotation:-0.5,
             zIndex:1,
             left_handed_suport:true,
-            hotspot:v2.new(0.25,0.5)
-        }
+            hotspot:v2.new(0.33,0.5)
+        },
+        animation:[
+            {
+                time:0,
+                actions:[
+                    {
+                        fuser:"weapon",
+                        type:"tween",
+                        to:{
+                            position:DefaultFistRig.right!.position
+                        }
+                    }
+                ]
+            },
+            {
+                time:0.09,
+                actions:[
+                    {
+                        fuser:"weapon",
+                        type:"tween",
+                        yoyo:true,
+                        to:{
+                            rotation:DefaultFistRig.right!.rotation-1,
+                            position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                        }
+                    },
+                    {
+                        fuser:"right_arm",
+                        type:"tween",
+                        yoyo:true,
+                        to:{
+                            rotation:DefaultFistRig.right!.rotation-0.4,
+                            position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                        }
+                    }
+                ]
+            }
+        ]
     },
     {
         idString:"axe",

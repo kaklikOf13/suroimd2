@@ -230,6 +230,7 @@ export interface AKeyFrameTweenAction {
     type: "tween"
     ease?:EaseFunction
     fuser:string
+    yoyo?:boolean
     to: FrameTransform
 }
 export type AKeyFrameAction =
