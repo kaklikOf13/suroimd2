@@ -91,6 +91,10 @@ LootTables.add_tables({
         {table:"mythic_guns",weight:0.1},
         {table:"legendary_guns",weight:0.01}
     ],
+    "melees":[
+        {table:"axe",weight:100},
+        {table:"hammer",weight:5},
+    ],
     "special_guns":[
         {table:"uncommon_guns",weight:29},
         {table:"rare_guns",weight:20},
@@ -201,30 +205,35 @@ LootTables.add_tables({
         {weight:1.5,table:"ammos"},
         {weight:1,table:"equipments"},
         {weight:0.5,table:"guns"},
+        {weight:0.01,table:"melees"},{weight:1,table:"melees"},
     ],
     "wood_crate":[
         [{weight:10,table:"ammos"},{weight:1,table:""}],
         [{weight:10,table:"consumibles"},{weight:1,table:""}],
         [{weight:9.5,table:"equipments"},{weight:1,table:""}],
         [{weight:1,table:"guns"}],
+        [{weight:60,table:""},{weight:1,table:"melees"}],
     ],
     "copper_crate":[
         [{weight:10,table:"special_ammos"},{weight:1,table:""}],
         [{weight:10,table:"consumibles"},{weight:1,table:""}],
         [{weight:9.5,table:"special_equipments"},{weight:1,table:""}],
         [{weight:1,table:"special_guns"}],
+        [{weight:60,table:""},{weight:1,table:"melees"}],
     ],
     "iron_crate":[
         [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
         [{weight:10,table:"consumibles"},{weight:1,table:""}],
         [{weight:1,table:"airdrop_equipments"}],
         [{weight:1,table:"mythic_guns"}],
+        [{weight:10,table:""},{weight:1,table:"melees"}],
     ],
     "gold_crate":[
         [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
         [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
         [{weight:10,table:"airdrop_equipments"},{weight:1,count:2,table:"airdrop_equipments"}],
         [{weight:1,table:"mythic_guns"}],
+        [{weight:1,table:"melees"}],
     ],
     //Animals
     "animal_medium":[

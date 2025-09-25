@@ -20,7 +20,7 @@ export const GameConstants={
         velocityDecay:1.7,
         radius:{
             ammo:0.4,
-            gun:0.54,
+            weapon:0.54,
             consumible:0.4,
             equipament:0.4,
             skin:0.45

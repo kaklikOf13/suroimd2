@@ -188,6 +188,7 @@ export class GuiManager{
                 this.game.action.actions.push({type:InputActionType.set_hand,hand:w})
             }
         }
+        this.content.weapon1.addEventListener("mouseup",dropW(0))
         this.content.weapon2.addEventListener("mouseup",dropW(1))
         this.content.weapon3.addEventListener("mouseup",dropW(2))
 

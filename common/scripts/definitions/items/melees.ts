@@ -1,6 +1,7 @@
 import { AKeyFrame } from "../../engine/definitions.ts";
-import { v2 } from "../../engine/geometry.ts";
+import { Angle, v2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts";
+import { ease } from "../../engine/utils.ts";
 import { DefaultFistRig, FistRig, ItemQuality, WeaponRig } from "../../others/item.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -19,7 +20,110 @@ export interface MeleeDef extends Definition{
     image?:WeaponRig
     animation?:AKeyFrame[]
 }
-
+export function AnimationSwing(time:number):AKeyFrame[]{
+    const r=Angle.deg2rad(90)
+    return [
+        {
+            time:0,
+            actions:[
+            ]
+        },
+        {
+            time:time*0.3,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        rotation:r+0.4,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0.1))
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"left_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.left!.rotation-0.2,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0.1))
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation+0.2,
+                        position:v2.add(DefaultFistRig.right!.position,v2.new(-0.07,0.05))
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.15,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        rotation:r-1,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0))
+                    },
+                },
+                {
+                    fuser:"left_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.left!.rotation+0.1,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(-0.05,0.1))
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation-0.3,
+                        position:v2.add(DefaultFistRig.right!.position,v2.new(0.15,-0.15))
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.7,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        rotation:r,
+                        position:DefaultFistRig.left!.position
+                    }
+                },
+                {
+                    fuser:"left_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.left!.rotation,
+                        position:DefaultFistRig.left!.position
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation,
+                        position:DefaultFistRig.right!.position
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+    ]
+}
 export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{
     g.item_type=InventoryItemType.melee
 })
@@ -56,13 +160,6 @@ Melees.insert(
             {
                 time:0,
                 actions:[
-                    {
-                        fuser:"weapon",
-                        type:"tween",
-                        to:{
-                            position:DefaultFistRig.right!.position
-                        }
-                    }
                 ]
             },
             {
@@ -97,17 +194,55 @@ Melees.insert(
         quality:ItemQuality.Uncommon,
         radius:0.6,
         size:2,
-        attack_delay:0.8,
-        damage_delays:[0.3]
+        attack_delay:0.5,
+        damage_delays:[0.3],
+        arms:{
+            right:{
+                position:DefaultFistRig.right!.position,
+                rotation:DefaultFistRig.right!.rotation,
+                zIndex:2,
+            },
+            left:{
+                position:DefaultFistRig.left!.position,
+                rotation:DefaultFistRig.left!.rotation,
+                zIndex:2,
+            }
+        },
+        image:{
+            position:DefaultFistRig.left!.position,
+            rotation:Angle.deg2rad(90),
+            zIndex:1,
+            hotspot:v2.new(0.2,0.4)
+        },
+        animation:AnimationSwing(0.6)
     },
     {
         idString:"hammer",
-        damage:60,
-        offset:0.5,
+        damage:50,
+        offset:0.4,
         quality:ItemQuality.Rare,
         radius:0.6,
-        size:2.5,
-        attack_delay:1.2,
-        damage_delays:[0.4]
+        size:3,
+        attack_delay:0.8,
+        damage_delays:[0.4],
+        arms:{
+            right:{
+                position:DefaultFistRig.right!.position,
+                rotation:DefaultFistRig.right!.rotation,
+                zIndex:2,
+            },
+            left:{
+                position:DefaultFistRig.left!.position,
+                rotation:DefaultFistRig.left!.rotation,
+                zIndex:2,
+            }
+        },
+        image:{
+            position:DefaultFistRig.left!.position,
+            rotation:Angle.deg2rad(90),
+            zIndex:1,
+            hotspot:v2.new(0.2,0.3)
+        },
+        animation:AnimationSwing(0.9)
     },
 )

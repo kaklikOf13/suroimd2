@@ -10,6 +10,7 @@ import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -36,6 +37,11 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.gun:{
                 const r=user.inventory.give_gun(this.item as unknown as GunDef)
                 if(r)this.reduce_count(1)
+                break
+            }
+            case InventoryItemType.melee:{
+                user.inventory.set_weapon(0,this.item as unknown as MeleeDef)
+                this.reduce_count(1)
                 break
             }
             case InventoryItemType.ammo:
@@ -84,7 +90,6 @@ export class Loot extends ServerGameObject{
                 break
             }
             case InventoryItemType.other:
-            case InventoryItemType.melee:
             case InventoryItemType.accessorie:
                 break
             case InventoryItemType.scope:
@@ -146,7 +151,8 @@ export class Loot extends ServerGameObject{
         this.count=args.count
         switch(this.item.item_type){
             case InventoryItemType.gun:
-                this.hb.radius=GameConstants.loot.radius.gun
+            case InventoryItemType.melee:
+                this.hb.radius=GameConstants.loot.radius.weapon
                 break
             case InventoryItemType.ammo:
                 this.hb.radius=GameConstants.loot.radius.ammo
@@ -159,7 +165,6 @@ export class Loot extends ServerGameObject{
                 this.hb.radius=GameConstants.loot.radius.equipament
                 break
             case InventoryItemType.other:
-            case InventoryItemType.melee:
             case InventoryItemType.accessorie:
             case InventoryItemType.skin:
                 this.hb.radius=GameConstants.loot.radius.skin

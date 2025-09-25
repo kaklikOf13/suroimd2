@@ -73,7 +73,7 @@ export class Loot extends GameObject{
                     this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2.new(1.5,1.5);
-                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.gun
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.weapon
                     this.pickup_sound=this.game.resources.get_audio("gun_pickup")
                     break
                 case InventoryItemType.ammo:
@@ -121,6 +121,14 @@ export class Loot extends GameObject{
                 case InventoryItemType.other:
                     break
                 case InventoryItemType.melee:
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.rotation=Angle.deg2rad(-30)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_outline.scale=v2.new(1.5,1.5);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.weapon
+                    this.pickup_sound=this.game.resources.get_audio("gun_pickup")
                     break
                 case InventoryItemType.accessorie:
                     break

@@ -319,6 +319,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             })
             this.modeManager.on_player_join(p)
         }
+        p.inventory.set_current_weapon_index(0)
         return p
     }
     override on_run(): void {

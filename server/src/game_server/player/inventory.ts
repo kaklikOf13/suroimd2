@@ -404,26 +404,31 @@ export class GInventory extends Inventory<LItem>{
     }
     drop_weapon(slot:keyof typeof this.weapons=0,normal:boolean=true){
         if(!this.weapons[slot])return
+        let l:Loot
         if(this.weapons[slot].itemType===InventoryItemType.gun){
             if(this.weapons[slot].ammo>0){
                 this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
             }
             if(this.weapons[slot].def.dual_from){
-                for(let i=0;i<2;i++)this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
+                for(let i=0;i<2;i++)l=this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
             }else{
-                this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+                l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
             }
+        }else if(this.weapons[slot].itemType===InventoryItemType.melee&&this.weapons[slot].def.idString!==this.default_melee.idString){
+            l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+            this.set_weapon(0,this.default_melee,false)
+            return
         }else{
-            this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+            return
         }
-        //l.velocity.x=-3
         this.weapons[slot]=undefined
         this.owner.actions.cancel()
         this.owner.privateDirtys.weapons=true
         if(slot===this.weaponIdx&&normal)this.set_current_weapon_index(0)
-          if(slot===0){
+            l!.velocity.x=-1,5
+        if(slot===0){
             this.set_weapon(slot,this.default_melee)
-          }
+        }
     }
     swamp_guns(){
         const gun1=this.weapons[1]
