@@ -6,14 +6,14 @@ import { GuiManager } from "../managers/guiManager.ts";
 import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
-import { BasicSocket, Client, IPLocation, OfflineClientsManager } from "common/scripts/engine/mod.ts";
+import { BasicSocket, Client, IPLocation } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts";
 import { HideElement } from "../engine/utils.ts";
-import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
+import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)
@@ -70,46 +70,36 @@ import { ConfigType } from "common/scripts/config/config.ts";
         async playGame(join_config:JoinConfig){
             if(this.game.happening||!menu_manager.loaded)return
             let socket:BasicSocket
-            if(join_config.offline){
-                if(this.game_server){
-                    this.game_server.running=false
-                    this.game_server=undefined
-                }
-                this.game_server = new OfflineGameServer(new OfflineClientsManager(PacketManager),0,{
-                    game:{
-                        config:{
-                            gameTps:60,
-                            netTps:22
+            if (join_config.offline) {
+                const worker = new Worker(new URL("./worker_server.ts", import.meta.url), {
+                    type: "module",
+                });
+
+                worker.postMessage({
+                    type: "start",
+                    config: {
+                        game: {
+                            config: {
+                                gameTps: 60,
+                                netTps: 60
+                            },
+                            debug:{
+                                deenable_lobby:true,
+                                debug_menu:true
+                            }
                         },
-                        debug:{
-                            deenable_lobby:true,
-                            debug_menu:true,
-                        }
-                    },
-                    database:{
-                        enabled:false,
-                    },
-                } as ConfigType)
-                this.game_server.clock.request_animation_frame=false
-                this.game_server.mainloop()
-                for(let i=0;i<9;i++){
-                    const bot=this.game_server.add_bot()
-                    bot.ai=new SimpleBotAi()
-                    /*bot.ai=new TreeBotAi(bot,{
-                        decision_update_rate:1,
-                        reaction_time:0.3,
-                        accuracy:0.5,
-                        bravery:0.4,
-                        teamwork:1,
-                        like_regen:1
-                    })*/
-                }
-                this.game_server.subscribe_db={
-                    "localhost":{
-                        skins:[1,2]
-                    }
-                }
-                socket=this.game_server.clients.fake_connect(GameSave.get_variable("cv_game_ping")) as BasicSocket
+                        database: {
+                            enabled: false
+                        },
+                    } as ConfigType,
+                    bots: 9,
+                    ping: GameSave.get_variable("cv_game_ping"),
+                });
+
+                socket = new WorkerSocket(worker);
+
+                const c = new Client(socket, PacketManager);
+                c.onopen = this.game.connect.bind(this.game, c, GameSave.get_variable("cv_loadout_name"));
             }else{
                 const reg=menu_manager.api_settings.regions[GameSave.get_variable("cv_game_region")]
                 const ser=new IPLocation(reg.host,reg.port)

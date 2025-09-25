@@ -30,6 +30,10 @@
             "port": 8080
         }
     },
+    "vite":{
+        "port":3000,
+        "allowed_hosts":["kaklik.io"]
+    },
     "regions": {
         "local": {
             "host": "localhost",

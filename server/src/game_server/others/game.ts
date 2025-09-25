@@ -218,6 +218,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             mode:DeadZoneMode.Staged,
             stages:DeadZoneDefinition,
         })
+        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.Config.game.config.netTps)
     }
     override on_update(): void {
         super.on_update()
@@ -401,7 +402,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.modeManager.on_start()
         this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
         if(this.replay)this.replay.start()
-        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.Config.game.config.netTps)
         console.log(`Game ${this.id} Started`)
         this.deadzone.start()
     }

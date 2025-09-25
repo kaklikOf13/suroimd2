@@ -36,6 +36,7 @@ import { Tween } from "svelte/motion";
 import { ToggleElement } from "../engine/utils.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
+export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
   activePlayerId=0
@@ -349,7 +350,6 @@ export class Game extends ClientGame2D<GameObject>{
   update_camera(){
     if(this.activePlayer){
       this.camera.position=this.activePlayer!.position
-      const gridSize=GameConstants.collision.chunckSize
       this.minimap.position=v2.duplicate(this.camera.position)
       this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
       if(this.fake_crosshair.visible){

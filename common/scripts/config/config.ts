@@ -41,6 +41,10 @@ export interface ConfigType {
         host: HostConfig
         modes:GamemodeConfig[]
     }
+    vite:{
+        port:number
+        allowed_hosts?:true|string[]
+    }
     regions: Record<string, RegionDef>
     database: {
         enabled: boolean

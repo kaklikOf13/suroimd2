@@ -29,7 +29,7 @@ export const GameConstants={
     tps:25,
     collision:{
         threads:2,
-        chunckSize:6
+        chunckSize:2
     }
 }
 export enum Layers{

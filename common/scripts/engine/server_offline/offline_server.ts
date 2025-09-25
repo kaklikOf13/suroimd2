@@ -231,6 +231,9 @@ export class OfflineClientsManager{
         this.activate_ws(s1,random.id(),"localhost","localhost")
         return s2
     }
+    fake_connect_other_s(socket:BasicSocket){
+        this.activate_ws(socket,random.id(),"localhost","localhost")
+    }
 }
 
 export abstract class ServerGame2D<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D> extends Game2D<DefaultGameObject>{

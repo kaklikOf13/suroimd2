@@ -60,7 +60,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     readonly tps:number
 
     readonly clock:Clock
-    running:boolean=true
+    running:boolean=false
     scene:Scene2DInstance<DefaultGameObject>
     destroy_queue:boolean=true
     new_list:boolean=true
@@ -118,6 +118,7 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     on_stop():void{}
     mainloop(){
         // Start
+        this.running=true
         this.on_run()
         this.signals.emit("start")
         this.clock.start()

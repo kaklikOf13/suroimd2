@@ -126,7 +126,7 @@ export class MinimapManager{
         this.map.add_child(this.objects)
         this.grid_gfx.clear()
         this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
-        this.grid_gfx.drawGrid(v2.new(0,0),map.size,GameConstants.collision.chunckSize,0.2)
+        this.grid_gfx.drawGrid(v2.new(0,0),map.size,5,0.2)
         for(const ob of map.objects){
             switch(ob.type){
                 case 0:{
