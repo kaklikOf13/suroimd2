@@ -81,7 +81,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
                         game: {
                             config: {
                                 gameTps: 60,
-                                netTps: 60
+                                netTps: 30
                             },
                             debug:{
                                 deenable_lobby:true,

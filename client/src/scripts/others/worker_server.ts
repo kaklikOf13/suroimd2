@@ -3,6 +3,7 @@ import { OfflineClientsManager } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
+import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 self.onerror = (e) => {
   console.error("Worker error:", e);
 };
@@ -16,9 +17,11 @@ self.onmessage = (ev) => {
         );
         server.mainloop()
 
-        /*for (let i = 0; i < msg.bots; i++) {
+        for (let i = 0; i < msg.bots; i++) {
             const bot = server.add_bot()
-        }*/
+            const ai=new SimpleBotAi()
+            bot.ai=ai
+        }
 
         const ws=new WorkerSocket(self as unknown as Worker)
         server.clients.fake_connect_other_s(ws)
