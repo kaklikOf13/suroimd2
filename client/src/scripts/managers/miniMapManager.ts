@@ -2,7 +2,7 @@ import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Container2D, Graphics2D, Sprite2D, SubCanvas2D } from "../engine/container.ts";
 import { ColorM, WebglRenderer } from "../engine/renderer.ts";
 import { type Game } from "../others/game.ts";
-import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
 import { GetObstacleBaseFrame } from "../gameObjects/obstacle.ts";

@@ -36,6 +36,7 @@ import { Tween } from "svelte/motion";
 import { ToggleElement } from "../engine/utils.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
+import { TabManager } from "../managers/tabManager.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -76,6 +77,8 @@ export class Game extends ClientGame2D<GameObject>{
   minimap:MinimapManager=new MinimapManager(this)
 
   dead_zone:DeadZoneManager=new DeadZoneManager(this)
+
+  tab:TabManager=new TabManager(this)
 
   fake_crosshair=new Sprite2D()
 
@@ -139,7 +142,8 @@ export class Game extends ClientGame2D<GameObject>{
           this.action.actions.push({type:InputActionType.set_hand,hand:2})
           break
         case "full_map":
-          this.minimap.set_full_map(!this.minimap.full_map)
+          this.tab.toggle_tab()
+          //this.minimap.set_full_map(!this.minimap.full_map)
           break
         case "use_item1":
           this.action.actions.push({type:InputActionType.use_item,slot:0})
