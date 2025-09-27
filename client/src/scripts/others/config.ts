@@ -15,6 +15,7 @@ export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
+export const accounts=true
 export enum GraphicsDConfig {
     None=0,
     Normal,

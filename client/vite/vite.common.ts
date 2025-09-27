@@ -9,8 +9,9 @@ const config: UserConfig = {
             chunkSizeWarningLimit: 2000,
             input: {
                 main: resolve(__dirname, "../index.html"),
-                forum: resolve(__dirname, "../forum/index.html"),
-                user: resolve(__dirname, "../user/index.html"),
+                forum: resolve(__dirname, "../pages/forum/index.html"),
+                user: resolve(__dirname, "../pages/user/index.html"),
+                wiki_viewer: resolve(__dirname, "../pages/wiki/viewer/index.html"),
             },
             output: {
                 assetFileNames(assetInfo) {

@@ -1,4 +1,4 @@
-import { API_BASE } from "../../../src/scripts/others/config.ts";
+import { API_BASE } from "../../../../src/scripts/others/config.ts";
 
 export interface Post{
   id:number

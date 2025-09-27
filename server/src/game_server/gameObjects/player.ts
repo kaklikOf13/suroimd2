@@ -98,6 +98,7 @@ export class Player extends ServerGameObject{
     boost_t:number=0
 
     friendly_fire:boolean=true
+    alternative_vehicle_control:boolean=true
 
     input={
         movement:v2.new(0,0),
@@ -313,7 +314,7 @@ export class Player extends ServerGameObject{
         }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
-            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt)
+            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt,this.alternative_vehicle_control)
         }else{
             this.position=v2.add(this.position,v2.add(v2.scale(this.input.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
             this.rotation=this.input.rotation

@@ -1,0 +1,94 @@
+@use "../../../../../src/scss/palette.scss";
+@use "../../../../../src/scss/fonts.scss";
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #0f172a;
+  color: #fff;
+}
+
+.wiki {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.wiki-content {
+  flex: 3;
+  line-height: 1.6;
+
+  h1 {
+    font-size: 2.4rem;
+    margin-bottom: 1rem;
+    color: palette.$primary;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    font-size: 1.4rem;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 0.5rem;
+  }
+
+  p {
+    margin: 1rem 0;
+    color: #e2e8f0;
+  }
+}
+
+.wiki-infobox {
+  flex: 1;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  height: fit-content;
+  align-self: flex-start;
+
+  .infobox-header {
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: palette.$secondary;
+  }
+
+  .infobox-image {
+    width: 100%;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    background: #0f172a;
+    margin-bottom: 1rem;
+  }
+
+  .infobox-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+
+    th {
+      text-align: left;
+      color: #cbd5e1;
+      width: 40%;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    td {
+      text-align: right;
+      color: #f1f5f9;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    tr:last-child th,
+    tr:last-child td {
+      border-bottom: none;
+    }
+  }
+}

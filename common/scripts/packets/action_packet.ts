@@ -47,8 +47,8 @@ export class ActionPacket extends Packet{
         super()
     }
     encode(stream: NetStream): void {
-      stream.writeFloat(this.movement.x,-1,1,3)
-      .writeFloat(this.movement.y,-1,1,3)
+      stream.writeFloat32(this.movement.x)
+      .writeFloat32(this.movement.y)
       .writeRad(this.angle)
       .writeBooleanGroup(this.use_weapon,this.interact,this.reload,this.swamp_guns)
       .writeArray(this.actions,(i,_s)=>{
@@ -77,8 +77,8 @@ export class ActionPacket extends Packet{
     }
     decode(stream: NetStream): void {
       this.movement={
-        x:stream.readFloat(-1,1,3),
-        y:stream.readFloat(-1,1,3)
+        x:stream.readFloat32(),
+        y:stream.readFloat32()
       }
       this.angle=stream.readRad()
       const bg=stream.readBooleanGroup()

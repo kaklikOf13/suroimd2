@@ -18,3 +18,6 @@
 * I Wanna Be The Guy
 ## Creator
 * Kaklik
+## Special Thanks To
+@hasanger 
+@1092384

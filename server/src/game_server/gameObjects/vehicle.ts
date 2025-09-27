@@ -55,14 +55,45 @@ export class Vehicle extends ServerGameObject{
     is_moving:boolean=false
 
     back_walk:boolean=false
-    move(direction:Vec2,back_walk:boolean,dt:number){
-        if(direction.x!==0||direction.y!==0){
-            const dir=Math.atan2(direction.y,direction.x)
-            this.angle=Numeric.lerp_rad(this.angle,dir,1/(1+dt*this.def.movimentation.angle_acceleration*(this.def.movimentation.final_speed/this.speed)))
-            this.is_moving=true
-            this.direction=Numeric.normalize_rad(dir - this.angle)
-            this.back_walk=back_walk
-            this.speed=Numeric.lerp(this.speed,this.def.movimentation.final_speed*(this.back_walk?-this.def.movimentation.back_walk_mult:1),1/(1+dt*this.def.movimentation.acceleration))
+    move(direction:Vec2,back_walk:boolean,dt:number,alt_control:boolean){
+        if (direction.x !== 0 || direction.y !== 0) {
+            if (alt_control) {
+                if (direction.y !== 0) {
+                    this.back_walk = direction.y > 0
+                    const mult = this.back_walk ? -this.def.movimentation.back_walk_mult : 1
+                    this.speed = Numeric.lerp(
+                        this.speed,
+                        this.def.movimentation.final_speed * mult,
+                        1 / (1 + dt * this.def.movimentation.acceleration)
+                    );
+                }
+
+                this.direction = 0
+                if (direction.x !== 0) {
+                    const rot_speed = ((dt*1000) / this.def.movimentation.angle_acceleration)*Math.min((this.speed/this.def.movimentation.final_speed)+0.2,1)
+                    const dir=(direction.x > 0 ? 1 : -1)
+                    this.direction = Numeric.normalize_rad(dir)
+                    this.angle += dir*rot_speed;
+                    this.angle = Numeric.normalize_rad(this.angle);
+                }
+
+                this.is_moving = direction.y !== 0
+            } else {
+                const dir = Math.atan2(direction.y, direction.x)
+                this.angle = Numeric.lerp_rad(
+                    this.angle,
+                    dir,
+                    1 / (1 + dt * this.def.movimentation.angle_acceleration * Math.max((this.def.movimentation.final_speed / this.speed)-0.1,0))
+                )
+                this.is_moving = true
+                this.direction = Numeric.normalize_rad(dir - this.angle)
+                this.back_walk = back_walk
+                this.speed = Numeric.lerp(
+                    this.speed,
+                    this.def.movimentation.final_speed * (this.back_walk ? -this.def.movimentation.back_walk_mult : 1),
+                    1 / (1 + dt * this.def.movimentation.acceleration)
+                )
+            }
         }
     }
     interact(_user: Player): void {
@@ -80,6 +111,7 @@ export class Vehicle extends ServerGameObject{
             s.rotation=this.angle
         }
         this.position=v2.add(this.position,v2.scale(this.velocity,dt))
+
         if(this.def.battle_plane){
             if(v2.greater(this.position,this.game.map.size)){
                 for(const s of this.seats){
@@ -87,11 +119,35 @@ export class Vehicle extends ServerGameObject{
                 }
             }
         }else{
-            if(!this.is_moving||(this.back_walk&&this.speed>0))this.speed=Numeric.lerp(this.speed,0,1/(1+dt*this.def.movimentation.desacceleration))
-            this.velocity=v2.scale(v2.normalizeSafe(v2.from_RadAngle(this.angle),NullVec2),this.speed)
+            if (!this.is_moving || (this.back_walk && this.speed > 0))
+                this.speed = Numeric.lerp(this.speed, 0, 1 / (1 + dt * this.def.movimentation.desacceleration))
+
+            const vel_dir = Math.atan2(this.velocity.y,this.velocity.x)
+            const target_dir = this.angle
+
+            if (this.speed > 0.01 && this.direction === 0) {
+                this.angle = Numeric.lerp_rad(
+                    this.angle,
+                    vel_dir,
+                    dt * 10
+                )
+            }
+
+            const corrected_dir = Numeric.lerp_rad(
+                vel_dir,
+                target_dir,
+                dt * 10
+            )
+
+            this.velocity = v2.scale(
+                v2.from_RadAngle(corrected_dir),
+                this.speed
+            )
         }
+
         this.is_moving=false
     }
+
     create(args: {position:Vec2,def:VehicleDef}): void {
         this.hb=new CircleHitbox2D(args.position,2)
         this.def=args.def

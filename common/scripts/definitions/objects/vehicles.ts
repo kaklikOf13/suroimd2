@@ -50,11 +50,11 @@ Vehicles.insert(
             base_scale:2.5
         },
         movimentation:{
-            acceleration:13000,
-            angle_acceleration:4000,
+            acceleration:6000,
+            angle_acceleration:700,
             final_speed:15,
             back_walk_mult:0.25,
-            desacceleration:9000
+            desacceleration:6000
         },
         pillot_seat:{
             position:v2.new(0,0),
@@ -77,10 +77,10 @@ Vehicles.insert(
         },
         movimentation:{
             acceleration:9000,
-            angle_acceleration:8000,
+            angle_acceleration:1000,
             final_speed:9,
             back_walk_mult:0.5,
-            desacceleration:7000
+            desacceleration:5000
         },
         pillot_seat:{
             position:v2.new(0,-0.7),
