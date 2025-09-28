@@ -240,3 +240,11 @@ export interface AKeyFrame{
     actions:AKeyFrameAction[]
     time:number
 }
+export interface KDate{
+    second:number
+    minute:number
+    hour:number
+    day:number
+    month:number
+    year:number
+}

@@ -80,9 +80,13 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.L3],
         keys:[Key.F]
     },
-    "full_map":{
-        buttons:[GamepadButtonID.Select],
+    "full_tab":{
+        buttons:[GamepadButtonID.Start],
         keys:[Key.M]
+    },
+    "hide_tab":{
+        buttons:[GamepadButtonID.Select],
+        keys:[Key.N]
     },
     "weapon1":{
         buttons:[],

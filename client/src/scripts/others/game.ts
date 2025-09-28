@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, KDate, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -85,6 +85,15 @@ export class Game extends ClientGame2D<GameObject>{
   fps:number=60
   frame_calc:number=0
 
+  date:KDate={
+    second:0,
+    minute:0,
+    day:10,
+    hour:4,
+    month:3,
+    year:2000
+  }
+
   listners_init(){
     this.input_manager.add_axis("movement",
       {
@@ -141,9 +150,11 @@ export class Game extends ClientGame2D<GameObject>{
         case "weapon3":
           this.action.actions.push({type:InputActionType.set_hand,hand:2})
           break
-        case "full_map":
-          this.tab.toggle_tab()
-          //this.minimap.set_full_map(!this.minimap.full_map)
+        case "full_tab":
+          this.tab.toggle_tab_full()
+          break
+        case "hide_tab":
+          this.tab.toggle_tab_visibility()
           break
         case "use_item1":
           this.action.actions.push({type:InputActionType.use_item,slot:0})
@@ -319,6 +330,16 @@ export class Game extends ClientGame2D<GameObject>{
   override on_update(dt:number): void {
     super.on_update(dt)
     this.dead_zone.tick(dt)
+    this.date.second+=dt
+    if(this.date.second>=1){
+      this.date.second=0
+      this.date.minute++
+      if(this.date.minute>=60){
+        this.date.minute=0
+        this.date.hour+=1
+      }
+      this.tab.update_header(this.date)
+    }
     if(this.client&&this.client.opened&&this.can_act){
       this.client.emit(this.action)
       this.action.actions.length=0
