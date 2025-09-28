@@ -44,7 +44,7 @@ export class TabManager {
         this.game = game
         this.appsContainer.innerHTML=""
         this.add_app(new TabApp("Map","/img/menu/gui/tab/icons/map.png",this.game))
-        //this.set_style()
+        this.set_wallpaper("/img/menu/gui/tab/tab_wallpaper_abstract.png")
     }
 
     toggle_tab_full() {

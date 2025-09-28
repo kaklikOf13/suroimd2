@@ -14,8 +14,10 @@ const content={
 
 const gunClasses:Record<GunClasses,string>={
     [GunClasses.Pistol]:"pistol",
-    [GunClasses.Automatic]:"automatic",
+    [GunClasses.Assault]:"burst",
     [GunClasses.SMG]:"smg",
+    [GunClasses.DMR]:"dmr",
+    [GunClasses.LMG]:"lmg",
     [GunClasses.Shotgun]:"shotgun",
     [GunClasses.Sniper]:"sniper",
     [GunClasses.Magic]:"magic",

@@ -29,6 +29,10 @@ export abstract class LItem extends Item{
 export class GunItem extends LItem{
     def:GunDef
     use_delay:number=0
+    burst?:{
+        t:number
+        c:number
+    }
     cap:number
 
     ammo:number=0
@@ -51,8 +55,16 @@ export class GunItem extends LItem{
     on_use(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
         if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
-            this.shot(user)
-            this.use_delay=this.def.fireDelay
+            if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
+                this.burst={
+                    c:this.def.burst.sequence,
+                    t:this.def.burst.delay
+                }
+                this.use_delay=0
+            }else{
+                this.shot(user)
+                this.use_delay=this.def.fireDelay
+            }
         }
     }
     has_mana(user:Player){
@@ -73,12 +85,14 @@ export class GunItem extends LItem{
         user.dirty=true
         user.actions.play(new ReloadAction(this))
     }
-    shot(user:Player){
+    shot(user:Player,consume:boolean=true){
         user.actions.cancel()
         user.privateDirtys.action=true
         this.reloading=false
-        if(this.def.reload)this.ammo--
-        if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+        if(consume){
+            if(this.def.reload)this.ammo--
+            if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+        }
         const position=v2.add(
             user.position,
             v2.rotate_RadAngle(v2.new(
@@ -127,11 +141,23 @@ export class GunItem extends LItem{
         user.privateDirtys.current_weapon=true
     }
     update(user:Player){
-        if(user.inventory.currentWeapon===this&&(this.ammo<=0||this.reloading)&&this.def.reload&&!user.actions.current_action){
-            this.reloading=true
-            this.reload(user)
+        if(user.inventory.currentWeapon===this&&!user.actions.current_action){
+            if((this.ammo<=0||this.reloading)&&this.def.reload){
+                this.reloading=true
+                this.reload(user)
+            }
+            this.use_delay-=1/user.game.tps
+            if(this.burst&&this.use_delay<=0){
+                if(this.burst.c<=0||this.ammo<=0){
+                    this.burst=undefined
+                    this.use_delay=this.def.fireDelay
+                }else{
+                    this.burst.c--
+                    this.use_delay=this.burst.t
+                    this.shot(user)
+                }
+            }
         }
-        this.use_delay-=1/user.game.tps
     }
 }
 export class AmmoItem extends LItem{

@@ -6,9 +6,11 @@ __                                                                              
 * **Emotes!!**
 * **Gameplay Musics!**
 * **ThunderStorm!**
-* Badges
 * Kill Leader Sounds
+* Tab
+* Badges
 * Loot Sounds And Gui
+* Alternative Vehicles Control
 __                                                                                                      __
 ### Menu
 * Debug Menu (Press Delete Or R3 To Access)
@@ -20,6 +22,7 @@ __                                                                              
 ### Items
 * Survival Knife Animation
 * Survival Knife Redesign
+* Famas - 556mm Epic Gun. The First Burst Gun
 * Hammer Redesign
 * Axe Redesign
 * Swing Melee Animation
@@ -40,3 +43,4 @@ __                                                                              
 # Play The Game
 https://suroimd.io
 The Is Just Playable In Offline Mode.
+If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

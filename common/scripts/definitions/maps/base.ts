@@ -74,6 +74,7 @@ LootTables.add_tables({
         {item:"m870",weight:2},
     ],
     "epic_guns":[
+        {item:"famas",weight:4},
         {item:"spas12",weight:3},
     ],
     "mythic_guns":[
@@ -205,7 +206,7 @@ LootTables.add_tables({
         {weight:1.5,table:"ammos"},
         {weight:1,table:"equipments"},
         {weight:0.5,table:"guns"},
-        {weight:0.01,table:"melees"},{weight:1,table:"melees"},
+        {weight:0.01,table:"melees"},
     ],
     "wood_crate":[
         [{weight:10,table:"ammos"},{weight:1,table:""}],

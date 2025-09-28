@@ -5,7 +5,8 @@ import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } fro
 import { type BulletDef, GameItem, InventoryItemType } from "../utils.ts";
 export enum FireMode{
     Auto,
-    Single
+    Single,
+    Burst
 }
 export interface DualAdditional{dual_offset:number}
 export interface GasParticle{
@@ -25,8 +26,10 @@ export enum GunClasses{
     Pistol,
     Shotgun,
     Sniper,
-    Automatic,
+    Assault,
     SMG,
+    DMR,
+    LMG,
     Magic,
 }
 export interface MuzzleFlash{
@@ -57,6 +60,10 @@ export type GunDef={
     lenght:number
     jitterRadius?:number
     fireMode?:FireMode
+    burst?:{
+        delay:number
+        sequence:number
+    }
     speed_mod?:number
     size:number
     ammoType:string
@@ -252,7 +259,7 @@ Guns.insert(
         size:4,
         ammoType:"762mm",
         ammoSpawnAmount:90,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Rare,
         bullet:{
             def:{
@@ -286,7 +293,7 @@ Guns.insert(
         size:4,
         ammoType:"556mm",
         ammoSpawnAmount:90,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Rare,
         bullet:{
             def:{
@@ -310,6 +317,43 @@ Guns.insert(
         gasParticles:GasParticles.automatic
     },
     {
+        idString:"famas",
+        fireDelay:0.3,
+        switchDelay:0.7,
+        fireMode:FireMode.Burst,
+        burst:{
+            delay:0.08,
+            sequence:3
+        },
+        spread:1.5,
+        lenght:0.7,
+        size:4,
+        ammoType:"556mm",
+        ammoSpawnAmount:90,
+        class:GunClasses.Assault,
+        quality:ItemQuality.Epic,
+        bullet:{
+            def:{
+                damage:10,
+                radius:0.014,
+                range:190,
+                falloff:0.7,
+                speed:42,
+                tracer:tracers.medium
+            }
+        },
+        reload:{
+            delay:2.5,
+            capacity:25
+        },
+        recoil:{
+            duration:0.4,
+            speed:0.5
+        },
+        speed_mod:0.95,
+        gasParticles:GasParticles.automatic
+    },
+    {
         idString:"mp5",
         fireDelay:0.09,
         switchDelay:0.7,
@@ -318,7 +362,7 @@ Guns.insert(
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:96,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Uncommon,
         bullet:{
             def:{
@@ -356,7 +400,7 @@ Guns.insert(
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:99,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
@@ -388,7 +432,7 @@ Guns.insert(
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:96,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Rare,
         bullet:{
             def:{
