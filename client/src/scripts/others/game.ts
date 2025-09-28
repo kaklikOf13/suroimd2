@@ -22,7 +22,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { GameConsole } from "../engine/console.ts";
 import { TerrainM } from "../gameObjects/terrain.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Graphics2D, Lights2D, Sprite2D } from "../engine/container.ts";
+import { Graphics2D, Lights2D, Sprite2D } from "../engine/container_2d.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";

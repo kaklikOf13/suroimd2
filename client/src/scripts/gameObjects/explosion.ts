@@ -3,7 +3,7 @@ import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
 import { ExplosionDef, Explosions } from "common/scripts/definitions/explosions.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Sprite2D } from "../engine/container.ts";
+import { Sprite2D } from "../engine/container_2d.ts";
 export class Explosion extends GameObject{
     stringType:string="explosion"
     numberType: number=5

@@ -1,4 +1,4 @@
-import { Container2D, Sprite2D } from "../engine/container.ts"
+import { Container2D, Sprite2D } from "../engine/container_2d.ts"
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts"
 import { zIndexes } from "common/scripts/others/constants.ts"
 import { CreatureData } from "common/scripts/others/objectsEncode.ts"

@@ -22,7 +22,7 @@ import { ease, Numeric } from "common/scripts/engine/utils.ts";
 import { type Loot } from "./loot.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-import { Container2D } from "../engine/container.ts";
+import { Container2D } from "../engine/container_2d.ts";
 import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
 export class Player extends GameObject{
     stringType:string="player"

@@ -4,7 +4,7 @@ import { ResourcesManager } from "./resources.ts";
 import { InputManager } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
 import { Tween, TweenOptions } from "./utils.ts";
-import { Camera2D, Container2D, Sprite2D } from "./container.ts";
+import { Camera2D, Container2D, Sprite2D } from "./container_2d.ts";
 import { GameConsole } from "./console.ts";
 import { FrameDef } from "common/scripts/engine/definitions.ts";
 export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

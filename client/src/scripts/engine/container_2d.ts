@@ -899,6 +899,7 @@ export class Camera2D{
     }
 
     update(dt:number,resources:ResourcesManager): void {
+        this.projectionMatrix=this.SubMatrix
         if(this.center_pos){
             const halfViewSize = v2.new(this.width / 2, this.height / 2);
             const cameraPos = v2.sub(this.position, halfViewSize);
@@ -913,7 +914,7 @@ export class Camera2D{
 
             this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
-        this.container.update(dt,resources);
+        this.container.update(dt,resources)
     }
 
     draw(renderer:Renderer){

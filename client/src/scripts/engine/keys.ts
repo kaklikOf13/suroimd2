@@ -1,5 +1,5 @@
 import { SignalManager, Vec2, v2 } from "common/scripts/engine/mod.ts";
-import { type Camera2D } from "./container.ts";
+import { type Camera2D } from "./container_2d.ts";
 
 export enum Key{
     A=0,

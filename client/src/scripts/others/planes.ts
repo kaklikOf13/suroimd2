@@ -1,5 +1,5 @@
 import { PlaneData } from "common/scripts/packets/update_packet.ts";
-import { Container2D, Sprite2D } from "../engine/container.ts";
+import { Container2D, Sprite2D } from "../engine/container_2d.ts";
 import { type Game } from "./game.ts";
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";

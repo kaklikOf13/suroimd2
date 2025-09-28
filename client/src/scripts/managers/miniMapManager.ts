@@ -1,5 +1,5 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
-import { Container2D, Graphics2D, Sprite2D, SubCanvas2D } from "../engine/container.ts";
+import { Container2D, Graphics2D, Sprite2D, SubCanvas2D } from "../engine/container_2d.ts";
 import { ColorM, WebglRenderer } from "../engine/renderer.ts";
 import { type Game } from "../others/game.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";

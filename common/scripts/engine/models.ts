@@ -1,4 +1,4 @@
-import { RadAngle, v2, Vec2 } from "./geometry.ts";
+import { RadAngle, v2, Vec2, Vec3 } from "./geometry.ts";
 
 export type Matrix=Float32Array
 export const matrix4={
@@ -26,7 +26,33 @@ export const matrix4={
             v.x, v.y, 0, 1,
         ])
     },
-
+    translation_3d(v:Vec3) {
+        return [
+            1,  0,  0,  0,
+            0,  1,  0,  0,
+            0,  0,  1,  0,
+            v.x, v.y, v.z, 1,
+        ];
+    },
+    scale_3d(v:Vec3) {
+        return [
+            v.x, 0,  0,  0,
+            0, v.y,  0,  0,
+            0,  0, v.z,  0,
+            0,  0,  0,  1,
+        ];
+    },
+    perspective: function(fov:number, aspect:number, near:number, far:number) {
+        const f = Math.tan(Math.PI * 0.5 - 0.5 * fov);
+        const rangeInv = 1.0 / (near - far);
+    
+        return [
+            f / aspect, 0, 0, 0,
+            0, f, 0, 0,
+            0, 0, (near + far) * rangeInv, -1,
+            0, 0, near * far * rangeInv * 2, 0
+        ];
+    },
     mult(a:Matrix, b:Matrix):Matrix{
         const a00 = a[0 * 4 + 0]
         const a01 = a[0 * 4 + 1]
