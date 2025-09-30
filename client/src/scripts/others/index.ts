@@ -17,7 +17,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)
-    inputs.bind(document.body,canvas)
+    inputs.bind(canvas)
 
     document.body.appendChild(canvas)
     const sounds=new SoundManager()

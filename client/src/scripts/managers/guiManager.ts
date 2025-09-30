@@ -333,6 +333,7 @@ export class GuiManager{
             ShowElement(this.content.post_proccess.vignetting)
             ShowElement(this.content.post_proccess.recolor)
         }
+        this.game.renderer.canvas.focus()
     }
     ammos_cache:{
         normal:Record<string,HTMLDivElement>,

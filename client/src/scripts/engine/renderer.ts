@@ -1,7 +1,7 @@
-import { NullVec2, RectHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { NullVec2, RectHitbox2D, Vec2, Vec3, v2 } from "common/scripts/engine/mod.ts"
 import { type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
-import { Matrix, Model2D } from "common/scripts/engine/models.ts";
+import { Matrix, Model2D, Model3D } from "common/scripts/engine/models.ts";
 export interface Color {
     r: number; // Red
     g: number; // Green
@@ -149,6 +149,7 @@ export const ColorM={
 }
 export type RGBAT={r: number, g: number, b: number, a?: number}
 export type Material2D=GLMaterial2D
+export type Material3D=GLMaterial3D
 export abstract class Renderer {
     canvas: HTMLCanvasElement
     background: Color = ColorM.default.white;
@@ -157,6 +158,7 @@ export abstract class Renderer {
     }
     abstract draw_image2D(image: Frame,position: Vec2,model:Float32Array,matrix:Matrix,tint?:Color): void
     abstract draw(model:Model2D,material:Material2D,matrix:Matrix,position:Vec2,scale:Vec2):void
+    abstract draw_3d(model:Model3D,material:Material3D,matrix:Matrix,position:Vec3,scale:Vec3):void
 
     abstract clear(): void
 
@@ -201,6 +203,16 @@ export interface GLMaterial2DFactory<MaterialArgs>{
 }
 export type GLMaterial2DFactoryCall<MaterialArgs>={vertex:string,frag:string,create:(gl:WebglRenderer,fac:GLMaterial2DFactory<MaterialArgs>)=>(arg:MaterialArgs)=>GLMaterial2D<Material2D>}
 
+export type GLMaterial3D<MaterialArgs=any>={
+    factory:GLMaterial3DFactory<MaterialArgs>
+    draw:(mat:GLMaterial3D<MaterialArgs>,matrix:Matrix,model:Model3D,position:Vec3,scale:Vec3)=>void
+}&MaterialArgs
+export interface GLMaterial3DFactory<MaterialArgs>{
+    create:(arg:MaterialArgs)=>GLMaterial3D<Material3D>
+    program:WebGLProgram
+}
+export type GLMaterial3DFactoryCall<MaterialArgs>={vertex:string,frag:string,create:(gl:WebglRenderer,fac:GLMaterial3DFactory<MaterialArgs>)=>(arg:MaterialArgs)=>GLMaterial3D<Material3D>}
+
 export type GL2D_SimpleMatArgs={
     color:Color
 }
@@ -222,7 +234,6 @@ uniform vec4 u_Color;
 
 void main() {
     gl_FragColor = u_Color;
-    //gl_FragColor = vec4(u_Color.rgb*u_Color.a,u_Color.a);
 }`,
 create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
     const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
@@ -256,6 +267,68 @@ create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
     }
 }
 }
+
+export type GL3D_SimpleMatArgs={
+    color:Color
+}
+export const GLF_Simple3:GLMaterial3DFactoryCall<GL3D_SimpleMatArgs>={
+    vertex:`
+attribute vec3 a_Position;
+uniform mat4 u_ProjectionMatrix;
+uniform vec3 u_Translation;
+uniform vec3 u_Scale;
+void main() {
+    gl_Position = u_ProjectionMatrix * vec4((a_Position*u_Scale)+u_Translation, 1.0);
+}`,
+    frag:`
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec4 u_Color;
+
+void main() {
+    gl_FragColor = u_Color;
+}`,
+create(gl:WebglRenderer,fac:GLMaterial3DFactory<GL3D_SimpleMatArgs>){
+    const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
+    const uColorLoc=gl.gl.getUniformLocation(fac.program, "u_Color")!
+    const uTranslationLoc=gl.gl.getUniformLocation(fac.program, "u_Translation")!
+    const uScaleLoc=gl.gl.getUniformLocation(fac.program, "u_Scale")!
+    const uProjectionMatrixLoc=gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+
+    const vertexBuffer = gl.gl.createBuffer();
+    
+    const indexBuffer = gl.gl.createBuffer();
+    const draw=(mat:GLMaterial3D<GL3D_SimpleMatArgs>,matrix:Matrix,model:Model3D,position:Vec3,scale:Vec3)=>{
+        gl.gl.useProgram(fac.program)
+
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bufferData(gl.gl.ARRAY_BUFFER, new Float32Array(model._vertices), gl.gl.STATIC_DRAW)
+
+        gl.gl.bindBuffer(gl.gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+        gl.gl.bufferData(gl.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model._indices), gl.gl.STATIC_DRAW)
+
+        gl.gl.enableVertexAttribArray(aPositionLoc)
+        gl.gl.vertexAttribPointer(aPositionLoc, 3, gl.gl.FLOAT, false, 0, 0)
+
+        gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
+        gl.gl.uniform3f(uTranslationLoc, position.x, position.y, position.z)
+        gl.gl.uniform3f(uScaleLoc, scale.x, scale.y, scale.z)
+        gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
+
+        gl.gl.drawElements(gl.gl.TRIANGLES, model._indices.length, gl.gl.UNSIGNED_SHORT, 0)
+    }
+    return (arg:GL3D_SimpleMatArgs)=>{
+        return {
+            ...arg,
+            factory:fac,
+            draw:draw
+        }
+    }
+}
+}
+
 
 export type GL2D_TexMatArgs={
     texture:WebGLTexture
@@ -411,7 +484,22 @@ export class WebglRenderer extends Renderer {
         texture:GLMaterial2DFactory<GL2D_TexMatArgs>,
         light:GLMaterial2DFactory<GL2D_LightMatArgs>
     }
+    readonly factorys3D:{
+        simple:GLMaterial3DFactory<GL3D_SimpleMatArgs>,
+    }
     proccess_factory<T>(fac_def:GLMaterial2DFactoryCall<T>):GLMaterial2DFactory<T>{
+        const prog=this.createProgram(fac_def.vertex,fac_def.frag)
+        const fac={
+            program:prog
+        }
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        fac.create=fac_def.create(this,fac)
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        return fac
+    }
+    proccess_factory3<T>(fac_def:GLMaterial3DFactoryCall<T>):GLMaterial3DFactory<T>{
         const prog=this.createProgram(fac_def.vertex,fac_def.frag)
         const fac={
             program:prog
@@ -440,6 +528,10 @@ export class WebglRenderer extends Renderer {
             simple:this.proccess_factory(GLF_Simple),
             texture:this.proccess_factory(GLF_Texture),
             light:this.proccess_factory(GLF_Light)
+        }
+
+        this.factorys3D={
+            simple:this.proccess_factory3(GLF_Simple3)
         }
         
         this.factorys2D_consts["texture_ADV"]={
@@ -470,8 +562,10 @@ export class WebglRenderer extends Renderer {
                 clientY: e.clientY,
                 screenY: e.screenY,
                 screenX: e.screenX
-            }));
-        });
+            }))
+        })
+
+        canvas.tabIndex = 0
     }
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
@@ -493,6 +587,10 @@ export class WebglRenderer extends Renderer {
         return p!
     }
     override draw(model:Model2D,material:Material2D,matrix:Matrix,position:Vec2,scale:Vec2):void{
+        material.draw(material,matrix,model,position,scale)
+    }
+    override draw_3d(model:Model3D,material:Material3D,matrix:Matrix,position:Vec3,scale:Vec3):void{
+        if(!matrix)return
         material.draw(material,matrix,model,position,scale)
     }
     draw_rect2D(rect: RectHitbox2D, material: GLMaterial2D<{}>,matrix:Matrix,offset:Vec2=NullVec2) {
@@ -561,6 +659,9 @@ export function createCanvas(size: Vec2, pixelated: boolean = true, center: bool
     const canvas = document.createElement("canvas");
     canvas.width = size.x;
     canvas.height = size.y;
+
+    canvas.tabIndex = 0
+    canvas.focus()
     if (pixelated) {
         canvas.style.imageRendering = "pixelated"
         canvas.style.imageRendering = "crisp-edges"

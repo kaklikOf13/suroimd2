@@ -457,9 +457,9 @@ export class InputManager {
         });
     }
 
-    bind(element: HTMLElement, canvas: HTMLCanvasElement) {
-        this.keys.bind(element);
-        this.mouse.bind(element, canvas);
+    bind(canvas: HTMLCanvasElement) {
+        this.keys.bind(canvas);
+        this.mouse.bind(canvas, canvas);
     }
 
     on(event: "actiondown" | "actionup" | "axis", callback: ((event: ActionEvent) => void)|((event:AxisActionEvent)=>void)) {

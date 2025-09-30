@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, KDate, Numeric, ParticlesEmitter2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, KDate, Model3D, Numeric, ParticlesEmitter2D, Vec2, matrix4, model3d, random, v2, v3 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -27,7 +27,7 @@ import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
-import { WebglRenderer } from "../engine/renderer.ts";
+import {  WebglRenderer } from "../engine/renderer.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
 import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
@@ -37,6 +37,7 @@ import { ToggleElement } from "../engine/utils.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
+import { Camera3D } from "../engine/container_3d.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -93,6 +94,8 @@ export class Game extends ClientGame2D<GameObject>{
     month:3,
     year:2000
   }
+
+  cam3:Camera3D
 
   listners_init(){
     this.input_manager.add_axis("movement",
@@ -248,6 +251,8 @@ export class Game extends ClientGame2D<GameObject>{
 
     this.menuManager=menu
 
+    this.cam3=new Camera3D(this.renderer)
+
     if(Debug.hitbox){
       /*const hc=ColorM.hex("#ee000099")
       this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
@@ -321,6 +326,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.planes.clear()
   }
   override on_render(_dt:number):void{
+    this.cam3.update(this.dt,this.resources)
     this.light_map.render(this.renderer as WebglRenderer,this.camera)
     this.minimap.draw()
   }

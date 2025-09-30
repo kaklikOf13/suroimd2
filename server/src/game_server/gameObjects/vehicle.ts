@@ -1,4 +1,4 @@
-import { CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { VehicleData } from "common/scripts/others/objectsEncode.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 

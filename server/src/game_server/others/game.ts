@@ -374,7 +374,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         client.emit(jp)
         client.sendStream(this.map.map_packet_stream)
 
-        if(Math.random()<=1){
+        if(Math.random()<0.2){
             const vehicle=this.add_vehicle(p.position,Vehicles.getFromString(random.choose(["bike","jeep"])))
             vehicle.seats[0].set_player(p)
             p.dirty=true
