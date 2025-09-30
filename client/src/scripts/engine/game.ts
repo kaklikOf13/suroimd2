@@ -205,6 +205,9 @@ export class ClientGame2D<GObject extends ClientGameObject2D=ClientGameObject2D>
         this.camera=new Camera2D(renderer)
         this.particles=new ParticlesManager2D(this as unknown as Game2D)
         this.save=console
+        this.renderer.canvas.addEventListener("click",(_e)=>{
+            this.input_manager.focus=true
+        })
     }
     readonly tweens = new Set<Tween<unknown>>();
     addTween<T>(config: TweenOptions<T>): Tween<T> {

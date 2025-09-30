@@ -46,7 +46,7 @@
         }
     },
     "database": {
-        "enabled": true,
+        "enabled": false,
         "files": {
             "accounts": "database/accounts.db",
             "forum":"database/forum.db"

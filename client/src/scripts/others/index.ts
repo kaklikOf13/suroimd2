@@ -59,8 +59,12 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
         game_server?:OfflineGameServer
 
         constructor(){
-            this.elements.play_button_normal.addEventListener("click",(_e)=>{this.playGame({offline:false})})
-            this.elements.play_button_campaign.addEventListener("click",(_e)=>{this.playGame({offline:true})})
+            this.elements.play_button_normal.addEventListener("click",(_e)=>{
+                this.playGame({offline:false})
+            })
+            this.elements.play_button_campaign.addEventListener("click",(_e)=>{
+                this.playGame({offline:true})
+            })
             this.game=new Game(inputs,menu_manager,sounds,GameSave,resources,renderer)
             this.game.clock.request_animation_frame=false
             this.game.listners_init()
@@ -92,7 +96,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
                             enabled: false
                         },
                     } as ConfigType,
-                    bots: 9,
+                    bots: 99,
                     ping: GameSave.get_variable("cv_game_ping"),
                 });
 

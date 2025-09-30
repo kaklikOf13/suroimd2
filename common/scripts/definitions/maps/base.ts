@@ -64,6 +64,9 @@ export interface IslandDef{
 export const LootTables=new LootTablesDefs<GameItem,Aditional>(get_item)
 LootTables.add_tables({
     //Guns
+    "common_guns":[
+        {item:"m9",weight:5},
+    ],
     "uncommon_guns":[
         {item:"mp5",weight:1.4},
         {item:"hp18",weight:1},
@@ -84,8 +87,10 @@ LootTables.add_tables({
     ],
     "legendary_guns":[
         {item:"awms",weight:1},
+        {item:"pfeifer_zeliska",weight:1},
     ],
     "guns":[
+        {table:"common_guns",weight:25},
         {table:"uncommon_guns",weight:25},
         {table:"rare_guns",weight:17},
         {table:"epic_guns",weight:1},

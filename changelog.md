@@ -31,9 +31,8 @@ __                                                                              
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
-### Items
-* All Armors Have Less Defence.
-* Almost All Guns Have Less Damage
+### Map
+* Now Map Is Biggerst
 __                                                                                                      __
 ### Others
 * **Web Workers!!** Now The Game Run 2 times faster in campaing mode

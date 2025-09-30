@@ -145,6 +145,10 @@ export class TabManager {
         this.content.back_button.onclick=(_e)=>this.back_to_menu()
 
         this.add_app(new MessageTabApp(this))
+
+        this.tab.onclick=(_e)=>{
+            this.game.input_manager.focus=false
+        }
     }
 
     toggle_tab_full() {

@@ -7,6 +7,8 @@ import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Angle, v2 } from "common/scripts/engine/geometry.ts";
 import { Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Layers } from "common/scripts/others/constants.ts";
+import { generation } from "./map.ts";
+import { FloorType } from "common/scripts/others/terrain.ts";
 export abstract class GamemodeManager{
     game:Game
     kill_leader?:Player
@@ -21,6 +23,8 @@ export abstract class GamemodeManager{
     abstract on_player_join(player:Player):void
     abstract on_player_die(player:Player):void
     abstract is_ally(a:Player,b:Player):boolean
+    abstract generate_lobby():void
+    abstract generate_map():void
 }
 export class SoloGamemodeManager extends GamemodeManager{
     closed:boolean=false
@@ -89,6 +93,118 @@ export class SoloGamemodeManager extends GamemodeManager{
     }
     is_ally(_a:Player,_b:Player):boolean{
         return false
+    }
+    override generate_lobby(): void {
+      this.game.map.generate(generation.island({
+            generation:{
+                size:v2.new(100,100),
+                ground_loot:[{count:20,table:"ground_loot"}],
+                spawn:[
+                    [
+                        {id:"oak_tree",count:40},
+                        {id:"stone",count:30},
+                        {id:"bush",count:20},
+                        {id:"wood_crate",count:15},
+                        {id:"copper_crate",count:3},
+                        {id:"barrel",count:8},
+
+                        {id:"pig",count:10},
+                        {id:"chicken",count:10}
+                    ]
+                ],
+                terrain:{
+                    base:FloorType.Water,
+                    rivers:{
+                        divisions:30,
+                        spawn_floor:1,
+                        expansion:12,
+                        defs:[
+                            {
+                                rivers:[
+                                    {sub_river_width:2,width:2,width_variation:1,sub_river_chance:0.5},
+                                    {sub_river_width:1,width:3,width_variation:1,sub_river_chance:0.1},
+                                ],
+                                weight:10
+                            },
+                            {
+                                rivers:[
+                                    {sub_river_width:3,width:4,width_variation:1,sub_river_chance:0.9},
+                                ],
+                                weight:1
+                            }
+                        ]
+                    },
+                    floors:[
+                        {
+                            padding:15,
+                            type:FloorType.Sand,
+                            spacing:3,
+                            variation:1.3,
+                        },
+                        {
+                            padding:10,
+                            type:FloorType.Grass,
+                            spacing:3,
+                            variation:1.3,
+                        }
+                    ]
+                }
+            }
+        }),3)
+    }
+    override generate_map(): void {
+        this.game.map.generate(generation.island({
+            generation:{
+                size:v2.new(800,800),
+                ground_loot:[{count:900,table:"ground_loot"}],
+                spawn:[
+                    [
+                        {id:"oak_tree",count:4000},
+                        {id:"stone",count:3300},
+                        {id:"bush",count:2500},
+                        {id:"wood_crate",count:1200},
+                        {id:"barrel",count:1000}
+                    ]
+                ],
+                terrain:{
+                    base:FloorType.Water,
+                    rivers:{
+                        divisions:100,
+                        spawn_floor:1,
+                        expansion:32,
+                        defs:[
+                            {
+                                rivers:[
+                                    {sub_river_width:2,width:10,width_variation:1,sub_river_chance:0.5},
+                                    {sub_river_width:1,width:15,width_variation:1,sub_river_chance:0.1},
+                                ],
+                                weight:10
+                            },
+                            {
+                                rivers:[
+                                    {sub_river_width:3,width:20,width_variation:1,sub_river_chance:0.9},
+                                ],
+                                weight:1
+                            }
+                        ]
+                    },
+                    floors:[
+                        {
+                            padding:25,
+                            type:FloorType.Sand,
+                            spacing:0.3,
+                            variation:1.3,
+                        },
+                        {
+                            padding:14,
+                            type:FloorType.Grass,
+                            spacing:0.3,
+                            variation:1.3,
+                        }
+                    ]
+                }
+            }
+        }))
     }
 }
 export class TeamsGamemodeManager extends SoloGamemodeManager{

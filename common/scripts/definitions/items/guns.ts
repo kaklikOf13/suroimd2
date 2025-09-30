@@ -177,7 +177,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:9,
+                damage:10,
                 radius:0.02,
                 range:100,
                 falloff:0.8,
@@ -220,7 +220,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:50,
+                damage:60,
                 radius:0.02,
                 range:230,
                 falloff:0.7,
@@ -263,7 +263,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:9,
+                damage:10,
                 radius:0.014,
                 range:170,
                 speed:40,
@@ -297,7 +297,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:8.6,
+                damage:9,
                 radius:0.014,
                 range:190,
                 falloff:0.7,
@@ -334,7 +334,7 @@ Guns.insert(
         quality:ItemQuality.Epic,
         bullet:{
             def:{
-                damage:10,
+                damage:11,
                 radius:0.014,
                 range:190,
                 falloff:0.7,
@@ -366,7 +366,7 @@ Guns.insert(
         quality:ItemQuality.Uncommon,
         bullet:{
             def:{
-                damage:7,
+                damage:8,
                 radius:0.014,
                 range:160,
                 falloff:0.9,
@@ -404,7 +404,7 @@ Guns.insert(
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
-                damage:4,
+                damage:6,
                 radius:0.014,
                 range:60,
                 speed:34,
@@ -436,7 +436,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:4,
+                damage:6,
                 radius:0.014,
                 range:35,
                 speed:34,
@@ -467,7 +467,7 @@ Guns.insert(
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
-                damage:40,
+                damage:50,
                 radius:0.02,
                 range:210,
                 falloff:0.8,
@@ -513,7 +513,7 @@ Guns.insert(
         ammoSpawnAmount:30,
         bullet:{
             def:{
-                damage:45,
+                damage:60,
                 radius:0.025,
                 range:220,
                 falloff:0.7,
@@ -546,7 +546,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:60,
+                damage:80,
                 radius:0.02,
                 range:230,
                 falloff:0.7,
@@ -579,7 +579,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:6,
+                damage:9,
                 radius:0.014,
                 speed:24,
                 range:25,
@@ -625,7 +625,7 @@ Guns.insert(
         muzzleFlash:MuzzleFlash.normal,
         bullet:{
             def:{
-                damage:4.5,
+                damage:8,
                 radius:0.012,
                 speed:32,
                 range:54,
@@ -657,7 +657,7 @@ Guns.insert(
     },
     {
         idString:"hp18",
-        fireDelay:0.2,
+        fireDelay:0.6,
         switchDelay:0.7,
         spread:11,
         lenght:0.65,
@@ -670,7 +670,7 @@ Guns.insert(
         fireMode:FireMode.Auto,
         bullet:{
             def:{
-                damage:2,
+                damage:5,
                 radius:0.01,
                 speed:25,
                 falloff:0.7,
@@ -681,8 +681,8 @@ Guns.insert(
             count:14
         },
         reload:{
-            delay:0.7,
-            capacity:5,
+            delay:0.8,
+            capacity:7,
             shotsPerReload:1,
         },
         recoil:{

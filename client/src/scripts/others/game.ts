@@ -28,7 +28,6 @@ import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import {  WebglRenderer } from "../engine/renderer.ts";
-import { MinimapManager } from "../managers/miniMapManager.ts";
 import { Plane } from "./planes.ts";
 import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
@@ -75,7 +74,7 @@ export class Game extends ClientGame2D<GameObject>{
 
   light_map=new Lights2D()
 
-  minimap:MinimapManager=new MinimapManager(this)
+  //minimap:MinimapManager=new MinimapManager(this)
 
   dead_zone:DeadZoneManager=new DeadZoneManager(this)
 
@@ -328,7 +327,7 @@ export class Game extends ClientGame2D<GameObject>{
   override on_render(_dt:number):void{
     this.cam3.update(this.dt,this.resources)
     this.light_map.render(this.renderer as WebglRenderer,this.camera)
-    this.minimap.draw()
+    //this.minimap.draw()
   }
   override on_run(): void {
     
@@ -381,8 +380,11 @@ export class Game extends ClientGame2D<GameObject>{
   update_camera(){
     if(this.activePlayer){
       this.camera.position=this.activePlayer!.position
-      this.minimap.position=v2.duplicate(this.camera.position)
-      this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)
+      /*this.minimap.position=v2.duplicate(this.camera.position)
+      this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)*/
+      this.grid_gfx.clear()
+      this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
+      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.08)
       if(this.fake_crosshair.visible){
         this.fake_crosshair.position=v2.add(this.activePlayer.position,v2.scale(v2.from_RadAngle(this.activePlayer.rotation),2/this.camera.zoom))
         this.fake_crosshair.scale=v2.new(1/this.camera.zoom,1/this.camera.zoom)
@@ -440,8 +442,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.client.on("map",(mp:MapPacket)=>{
       this.terrain.process_map(mp.map)
       this.terrain.draw(this.terrain_gfx,1)
-      this.terrain.draw(this.minimap.terrain_gfx,1)
-      this.minimap.init(mp.map)
+      /*this.terrain.draw(this.minimap.terrain_gfx,1)
+      this.minimap.init(mp.map)*/
     })
     this.client.on(DefaultSignals.DISCONNECT,()=>{
       this.running=false

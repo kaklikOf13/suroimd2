@@ -11,7 +11,10 @@ export enum HitboxType2D{
     group,
     polygon
 }
-
+export type IntersectionRes = {
+    readonly point: Vec2
+    readonly normal: Vec2
+} | null|undefined;
 export interface Hitbox2DMapping {
     [HitboxType2D.null]:NullHitbox2D
     [HitboxType2D.circle]:CircleHitbox2D
@@ -25,6 +28,7 @@ export abstract class BaseHitbox2D{
     abstract collidingWith(other: Hitbox2D):boolean
     abstract overlapCollision(other:Hitbox2D):OverlapCollision2D
     abstract colliding_with_line(a:Vec2,b:Vec2):boolean
+    abstract overlapLine(a:Vec2,b:Vec2):IntersectionRes
     abstract pointInside(point:Vec2):boolean
     abstract center():Vec2
     abstract scale(scale:number):void
@@ -61,6 +65,9 @@ export class NullHitbox2D extends BaseHitbox2D{
     }
     override colliding_with_line(_a:Vec2,_b:Vec2):boolean{
         return false
+    }
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
     }
     override center(): Vec2 {
         return this.position
@@ -161,6 +168,35 @@ export class CircleHitbox2D extends BaseHitbox2D{
         }
 
         return false
+    }
+    override overlapLine(a_p:Vec2,b_p:Vec2): IntersectionRes {
+        let d = v2.sub(b_p, a_p)
+        const len = Math.max(v2.length(d), 0.000001)
+        d = v2.normalizeSafe(d)
+
+        const m = v2.sub(a_p, this.position)
+        const b = v2.dot(m, d)
+        const c = v2.dot(m, m) - this.radius * this.radius
+
+        if (c > 0 && b > 0) return null
+
+        const discSq = b * b - c
+        if (discSq < 0) return null
+
+        const disc = Math.sqrt(discSq)
+        const t = -b < disc
+            ? disc - b
+            : -b - disc;
+
+        if (t <= len) {
+            const point = v2.add(a_p, v2.scale(d, t))
+            return {
+                point,
+                normal: v2.normalize(v2.sub(point,this.position))
+            };
+        }
+
+        return null;
     }
     override center(): Vec2 {
       return this.position
@@ -298,7 +334,9 @@ export class RectHitbox2D extends BaseHitbox2D{
 
         return tmin <= dist && tmax >= 0;
     }
-
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
+    }
     override center(): Vec2 {
         return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))
     }
@@ -404,6 +442,9 @@ export class HitboxGroup2D extends BaseHitbox2D{
     }
     override colliding_with_line(a:Vec2,b:Vec2):boolean{
         return this.hitboxes.some(hitbox => hitbox.colliding_with_line(a,b));
+    }
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
     }
 
     override center(): Vec2 {
@@ -594,6 +635,9 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             if (Collision.line_colliding_with_line(a, b, p1, p2)) return true;
         }
         return false;
+    }
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
     }
 
     override center(): Vec2 {

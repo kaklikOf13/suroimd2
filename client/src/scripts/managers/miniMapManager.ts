@@ -1,11 +1,9 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
-import { Container2D, Graphics2D, Sprite2D, SubCanvas2D } from "../engine/container_2d.ts";
+import { Container2D, Graphics2D, SubCanvas2D } from "../engine/container_2d.ts";
 import { ColorM, WebglRenderer } from "../engine/renderer.ts";
 import { type Game } from "../others/game.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
-import { Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
-import { GetObstacleBaseFrame } from "../gameObjects/obstacle.ts";
 import { HideElement, ShowElement } from "../engine/utils.ts";
 
 export class MinimapManager{
@@ -77,7 +75,7 @@ export class MinimapManager{
     
     draw():Promise<void>{
         return new Promise<void>((resolve) => {    
-            this.canvas.width = 500
+            /*this.canvas.width = 500
             this.canvas.height = 500
             this.ctx.clearRect(0, 0, this.canvas.width,this.canvas.height)
 
@@ -101,7 +99,7 @@ export class MinimapManager{
                 this.full_map_ctx.fillStyle="#0ff"
                 const dp=v2.scale(v2.mult(this.position,this.map.scale),8)
                 this.full_map_ctx.fillRect(dp.x-5,dp.y-5,10,10)
-            }
+            }*/
 
             /*
 
@@ -115,12 +113,13 @@ export class MinimapManager{
                 }
             }
             resolve()*/
+            resolve()
         })
     }
     objects:Container2D=new Container2D()
     config!:MapConfig
     init(map:MapConfig){
-        this.config=map
+        /*this.config=map
         this.objects.destroyed=true
         this.objects=new Container2D()
         this.map.add_child(this.objects)
@@ -146,7 +145,7 @@ export class MinimapManager{
                 }
             }
         }
-        this.objects.updateZIndex()
+        this.objects.updateZIndex()*/
         this.render()
     }
 }
