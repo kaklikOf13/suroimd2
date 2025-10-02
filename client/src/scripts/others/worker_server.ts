@@ -15,7 +15,7 @@ self.onmessage = (ev) => {
             0,
             msg.config as ConfigType
         );
-        server.mainloop()
+        server.mainloop(true)
 
         for (let i = 0; i < msg.bots; i++) {
             const bot = server.add_bot()

@@ -66,7 +66,6 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
                 this.playGame({offline:true})
             })
             this.game=new Game(inputs,menu_manager,sounds,GameSave,resources,renderer)
-            this.game.clock.request_animation_frame=false
             this.game.listners_init()
             this.game.init_gui(gui)
             this.game.onstop=this.closeGame.bind(this)
@@ -85,7 +84,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
                         game: {
                             config: {
                                 gameTps: 60,
-                                netTps: 30
+                                netTps: 60
                             },
                             debug:{
                                 deenable_lobby:true,

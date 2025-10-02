@@ -437,7 +437,7 @@ export class Game extends ClientGame2D<GameObject>{
       this.ambience.set(this.resources.get_audio("storm_ambience"),true)
       this.guiManager.process_joined_packet(jp)
       this.happening=true
-      this.mainloop()
+      this.mainloop(true)
     })
     this.client.on("map",(mp:MapPacket)=>{
       this.terrain.process_map(mp.map)

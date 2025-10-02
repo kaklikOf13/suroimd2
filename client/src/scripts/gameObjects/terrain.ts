@@ -22,7 +22,7 @@ export class TerrainM extends TerrainManager{
         for(const f of this.floors){
             graphic.beginPath()
             graphic.set_hitbox(f.hb)
-            if(f.smooth)graphic.smooth_shape()
+            //if(f.smooth)graphic.smooth_shape()
             graphic.repeat_size=3
             graphic.endPath()
             graphic.fill_color(ColorM.number(Floors[f.type].default_color))

@@ -96,7 +96,7 @@ export class Clock {
     public callback: (dt:number)=>void;
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
-    request_animation_frame:boolean=false
+    running:boolean=false
 
     constructor(targetFPS: number, timeScale: number, callback: (dt:number)=>void) {
         this.frameDuration = 1000 / targetFPS
@@ -119,21 +119,25 @@ export class Clock {
     clear_interval(id:number){
         if(this.intervals.has(id))this.intervals.delete(id)
     }
-    tick(){
-        if(this.request_animation_frame){
-            const currentTime = Date.now()
-            const elapsedTime = currentTime - this.lastFrameTime
-            this.lastFrameTime = Date.now()
-            const dt=(elapsedTime/1000)*this.timeScale
-            this.callback(dt)
-            for(const i of this.intervals.values()){
-                i(dt)
+    tick(currentTime?: number) {
+        if (this.running) {
+            if (currentTime === undefined) currentTime = performance.now();
+
+            const elapsedTime = currentTime - this.lastFrameTime;
+            this.lastFrameTime = currentTime;
+
+            const dt = (elapsedTime / 1000) * this.timeScale;
+
+            this.callback(dt);
+            for (const i of this.intervals.values()) {
+                i(dt);
             }
-            self.requestAnimationFrame(this.tick.bind(this))
+
+            self.requestAnimationFrame(this.tick.bind(this));
         }
     }
     public start() {
-        if(!this.request_animation_frame){
+        if(!this.running){
             this.interval=setInterval(() => {
                 const currentTime = Date.now()
                 const elapsedTime = currentTime - this.lastFrameTime
@@ -146,8 +150,16 @@ export class Clock {
             }, this.frameDuration)
         }
     }
+    public startRAF() {
+        if (!this.running) {
+            this.running = true;
+            this.lastFrameTime = performance.now(); // aqui!
+            self.requestAnimationFrame(this.tick.bind(this));
+        }
+    }
     public stop(){
-        if(!this.request_animation_frame)
+        this.running=false
+        if(!this.running)
         clearInterval(this.interval)
     }
 }

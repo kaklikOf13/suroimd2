@@ -83,6 +83,7 @@ export class Bullet extends ServerGameObject{
                         const col1=this.hb.overlapCollision((obj as Obstacle).hb)
                         const col2 = (obj as Obstacle).hb.overlapLine(this.old_position,this.position)!
                         if(!col2&&!col1)continue
+                        if(!col2)continue
                         const od=(obj as Obstacle).health;
                         (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3){

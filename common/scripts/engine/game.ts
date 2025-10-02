@@ -116,12 +116,16 @@ export abstract class Game2D<DefaultGameObject extends BaseGameObject2D=BaseGame
     on_update(_dt:number):void{}
     on_run():void{}
     on_stop():void{}
-    mainloop(){
+    mainloop(rqf=false){
         // Start
         this.running=true
         this.on_run()
         this.signals.emit("start")
-        this.clock.start()
+        if(rqf){
+            this.clock.startRAF()
+        }else{
+            this.clock.start()
+        }
     }
     instantiate(scene:Scene2D):Scene2DInstance<DefaultGameObject>{
         return new Scene2DInstance<DefaultGameObject>(scene,this)
