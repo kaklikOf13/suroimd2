@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, KDate, Model3D, Numeric, ParticlesEmitter2D, Vec2, matrix4, model3d, random, v2, v3 } from "common/scripts/engine/mod.ts";
+import { Angle, Client, DefaultSignals, KDate, Model3D, Numeric, ParticlesEmitter2D, Vec2, matrix4, model2d, model3d, random, v2, v3 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -27,7 +27,7 @@ import { Vehicle } from "../gameObjects/vehicle.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
 import { Creature } from "../gameObjects/creature.ts";
-import {  WebglRenderer } from "../engine/renderer.ts";
+import {  Material2D, WebglRenderer } from "../engine/renderer.ts";
 import { Plane } from "./planes.ts";
 import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
@@ -55,6 +55,7 @@ export class Game extends ClientGame2D<GameObject>{
   
   terrain_gfx=new Graphics2D()
   grid_gfx=new Graphics2D()
+  grid_mat:Material2D
   scope_zoom:number=0.53
 
   music:ManipulativeSoundInstance
@@ -263,6 +264,13 @@ export class Game extends ClientGame2D<GameObject>{
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
+    this.grid_mat=(this.renderer as WebglRenderer).factorys2D.grid.create({
+      color:ColorM.hex("#0003"),
+      gridSize:5,
+      width:0.04
+    })
+    this.grid_gfx.fill_material(this.grid_mat)
+    this.grid_gfx.drawModel(model2d.rect(v2.new(-100000,-100000),v2.new(100000,100000)))
     this.camera.addObject(this.light_map)
     this.camera.addObject(this.fake_crosshair)
 
@@ -382,9 +390,6 @@ export class Game extends ClientGame2D<GameObject>{
       this.camera.position=this.activePlayer!.position
       /*this.minimap.position=v2.duplicate(this.camera.position)
       this.minimap.update_grid(this.grid_gfx,gridSize,this.camera.position,v2.new(this.camera.width,this.camera.height),0.08)*/
-      this.grid_gfx.clear()
-      this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
-      this.grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(this.camera.position,v2.new(this.camera.width/2,this.camera.height/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(this.camera.width/gridSize+2,this.camera.height/gridSize+2)),gridSize,0.08)
       if(this.fake_crosshair.visible){
         this.fake_crosshair.position=v2.add(this.activePlayer.position,v2.scale(v2.from_RadAngle(this.activePlayer.rotation),2/this.camera.zoom))
         this.fake_crosshair.scale=v2.new(1/this.camera.zoom,1/this.camera.zoom)

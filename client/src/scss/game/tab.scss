@@ -1,3 +1,4 @@
+@use "../palette.scss";
 #tab-view{
     --tab-primary: #4f6ef7;
     --tab-secondary: #222;
@@ -118,12 +119,20 @@
     transform: translate(-50%,-50%);
     left: 50%;
     top: 50%;
+    @media screen and (max-width: palette.$screen_medium) {
+        scale: 50%;
+    };
 }
 .tab-view-minimized{
     scale: 50%;
     transform: translate(0%,0%);
     left: -180px;
     top: -90px;
+    @media screen and (max-width: palette.$screen_medium) {
+        scale: 25%;
+        left: -270px;
+        top: -1450px;
+    };
 }
 
 .tab-message-app {

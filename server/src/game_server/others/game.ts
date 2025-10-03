@@ -106,7 +106,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.gamemode=DefaultGamemode
         this.modeManager=/*this.config.teamSize>1?new TeamsGamemodeManager(this):*/new SoloGamemodeManager(this)
         this.new_list=false
-        this.modeManager.generate_map()
+        //this.modeManager.generate_map()
+        this.modeManager.generate_lobby()
         this.deadzone=new DeadZoneManager(this,{
             mode:DeadZoneMode.Staged,
             stages:DeadZoneDefinition,

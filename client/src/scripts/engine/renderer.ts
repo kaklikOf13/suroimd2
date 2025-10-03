@@ -329,7 +329,70 @@ create(gl:WebglRenderer,fac:GLMaterial3DFactory<GL3D_SimpleMatArgs>){
 }
 }
 
+export type GL2D_GridMatArgs={
+    color:Color
+    width:number
+    gridSize:number
+}
+export const GLF_Grid:GLMaterial2DFactoryCall<GL2D_GridMatArgs>={
+    vertex:`
+attribute vec2 a_Position;
+uniform mat4 u_ProjectionMatrix;
+uniform vec3 u_Translation;
+varying vec2 v_WorldPosition;
 
+void main() {
+    v_WorldPosition = a_Position+u_Translation.xy;
+    gl_Position = u_ProjectionMatrix * vec4(a_Position,u_Translation.z, 1.0);
+}`,
+    frag:`
+precision mediump float;
+varying vec2 v_WorldPosition;
+
+uniform float u_GridSize;
+uniform vec4 u_Color;
+uniform float u_LineWidth;
+
+void main() {
+    vec2 grid = abs(mod(v_WorldPosition, u_GridSize) - (u_GridSize * 0.5));
+
+    float line = 1.0-step(u_LineWidth, min(grid.x, grid.y));
+    gl_FragColor = vec4(u_Color.rgb, line * u_Color.a);
+}`,
+create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_GridMatArgs>){
+    const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
+    const uColorLoc=gl.gl.getUniformLocation(fac.program, "u_Color")!
+    const uGridSize=gl.gl.getUniformLocation(fac.program, "u_GridSize")!
+    const uLineWidth=gl.gl.getUniformLocation(fac.program, "u_LineWidth")!
+    const uTranslationLoc=gl.gl.getUniformLocation(fac.program, "u_Translation")!
+    const uProjectionMatrixLoc=gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+
+    const vertexBuffer = gl.gl.createBuffer();
+    const draw=(mat:GLMaterial2D<GL2D_GridMatArgs>,matrix:Matrix,model:Model2D,position:Vec2,scale:Vec2)=>{
+        gl.gl.useProgram(fac.program)
+
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bufferData(gl.gl.ARRAY_BUFFER, model.vertices, gl.gl.STATIC_DRAW)
+
+        gl.gl.enableVertexAttribArray(aPositionLoc)
+        gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
+
+        gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
+        gl.gl.uniform2f(uTranslationLoc, position.x, position.y)
+        gl.gl.uniform1f(uLineWidth, mat.width)
+        gl.gl.uniform1f(uGridSize, mat.gridSize)
+        gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
+        gl.gl.drawArrays(gl.gl.TRIANGLES, 0, model.vertices.length / 2)
+    }
+    return (arg:GL2D_SimpleMatArgs)=>{
+        return {
+            ...arg,
+            factory:fac,
+            draw:draw
+        }
+    }
+}
+}
 export type GL2D_TexMatArgs={
     texture:WebGLTexture
     tint:Color
@@ -481,6 +544,7 @@ export class WebglRenderer extends Renderer {
     readonly tex_program:WebGLProgram
     readonly factorys2D:{
         simple:GLMaterial2DFactory<GL2D_SimpleMatArgs>,
+        grid:GLMaterial2DFactory<GL2D_GridMatArgs>,
         texture:GLMaterial2DFactory<GL2D_TexMatArgs>,
         light:GLMaterial2DFactory<GL2D_LightMatArgs>
     }
@@ -526,6 +590,7 @@ export class WebglRenderer extends Renderer {
 
         this.factorys2D={
             simple:this.proccess_factory(GLF_Simple),
+            grid:this.proccess_factory(GLF_Grid),
             texture:this.proccess_factory(GLF_Texture),
             light:this.proccess_factory(GLF_Light)
         }

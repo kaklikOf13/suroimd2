@@ -31,13 +31,11 @@ __                                                                              
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
-### Map
-* Now Map Is Biggerst
-__                                                                                                      __
 ### Others
 * **Web Workers!!** Now The Game Run 2 times faster in campaing mode
 __                                                                                                      __
 ## Fixes
+* **REQUEST ANIMATION FRAME!!!!!** No more Lag
 __                                                                                                      __
 # Play The Game
 https://suroimd.io
