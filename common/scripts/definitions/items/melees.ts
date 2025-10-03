@@ -190,12 +190,12 @@ Melees.insert(
     {
         idString:"axe",
         damage:35,
-        offset:0.5,
+        offset:0.6,
         quality:ItemQuality.Uncommon,
-        radius:0.6,
+        radius:0.9,
         size:2,
         attack_delay:0.5,
-        damage_delays:[0.3],
+        damage_delays:[0.4],
         arms:{
             right:{
                 position:DefaultFistRig.right!.position,
@@ -219,12 +219,12 @@ Melees.insert(
     {
         idString:"hammer",
         damage:50,
-        offset:0.4,
+        offset:0.6,
         quality:ItemQuality.Rare,
-        radius:0.6,
+        radius:0.9,
         size:3,
         attack_delay:0.8,
-        damage_delays:[0.4],
+        damage_delays:[0.6],
         arms:{
             right:{
                 position:DefaultFistRig.right!.position,

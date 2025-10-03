@@ -30,6 +30,7 @@ export class GuiManager{
     content={
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
+        game_gui:document.querySelector("#game-gui") as HTMLDivElement,
         health_bar_interior:document.querySelector("#health-bar") as HTMLDivElement,
         health_bar_animation:document.querySelector("#health-bar-animation") as HTMLDivElement,
         health_bar_amount:document.querySelector("#health-bar-amount") as HTMLSpanElement,
@@ -52,7 +53,7 @@ export class GuiManager{
 
         gameOver:document.querySelector("#gameover-container") as HTMLDivElement,
         
-        gameOver_status:document.querySelector("#gameover-status") as HTMLDivElement,
+        gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_kills:document.querySelector("#gameover-kills") as HTMLDivElement,
         gameOver_damaged:document.querySelector("#gameover-damaged") as HTMLDivElement,
         gameOver_score:document.querySelector("#gameover-score") as HTMLDivElement,
@@ -512,6 +513,7 @@ export class GuiManager{
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
         HideElement(this.content.gameOver)
+        ShowElement(this.content.game_gui)
     }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={
@@ -742,13 +744,22 @@ export class GuiManager{
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return
         this.game.gameOver=true
+        console.log(g)
         ShowElement(this.content.gameOver)
+        HideElement(this.content.game_gui)
         if(g.Win){
-            this.content.gameOver_status.innerText=`Winner Winner Chicken Dinner!`
-            this.content.gameOver_status.style.color="#fe3"
+            this.content.gameOver_main_message.innerHTML=`
+<span id="gameover-you-win">You Win!</span>
+`
         }else{
-            this.content.gameOver_status.innerText=`You Die!`
-            this.content.gameOver_status.style.color="#e05"
+            console.log(g.Eliminator)
+            if(!this.players_name[g.Eliminator])return
+            this.content.gameOver_main_message.innerHTML=`
+<span id="gameover-eliminated">Eliminated By</span>
+<span id="gameover-eliminator">${this.players_name[g.Eliminator].full}</span>
+`
+            /*this.content.gameOver_status.innerText=`You Die!`
+            this.content.gameOver_status.style.color=""
             if(Math.random()<=0.01){
                 const ge=document.createElement("span")
                 ge.id="gameover-you-dead"
@@ -757,11 +768,11 @@ export class GuiManager{
                 setTimeout(()=>{
                     ge.remove()
                 },2900)
-            }
+            }*/
         }
-        this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
+        /*this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
         this.content.gameOver_damaged.innerText=`Damage Dealth: ${g.DamageDealth}`
-        this.content.gameOver_score.innerText=`Score: 0`
+        this.content.gameOver_score.innerText=`Score: 0`*/
         this.content.gameOver_menu_btn.onclick=this.game.onstop!.bind(this.game,this.game)
     }
     update_equipaments(){

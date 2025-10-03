@@ -177,7 +177,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:10,
+                damage:11,
                 radius:0.02,
                 range:100,
                 falloff:0.8,
@@ -252,7 +252,7 @@ Guns.insert(
     },
     {
         idString:"ak47",
-        fireDelay:0.1,
+        fireDelay:0.15,
         switchDelay:0.6,
         spread:5,
         lenght:1.2,
@@ -263,7 +263,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:10,
+                damage:11,
                 radius:0.014,
                 range:170,
                 speed:40,
@@ -286,7 +286,7 @@ Guns.insert(
     },
     {
         idString:"ar15",
-        fireDelay:0.12,
+        fireDelay:0.2,
         switchDelay:0.7,
         spread:2,
         lenght:0.7,
@@ -297,7 +297,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:9,
+                damage:10,
                 radius:0.014,
                 range:190,
                 falloff:0.7,
@@ -318,7 +318,7 @@ Guns.insert(
     },
     {
         idString:"famas",
-        fireDelay:0.3,
+        fireDelay:0.4,
         switchDelay:0.7,
         fireMode:FireMode.Burst,
         burst:{
@@ -334,7 +334,7 @@ Guns.insert(
         quality:ItemQuality.Epic,
         bullet:{
             def:{
-                damage:11,
+                damage:12,
                 radius:0.014,
                 range:190,
                 falloff:0.7,
@@ -355,7 +355,7 @@ Guns.insert(
     },
     {
         idString:"mp5",
-        fireDelay:0.09,
+        fireDelay:0.1,
         switchDelay:0.7,
         spread:3,
         lenght:0.87,
@@ -366,7 +366,7 @@ Guns.insert(
         quality:ItemQuality.Uncommon,
         bullet:{
             def:{
-                damage:8,
+                damage:9,
                 radius:0.014,
                 range:160,
                 falloff:0.9,
@@ -393,7 +393,7 @@ Guns.insert(
     },
     {
         idString:"vector",
-        fireDelay:0.04,
+        fireDelay:0.05,
         switchDelay:0.7,
         spread:1,
         lenght:0.68,
@@ -422,10 +422,9 @@ Guns.insert(
         speed_mod:1,
         gasParticles:GasParticles.automatic
     },
-    
     {
         idString:"uzi",
-        fireDelay:0.04,
+        fireDelay:0.06,
         switchDelay:0.7,
         spread:9,
         lenght:0.68,
@@ -467,7 +466,7 @@ Guns.insert(
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
-                damage:50,
+                damage:45,
                 radius:0.02,
                 range:210,
                 falloff:0.8,
@@ -513,11 +512,12 @@ Guns.insert(
         ammoSpawnAmount:30,
         bullet:{
             def:{
-                damage:60,
+                damage:52,
                 radius:0.025,
                 range:220,
                 falloff:0.7,
                 speed:55,
+                criticalMult:1.1,
                 tracer:tracers.xl,
                 obstacleMult:1.5,
             }
@@ -546,17 +546,18 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:80,
+                damage:90,
                 radius:0.02,
                 range:230,
                 falloff:0.7,
                 speed:38,
+                criticalMult:1.2,
                 obstacleMult:1.7,
                 tracer:tracers.large
             }
         },
         reload:{
-            delay:4.5,
+            delay:3.9,
             capacity:5,
         },
         recoil:{

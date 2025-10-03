@@ -611,68 +611,97 @@ export class Player extends ServerGameObject{
         if(params.critical){
             mod+=this.modifiers.critical_mult-1
         }
-        damage=Numeric.clamp(damage*mod,0,this.health)
+        damage*=mod
         params.amount=damage
         this.piercingDamage(params)
     }
-    piercingDamage(params:DamageParams){
-        if(this.boost_def.type===BoostType.Shield&&this.boost>0){
-            params.amount=Math.min(this.boost,params.amount)
-        }else{
-            params.amount=Math.min(this.health,params.amount)
+    piercingDamage(params: DamageParams) {
+        let totalDamage = params.amount
+        let shieldDamage = 0
+        let healthDamage = 0
+
+        let baseSplash: Omit<DamageSplash, "shield" | "shield_break" | "count"> = {
+            critical: params.critical,
+            position: params.position,
+            taker: this.id,
+            taker_layer: this.layer
         }
-        let d:DamageSplash={
-            count:Math.ceil(params.amount),
-            shield:false,
-            critical:params.critical,
-            shield_break:false,
-            position:params.position,
-            taker:this.id,
-            taker_layer:this.layer
+
+        let splashes: DamageSplash[] = []
+
+        if (this.boost_def.type === BoostType.Shield && this.boost > 0) {
+            shieldDamage = Math.min(this.boost, totalDamage)
+
+            if (totalDamage >= this.boost * 2) {
+                shieldDamage = this.boost
+                healthDamage = totalDamage - shieldDamage
+                this.boost = 0
+            } else {
+                this.boost -= shieldDamage
+            }
+            splashes.push({
+                ...baseSplash,
+                count: Math.ceil(totalDamage),
+                shield: true,
+                shield_break: this.boost === 0
+            })
+
+            if (this.boost === 0) {
+                this.invensibility_time = 0.35
+            }
+        } else {
+            healthDamage = Math.min(this.health, totalDamage)
+
+            splashes.push({
+                ...baseSplash,
+                count: Math.ceil(totalDamage),
+                shield: false,
+                shield_break: false
+            })
         }
-        
-        if(this.boost_def.type===BoostType.Shield&&this.boost>0){
-            this.boost=Math.max(this.boost-params.amount,0)
-            if(params.owner&&params.owner instanceof Player){
-                d.shield=true
-                d.shield_break=this.boost===0
-                if(this.boost===0){
-                    this.invensibility_time=0.35
+
+        if (healthDamage > 0) {
+            this.health = Math.max(this.health - healthDamage, 0)
+        }
+
+        if (params.owner && params.owner instanceof Player && params.owner.id !== this.id && params.reason !== DamageReason.Bleend) {
+            params.owner.status.damage += (shieldDamage + healthDamage)
+
+            for (const splash of splashes) {
+                let ok = true
+                for (const ds of params.owner.damagesSplash) {
+                    if (ds.shield === splash.shield && ds.taker === splash.taker) {
+                        ds.critical = ds.critical || splash.critical
+                        if (ds.shield) {
+                            ds.shield_break = ds.shield_break || splash.shield_break
+                        }
+                        ds.count += splash.count
+                        ok = false
+                        break
+                    }
+                }
+                if (ok) {
+                    params.owner.damagesSplash.push(splash)
+                } else {
+                    params.owner.splashDelay = 2
                 }
             }
-        }else{
-            this.health=Math.max(this.health-params.amount,0)
         }
-        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id&&params.reason!==DamageReason.Bleend){
-            params.owner.status.damage+=params.amount
-            let ok=true
-            for(const ds of params.owner.damagesSplash){
-                if(ds.shield===d.shield&&ds.taker===d.taker){
-                    ds.critical===d.critical||ds.critical
-                    if(ds.shield){
-                        ds.shield_break=ds.shield_break||this.boost===0
-                    }
-                    d=ds
-                    ok=false
-                    ds.count+=params.amount
-                    break
-               }
-            }
-            if(ok){
-                params.owner.damagesSplash.push(d)
-            }else{
-                params.owner.splashDelay=2
-            }
+
+        for (const s of splashes) {
+            this.damagesSplash.push(s)
         }
-        this.damagesSplash.push(d)
-        if(this.health===0){
-            if(!this.downed&&this.game.modeManager.can_down(this)){
+
+        if (this.health === 0) {
+            if (!this.downed && this.game.modeManager.can_down(this)) {
                 this.down(params)
-            }else{
+            } else {
                 this.kill(params)
             }
         }
     }
+
+
     down(params:DamageParams){
         if(this.downed)return
         this.downed=true
@@ -729,6 +758,7 @@ export class Player extends ServerGameObject{
         }
         this.update2()
         if(!this.is_npc){
+            let killed_by:number=this.id
             if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
                 this.game.send_killfeed_message({
                     type:KillFeedMessageType.killleader_dead,
@@ -746,6 +776,7 @@ export class Player extends ServerGameObject{
                     params.owner.earned.xp+=1
                     params.owner.earned.score+=5
                 }
+                killed_by=params.owner.id
                 this.game.send_killfeed_message({
                     killer:{
                         id:params.owner.id,
@@ -781,7 +812,7 @@ export class Player extends ServerGameObject{
             }
             if(sg){
                 this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
-                this.send_game_over(false)
+                this.send_game_over(false,killed_by)
             }
 
             this.game.modeManager.on_player_die(this)
@@ -797,13 +828,14 @@ export class Player extends ServerGameObject{
         this.game.scene.cells.unregistry(this)
         this.status.rank=this.game.livingPlayers.length+1
     }
-    send_game_over(win:boolean=false){
+    send_game_over(win:boolean=false,eliminated_by:number=0){
         if(this.is_npc||!this.client||!this.client.opened||this.is_bot)return
         const p=new GameOverPacket()
         p.Kills=this.status.kills
         p.DamageDealth=this.status.damage
         p.Win=win
         p.Score=0
+        p.Eliminator=eliminated_by
         this.client!.emit(p)
     }
     override onDestroy(): void {

@@ -33,6 +33,7 @@ __                                                                              
 __                                                                                                      __
 ### Others
 * **Web Workers!!** Now The Game Run 2 times faster in campaing mode
+* Bots Now Start With Items
 __                                                                                                      __
 ## Fixes
 * **REQUEST ANIMATION FRAME!!!!!** No more Lag

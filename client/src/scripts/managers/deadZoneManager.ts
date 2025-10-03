@@ -28,7 +28,7 @@ export class DeadZoneManager{
 
     hitbox:CircleHitbox2D=new CircleHitbox2D(v2.new(0,0),1)
     append(){
-        const model=model2d.outlineCircle(1,10*1000,200)
+        const model=model2d.outlineCircle(1,100*1000,200)
         this.sprite.fill_color(this.color)
         this.sprite.drawModel(model)
         const model2=model2d.outlineCircle(0.997,0.003,200)

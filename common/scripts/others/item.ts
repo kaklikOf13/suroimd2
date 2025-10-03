@@ -86,7 +86,7 @@ export const WeaponsRig={
 export const tracers={
     tiny:{
         width:5,
-        height:0.8, // 0.4H = 0.01 radius
+        height:1, // 0.4H = 0.01 radius
         proj:{
             img:1,
             width:1,
@@ -95,11 +95,11 @@ export const tracers={
     },
     small:{
         width:5.5,
-        height:1, // 0.6H = 0.012 radius
+        height:1.2, // 0.6H = 0.012 radius
         proj:{
             img:1,
-            width:1,
-            height:1
+            width:1.5,
+            height:1.5
         }
     },
     medium:{
@@ -107,8 +107,8 @@ export const tracers={
         height:1.3, // 0.7H = 0.014 radius
         proj:{
             img:1,
-            width:1,
-            height:1
+            width:2,
+            height:2
         }
     },
     large:{
@@ -116,8 +116,8 @@ export const tracers={
         height:2.3, // 1H = 0.02 radius
         proj:{
             img:1,
-            width:1.5,
-            height:1.5
+            width:2.5,
+            height:2.5
         }
     },
     xl:{
@@ -125,8 +125,8 @@ export const tracers={
         height:2.7, // 1.2H = 0.025 radius
         proj:{
             img:1,
-            width:1,
-            height:1
+            width:3,
+            height:3
         }
     },
     mirv:{
