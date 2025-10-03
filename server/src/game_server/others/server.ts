@@ -11,6 +11,8 @@ export class GameServer{
     games:Game[]
     game_handles:Record<ID,string>
     config:ConfigType
+    td:TextDecoder=new TextDecoder("utf-8")
+    te:TextEncoder=new TextEncoder()
     constructor(server:Server,config:ConfigType){
         this.server=server
         this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
@@ -68,8 +70,44 @@ export class GameServer{
             if(this.config.database.enabled){
                 const f=Deno.openSync(`database/games/game-${this.games[id].string_id}`,{write:true,create:true})
                 const encoder = new TextEncoder();
-                f.writeSync(encoder.encode(JSON.stringify(this.games[id].status)))
+                f.writeSync(encoder.encode(JSON.stringify({status:this.games[id].status,statistic:this.games[id].statistics})))
                 f.close()
+            }
+            if(this.config.database.statistic){
+                const src=this.config.database.files.statistic??`database/statistic.json`
+                const f=Deno.openSync(src,{write:true,create:true,read:true})
+                f.seekSync(0,Deno.SeekMode.Current)
+                const stat = Deno.statSync(src)
+                const size = stat.size
+                const b = new Uint8Array(size)
+                f.seekSync(0, Deno.SeekMode.Start)
+                f.readSync(b)
+                let js=undefined
+                
+                try {
+                    js=JSON.parse(this.td.decode(b))
+                } catch (error) {
+                    console.error(error)
+                    js=undefined
+                }
+                f.seekSync(0, Deno.SeekMode.Start)
+                if(js===undefined){
+                    f.writeSync(this.te.encode(JSON.stringify(this.games[id].statistics)))
+                }else{
+                    const gs=this.games[id].statistics!
+                    for(const k of Object.keys(gs.items.dropped)){
+                        js.items.dropped[k]=(js.items.dropped[k]??0)+gs.items.dropped[k]
+                    }
+                    for(const k of Object.keys(gs.items.kills)){
+                        js.items.kills[k]=(js.items.kills[k]??0)+gs.items.kills[k]
+                    }
+                    for(const k of Object.keys(gs.loadout.uses)){
+                        js.loadout.uses[k]=(js.loadout.uses[k]??0)+gs.loadout.uses[k]
+                    }
+                    js.player.players+=gs.player.players
+                    js.player.disconnection+=gs.player.disconnection
+                    f.writeSync(this.te.encode(JSON.stringify(js,undefined)))
+                }
             }
             (this.games[id].replay! as ServerReplayRecorder2D).save_replay(`database/replays/game-${this.games[id].string_id}.repl`)
             const ln:string[]=[]

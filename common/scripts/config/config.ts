@@ -48,9 +48,11 @@ export interface ConfigType {
     regions: Record<string, RegionDef>
     database: {
         enabled: boolean
+        statistic:boolean
         files: {
             accounts: string
             forum: string
+            statistic:string
         }
         api_key: string
     }

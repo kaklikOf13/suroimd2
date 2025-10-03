@@ -47,9 +47,11 @@
     },
     "database": {
         "enabled": false,
+        "statistic":true,
         "files": {
             "accounts": "database/accounts.db",
-            "forum":"database/forum.db"
+            "forum":"database/forum.db",
+            "statistic":"database/statistic.json"
         },
         "api_key": "your_api_key"
     },

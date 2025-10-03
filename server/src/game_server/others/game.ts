@@ -44,6 +44,19 @@ export interface GameStatus{
         kills:number
     }[]
 }
+export type GameStatistic={
+    player:{
+        players:number
+        disconnection:number
+    }
+    items:{
+        kills:Record<string,number>
+        dropped:Record<string,number>
+    }
+    loadout:{
+        uses:Record<string,number>
+    }
+}
 export class Game extends ServerGame2D<ServerGameObject>{
     map:GameMap
     gamemode:Gamemode
@@ -82,6 +95,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
     replay?:ReplayRecorder2D
 
+    statistics?:GameStatistic
+
     deadzone:DeadZoneManager
 
     constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
@@ -113,6 +128,21 @@ export class Game extends ServerGame2D<ServerGameObject>{
             stages:DeadZoneDefinition,
         })
         this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.Config.game.config.netTps)
+        if(Config.database.statistic){
+            this.statistics={
+                items:{
+                    dropped:{},
+                    kills:{}
+                },
+                player:{
+                    disconnection:0,
+                    players:0
+                },
+                loadout:{
+                    uses:{}
+                }
+            }
+        }
     }
     override on_update(): void {
         super.on_update()
@@ -213,6 +243,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 playerBadge:Badges.getFromString(p.loadout.badge).idNumber
             })
             this.modeManager.on_player_join(p)
+            if(this.statistics){
+                this.statistics.player.players++
+            }
         }
         p.inventory.set_current_weapon_index(0)
         return p
@@ -267,6 +300,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
         client.emit(jp)
         client.sendStream(this.map.map_packet_stream)
+
+        if(this.statistics){
+            this.statistics.player.players++
+            this.statistics.loadout.uses[p.loadout.skin]=(this.statistics.loadout.uses[p.loadout.skin]??0)+1
+        }
 
         if(Math.random()<0.2){
             const vehicle=this.add_vehicle(p.position,Vehicles.getFromString(random.choose(["bike","jeep"])))
@@ -335,6 +373,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     add_loot(position:Vec2,def:GameItem,count:number,layer:number=Layers.Normal):Loot{
         const l=this.scene.objects.add_object(new Loot(),layer,undefined,{item:def,count:count,position:position}) as Loot
+        if(this.statistics){
+            this.statistics.items.dropped[def.idString]=(this.statistics.items.dropped[def.idString]??0)+count
+        }
         return l
     }
     add_vehicle(position:Vec2,def:VehicleDef,layer:number=Layers.Normal):Vehicle{

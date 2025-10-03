@@ -729,7 +729,6 @@ export class Player extends ServerGameObject{
         }
         this.update2()
         if(!this.is_npc){
-            this.game.modeManager.on_player_die(this);
             if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
                 this.game.send_killfeed_message({
                     type:KillFeedMessageType.killleader_dead,
@@ -766,6 +765,10 @@ export class Player extends ServerGameObject{
                         }
                     })
                 }
+                
+                if(this.game.statistics){
+                    this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
+                }
             }
 
             //Respawn
@@ -778,10 +781,10 @@ export class Player extends ServerGameObject{
             }
             if(sg){
                 this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
-                this.game.addTimeout(()=>{
-                    this.send_game_over(false)
-                },2)
+                this.send_game_over(false)
             }
+
+            this.game.modeManager.on_player_die(this)
         }else{
             this.inventory.drop_all()
         }
