@@ -84,6 +84,7 @@ LootTables.add_tables({
         {item:"vector",weight:3},
         {item:"kar98k",weight:1},
         {item:"awp",weight:0.5},
+        {item:"m2-2",weight:0.5},
     ],
     "legendary_guns":[
         {item:"awms",weight:1},

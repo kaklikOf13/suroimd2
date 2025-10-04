@@ -472,9 +472,10 @@ export const Numeric={
     clamp(value:number,min:number,max:number):number{
         return value<max?value>min?value:min:max
     },
-    maxDecimals(value:number,decimalPlaces=3):number{
-        const factor = Math.pow(10, decimalPlaces)
-        return Math.round(value * factor) / factor
+    maxDecimals(value: number, decimalPlaces = 3): number {
+        if (!isFinite(value)) return value;
+        const factor = 10 ** decimalPlaces;
+        return Math.trunc(value * factor) / factor;
     },
     lerp(start:number,dest:number,inter:number):number{
         return  (start*(1-inter))+(dest*inter)

@@ -38,6 +38,7 @@ export class GunItem extends LItem{
     cap:number
 
     ammo:number=0
+    liquid:boolean=false
 
     type="gun"
     constructor(def?:GunDef,droppable=true){
@@ -46,6 +47,7 @@ export class GunItem extends LItem{
         this.tags.push("gun")
         this.cap=this.def.size
         this.droppable=droppable
+        this.liquid=Ammos.getFromString(def!.ammoType).liquid??false
     }
     reloading=false
     itemType=InventoryItemType.gun
@@ -92,7 +94,7 @@ export class GunItem extends LItem{
         user.privateDirtys.action=true
         this.reloading=false
         if(consume){
-            if(this.def.reload)this.ammo--
+            if(this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload!.ammo_consume??1))
             if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
         }
         const position=v2.add(

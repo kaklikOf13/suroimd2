@@ -1,9 +1,11 @@
+import { Ammos } from "../definitions/items/ammo.ts";
 import { type GunDef, Guns } from "../definitions/items/guns.ts";
 import { type MeleeDef, Melees } from "../definitions/items/melees.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
 import { v2, Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
+import { Numeric } from "../engine/utils.ts";
 import { ActionsType } from "../others/constants.ts";
 export interface DamageSplash{
     count:number
@@ -63,6 +65,7 @@ export interface PrivateUpdate{
     current_weapon?:{
         slot:number
         ammo:number
+        liquid:boolean
     }
 
     deadzone?:DeadZoneUpdate
@@ -85,7 +88,8 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         priv.dirty.ammos,
         priv.action!==undefined,
         priv.damages!==undefined,
-        priv.deadzone!==undefined
+        priv.deadzone!==undefined,
+        priv.current_weapon?.liquid
     )
     if(priv.dirty.inventory){
         stream.writeArray<InventoryItemData>(priv.inventory!,(i)=>{
@@ -101,7 +105,11 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     }
     if(priv.dirty.current_weapon){
         stream.writeInt8(priv.current_weapon!.slot)
-        stream.writeUint16(priv.current_weapon!.ammo)
+        if(priv.current_weapon!.liquid){
+            stream.writeFloat32(Numeric.maxDecimals(priv.current_weapon!.ammo,1))
+        }else{
+            stream.writeUint16(priv.current_weapon!.ammo)
+        }
     }
     if(priv.dirty.action&&priv.action){
         stream.writeFloat(priv.action.delay,0,20,3)
@@ -118,8 +126,13 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     }
     if(priv.dirty.ammos){
         stream.writeArray(Object.entries(priv.ammos),(i)=>{
+            const def=Ammos.getFromNumber(i[0] as unknown as number)
             stream.writeUint8(i[0] as unknown as number)
-            stream.writeUint16(i[1] as unknown as number)
+            if(def.liquid){
+                stream.writeFloat32(Numeric.maxDecimals(i[1],1))
+            }else{
+                stream.writeUint16(i[1] as unknown as number)
+            }
         },1)
     }
     if(priv.deadzone){
@@ -151,7 +164,8 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         dirtyAmmos,
         hasAction,
         hasDamages,
-        deadZone
+        deadZone,
+        liquid
     ]=stream.readBooleanGroup2()
     priv.dirty={
         inventory:dirtyInventory,
@@ -184,7 +198,8 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     if(dirtyCurrentWeapon){
         priv.current_weapon={
             slot:stream.readInt8(),
-            ammo:stream.readUint16()
+            ammo:liquid?Numeric.maxDecimals(stream.readFloat32(),1):stream.readUint16(),
+            liquid:liquid
         }
     }
     if(dirtyAction){
@@ -214,7 +229,12 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         const len=stream.readUint8()
         priv.ammos={}
         for(let i=0;i<len;i++){
-            priv.ammos[stream.readUint8()]=stream.readUint16()
+            const def=Ammos.getFromNumber(stream.readUint8())
+            if(def.liquid){
+                priv.ammos[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
+            }else{
+                priv.ammos[def.idNumber!]=stream.readUint16()
+            }
         }
     }
     if(deadZone){
@@ -262,7 +282,8 @@ export class UpdatePacket extends Packet{
         action:undefined,
         current_weapon:{
             ammo:0,
-            slot:0
+            slot:0,
+            liquid:false
         },
         damages:[],
         inventory:undefined,

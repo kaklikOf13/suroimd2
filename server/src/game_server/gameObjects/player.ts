@@ -7,7 +7,7 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { DamageParams } from "../others/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
 import { type PlayerModifiers } from "common/scripts/others/constants.ts";
@@ -24,6 +24,7 @@ import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/b
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { BotAi } from "../player/simple_bot_ai.ts";
 import { EmoteDef, Emotes } from "common/scripts/definitions/loadout/emotes.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -469,7 +470,11 @@ export class Player extends ServerGameObject{
                         break
                     case InputActionType.debug_spawn:
                         if(this.game.debug.debug_menu){
-                            this.game.add_loot(this.position,GameItems.valueString[a.item],a.count,this.layer)
+                            const l=GameItems.valueString[a.item]
+                            this.game.add_loot(this.position,l,a.count,this.layer)
+                            if(l.item_type===InventoryItemType.gun){
+                                this.game.add_loot(this.position,Ammos.getFromString((l as unknown as GunDef).ammoType) as unknown as GameItem,((l as unknown as GunDef).ammoSpawnAmount??0)*a.count)
+                            }
                         }
                         break
                 }
@@ -543,9 +548,18 @@ export class Player extends ServerGameObject{
                 gun1:this.inventory.weapons[1]?.def,
                 gun2:this.inventory.weapons[2]?.def,
             }
-            up.priv.current_weapon={
-                slot:this.inventory.weaponIdx,
-                ammo:(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun")?(this.inventory.currentWeapon as GunItem).ammo:0
+            if(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun"){
+                up.priv.current_weapon={
+                    slot:this.inventory.weaponIdx,
+                    liquid:(this.inventory.currentWeapon as GunItem).liquid,
+                    ammo:(this.inventory.currentWeapon as GunItem).ammo
+                }
+            }else{
+                up.priv.current_weapon={
+                    slot:this.inventory.weaponIdx,
+                    liquid:false,
+                    ammo:0
+                }
             }
             if(this.privateDirtys.ammos){
                 for(const a of Object.keys(this.inventory.ammos)){

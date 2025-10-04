@@ -19,7 +19,9 @@ __                                                                              
 __                                                                                                      __
 ### Items
 * Explosive Ammo - A New Ammo
+* Gasoline - A New Ammo And Liquid
 * RPG-7 - A Rocket Launcher When use Explosive Ammo
+* M2-2 - A Flamethrower
 * Projectiles Return
 __                                                                                                      __
 ### Keys And Controls

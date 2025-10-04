@@ -79,6 +79,7 @@ export type GunDef={
             delay:number
             shotsPerReload?:number
         }
+        ammo_consume?:number
     }
     recoil?:{
         duration:number
@@ -696,15 +697,28 @@ Guns.insert(
     },
     {
         idString:"rpg7",
-        fireDelay:1.4,
+        fireDelay:0.1,
         spread:0.2,
         lenght:1,
         size:6,
         ammoType:"explosive_ammo",
-        fireMode:FireMode.Single,
+        fireMode:FireMode.Auto,
         class:GunClasses.Miscellaneous,
         quality:ItemQuality.Legendary,
         ammoSpawnAmount:11,
+        gasParticles:{
+            count:10,
+            life_time:1.2,
+            speed:{
+                min:1,
+                max:2
+            },
+            direction_variation:0.4,
+            size:{
+                min:0.6,
+                max:2,
+            }
+        },
         bullet:{
             def:{
                 damage:20,
@@ -730,14 +744,57 @@ Guns.insert(
             }
         },
         reload:{
-            delay:2,
-            capacity:1,
+            delay:0.1,
+            capacity:100,
         },
         recoil:{
             duration:1.45,
             speed:0.25
         },
         speed_mod:0.5,
+    },
+    {
+        idString:"m2-2",
+        fireDelay:0.07,
+        spread:3,
+        lenght:1,
+        size:6,
+        ammoType:"gasoline",
+        fireMode:FireMode.Auto,
+        class:GunClasses.Miscellaneous,
+        quality:ItemQuality.Mythic,
+        ammoSpawnAmount:15.2,
+        bullet:{
+            def:{
+                damage:1,
+                radius:0.2,
+                range:28,
+                falloff:0.4,
+                speed:30,
+                criticalMult:4,
+                obstacleMult:5,
+                tracer:{
+                    height:6,
+                    width:6,
+                    proj:{
+                        img:0,
+                        height:1,
+                        width:1
+                    },
+                },
+            },
+            count:3
+        },
+        reload:{
+            delay:5,
+            capacity:7.6,
+            ammo_consume:0.03,
+        },
+        recoil:{
+            duration:1.45,
+            speed:0.46
+        },
+        speed_mod:0.6,
     },
     /*{
         idString:"bomb_staff",

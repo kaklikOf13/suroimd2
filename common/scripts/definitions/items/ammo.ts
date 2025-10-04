@@ -9,6 +9,8 @@ export interface AmmoDef extends Definition{
     defaultProj:number
     strongProj:number
     ammoType:string
+
+    liquid?:boolean
     drop_count?:number
 }
 export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
@@ -90,6 +92,16 @@ Ammos.insert(
         strongTrail:0x2b402b,
         defaultProj:0xefef9f,
         strongProj:0xefef33,
+        tint:0x001330,
+    },
+    {
+        idString:"gasoline",
+        ammoType:"gasoline",
+        defaultTrail:0xefef33,
+        strongTrail:0x889fcb,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        liquid:true,
         tint:0x001330,
     },
     {

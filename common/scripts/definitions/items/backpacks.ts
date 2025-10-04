@@ -28,6 +28,7 @@ Backpacks.insert(
             "50cal":50,
             "308sub":10,
             "explosive_ammo":5,
+            "gasoline":5,
 
             "frag_grenade":2,
 
@@ -66,6 +67,7 @@ Backpacks.insert(
             "50cal":80,
             "308sub":20,
             "explosive_ammo":10,
+            "gasoline":10,
 
             "frag_grenade":5,
 
@@ -103,6 +105,7 @@ Backpacks.insert(
             "308sub":30,
             "50cal":130,
             "explosive_ammo":15,
+            "gasoline":15,
 
             "frag_grenade":8,
             
@@ -140,6 +143,7 @@ Backpacks.insert(
             "308sub":40,
             "50cal":160,
             "explosive_ammo":20,
+            "gasoline":20,
 
             "frag_grenade":12,
             

@@ -659,10 +659,12 @@ export class GuiManager{
         const ack=Object.keys(this.ammos_cache.normal)
         if(ack.length===ak.length&&ack.length>0){
             for(const a of ak){
+                const def=Ammos.getFromString(a)
+                const c=`${ammos[a]}${def.liquid?"l":""}`
                 const c1=this.ammos_cache.normal[a].querySelector(".count") as HTMLSpanElement
-                c1.innerText=`${ammos[a]}`
+                c1.innerText=`${c}`
                 const c2=this.ammos_cache.all[a].querySelector(".slot-count") as HTMLSpanElement
-                c2.innerText=`${ammos[a]}`
+                c2.innerText=`${c}`
             }
         }else{
             const dropA=(a:number)=>{
@@ -682,14 +684,15 @@ export class GuiManager{
             this.ammos_cache={all:{},normal:{}}
             for(const a of ak){
                 const def=Ammos.getFromString(a)
+                const c=`${ammos[a]}${def.liquid?"l":""}`
                 const htm=`<div class="ammo-slot" id="ammo-${a}">
                     <image class="icon" src="img/game/common/items/ammos/${a}.svg"></image>
-                    <span class="count">${ammos[a]}</span>
+                    <span class="count">${c}</span>
                 </div>`
                 
                 const htm2=`<div class="inventory-item-slot" id="ammo-all-${a}">
                     <img class="slot-image" src="img/game/common/items/ammos/${a}.svg"></img>
-                    <span class="slot-count">${ammos[a]}</span>
+                    <span class="slot-count">${c}</span>
                 </div>`
 
                 this.content.ammos.insertAdjacentHTML("beforeend", htm);
