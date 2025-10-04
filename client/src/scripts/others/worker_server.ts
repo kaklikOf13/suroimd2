@@ -11,7 +11,7 @@ import { type GameItem } from "common/scripts/definitions/utils.ts";
 import { Melees } from "common/scripts/definitions/items/melees.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 self.onerror = (e) => {
-  console.error("Worker error:", e);
+    console.error("Worker error:", e)
 };
 self.onmessage = (ev) => {
     const msg = ev.data;

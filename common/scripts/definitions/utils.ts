@@ -30,6 +30,7 @@ export enum InventoryItemType{
     ammo,
     consumible,
     equipament,
+    projectile,
     other,
     melee,
     accessorie,

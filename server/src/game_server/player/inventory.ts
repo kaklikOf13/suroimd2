@@ -12,13 +12,15 @@ import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { Projectiles } from "common/scripts/definitions/projectiles.ts";
+import { ProjectileDef, Projectiles } from "../../../../common/scripts/definitions/objects/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
 import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { InventoryGift } from "../others/gamemode.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/equipaments.ts";
+import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 export abstract class LItem extends Item{
     abstract on_use(user:Player,slot?:LItem):void
     abstract update(user:Player):void
@@ -162,14 +164,12 @@ export class GunItem extends LItem{
 }
 export class AmmoItem extends LItem{
     def:AmmoDef
-    cap: number
     itemType: InventoryItemType.ammo=InventoryItemType.ammo
 
     type="ammo"
     constructor(def:AmmoDef,droppable=true){
         super()
         this.def=def
-        this.cap=def.size
         this.droppable=droppable
         this.tags.push("ammo",`ammo_${this.def.ammoType}`)
     }
@@ -240,8 +240,31 @@ export class OtherItem extends LItem{
     is(other: LItem): boolean {
         return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
     }
-    on_use(_user: Player,_slot:SlotCap): void {
+    on_use(user: Player,_slot?:LItem): void {
+        
+    }
+    update(_user: Player): void {
       
+    }
+}
+export class ProjectileItem extends LItem{
+    def:ProjectileDef
+    itemType: InventoryItemType.projectile=InventoryItemType.projectile
+    inventory:GInventory
+
+    type="projectile"
+    constructor(def:ProjectileDef,droppable:boolean=true,inventory:GInventory){
+        super()
+        this.def=def
+        this.droppable=droppable
+        this.inventory=inventory
+    }
+    is(other: LItem): boolean {
+        return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
+    }
+    on_use(user: Player,_slot?:LItem): void {
+        const proj=user.game.add_projectile(user.position,this.def,user,user.layer)
+        proj.throw_projectile(user.rotation,this.def.throw_max_speed)
     }
     update(_user: Player): void {
       
@@ -497,11 +520,77 @@ export class GInventory extends Inventory<LItem>{
                 this.owner.privateDirtys.inventory=true
                 break
             }
-            case InventoryItemType.equipament:
+            case InventoryItemType.projectile:{
+                const item=new ProjectileItem(def as unknown as ProjectileDef,undefined,this)
+                item.limit_per_slot=this.backpack.max[item.def.idString]??15
+                const ov=this.add(item,count)
+                if(ov){
+                  this.owner.game.add_loot(this.owner.position,def,ov)
+                }
+                this.owner.privateDirtys.inventory=true
                 break
-            /*case InventoryItemType.other:
-                this.add(new OtherItem(def as unknown as OtherDef,droppable),count)
-                break*/
+            }
+            case InventoryItemType.equipament:{
+                const d=def as unknown as EquipamentDef
+                switch(d.type){
+                    case EquipamentType.Helmet:
+                        if(!this.owner.helmet){
+                            this.owner.helmet=d
+                            this.owner.dirty=true
+                            return count-1
+                        }else if(this.owner.helmet.level<d.level){
+                            this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
+                            this.owner.helmet=d
+                            this.owner.dirty=true
+                            return count-1
+                        }
+                        break
+                    case EquipamentType.Vest:
+                        if(!this.owner.vest){
+                            this.owner.vest=d
+                            this.owner.dirty=true
+                            return count-1
+                        }else if(this.owner.vest.level<d.level){
+                            this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
+                            this.owner.vest=d
+                            this.owner.dirty=true
+                            return count-1
+                        }
+                        break
+                }
+                break
+            }
+            case InventoryItemType.backpack:{
+                const d=def as unknown as BackpackDef
+                if(this.backpack.level<d.level){
+                    this.owner.dirty=true
+                    this.set_backpack(d)
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.gun:{
+                const d=def as unknown as GunDef
+                const g=this.give_gun(d)
+                return g?count-1:count
+            }
+            case InventoryItemType.melee:{
+                this.set_weapon(0,def as unknown as MeleeDef)
+                return count-1
+            }
+            case InventoryItemType.skin:{
+                if(this.owner.skin.idString!==def.idString){
+                    this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+                    this.owner.skin=def as unknown as SkinDef
+                    this.owner.dirty=true
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.accessorie:
+                break
+            case InventoryItemType.scope:
+                break
         }
         this.owner.privateDirtys.inventory=true
         return count

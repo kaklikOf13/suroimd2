@@ -29,6 +29,8 @@ Backpacks.insert(
             "308sub":10,
             "explosive_ammo":5,
 
+            "frag_grenade":2,
+
             "gauze":5,
             "soda":2,
             "small_blue_potion":2,
@@ -65,6 +67,8 @@ Backpacks.insert(
             "308sub":20,
             "explosive_ammo":10,
 
+            "frag_grenade":5,
+
             "gauze":10,
             "soda":4,
             "small_blue_potion":3,
@@ -99,6 +103,8 @@ Backpacks.insert(
             "308sub":30,
             "50cal":130,
             "explosive_ammo":15,
+
+            "frag_grenade":8,
             
             "gauze":15,
             "soda":8,
@@ -134,6 +140,8 @@ Backpacks.insert(
             "308sub":40,
             "50cal":160,
             "explosive_ammo":20,
+
+            "frag_grenade":12,
             
             "gauze":30,
             "soda":16,

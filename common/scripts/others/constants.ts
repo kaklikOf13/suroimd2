@@ -23,6 +23,7 @@ export const GameConstants={
             weapon:0.54,
             consumible:0.4,
             equipament:0.4,
+            projectile:0.4,
             skin:0.45
         }
     },

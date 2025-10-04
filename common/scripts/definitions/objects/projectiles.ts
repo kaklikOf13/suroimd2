@@ -1,8 +1,7 @@
-import { Definitions,Definition } from "../engine/mod.ts"
+import { Definitions,Definition } from "../../engine/mod.ts"
+import { GameItem, InventoryItemType } from "../utils.ts";
 
 export type ProjectileDef={
-    size:number
-
     explosion?:string
 
     gravity:number
@@ -19,6 +18,7 @@ export type ProjectileDef={
         allow_hand:boolean
         fuse_time:number
     }
+    throw_max_speed?:number
 
     frames:{
         world:string
@@ -27,7 +27,9 @@ export type ProjectileDef={
     destroy_on_collide?:boolean
     collision_damage?:number
 }&Definition
-export const Projectiles=new Definitions<ProjectileDef,null>((_v)=>{})
+export const Projectiles=new Definitions<ProjectileDef,GameItem>((v)=>{
+    v.item_type=InventoryItemType.projectile
+})
 Projectiles.insert(
     {
         idString:"frag_grenade",
@@ -39,8 +41,6 @@ Projectiles.insert(
             ground_rotation:1,
             ground_speed:1
         },
-        size:0.9,
-        
         cook:{
             allow_hand:false,
             fuse_time:8
@@ -48,7 +48,6 @@ Projectiles.insert(
         explosion:"frag_grenade_explosion",
         frames:{
             world:"proj_frag"
-            
         }
     },
     //Mirv
@@ -62,8 +61,6 @@ Projectiles.insert(
             ground_rotation:1,
             ground_speed:1
         },
-        size:1.1,
-        
         cook:{
             allow_hand:false,
             fuse_time:8
@@ -84,8 +81,6 @@ Projectiles.insert(
             ground_rotation:3,
             ground_speed:3
         },
-        size:0.3,
-        
         cook:{
             allow_hand:false,
             fuse_time:2
@@ -105,7 +100,6 @@ Projectiles.insert(
             ground_rotation:1,
             ground_speed:1
         },
-        size:0.9,
         destroy_on_collide:true,
         cook:{
             allow_hand:false,
@@ -126,7 +120,6 @@ Projectiles.insert(
             ground_rotation:1,
             ground_speed:1
         },
-        size:0.9,
         destroy_on_collide:true,
         collision_damage:30,
         cook:{

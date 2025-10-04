@@ -93,7 +93,7 @@ export class Bullet extends ServerGameObject{
                         if(!col2)continue
                         const od=(obj as Obstacle).health;
                         (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                        if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3){
+                        if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3&&!this.defs.on_hit_explosion){
                             const rotation = 2 * Math.atan2(col2.normal.y, col2.normal.x) - this.angle
                             this.position = v2.add(this.position, v2.new(Math.sin(rotation), -Math.cos(rotation)))
                             this.reflect(rotation)
@@ -101,7 +101,7 @@ export class Bullet extends ServerGameObject{
                         this.on_hit()
                         if((obj as Obstacle).dead){
                             this.damage-=od*(this.defs.obstacleMult??1)
-                            if(this.damage>0&&!(obj as Obstacle).def.reflectBullets){
+                            if(this.damage>0&&!(obj as Obstacle).def.reflectBullets&&!this.defs.on_hit_explosion){
                                 this.game.add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
                             }
                         }
