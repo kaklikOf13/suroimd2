@@ -136,7 +136,7 @@ Melees.insert(
         radius:0.5,
         size:0,
         attack_delay:0.2,
-        damage_delays:[0.1],
+        damage_delays:[0.11],
         arms:{
             right:{
                 position:DefaultFistRig.right!.position,
@@ -163,7 +163,7 @@ Melees.insert(
                 ]
             },
             {
-                time:0.09,
+                time:0.1,
                 actions:[
                     {
                         fuser:"weapon",
@@ -226,7 +226,7 @@ Melees.insert(
         attack_delay:0.8,
         damage_delays:[0.6],
         arms:{
-            right:{
+            right:{ 
                 position:DefaultFistRig.right!.position,
                 rotation:DefaultFistRig.right!.rotation,
                 zIndex:2,

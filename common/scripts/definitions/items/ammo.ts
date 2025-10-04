@@ -3,7 +3,6 @@ import { ItemQuality } from "../../others/item.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 
 export interface AmmoDef extends Definition{
-    size:number
     tint:number
     defaultTrail:number
     strongTrail:number
@@ -26,7 +25,6 @@ Ammos.insert(
         defaultProj:0xcfada0,
         strongProj:0xdb2218,
         tint:0xff0000,
-        size:0.01,
         drop_count:15,
     },
     {
@@ -37,7 +35,6 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x0000ff,
-        size:0.0029,
     },
     {
         idString:"556mm",
@@ -47,7 +44,6 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x00ff00,
-        size:0.0029,
     },
     {
         idString:"9mm",
@@ -57,7 +53,6 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0xffff00,
-        size:0.0015,
     },
     {
         idString:"22lr",
@@ -67,7 +62,6 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0xffffff,
-        size:0.001,
     },
     //Anothers
     {
@@ -78,7 +72,6 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x000000,
-        size:0.013,
     },
     {
         idString:"308sub",
@@ -88,18 +81,16 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x001330,
-        size:0.08,
         drop_count:10,
     },
     {
-        idString:"40mm",
-        ammoType:"40mm",
-        defaultTrail:0x889fcb,
-        strongTrail:0x009fcb,
+        idString:"explosive_ammo",
+        ammoType:"explosive_ammo",
+        defaultTrail:0x616d61,
+        strongTrail:0x2b402b,
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x001330,
-        size:0.09,
     },
     {
         idString:"mana_mm",
@@ -109,6 +100,5 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x001330,
-        size:0.09,
     }
 )

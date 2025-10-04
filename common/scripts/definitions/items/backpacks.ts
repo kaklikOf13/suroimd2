@@ -22,9 +22,12 @@ Backpacks.insert(
         max:{
             "12g":15,
             "9mm":120,
+            "22lr":150,
             "762mm":100,
             "556mm":100,
+            "50cal":50,
             "308sub":10,
+            "explosive_ammo":5,
 
             "gauze":5,
             "soda":2,
@@ -55,9 +58,12 @@ Backpacks.insert(
         max:{
             "12g":30,
             "9mm":240,
+            "22lr":300,
             "762mm":190,
             "556mm":190,
+            "50cal":80,
             "308sub":20,
+            "explosive_ammo":10,
 
             "gauze":10,
             "soda":4,
@@ -87,9 +93,12 @@ Backpacks.insert(
         max:{
             "12g":60,
             "9mm":320,
+            "22lr":400,
             "762mm":250,
             "556mm":250,
             "308sub":30,
+            "50cal":130,
+            "explosive_ammo":15,
             
             "gauze":15,
             "soda":8,
@@ -119,9 +128,12 @@ Backpacks.insert(
         max:{
             "12g":90,
             "9mm":400,
+            "22lr":500,
             "762mm":310,
             "556mm":310,
             "308sub":40,
+            "50cal":160,
+            "explosive_ammo":20,
             
             "gauze":30,
             "soda":16,
