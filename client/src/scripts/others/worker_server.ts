@@ -39,7 +39,7 @@ self.onmessage = (ev) => {
             //bot.vest=Armors.getFromString("regular_vest")
             bot.vest=Armors.getFromString("tactical_vest")
             bot.helmet=Armors.getFromString(random.choose(["basic_helmet","regular_helmet","tactical_helmet"]))
-            bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,10)
+            bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,4)
             bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,4)
             bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,4)
             bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,4)

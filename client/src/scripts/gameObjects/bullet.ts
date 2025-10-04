@@ -1,6 +1,6 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
-import { Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
-import { BaseGameObject2D, CircleHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts";
+import { ABParticle2D, Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
+import { BaseGameObject2D, CircleHitbox2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { type Player } from "./player.ts";
@@ -8,7 +8,11 @@ import { ColorM, Renderer } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Creature } from "./creature.ts";
 const images=[
-    "bullet_normal"
+    "bullet_normal",
+    "bullet_rocket"
+]
+const particles=[
+    "gas_smoke_particle"
 ]
 export class Bullet extends GameObject{
     stringType:string="bullet"
@@ -40,6 +44,9 @@ export class Bullet extends GameObject{
     dying:boolean=false
 
     dts:Vec2=v2.new(0,0)
+
+    particles=0
+    par_time=0
 
     private tticks:number=0
     update(dt:number): void {
@@ -80,6 +87,32 @@ export class Bullet extends GameObject{
                         break
                 }
             }
+
+            if(this.particles>0){
+                this.par_time-=dt
+                if(this.par_time<=0){
+                    const p=new ABParticle2D({
+                        direction:random.rad(),
+                        life_time:0.9,
+                        position:this.position,
+                        frame:{
+                            image:particles[this.particles-1],
+                            hotspot:v2.new(.5,.5)
+                        },
+                        speed:random.float(0.5,1.2),
+                        angle:0,
+                        scale:0.1,
+                        tint:ColorM.hex("#fff5"),
+                        to:{
+                            tint:ColorM.hex("#fff0"),
+                            scale:1
+                        }
+                    })
+                    this.game.particles.add_particle(p)
+                    this.par_time=0.01
+                }
+            }
+
             this.old_position=v2.duplicate(this.position)
         }
 
@@ -141,6 +174,7 @@ export class Bullet extends GameObject{
                 this.sprite_projectile.frame=this.game.resources.get_sprite(images[data.full.projIMG-1])
                 this.sprite_projectile.visible=true
             }
+            this.particles=data.full.projParticle
             this.container.visible=true
         }
     }

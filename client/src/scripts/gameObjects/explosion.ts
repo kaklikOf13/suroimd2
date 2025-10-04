@@ -1,6 +1,6 @@
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
-import { ExplosionDef, Explosions } from "common/scripts/definitions/explosions.ts";
+import { ExplosionDef, Explosions } from "../../../../common/scripts/definitions/objects/explosions.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Sprite2D } from "../engine/container_2d.ts";
@@ -37,7 +37,7 @@ export class Explosion extends GameObject{
         super()
         this.sprite.visible=false
         this.sprite.hotspot=v2.new(.5,.5)
-        this.sprite.size=v2.new(200,200)
+        this.sprite.size=v2.new(300,300)
     }
     override updateData(data:ExplosionData){
         if(this.def)return
@@ -47,5 +47,9 @@ export class Explosion extends GameObject{
         this.maxRadius=data.radius
         this.sprite.position=this.position
         this.sprite.visible=true
+
+        if(this.def.sounds)this.game.sounds.play(this.game.resources.get_audio(this.def.sounds.normal),{
+
+        },"explosions")
     }
 }

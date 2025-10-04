@@ -586,7 +586,7 @@ export class Player extends GameObject{
                         scale:0.03,
                         tint:ColorM.hex("#fff5"),
                         to:{
-                        tint:ColorM.hex("#fff0"),
+                            tint:ColorM.hex("#fff0"),
                             scale:random.float(d.gasParticles.size.min,d.gasParticles.size.max)
                         }
                     })

@@ -10,6 +10,9 @@ export interface BulletDef{
     tracer:{
         width:number
         height:number
+        particles?:{
+            frame:number
+        }
         proj:{
             img:number
             width:number
@@ -20,6 +23,7 @@ export interface BulletDef{
     }
     obstacleMult?:number
     criticalMult?:number
+    on_hit_explosion?:string
 }
 export enum InventoryItemType{
     gun,

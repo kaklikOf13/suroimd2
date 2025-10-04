@@ -30,6 +30,7 @@ export enum GunClasses{
     SMG,
     DMR,
     LMG,
+    Miscellaneous,
     Magic,
 }
 export interface MuzzleFlash{
@@ -692,6 +693,51 @@ Guns.insert(
         },
         speed_mod:1,
         gasParticles:GasParticles.shotgun
+    },
+    {
+        idString:"rpg7",
+        fireDelay:1.4,
+        spread:0.2,
+        lenght:1,
+        size:6,
+        ammoType:"explosive_ammo",
+        fireMode:FireMode.Single,
+        class:GunClasses.Miscellaneous,
+        quality:ItemQuality.Legendary,
+        ammoSpawnAmount:11,
+        bullet:{
+            def:{
+                damage:20,
+                radius:0.2,
+                range:100,
+                falloff:0.5,
+                on_hit_explosion:"rocket_explosion",
+                speed:22,
+                criticalMult:1.2,
+                obstacleMult:3,
+                tracer:{
+                    height:2,
+                    width:2,
+                    particles:{
+                        frame:1
+                    },
+                    proj:{
+                        img:2,
+                        width:4,
+                        height:4,
+                    },
+                }
+            }
+        },
+        reload:{
+            delay:2,
+            capacity:1,
+        },
+        recoil:{
+            duration:1.45,
+            speed:0.25
+        },
+        speed_mod:0.5,
     },
     /*{
         idString:"bomb_staff",

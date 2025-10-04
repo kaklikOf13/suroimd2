@@ -1,6 +1,6 @@
-import { Definitions,Definition } from "../engine/mod.ts"
-import { tracers } from "../others/item.ts";
-import { BulletDef } from "./utils.ts";
+import { Definitions,Definition } from "../../engine/mod.ts"
+import { tracers } from "../../others/item.ts";
+import { BulletDef } from "../utils.ts";
 
 export type ExplosionDef={
     size:{
@@ -12,6 +12,9 @@ export type ExplosionDef={
     bullet?:{
         def:BulletDef
         count:number
+    }
+    sounds?:{
+        normal:string
     }
     projectiles?:{
         def:string
@@ -28,9 +31,9 @@ Explosions.insert(
         tint:"#445",
         size:{
             min:2,
-            max:3
+            max:2.5
         },
-        damage:99,
+        damage:100,
         bullet:{
             def:{
                 damage:7,
@@ -41,6 +44,18 @@ Explosions.insert(
             },
             count:6
         }
+    },
+    {
+        idString:"rocket_explosion",
+        tint:"#445",
+        size:{
+            min:1,
+            max:2
+        },
+        sounds:{
+            normal:"explosion_1"
+        },
+        damage:90,
     },
     {
         idString:"frag_grenade_explosion",

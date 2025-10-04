@@ -16,6 +16,10 @@ __                                                                              
 * Debug Menu (Press Delete Or R3 To Access)
 * Fps Analizer
 __                                                                                                      __
+### Items
+* Explosive Ammo - A New Ammo
+* RPG-7 - A Rocket Launcher When use Explosive Ammo
+__                                                                                                      __
 ### Keys And Controls
 * Swamp Guns Slot (Use F)
 __                                                                                                      __

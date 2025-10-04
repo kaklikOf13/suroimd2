@@ -8,7 +8,7 @@ import { Accessories, Armors } from "./items/equipaments.ts";
 import { MeleeDef, Melees } from "./items/melees.ts";
 import { Backpacks } from "./items/backpacks.ts";
 import { Obstacles, type ObstacleDef } from "./objects/obstacles.ts";
-import { ExplosionDef, Explosions } from "./explosions.ts";
+import { ExplosionDef, Explosions } from "./objects/explosions.ts";
 import { Skins } from "./loadout/skins.ts";
 
 export const GameItems=new DefinitionsMerge<GameItem>()

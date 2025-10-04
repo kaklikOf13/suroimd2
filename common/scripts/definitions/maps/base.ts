@@ -88,9 +88,10 @@ LootTables.add_tables({
     "legendary_guns":[
         {item:"awms",weight:1},
         {item:"pfeifer_zeliska",weight:1},
+        {item:"rpg7",weight:0.8},
     ],
     "guns":[
-        {table:"common_guns",weight:25},
+        {table:"common_guns",weight:27},
         {table:"uncommon_guns",weight:25},
         {table:"rare_guns",weight:17},
         {table:"epic_guns",weight:1},

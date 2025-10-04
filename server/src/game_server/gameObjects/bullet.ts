@@ -7,6 +7,7 @@ import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";
+import { Explosions } from "../../../../common/scripts/definitions/objects/explosions.ts";
 
 export class Bullet extends ServerGameObject{
     velocity:Vec2
@@ -42,6 +43,12 @@ export class Bullet extends ServerGameObject{
     interact(_user: Player): void {
       return
     }
+    on_hit(){
+        if(this.defs.on_hit_explosion){
+            this.game.add_explosion(this.position,Explosions.getFromString(this.defs.on_hit_explosion),this.owner,this.source,this.layer)
+        }
+        this.destroy()
+    }
     update(dt:number): void {
         if(v2.distance(this.initialPosition,this.position)>this.maxDistance){
             this.destroy()
@@ -61,7 +68,7 @@ export class Bullet extends ServerGameObject{
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
                         *(this.critical?(this.defs.criticalMult??1.25):1);
                         (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                        this.destroy()
+                        this.on_hit()
                         break
                     }
                     break
@@ -72,7 +79,7 @@ export class Bullet extends ServerGameObject{
                         *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
                         *(this.critical?(this.defs.criticalMult??1.25):1);
                         (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                        this.destroy()
+                        this.on_hit()
                         break
                     }
                     break
@@ -91,7 +98,7 @@ export class Bullet extends ServerGameObject{
                             this.position = v2.add(this.position, v2.new(Math.sin(rotation), -Math.cos(rotation)))
                             this.reflect(rotation)
                         }
-                        this.destroy()
+                        this.on_hit()
                         if((obj as Obstacle).dead){
                             this.damage-=od*(this.defs.obstacleMult??1)
                             if(this.damage>0&&!(obj as Obstacle).def.reflectBullets){
@@ -153,7 +160,8 @@ export class Bullet extends ServerGameObject{
                 projWidth:this.defs.tracer.proj.width,
                 projHeight:this.defs.tracer.proj.height*this.modifiers.size,
                 projColor:this.projColor,
-                projIMG:this.defs.tracer.proj.img
+                projIMG:this.defs.tracer.proj.img,
+                projParticle:this.defs.tracer.particles?.frame??0
             }
         }
     }

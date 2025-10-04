@@ -5,7 +5,7 @@
    height="58"
    viewBox="0,0,58,58"
    id="svg5"
-   sodipodi:docname="sad.svg"
+   sodipodi:docname="emote_sad.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    inkscape:export-filename="happy.png"
    inkscape:export-xdpi="423.72415"
@@ -26,14 +26,14 @@
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#000000"
      inkscape:zoom="9.8385376"
-     inkscape:cx="34.354699"
-     inkscape:cy="32.880903"
+     inkscape:cx="34.40552"
+     inkscape:cy="41.012193"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g5" />
+     inkscape:current-layer="svg5" />
   <g
      transform="translate(-213.9774,-147.29997)"
      id="g5">
@@ -54,7 +54,7 @@
          stroke-linecap="butt"
          id="path1"
          sodipodi:nodetypes="sssss"
-         style="fill:#fb001d;fill-opacity:0.118896;stroke:#9a0013;stroke-opacity:1" />
+         style="fill:#9c0012;fill-opacity:0.2331048;stroke:#9a0013;stroke-opacity:1" />
     </g>
     <g
        id="g2"

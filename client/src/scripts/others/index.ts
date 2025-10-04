@@ -26,6 +26,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
         "music":1,
         "loot":1,
         "obstacles":1,
+        "explosions":1,
         "ambience":1
     }
 

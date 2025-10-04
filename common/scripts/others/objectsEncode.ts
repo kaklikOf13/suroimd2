@@ -57,6 +57,7 @@ export interface BulletData extends EncodedData{
         projHeight:number
         projColor:number
         projIMG:number
+        projParticle:number
 
         radius:number
         initialPos:Vec2
@@ -263,7 +264,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     projWidth:stream.readFloat(0,6,2),
                     projHeight:stream.readFloat(0,6,2),
                     projColor:stream.readUint32(),
-                    projIMG:stream.readUint8()
+                    projIMG:stream.readUint8(),
+                    projParticle:stream.readUint8()
                 }
             }
             return ret
@@ -286,6 +288,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 .writeFloat(data.full!.projHeight,0,6,2)
                 .writeUint32(data.full!.projColor)
                 .writeUint8(data.full!.projIMG)
+                .writeUint8(data.full!.projParticle)
             }
         }
     },
