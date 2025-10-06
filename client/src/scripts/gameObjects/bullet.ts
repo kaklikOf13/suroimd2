@@ -114,6 +114,7 @@ export class Bullet extends GameObject{
             }
 
             this.old_position=v2.duplicate(this.position)
+            this.container.position=this.position
         }
 
         const traveledDistance = v2.distance(this.initialPosition, this.position)
@@ -163,7 +164,6 @@ export class Bullet extends GameObject{
             this.maxLength=data.full.tracerWidth
             this.sprite_trail.tint=ColorM.number(data.full.tracerColor)
 
-            this.container.position=this.position
             this.sprite_trail.scale.x=0
 
             this.sprite_projectile.scale.x=data.full.projWidth

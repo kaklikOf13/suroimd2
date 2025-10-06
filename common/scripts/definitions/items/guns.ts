@@ -697,7 +697,7 @@ Guns.insert(
     },
     {
         idString:"rpg7",
-        fireDelay:0.1,
+        fireDelay:1,
         spread:0.2,
         lenght:1,
         size:6,
@@ -723,7 +723,7 @@ Guns.insert(
             def:{
                 damage:20,
                 radius:0.2,
-                range:100,
+                range:220,
                 falloff:0.5,
                 on_hit_explosion:"rocket_explosion",
                 speed:22,
@@ -744,8 +744,8 @@ Guns.insert(
             }
         },
         reload:{
-            delay:0.1,
-            capacity:100,
+            delay:2,
+            capacity:1,
         },
         recoil:{
             duration:1.45,
@@ -767,6 +767,10 @@ Guns.insert(
         bullet:{
             def:{
                 damage:1,
+                effect:[{
+                    id:"fire",
+                    time:5
+                }],
                 radius:0.2,
                 range:28,
                 falloff:0.4,

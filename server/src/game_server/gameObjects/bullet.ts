@@ -7,7 +7,8 @@ import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";
-import { Explosions } from "../../../../common/scripts/definitions/objects/explosions.ts";
+import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
+import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 
 export class Bullet extends ServerGameObject{
     velocity:Vec2
@@ -69,6 +70,15 @@ export class Bullet extends ServerGameObject{
                         *(this.critical?(this.defs.criticalMult??1.25):1);
                         (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         this.on_hit()
+                        if(this.defs.effect){
+                            for(const e of this.defs.effect){
+                                (obj as Player).side_effect({
+                                    type:SideEffectType.AddEffect,
+                                    duration:e.time,
+                                    effect:e.id
+                                })
+                            }
+                        }
                         break
                     }
                     break

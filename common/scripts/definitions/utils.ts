@@ -7,6 +7,7 @@ export interface BulletDef{
     range:number
     speed:number
     radius:number
+    effect?:{id:string,time:number}[]
     tracer:{
         width:number
         height:number

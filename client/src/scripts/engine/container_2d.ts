@@ -19,6 +19,8 @@ export abstract class Container2DObject {
 
     parent?: Container2D;
     _zIndex: number = 0;
+
+    has_update:boolean=false
     get zIndex():number{
         return this._zIndex
     }
@@ -31,10 +33,81 @@ export abstract class Container2DObject {
 
     id_on_parent:number=0
 
-    position: Vec2 = v2.new(0, 0);
-    scale: Vec2 = v2.new(1, 1);
-    rotation: number = 0;
-    tint: Color = ColorM.default.white;
+    _position: Vec2 = v2.new(0, 0);
+    get position(): Vec2 {
+        // deno-lint-ignore no-this-alias
+        const self = this;
+        return new Proxy(this._position, {
+            set(target, prop, value) {
+                if (prop === "x" || prop === "y") {
+                    // deno-lint-ignore no-explicit-any
+                    (target as any)[prop] = value;
+                    self.update_real();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+    set position(val: Vec2) {
+        this._position.x=val.x
+        this._position.y=val.y
+        this.update_real();
+    }
+    _scale: Vec2 = v2.new(1, 1);
+    get scale(): Vec2 {
+        // deno-lint-ignore no-this-alias
+        const self = this
+        return new Proxy(this._scale, {
+            set(target, prop, value) {
+                if (prop === "x" || prop === "y") {
+                    // deno-lint-ignore no-explicit-any
+                    (target as any)[prop] = value
+                    self.update_real()
+                    return true
+                }
+                return false
+            }
+        })
+    }
+    set scale(val: Vec2) {
+        this._scale=val
+        this.update_real()
+    }
+
+    _rotation: number = 0
+    get rotation():number{
+        return this._rotation
+    }
+    set rotation(val:number){
+        this._rotation=val
+        this.update_real()
+    }
+
+    _tint: Color = ColorM.rgba(255,255,255,255)
+    get tint(): Color {
+        // deno-lint-ignore no-this-alias
+        const self = this
+        return new Proxy(this._tint, {
+            set(target, prop, value) {
+                if (prop === "r" || prop === "g" || prop === "b" || prop === "a") {
+                    // deno-lint-ignore no-explicit-any
+                    (target as any)[prop] = value
+                    self.update_real()
+                    return true
+                }
+                return false
+            }
+        })
+    }
+    set tint(val: Color) {
+        this._tint.r = val.r
+        this._tint.g = val.g
+        this._tint.b = val.b
+        this._tint.a = val.a
+        this.update_real()
+    }
+
 
     _real_position: Vec2 = v2.new(0, 0);
     _real_scale: Vec2 = v2.new(1, 1);
@@ -42,7 +115,15 @@ export abstract class Container2DObject {
     _real_tint: Color = ColorM.default.white;
 
     sync_rotation:boolean=true
-    visible:boolean=true
+
+    _visible:boolean=true
+    get visible():boolean{
+        return this._visible
+    }
+    set visible(val:boolean){
+        this._visible=val
+        if(this.parent)this.parent.update_visibility()
+    }
 
     destroyed:boolean=false
     destroy(){
@@ -50,12 +131,11 @@ export abstract class Container2DObject {
         if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1)
     }
 
-    update(_dt:number,_resources:ResourcesManager): void {
+    update_real(){
         if (this.parent) {
-
-            this._real_scale = v2.mult(this.parent._real_scale, this.scale);
+            this._real_scale = v2.mult(this.parent._real_scale, this._scale);
             if(this.sync_rotation){
-                this._real_rotation = this.parent._real_rotation + this.rotation;
+                this._real_rotation = this.parent._real_rotation + this._rotation;
                 this._real_position = v2.add(
                     v2.rotate_RadAngle(
                         v2.mult(this.parent._real_scale, this.position),
@@ -64,7 +144,7 @@ export abstract class Container2DObject {
                     this.parent._real_position
                 );
             }else{
-                this._real_rotation=this.rotation
+                this._real_rotation=this._rotation
                 this._real_position = v2.add(
                     v2.mult(this.parent._real_scale, this.position),
                     this.parent._real_position
@@ -72,17 +152,20 @@ export abstract class Container2DObject {
             }
 
             this._real_tint = {
-                r: this.parent._real_tint.r * this.tint.r,
-                g: this.parent._real_tint.g * this.tint.g,
-                b: this.parent._real_tint.b * this.tint.b,
-                a: this.parent._real_tint.a * this.tint.a
+                r: this.parent._real_tint.r * this._tint.r,
+                g: this.parent._real_tint.g * this._tint.g,
+                b: this.parent._real_tint.b * this._tint.b,
+                a: this.parent._real_tint.a * this._tint.a
             };
         } else {
             this._real_position = this.position;
-            this._real_scale = this.scale;
-            this._real_rotation = this.rotation;
-            this._real_tint = this.tint;
+            this._real_scale = this._scale;
+            this._real_rotation = this._rotation;
+            this._real_tint = this._tint;
         }
+    }
+
+    update(_dt:number,_resources:ResourcesManager): void {
     }
 
     abstract draw(cam:CamA,renderer: Renderer): void;
@@ -112,82 +195,6 @@ export function triangulateConvex(
     };
 }
 
-function isInside(p: Vec2, edgeStart: Vec2, edgeEnd: Vec2): boolean {
-    return (edgeEnd.x - edgeStart.x) * (p.y - edgeStart.y) -
-           (edgeEnd.y - edgeStart.y) * (p.x - edgeStart.x) >= 0;
-}
-
-function computeIntersection(p1: Vec2, p2: Vec2, e1: Vec2, e2: Vec2): Vec2 {
-    const A1 = p2.y - p1.y;
-    const B1 = p1.x - p2.x;
-    const C1 = A1 * p1.x + B1 * p1.y;
-
-    const A2 = e2.y - e1.y;
-    const B2 = e1.x - e2.x;
-    const C2 = A2 * e1.x + B2 * e1.y;
-
-    const denom = A1 * B2 - A2 * B1;
-    if (denom === 0) return p1; // paralelos
-
-    const x = (B2 * C1 - B1 * C2) / denom;
-    const y = (A1 * C2 - A2 * C1) / denom;
-    return v2.new(x, y);
-}
-
-function sutherlandHodgman(subject: Vec2[], clip: Vec2[]): Vec2[] {
-    let output = subject.slice();
-
-    for (let i = 0; i < clip.length; i++) {
-        const input = output;
-        output = [];
-
-        const A = clip[i];
-        const B = clip[(i + 1) % clip.length];
-
-        for (let j = 0; j < input.length; j++) {
-            const P = input[j];
-            const Q = input[(j + 1) % input.length];
-
-            const Pinside = isInside(P, A, B);
-            const Qinside = isInside(Q, A, B);
-
-            if (Pinside && Qinside) {
-                output.push(Q);
-            } else if (Pinside && !Qinside) {
-                output.push(computeIntersection(P, Q, A, B));
-            } else if (!Pinside && Qinside) {
-                output.push(computeIntersection(P, Q, A, B));
-                output.push(Q);
-            }
-        }
-    }
-
-    return output;
-}
-/*function cut(pathA: number[], pathB: number[]): number[] {
-    const polyA: Vec2[] = [];
-    for (let i = 0; i < pathA.length; i += 2)
-        polyA.push(v2.new(pathA[i], pathA[i + 1]));
-
-    const polyB: Vec2[] = [];
-    for (let i = 0; i < pathB.length; i += 2)
-        polyB.push(v2.new(pathB[i], pathB[i + 1]));
-
-    const result = sutherlandHodgman(polyA, polyB);
-
-    if (result.length < 3) return [];
-
-    const triangles: number[] = [];
-    for (let i = 1; i < result.length - 1; i++) {
-        triangles.push(
-            result[0].x, result[0].y,
-            result[i].x, result[i].y,
-            result[i + 1].x, result[i + 1].y
-        );
-    }
-
-    return triangles;
-}*/
 type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material2D }
   | { type: 'fillColor'; color:Color }
@@ -196,7 +203,7 @@ type Graphics2DCommand =
   | { type: 'model'; model:Model2D }
 
 export class Graphics2D extends Container2DObject {
-    object_type = "graphics2d";
+    object_type = "graphics2d"
 
     current_path:Vec2[]=[]
     current_position:Vec2=v2.new(0,0)
@@ -351,6 +358,7 @@ export class Sprite2D extends Container2DObject{
         this._old_size=v2.duplicate(this._real_size)
         this._old_rotation=this._real_rotation
         this.old_ms=this.cam.meter_size
+        this.update_real()
     }
 
     model:Float32Array
@@ -358,18 +366,6 @@ export class Sprite2D extends Container2DObject{
     constructor(){
         super()
         this.model=ImageModel2D(this.scale,this.rotation,this.hotspot,v2.new(0,0),100)
-    }
-    override update(dt:number,resources:ResourcesManager){
-        super.update(dt,resources)
-        if(this.frames){
-            if(this.current_delay<this.frames[this.current_frame].delay){
-                this.current_delay+=dt
-            }else{
-                this.current_delay=0
-                this.current_frame=Numeric.loop(this.current_frame+1,0,this.frames.length)
-                this.set_frame(this.frames[this.current_frame],resources)
-            }
-        }
     }
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
@@ -401,22 +397,52 @@ export class Sprite2D extends Container2DObject{
         if(this.frame)renderer.draw_image2D(this.frame,this._real_position,this.model,cam.matrix,this._real_tint)
     }
 }
+export class AnimatedSprite2D extends Sprite2D{
+    override object_type:string="animated_sprite2d"
+    override has_update: boolean=true
+    override update(dt:number,resources:ResourcesManager){
+        super.update(dt,resources)
+        if(this.frames){
+            if(this.current_delay<this.frames[this.current_frame].delay){
+                this.current_delay+=dt
+            }else{
+                this.current_delay=0
+                this.current_frame=Numeric.loop(this.current_frame+1,0,this.frames.length)
+                this.set_frame(this.frames[this.current_frame],resources)
+            }
+        }
+    }
+}
 export class Container2D extends Container2DObject{
     object_type:string="container2d"
     children:Container2DObject[]=[]
 
+    update_children:Container2DObject[]=[]
+    visible_children:Container2DObject[]=[]
+    override has_update: boolean=true
+
     update_deletions(){
-        this.children = this.children.filter(c => !c.destroyed);
+        this.children = this.children.filter(c => !c.destroyed)
+        this.update_children = this.update_children.filter(c => !c.destroyed)
+        this.visible_children = this.visible_children.filter(c => !c.destroyed)
+    }
+
+    update_visibility(){
+        this.visible_children = this.children.filter(c => c._visible)
     }
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources);
-        for (const c of this.children) c.update(dt,resources);
+        for (const c of this.update_children) c.update(dt,resources);
+    }
+    override update_real(): void {
+        super.update_real()
+        for (const c of this.children) c.update_real()
     }
     updateZIndex(){
         this.children.sort((a, b) => a.zIndex - b.zIndex || a.id_on_parent - b.id_on_parent);
     }
     draw(cam:CamA,renderer:Renderer,objects?:Container2DObject[]):void{
-        if(!objects)objects=this.children
+        if(!objects)objects=this.visible_children
         for(let o =0;o<objects.length;o++){
             const c=objects[o]
             if(c.visible)c.draw(cam,renderer)
@@ -426,6 +452,13 @@ export class Container2D extends Container2DObject{
         c.id_on_parent=this.children.length+1
         c.parent=this
         this.children.push(c)
+        if(c.has_update){
+            this.update_children.push(c)
+        }
+        if(c._visible){
+            this.visible_children.push(c)
+        }
+        c.update_real()
     }
     constructor(){
         super()
@@ -433,6 +466,7 @@ export class Container2D extends Container2DObject{
 }
 export class AnimatedContainer2D extends Container2D{
     objects=new Map<string,Sprite2D>()
+    override has_update: boolean=true
 
     current_animations:{
         current_kf:number
@@ -528,6 +562,13 @@ export class AnimatedContainer2D extends Container2D{
       }
     }
     add_animated_sprite(id:string,def?:FrameTransform):Sprite2D{
+        const spr=new AnimatedSprite2D()
+        this.objects.set(id,spr)
+        if(def)spr.transform_frame(def)
+        this.add_child(spr)
+        return spr
+    }
+    add_sprite(id:string,def?:FrameTransform):Sprite2D{
         const spr=new Sprite2D()
         this.objects.set(id,spr)
         if(def)spr.transform_frame(def)
