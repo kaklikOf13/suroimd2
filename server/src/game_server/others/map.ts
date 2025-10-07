@@ -1,14 +1,14 @@
 import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, PolygonHitbox2D, RectHitbox2D, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
-
+import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, LootTables } from "common/scripts/definitions/maps/base.ts"
-import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts";
-import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts";
-import { Layers } from "common/scripts/others/constants.ts";
-import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
-import { Creatures } from "common/scripts/definitions/objects/creatures.ts";
+import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
+import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts"
+import { Layers } from "common/scripts/others/constants.ts"
+import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts"
+import { Creatures } from "common/scripts/definitions/objects/creatures.ts"
+import {BuildingDef} from "common/scripts/definitions/objects/buildings_base.ts"
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export const generation={
     island:(def:IslandDef)=>{
@@ -160,6 +160,13 @@ export class GameMap{
         this.random=random
         algorithm(this,random)
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
+    }
+    add_building(def:BuildingDef,position:Vec2,side:0|1|2|3=0){
+        for(const o of def.obstacles){
+            const odef=Obstacles.getFromString(o.id)
+            const obj=this.add_obstacle(odef)
+            obj.set_position(v2.add_with_orientation(position,o.position,side))
+        }
     }
     encode(seed:number):MapPacket{
         const p=new MapPacket()

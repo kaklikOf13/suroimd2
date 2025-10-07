@@ -11,6 +11,8 @@ export class MenuManager{
     save:GameConsole
     api_settings:ApiSettingsS
     content={
+        menuD:document.querySelector("#menu") as HTMLDivElement,
+        gameD:document.querySelector("#game") as HTMLDivElement,
         insert_name:document.body.querySelector("#insert-name") as HTMLInputElement,
         menu_p:document.body.querySelector("#menu-options") as HTMLDivElement,
 
@@ -290,7 +292,7 @@ export class MenuManager{
         /*this.content.ac_status.innerHTML=`
             <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`*/
     }
-    your_skins:string[]=["default_skin","nick_winner","widower","kaklik"]
+    your_skins:string[]=["default_skin","nick_winner","justin_winner","kaklik"]
     show_your_skins(){
         this.content.submenus.extras.loadout_c.innerHTML=""
         let sel=this.save.get_variable("cv_loadout_skin")
@@ -342,5 +344,9 @@ export class MenuManager{
     }
     game_start(){
         //HideElement(this.content.settings_tabs)
+    }
+    game_end(){
+        ShowElement(this.content.menuD)
+        HideElement(this.content.gameD)
     }
 }

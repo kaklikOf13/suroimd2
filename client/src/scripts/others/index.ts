@@ -18,8 +18,6 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)
     inputs.bind(canvas)
-
-    document.body.appendChild(canvas)
     const sounds=new SoundManager()
     sounds.volumes={
         "players":1,
@@ -121,8 +119,11 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
             menu_manager.update_account()
             this.game.scene.objects.clear()
             this.game.guiManager.clear()
-            HideElement(this.game.guiManager.content.gameOver)
+            this.game.menuManager.game_end()
+            this.game.client?.disconnect()
             this.game.happening=false
+            this.game.running=false
+            this.game.clock.stop()
 
             if(this.game_server){
                 this.game_server.running=false

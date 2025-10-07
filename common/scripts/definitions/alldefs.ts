@@ -11,6 +11,7 @@ import { Obstacles, type ObstacleDef } from "./objects/obstacles.ts";
 import { ExplosionDef, Explosions } from "./objects/explosions.ts";
 import { Skins } from "./loadout/skins.ts";
 import { ProjectileDef, Projectiles } from "./objects/projectiles.ts";
+import { BuildingDef } from "./objects/buildings_base.ts";
 
 export const GameItems=new DefinitionsMerge<GameItem>()
 GameItems.insert_def(Guns.value)
@@ -36,3 +37,6 @@ DamageSources.insert_def(Melees.value)
 DamageSources.insert_def(Projectiles.value)
 DamageSources.insert_def(Obstacles.value)
 DamageSources.insert_def(Explosions.value)
+
+export type ABuildingObject=BuildingDef|ObstacleDef
+export const ABuildingObjects=new DefinitionsMerge<ABuildingObject>()

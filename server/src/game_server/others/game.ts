@@ -7,7 +7,7 @@ import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts"
 import { Bullet } from "../gameObjects/bullet.ts"
 import { Obstacle } from "../gameObjects/obstacle.ts"
-import { GameMap, generation } from "./map.ts"
+import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
 import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
@@ -32,6 +32,7 @@ import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
 import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
 import { PlaneData } from "common/scripts/packets/update_packet.ts";
 import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
+import { Buildings } from "common/scripts/definitions/objects/buildings_base.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -123,6 +124,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.new_list=false
         //this.modeManager.generate_map()
         this.modeManager.generate_lobby()
+        this.map.add_building(Buildings.getFromString("public_bathroom"),v2.new(15,15),0)
         this.deadzone=new DeadZoneManager(this,{
             mode:DeadZoneMode.Staged,
             stages:DeadZoneDefinition,

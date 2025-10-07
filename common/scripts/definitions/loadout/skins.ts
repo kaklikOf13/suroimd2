@@ -32,7 +32,7 @@ Skins.insert(
         rarity:ItemQuality.Common,
     },
     {
-        idString:"widower",
+        idString:"nick_winner",
         rarity:ItemQuality.Rare,
     },
     {
@@ -44,7 +44,7 @@ Skins.insert(
         rarity:ItemQuality.Mythic,
     },
     {
-        idString:"nick_winner",
+        idString:"justin_winner",
         frame:{
             mount:{
                 closed:"player_mounth_1_2",

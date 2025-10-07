@@ -7,7 +7,7 @@
    viewBox="0 0 38.083451 10.032419"
    version="1.1"
    id="svg5"
-   sodipodi:docname="nick_winner_arm.svg"
+   sodipodi:docname="widower_arm.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,9 +23,9 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      showgrid="false"
-     inkscape:zoom="2.1996064"
-     inkscape:cx="78.195808"
-     inkscape:cy="75.240734"
+     inkscape:zoom="1.0998032"
+     inkscape:cx="-129.11401"
+     inkscape:cy="95.926253"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -58,12 +58,12 @@
          offset="0"
          stop-color="#0066ff"
          id="stop3"
-         style="stop-color:#00328d;stop-opacity:1;" />
+         style="stop-color:#24262b;stop-opacity:1;" />
       <stop
          offset="1"
          stop-color="#001aff"
          id="stop4"
-         style="stop-color:#001b54;stop-opacity:1;" />
+         style="stop-color:#454751;stop-opacity:1;" />
     </linearGradient>
     <linearGradient
        x1="240.00002"
@@ -107,13 +107,13 @@
        d="m 251.60743,217.49058 c -0.93143,-2.70145 0.49355,-5.64994 3.18276,-6.58561 2.68922,-0.93568 5.62436,0.49579 6.5558,3.19723 0.93145,2.70147 -0.49354,5.64996 -3.18275,6.58563 -2.68924,0.93568 -5.62437,-0.49579 -6.55582,-3.19725 z"
        fill="#312817"
        id="path34"
-       style="fill:#8b5521;fill-opacity:1;stroke:#312817;stroke-width:1.53702;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#ffc266;fill-opacity:1;stroke:#312817;stroke-width:1.53702;stroke-dasharray:none;stroke-opacity:1"
        sodipodi:nodetypes="ssssss" />
     <path
        d="m 250.8513,213.64166 v -41.82232 h 11.46695 v 41.82232 c -0.85313,2.95308 -10.46507,2.918 -11.46695,0 z"
        fill="url(#color-2)"
        id="path35"
-       style="fill:url(#linearGradient35);stroke:#001940;stroke-width:1.93946;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#linearGradient35);stroke:#191a1f;stroke-width:1.93946;stroke-dasharray:none;stroke-opacity:1"
        sodipodi:nodetypes="ccccc" />
   </g>
 </svg>

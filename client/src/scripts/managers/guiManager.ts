@@ -1070,7 +1070,6 @@ export class GuiManager{
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return
         this.game.gameOver=true
-        console.log(g)
         ShowElement(this.content.gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
@@ -1079,7 +1078,6 @@ export class GuiManager{
 <span id="gameover-you-win">You Win!</span>
 `
         }else{
-            console.log(g.Eliminator)
             if(!this.players_name[g.Eliminator])return
             this.content.gameOver_main_message.innerHTML=`
 <span id="gameover-eliminated">Eliminated By</span>
