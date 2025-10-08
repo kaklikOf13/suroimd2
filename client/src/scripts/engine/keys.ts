@@ -275,14 +275,17 @@ export class KeyListener{
 
 export class MousePosListener{
     private _position:Vec2
+    private position_old:Vec2
     private readonly meter_size:number
     public listener:SignalManager
     get position():Vec2{
         return v2.dscale(this._position,this.meter_size)
     }
+    mouse_speed:Vec2=v2.new(0,0)
     focus:boolean=true
     constructor(meter_size:number){
         this._position=v2.new(0,0)
+        this.position_old=v2.new(0,0)
         this.meter_size=meter_size
         this.listener=new SignalManager()
     }
@@ -293,7 +296,9 @@ export class MousePosListener{
         elem.addEventListener("pointermove",(e:MouseEvent)=>{
             if(!this.focus)return
             const rect=canvas.getBoundingClientRect()
+            this.position_old=this._position
             this._position=v2.new(e.x-rect.left,e.y-rect.top)
+            this.mouse_speed=v2.dscale(v2.sub(this.position_old,this._position),this.meter_size)
             this.listener.emit(MouseEvents.MouseMove,this.position)
         })
     }

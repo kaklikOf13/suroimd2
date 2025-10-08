@@ -41,6 +41,8 @@ export class ActionPacket extends Packet{
     reload:boolean=false
     swamp_guns:boolean=false
 
+    aim_speed:number=0
+
     actions:InputAction[]=[]
 
     constructor(){
@@ -50,6 +52,7 @@ export class ActionPacket extends Packet{
       stream.writeFloat32(this.movement.x)
       .writeFloat32(this.movement.y)
       .writeRad(this.angle)
+      .writeFloat(this.aim_speed,0,1,1)
       .writeBooleanGroup(this.use_weapon,this.interact,this.reload,this.swamp_guns)
       .writeArray(this.actions,(i,_s)=>{
         stream.writeUint8(i.type)
@@ -81,6 +84,7 @@ export class ActionPacket extends Packet{
         y:stream.readFloat32()
       }
       this.angle=stream.readRad()
+      this.aim_speed=stream.readFloat(0,1,1)
       const bg=stream.readBooleanGroup()
       this.use_weapon=bg[0]
       this.interact=bg[1]

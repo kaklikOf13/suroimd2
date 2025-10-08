@@ -25,6 +25,8 @@ import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scri
 import { BotAi } from "../player/simple_bot_ai.ts";
 import { EmoteDef, Emotes } from "common/scripts/definitions/loadout/emotes.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts";
+import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -110,10 +112,17 @@ export class Player extends ServerGameObject{
         reload:false,
         swamp_guns:false,
 
+        aim_speed:0,
+
         actions:[] as InputAction[],
 
         emote:undefined as EmoteDef|undefined,
         is_mobile:false
+    }
+
+    projectile_holding?:{
+        def:ProjectileDef
+        time:number
     }
 
     ai?:BotAi
@@ -162,7 +171,7 @@ export class Player extends ServerGameObject{
         weapons:true,
         current_weapon:true,
         action:true,
-        ammos:true,
+        oitems:true,
     }
 
     apply_modifiers(mods:Partial<PlayerModifiers>){
@@ -257,6 +266,14 @@ export class Player extends ServerGameObject{
         }
     }
 
+    throw_using_projectile(){
+        if(!this.projectile_holding)return
+        const proj=this.game.add_projectile(this.position,this.projectile_holding!.def,this,this.layer)
+        proj.throw_projectile(this.rotation,(this.projectile_holding!.def.throw_max_speed??5)*this.input.aim_speed)
+        proj.fuse_delay=this.projectile_holding.time
+        this.projectile_holding=undefined
+    }
+
     update(dt:number): void {
         if(this.dead)return
         //Movement
@@ -267,6 +284,7 @@ export class Player extends ServerGameObject{
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
                   * (this.parachute?1:((Floors[this.current_floor].speed_mult??1)))
+                  * (this.projectile_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
             this.current_animation=undefined
@@ -349,8 +367,19 @@ export class Player extends ServerGameObject{
             })
         }else if(!this.parachute&&!this.seat){
             this.attacking-=dt
-            if(this.input.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.debug.deenable_lobby)){
-                this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
+            if(this.input.using_item&&this.inventory.currentWeapon&&!this.projectile_holding&&(this.pvpEnabled||this.game.debug.deenable_lobby)){
+                this.inventory.currentWeapon.on_fire(this,this.inventory.currentWeapon as LItem)
+            }
+
+            if(this.projectile_holding){
+                this.projectile_holding.time-=dt
+                if(this.projectile_holding.time<=0){
+                    if(this.projectile_holding.def.explosion)this.game.add_explosion(this.position,Explosions.getFromString(this.projectile_holding.def.explosion!),this,this.projectile_holding.def,this.layer)
+                    this.projectile_holding=undefined
+                }
+                if(!this.input.using_item){
+                    this.throw_using_projectile()
+                }
             }
             
             //Update Inventory
@@ -496,6 +525,7 @@ export class Player extends ServerGameObject{
         this.input.reload=action.reload
         this.input.actions=action.actions
         this.input.swamp_guns=action.swamp_guns
+        this.input.aim_speed=action.aim_speed
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
@@ -556,9 +586,9 @@ export class Player extends ServerGameObject{
                     ammo:0
                 }
             }
-            if(this.privateDirtys.ammos){
-                for(const a of Object.keys(this.inventory.ammos)){
-                    up.priv.ammos[Ammos.getFromString(a).idNumber!]=this.inventory.ammos[a]
+            if(this.privateDirtys.oitems){
+                for(const a of Object.keys(this.inventory.oitems)){
+                    up.priv.oitems[Ammos.getFromString(a).idNumber!]=this.inventory.oitems[a]
                 }
             }
             this.privateDirtys={
@@ -566,7 +596,7 @@ export class Player extends ServerGameObject{
                 weapons:false,
                 current_weapon:false,
                 action:false,
-                ammos:false
+                oitems:false
             }
             if(this.game.deadzone.dirty){
                 up.priv.deadzone=this.game.deadzone.state

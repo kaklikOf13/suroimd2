@@ -25,10 +25,11 @@ GameItems.insert_def(Accessories.value)
 GameItems.insert_def(Others.value)
 GameItems.insert_def(Skins.value)
 
-export type WeaponDef=MeleeDef|GunDef
+export type WeaponDef=MeleeDef|GunDef|ProjectileDef
 export const Weapons=new DefinitionsMerge<WeaponDef>()
 Weapons.insert_def(Guns.value)
 Weapons.insert_def(Melees.value)
+Weapons.insert_def(Projectiles.value)
 
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|ProjectileDef
 export const DamageSources=new DefinitionsMerge<DamageSourceDef>()

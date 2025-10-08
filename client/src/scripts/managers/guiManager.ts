@@ -1010,11 +1010,11 @@ export class GuiManager{
                 this.action=undefined
             }
         }
-        if(priv.dirty.ammos){
+        if(priv.dirty.oitems){
             const aa:Record<string,number>={}
-            for(const a of Object.keys(priv.ammos)){
+            for(const a of Object.keys(priv.oitems)){
                 const def=Ammos.getFromNumber(a as unknown as number)
-                aa[def.idString]=priv.ammos[a as unknown as number]
+                aa[def.idString]=priv.oitems[a as unknown as number]
             }
             this.update_ammos(aa)
         }
@@ -1028,8 +1028,7 @@ export class GuiManager{
             const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
             const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
 
-            // Normaliza ângulo para 0–360
-            let norm = (angle + 360) % 360
+            const norm = (angle + 360) % 360
 
             if (distance > 0.24) {
                 if (this.content.emote_wheel.hover.src !== shsrc) {

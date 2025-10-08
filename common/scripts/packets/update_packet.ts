@@ -3,7 +3,7 @@ import { type GunDef, Guns } from "../definitions/items/guns.ts";
 import { type MeleeDef, Melees } from "../definitions/items/melees.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
-import { v2, Vec2 } from "../engine/geometry.ts";
+import { Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
 import { Numeric } from "../engine/utils.ts";
 import { ActionsType } from "../others/constants.ts";
@@ -42,7 +42,7 @@ export interface PrivateUpdate{
         weapons:boolean
         current_weapon:boolean
         action:boolean
-        ammos:boolean
+        oitems:boolean
     }
 
     planes:PlaneData[]
@@ -70,7 +70,7 @@ export interface PrivateUpdate{
 
     deadzone?:DeadZoneUpdate
 
-    ammos:Record<number,number>
+    oitems:Record<number,number>
 
     damages:DamageSplash[]
 }
@@ -85,7 +85,7 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         priv.dirty.weapons,
         priv.dirty.current_weapon,
         priv.dirty.action,
-        priv.dirty.ammos,
+        priv.dirty.oitems,
         priv.action!==undefined,
         priv.damages!==undefined,
         priv.deadzone!==undefined,
@@ -124,8 +124,8 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             stream.writeUint8(d.taker_layer)
         },1)
     }
-    if(priv.dirty.ammos){
-        stream.writeArray(Object.entries(priv.ammos),(i)=>{
+    if(priv.dirty.oitems){
+        stream.writeArray(Object.entries(priv.oitems),(i)=>{
             const def=Ammos.getFromNumber(i[0] as unknown as number)
             stream.writeUint8(i[0] as unknown as number)
             if(def.liquid){
@@ -172,7 +172,7 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         weapons:dirtyWeapons,
         current_weapon:dirtyCurrentWeapon,
         action:dirtyAction,
-        ammos:dirtyAmmos
+        oitems:dirtyAmmos
     }
     if(dirtyInventory){
         priv.dirty.inventory=true
@@ -227,13 +227,13 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     }
     if(dirtyAmmos){
         const len=stream.readUint8()
-        priv.ammos={}
+        priv.oitems={}
         for(let i=0;i<len;i++){
             const def=Ammos.getFromNumber(stream.readUint8())
             if(def.liquid){
-                priv.ammos[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
+                priv.oitems[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
             }else{
-                priv.ammos[def.idNumber!]=stream.readUint16()
+                priv.oitems[def.idNumber!]=stream.readUint16()
             }
         }
     }
@@ -268,9 +268,9 @@ export class UpdatePacket extends Packet{
             current_weapon:false,
             inventory:false,
             weapons:false,
-            ammos:false
+            oitems:false
         },
-        ammos:{},
+        oitems:{},
         health:0,
         max_boost:0,
         max_health:0,

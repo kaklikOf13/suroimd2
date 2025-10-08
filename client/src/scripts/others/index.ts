@@ -10,11 +10,10 @@ import { BasicSocket, Client, IPLocation } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
-import { InputManager } from "../engine/keys.ts";
-import { HideElement } from "../engine/utils.ts";
+import { InputManager } from "../engine/keys.ts"
 import { ConfigType } from "common/scripts/config/config.ts";
 import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
-(async() => {
+(() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)
     inputs.bind(canvas)

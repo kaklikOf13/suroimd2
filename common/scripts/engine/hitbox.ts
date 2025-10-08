@@ -334,8 +334,65 @@ export class RectHitbox2D extends BaseHitbox2D{
 
         return tmin <= dist && tmax >= 0;
     }
-    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
-        return undefined
+    override overlapLine(a_point:Vec2,b_point:Vec2): IntersectionRes {
+        let tmin = 0
+        let tmax = Number.MAX_VALUE
+
+        const eps = 1e-5
+        const r = a_point
+
+        let d = v2.sub(b_point, a_point)
+        const dist = v2.length(d)
+        d = v2.normalizeSafe(d)
+
+        let absDx = Math.abs(d.x)
+        let absDy = Math.abs(d.y)
+
+        if (absDx < eps) {
+            d.x = eps * 2
+            absDx = d.x
+        }
+        if (absDy < eps) {
+            d.y = eps * 2
+            absDy = d.y
+        }
+
+        if (absDx > eps) {
+            const tx1 = (this.min.x - r.x) / d.x
+            const tx2 = (this.max.x - r.x) / d.x
+            tmin = Numeric.max(tmin, Numeric.min(tx1, tx2))
+            tmax = Numeric.min(tmax, Numeric.max(tx1, tx2))
+            if (tmin > tmax) return null
+        }
+
+        if (absDy > eps) {
+            const ty1 = (this.min.y - r.y) / d.y
+            const ty2 = (this.max.y - r.y) / d.y
+
+            tmin = Numeric.max(tmin, Numeric.min(ty1, ty2))
+            tmax = Numeric.min(tmax, Numeric.max(ty1, ty2))
+
+            if (tmin > tmax) return null
+        }
+
+        if (tmin > dist) return null
+
+        const p = v2.add(a_point, v2.scale(d, tmin));
+
+        const c = v2.add(this.min, v2.scale(v2.sub(this.max, this.min), 0.5));
+        const p0 = v2.sub(p, c)
+        const d0 = v2.scale(v2.sub(this.min, this.max), 0.5);
+
+        const x = p0.x / Math.abs(d0.x) * 1.001;
+        const y = p0.y / Math.abs(d0.y) * 1.001;
+
+        return {
+            point: p,
+            normal: v2.normalizeSafe(
+                v2.new(Math.trunc(x), Math.trunc(y)),
+                v2.new(1, 0)
+            )
+        };
     }
     override center(): Vec2 {
         return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))

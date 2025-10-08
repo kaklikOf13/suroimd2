@@ -26,6 +26,8 @@ export type ProjectileDef={
 
     destroy_on_collide?:boolean
     collision_damage?:number
+
+    speed_mod?:number
 }&Definition
 export const Projectiles=new Definitions<ProjectileDef,GameItem>((v)=>{
     v.item_type=InventoryItemType.projectile
@@ -33,22 +35,24 @@ export const Projectiles=new Definitions<ProjectileDef,GameItem>((v)=>{
 Projectiles.insert(
     {
         idString:"frag_grenade",
-        gravity:0.6,
+        gravity:0.7,
         radius:0.5,
         zBaseScale:0.5,
         zScaleAdd:0.6,
         decays:{
-            ground_rotation:1,
-            ground_speed:1
+            ground_rotation:2,
+            ground_speed:2
         },
         cook:{
             allow_hand:false,
-            fuse_time:8
+            fuse_time:6
         },
+        throw_max_speed:15,
         explosion:"frag_grenade_explosion",
         frames:{
             world:"proj_frag"
-        }
+        },
+        speed_mod:1
     },
     //Mirv
     {

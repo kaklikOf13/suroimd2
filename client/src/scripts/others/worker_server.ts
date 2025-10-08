@@ -28,10 +28,15 @@ self.onmessage = (ev) => {
             const ai=new SimpleBotAi()
             bot.ai=ai
             bot.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
-            bot.inventory.ammos["556mm"]=random.choose([0,100,200,300])
-            bot.inventory.ammos["762mm"]=random.choose([0,100,200,300])
-            bot.inventory.ammos["9mm"]=random.choose([0,100,200,300])
-            bot.inventory.ammos["12g"]=random.choose([0,15,30,60,90])
+            bot.inventory.oitems["556mm"]=random.choose([100,200,310])
+            bot.inventory.oitems["762mm"]=random.choose([100,200,310])
+            bot.inventory.oitems["9mm"]=random.choose([100,200,400])
+            bot.inventory.oitems["22lr"]=random.choose([250,500])
+            bot.inventory.oitems["12g"]=random.choose([15,30,60,90])
+            bot.inventory.oitems["308sub"]=random.choose([40,80])
+            bot.inventory.oitems["50cal"]=random.choose([80,160])
+            bot.inventory.oitems["explosive_ammo"]=random.choose([5,10,15,20])
+            bot.inventory.oitems["gasoline"]=random.choose([5,10,15,20])
             if(Math.random()<=0.5){
                 bot.inventory.set_weapon(0,Melees.getFromString(random.choose(["hammer","axe"])))
             }
@@ -40,10 +45,10 @@ self.onmessage = (ev) => {
             bot.vest=Armors.getFromString("tactical_vest")
             bot.helmet=Armors.getFromString(random.choose(["basic_helmet","regular_helmet","tactical_helmet"]))
             bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,4)
-            bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,4)
-            bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,4)
-            bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,4)
-            bot.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,4)
+            bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,2)
+            bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,2)
+            bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,2)
+            bot.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,2)
 
             if(Math.random()<=0.5){
                 bot.boost_def=Boosts[BoostType.Shield]

@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
-import { ActionPacket, GameConstants, LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, KDate, Model3D, Numeric, ParticlesEmitter2D, Vec2, matrix4, model2d, model3d, random, v2, v3 } from "common/scripts/engine/mod.ts";
+import { ActionPacket, LayersL, zIndexes } from "common/scripts/others/constants.ts";
+import { Angle, Client, DefaultSignals, KDate, Numeric, ParticlesEmitter2D, Vec2, model2d, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
@@ -208,6 +208,7 @@ export class Game extends ClientGame2D<GameObject>{
     this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
       if(!isMobile){
         this.fake_crosshair.visible=false
+        this.action.aim_speed=Math.min(Math.abs(v2.length(this.input_manager.mouse.mouse_speed))*4,1)
         this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
       }
     })

@@ -1,7 +1,7 @@
 import { type Player } from "../gameObjects/player.ts";
 import { Angle, CircleHitbox2D, Definition, getPatterningShape, Numeric, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
-import { Inventory, Item, Slot, SlotCap } from "common/scripts/engine/inventory.ts";
+import { Inventory, Item, Slot } from "common/scripts/engine/inventory.ts";
 import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ConsumingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
@@ -56,7 +56,10 @@ export class GunItem extends LItem{
     is(other: LItem): boolean {
         return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
-    on_use(user:Player,_slot?:LItem){
+    override on_use(_user: Player, _slot?: LItem): void {
+      
+    }
+    on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
         if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
             if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
@@ -77,7 +80,7 @@ export class GunItem extends LItem{
     reload(user:Player){
         if(!this.def.reload||this.use_delay>0||user.downed)return
         user.attacking=0
-        if(this.ammo>=this.def.reload.capacity||!user.inventory.ammos[this.def.ammoType]){
+        if(this.ammo>=this.def.reload.capacity||!user.inventory.oitems[this.def.ammoType]){
             this.reloading=false
             return
         }
@@ -265,8 +268,13 @@ export class ProjectileItem extends LItem{
         return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
     }
     on_use(user: Player,_slot?:LItem): void {
-        const proj=user.game.add_projectile(user.position,this.def,user,user.layer)
-        proj.throw_projectile(user.rotation,this.def.throw_max_speed)
+        user.inventory.set_hand_item(this)
+    }
+    on_fire(user: Player,_slot?:LItem): void {
+        user.projectile_holding={
+            def:this.def,
+            time:this.def.cook?.fuse_time??10000
+        }
     }
     update(_user: Player): void {
       
@@ -319,7 +327,10 @@ export class MeleeItem extends LItem{
             }
         }
     }
-    on_use(user: Player,_slot?:LItem): void {
+    override on_use(_user: Player, _slot?: LItem): void {
+      
+    }
+    on_fire(user: Player,_slot?:LItem): void {
         if(this.use_delay<=0){
             user.current_animation={
                 type:PlayerAnimationType.Melee
@@ -341,25 +352,27 @@ export class GInventory extends Inventory<LItem>{
     weapons:{
       0?:MeleeItem,
       1?:GunItem,
-      2?:GunItem
+      2?:GunItem,
+      3?:ProjectileItem
     }={0:undefined,1:undefined,2:undefined}
     owner:Player
 
     weaponIdx:number=-1
-    currentWeapon:GunItem|MeleeItem|undefined
-    currentWeaponDef:GunDef|MeleeDef|undefined
+    currentWeapon?:GunItem|MeleeItem|ProjectileItem
+    currentWeaponDef?:GunDef|MeleeDef|ProjectileDef
 
-    ammos:Record<string,number>={}
+    oitems:Record<string,number>={}
     backpack!:BackpackDef
     default_melee:MeleeDef
+    default_backpack:BackpackDef
 
     set_backpack(backpack?:BackpackDef){
-        if(!backpack)backpack=Backpacks.getFromString("null_pack")
+        if(!backpack)backpack=this.default_backpack
         if(this.backpack&&this.backpack.idString===backpack.idString)return
         this.backpack=backpack
         for(const s of this.slots){
             if(s.item){
-              s.item.limit_per_slot=backpack.max[s.item.def.idString]??15
+                s.item.limit_per_slot=backpack.max[s.item.def.idString]??this.default_backpack.max[s.item.def.idString]??15
             }
         }
         if(this.slots.length>backpack.slots){
@@ -377,13 +390,12 @@ export class GInventory extends Inventory<LItem>{
         super(4)
         this.owner=owner
         this.default_melee=default_melee
+        this.default_backpack=Backpacks.getFromString("null_pack")
         this.set_weapon(0,default_melee)
         this.set_backpack()
     }
 
-    set_current_weapon_index(idx:number){
-        if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
-      
+    set_hand_item(val:GunItem|MeleeItem|ProjectileItem){
         if(this.currentWeapon){
             switch(this.currentWeapon.type){
               case "gun":
@@ -394,27 +406,32 @@ export class GInventory extends Inventory<LItem>{
                 break
             }
         }
-
-        const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
-        this.weaponIdx=idx
-
         this.currentWeapon=val
         this.currentWeaponDef=val?.def
-
         this.owner.recoil=undefined
         this.owner.privateDirtys.weapons=true
         this.owner.privateDirtys.current_weapon=true
         this.owner.privateDirtys.action=true
         this.owner.actions.cancel()
-        if(this.currentWeapon){
-          if(this.currentWeaponDef!.switchDelay&&this.currentWeapon.use_delay<=this.currentWeaponDef!.switchDelay){
-            this.currentWeapon!.use_delay=this.currentWeaponDef!.switchDelay
-          }
-          this.owner.attacking=0
+        if(this.currentWeapon&&(this.currentWeapon instanceof GunItem||this.currentWeapon instanceof MeleeItem)){
+            const id=((this.currentWeaponDef) as GunDef|MeleeDef)
+            if(id.switchDelay&&this.currentWeapon.use_delay<=id.switchDelay){
+                this.currentWeapon!.use_delay=id.switchDelay
+            }
+            this.owner.attacking=0
         }
 
         this.owner.current_animation=undefined
         this.owner.dirty=true
+    }
+
+    set_current_weapon_index(idx:number){
+        if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
+      
+        const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
+        this.weaponIdx=idx
+        this.set_hand_item(val!)
+        this.owner.throw_using_projectile()
     }
     set_weapon(slot:keyof typeof this.weapons=0,wep:WeaponDef,drop:boolean=true){
         if(drop)this.drop_weapon(slot,false)
@@ -495,18 +512,18 @@ export class GInventory extends Inventory<LItem>{
     }
     drop_ammo(idx:number=0){
       const a=Ammos.getFromNumber(idx)
-      const rc=Math.min(a.drop_count??60,this.ammos[a.idString])
+      const rc=Math.min(a.drop_count??60,this.oitems[a.idString])
       this.consume_ammo(a.idString,rc)
       this.owner.game.add_loot(this.owner.position,a as unknown as GameItem,rc)
     }
     give_item(def:GameItem,count:number,drop_n:boolean=true):number{
         switch(def.item_type){
             case InventoryItemType.ammo:{
-                this.owner.privateDirtys.ammos=true
+                this.owner.privateDirtys.oitems=true
                 const max=this.backpack.max[def.idString]??0
-                const ac=this.ammos[def.idString]??0
+                const ac=this.oitems[def.idString]??0
                 const dp=Math.max((ac+count)-max,0)
-                this.ammos[def.idString]=Numeric.max(ac+count,max)
+                this.oitems[def.idString]=Numeric.max(ac+count,max)
                 if(drop_n&&dp){
                   this.owner.game.add_loot(this.owner.position,def,dp)
                 }
@@ -514,7 +531,7 @@ export class GInventory extends Inventory<LItem>{
               }
             case InventoryItemType.consumible:{
                 const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
-                item.limit_per_slot=this.backpack.max[item.def.idString]??15
+                item.limit_per_slot=this.backpack.max[item.def.idString]??this.default_backpack.max[item.def.idString]??15
                 const ov=this.add(item,count)
                 if(ov){
                   this.owner.game.add_loot(this.owner.position,def,ov)
@@ -524,7 +541,7 @@ export class GInventory extends Inventory<LItem>{
             }
             case InventoryItemType.projectile:{
                 const item=new ProjectileItem(def as unknown as ProjectileDef,undefined,this)
-                item.limit_per_slot=this.backpack.max[item.def.idString]??15
+                item.limit_per_slot=this.backpack.max[item.def.idString]??this.default_backpack.max[item.def.idString]??5
                 const ov=this.add(item,count)
                 if(ov){
                   this.owner.game.add_loot(this.owner.position,def,ov)
@@ -615,12 +632,12 @@ export class GInventory extends Inventory<LItem>{
         }
     }
     consume_ammo(a:string,val:number):number{
-        this.owner.privateDirtys.ammos=true
-        if(this.ammos[a]){
-            const con=Numeric.max(val,this.ammos[a])
-            this.ammos[a]=Numeric.max(this.ammos[a],this.ammos[a]-val)
-            if(this.ammos[a]===0){
-                delete this.ammos[a]
+        this.owner.privateDirtys.oitems=true
+        if(this.oitems[a]){
+            const con=Numeric.max(val,this.oitems[a])
+            this.oitems[a]=Numeric.max(this.oitems[a],this.oitems[a]-val)
+            if(this.oitems[a]===0){
+                delete this.oitems[a]
             }
             return con
         }
@@ -665,7 +682,7 @@ export class GInventory extends Inventory<LItem>{
         }
     }
     clear(){
-        this.ammos={}
+        this.oitems={}
         this.owner.vest=undefined
         this.owner.helmet=undefined
         this.set_backpack()
@@ -674,7 +691,7 @@ export class GInventory extends Inventory<LItem>{
         }
         this.owner.privateDirtys.inventory=true
         this.owner.privateDirtys.weapons=true
-        this.owner.privateDirtys.ammos=true
+        this.owner.privateDirtys.oitems=true
         this.weapons[1]=undefined
         this.weapons[2]=undefined
         this.set_weapon(0,this.default_melee)
@@ -685,20 +702,21 @@ export class GInventory extends Inventory<LItem>{
         this.drop_weapon(1)
         this.drop_weapon(2)
         const l:Loot[]=[]
-        for(const s of Object.keys(this.ammos)){
+        for(const s of Object.keys(this.oitems)){
             const def=Ammos.getFromString(s) as unknown as GameItem
             //const pos=this.owner.hb.randomPoint()
             const dir=random.float(-3.141592,3.141592)
             const r=(this.owner.hb as CircleHitbox2D).radius
             const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
-            while(this.ammos[s]>0){
-                const rc=Math.min(this.ammos[s],60)
+            while(this.oitems[s]>0){
+                const rc=Math.min(this.oitems[s],60)
                 const ll=this.owner.game.add_loot(pos,def,rc)
                 l.push(ll);
                 ll.push(random.float(1,7),dir+random.float(-0.03,0.03));
                 //(ll.hb as CircleHitbox2D).radius=0
-                this.ammos[s]-=rc
+                this.oitems[s]-=rc
             }
+            delete this.oitems[s]
         }
         if(this.owner.vest){
             this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
@@ -724,7 +742,7 @@ export class GInventory extends Inventory<LItem>{
         for(const loot of l){
             loot.is_new=true
         }
-        this.owner.privateDirtys.ammos=true
+        this.owner.privateDirtys.oitems=true
         this.owner.privateDirtys.inventory=true
         this.owner.privateDirtys.weapons=true
     }

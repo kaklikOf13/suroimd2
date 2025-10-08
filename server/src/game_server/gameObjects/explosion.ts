@@ -7,6 +7,7 @@ import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";
+import { Loot } from "./loot.ts";
 
 export class Explosion extends ServerGameObject{
     stringType:string="explosion"
@@ -48,19 +49,21 @@ export class Explosion extends ServerGameObject{
                     case "player":
                         if(obj.hb&&this.hb.collidingWith(obj.hb)){
                             damageCollisions.push(obj)
-                            break
                         }
                         break
                     case "creature":
                         if(obj.hb&&this.hb.collidingWith(obj.hb)){
                             damageCollisions.push(obj)
-                            this.destroy()
+                        }
+                        break
+                    case "loot":
+                        if(obj.hb.collidingWith(this.hb)){
+                            damageCollisions.push(obj)
                         }
                         break
                     case "obstacle":
                         if(obj.hb&&this.hb.collidingWith(obj.hb)){
                             damageCollisions.push(obj)
-                            this.destroy()
                         }
                         break
                 }
@@ -76,6 +79,9 @@ export class Explosion extends ServerGameObject{
                         break
                     case "obstacle":
                         (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
+                        break
+                    case "loot":
+                        (obj as Loot).push(6*(v2.distance(this.position,obj.position)/this.radius),v2.lookTo(this.position,obj.position))
                         break
                 }
             }
