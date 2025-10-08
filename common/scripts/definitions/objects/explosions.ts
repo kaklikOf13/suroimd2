@@ -64,7 +64,7 @@ Explosions.insert(
             min:1.5,
             max:2
         },
-        damage:110,
+        damage:99,
         bullet:{
             def:{
                 damage:7,
@@ -74,7 +74,10 @@ Explosions.insert(
                 tracer:tracers.medium
             },
             count:5
-        }
+        },
+        sounds:{
+            normal:"explosion_1"
+        },
     },
     {
         idString:"mirv_grenade_explosion",
@@ -100,7 +103,10 @@ Explosions.insert(
             speed:1,
             angSpeed:9,
             randomAng:1
-        }
+        },
+        sounds:{
+            normal:"explosion_1"
+        },
     },
     {
         idString:"submirv_grenade_explosion",

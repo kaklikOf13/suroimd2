@@ -8,6 +8,7 @@ import { ServerGameObject } from "../others/gameObject.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";
 import { Loot } from "./loot.ts";
+import { Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
 
 export class Explosion extends ServerGameObject{
     stringType:string="explosion"
@@ -34,13 +35,13 @@ export class Explosion extends ServerGameObject{
                     this.game.add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner,undefined,this.defs)
                 }
             }
-            /*if(this.defs.projectiles){
+            if(this.defs.projectiles){
                 for(let i=0;i<this.defs.projectiles.count;i++){
-                    const p=this.game.add_projectile(this.position,Projectiles.getFromString(this.defs.projectiles.def),this.owner)
+                    const p=this.game.add_projectile(v2.duplicate(this.position),Projectiles.getFromString(this.defs.projectiles.def),this.owner,this.layer)
                     p.velocity=v2.random(-this.defs.projectiles.speed,this.defs.projectiles.speed)
                     p.angularVelocity=this.defs.projectiles.angSpeed+(Math.random()*this.defs.projectiles.randomAng)
                 }
-            }*/
+            }
 
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
             const damageCollisions:ServerGameObject[]=[]
