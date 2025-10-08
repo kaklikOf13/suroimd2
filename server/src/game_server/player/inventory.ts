@@ -528,7 +528,7 @@ export class GInventory extends Inventory<LItem>{
                   this.owner.game.add_loot(this.owner.position,def,dp)
                 }
                 return dp
-              }
+            }
             case InventoryItemType.consumible:{
                 const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
                 item.limit_per_slot=this.backpack.max[item.def.idString]??this.default_backpack.max[item.def.idString]??15

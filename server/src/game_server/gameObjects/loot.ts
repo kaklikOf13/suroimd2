@@ -133,7 +133,7 @@ export class Loot extends ServerGameObject{
                     const col=this.hb.overlapCollision(other.hb)
                     if(col){
                         this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
-                        this.velocity=v2.sub(this.velocity,v2.scale(col.dir,0.1))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
                     }
                     break
                 }

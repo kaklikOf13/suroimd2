@@ -1,4 +1,5 @@
-import { Definitions,Definition } from "../../engine/mod.ts"
+import { Definitions,Definition, v2 } from "../../engine/mod.ts"
+import { DefaultFistRig, FistRig, WeaponRig } from "../../others/item.ts";
 import { GameItem, InventoryItemType } from "../utils.ts";
 
 export type ProjectileDef={
@@ -28,16 +29,23 @@ export type ProjectileDef={
     collision_damage?:number
 
     speed_mod?:number
+
+    arms?:FistRig
+    image?:WeaponRig
 }&Definition
 export const Projectiles=new Definitions<ProjectileDef,GameItem>((v)=>{
     v.item_type=InventoryItemType.projectile
 })
+const GrenadeRig={
+    position:v2.new(0.5,0.18),
+    rotation:0.2
+}
 Projectiles.insert(
     {
         idString:"frag_grenade",
         gravity:0.7,
         radius:0.5,
-        zBaseScale:1,
+        zBaseScale:0.6,
         zScaleAdd:0.6,
         decays:{
             ground_rotation:2,
@@ -52,7 +60,9 @@ Projectiles.insert(
         frames:{
             world:"proj_frag"
         },
-        speed_mod:1
+        speed_mod:1,
+        arms:DefaultFistRig,
+        image:GrenadeRig
     },
     //Mirv
     {
@@ -73,7 +83,9 @@ Projectiles.insert(
         throw_max_speed:15,
         frames:{
             world:"proj_mirv"
-        }
+        },
+        arms:DefaultFistRig,
+        image:GrenadeRig
     },
     {
         idString:"submirv_grenade",
@@ -92,7 +104,9 @@ Projectiles.insert(
         explosion:"submirv_grenade_explosion",
         frames:{
             world:"proj_submirv"
-        }
+        },
+        arms:DefaultFistRig,
+        image:GrenadeRig
     },
     {
         idString:"bomb_staff_projectile",
@@ -112,7 +126,9 @@ Projectiles.insert(
         explosion:"frag_grenade_explosion",
         frames:{
             world:"proj_bomb_staff"
-        }
+        },
+        arms:DefaultFistRig,
+        image:GrenadeRig
     },
     {
         idString:"fireball_projectile",
@@ -132,6 +148,8 @@ Projectiles.insert(
         },
         frames:{
             world:"proj_fireball"
-        }
+        },
+        arms:DefaultFistRig,
+        image:GrenadeRig
     },
 )
