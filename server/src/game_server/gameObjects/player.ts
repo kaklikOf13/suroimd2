@@ -367,14 +367,9 @@ export class Player extends ServerGameObject{
                     case "obstacle":
                         if((obj as Obstacle).def.noCollision)break
                         if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
-                            if(can_interact&&this.input.interaction&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
-                                (obj as Obstacle).kill({
-                                    amount:(obj as Obstacle).health,
-                                    position:this.position,
-                                    reason:DamageReason.Player,
-                                    owner:this,
-                                    critical:false
-                                })
+                            if(can_interact&&this.input.interaction&&(obj as Obstacle).hb.collidingWith(this.hb)){
+                                (obj as Loot).interact(this)
+                                can_interact=false
                             }
                             const ov=this.hb.overlapCollision((obj as Obstacle).hb)
                             if(ov){

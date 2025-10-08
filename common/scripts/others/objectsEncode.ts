@@ -1,4 +1,6 @@
 import { EmoteDef, Emotes } from "../definitions/loadout/emotes.ts";
+import { ObstacleDef, ObstacleDoorStatus, Obstacles } from "../definitions/objects/obstacles.ts";
+import { Orientation } from "../engine/geometry.ts";
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
 export enum PlayerAnimationType{
     Reloading,
@@ -76,10 +78,14 @@ export interface ExplosionData extends EncodedData{
 export interface ObstacleData extends EncodedData{
     full?:{
         position:Vec2
-        definition:number
-        rotation:number
+        definition:ObstacleDef
+        rotation:{
+            side:Orientation
+            rotation:number
+        }
         variation:number
     }
+    door?:ObstacleDoorStatus
     dead:boolean
     health:number
     scale:number
@@ -296,18 +302,28 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         //19 Full Alloc
         decode:(full:boolean,stream:NetStream)=>{
             const bools=stream.readBooleanGroup()//1
+            
             const ret:ObstacleData={
                 scale:stream.readFloat(0,3,3),//3
                 dead:bools[0],
                 health:stream.readFloat(0,1,1),
-                full:undefined
+                full:undefined,
+            }
+            if(bools[1]){
+                ret.door={
+                    locked:stream.readBooleanGroup()[0],
+                    open:stream.readInt8() as -1|0|1
+                }
             }
             if(full){
                 ret.full={
-                    definition:stream.readUint24(),//3
-                    position:stream.readPosition(),//8
-                    rotation:stream.readRad(),//3
-                    variation:stream.readUint8()+1,//1
+                    definition:Obstacles.getFromNumber(stream.readUint24()),
+                    position:stream.readPosition(),
+                    rotation:{
+                        rotation:stream.readFloat(-3.141592,3.141592,3),
+                        side:stream.readUint8() as Orientation,
+                    },//3
+                    variation:stream.readUint8()+1,
                 }
             }
             return ret
@@ -315,13 +331,18 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         encode(full:boolean,data:ObstacleData,stream:NetStream){
-            stream.writeBooleanGroup(data.dead)
+            stream.writeBooleanGroup(data.dead,data.door!==undefined)
             .writeFloat(data.scale,0,3,3)
             .writeFloat(data.health,0,1,1)
+            if(data.door){
+                stream.writeBooleanGroup(data.door.locked)
+                .writeInt8(data.door.open)
+            }
             if(full){
-                stream.writeUint24(data.full!.definition)
+                stream.writeUint24(data.full!.definition.idNumber!)
                 .writePosition(data.full!.position)
-                .writeRad(data.full!.rotation)
+                .writeFloat(data.full!.rotation.rotation,-3.141592,3.141592,3)
+                .writeUint8(data.full!.rotation.side)
                 .writeUint8(data.full!.variation-1)
             }
         }

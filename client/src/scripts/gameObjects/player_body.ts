@@ -18,6 +18,7 @@ export class PlayerBody extends GameObject{
     create(args: any) {
         this.game.camera.addObject(this.container)
         this.sprite.frame=this.game.resources.get_sprite("player_body")
+        this.updatable=false
     }
     override onDestroy(): void {
         this.container.destroy()

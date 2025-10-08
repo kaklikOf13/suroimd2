@@ -254,12 +254,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.cam3=new Camera3D(this.renderer)
 
     if(Debug.hitbox){
-      /*const hc=ColorM.hex("#ee000099")
-      this.resources.load_material2D("hitbox_player",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
-      this.resources.load_material2D("hitbox_loot",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
-      this.resources.load_material2D("hitbox_bullet",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
-      this.resources.load_material2D("hitbox_obstacle",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))
-      this.resources.load_material2D("hitbox_projectile",(this.renderer as WebglRenderer).factorys2D.simple.create_material(hc))*/
+      const hc={color:ColorM.hex("#ee000099")}
+      this.resources.load_material2D("hitbox",(this.renderer as WebglRenderer).factorys2D.simple.create(hc))
     }
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)

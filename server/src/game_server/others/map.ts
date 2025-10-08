@@ -134,9 +134,10 @@ export class GameMap{
         }
         return pos
     }
-    add_obstacle(def:ObstacleDef):Obstacle{
+    add_obstacle(def:ObstacleDef,rotation?:number):Obstacle{
         const o=this.game.scene.objects.add_object(new Obstacle(),Layers.Normal,undefined,{
-            def:def
+            def:def,
+            rotation
         }) as Obstacle
         this.objects.push(o)
         return o
@@ -164,7 +165,7 @@ export class GameMap{
     add_building(def:BuildingDef,position:Vec2,side:0|1|2|3=0){
         for(const o of def.obstacles){
             const odef=Obstacles.getFromString(o.id)
-            const obj=this.add_obstacle(odef)
+            const obj=this.add_obstacle(odef,o.rotation)
             obj.set_position(v2.add_with_orientation(position,o.position,side))
         }
     }

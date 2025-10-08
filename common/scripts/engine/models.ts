@@ -1,4 +1,5 @@
-import { RadAngle, v2, v3, Vec2, Vec3 } from "./geometry.ts";
+import { RadAngle, v2, v3, Vec2, Vec3 } from "./geometry.ts"
+import { HitboxType2D, type Hitbox2D } from "./hitbox.ts"
 
 export type Matrix=Float32Array
 export const matrix4={
@@ -414,7 +415,14 @@ export const model2d={
                 tex_max.x, tex_max.y, // top-right
                 tex_max.x, tex_min.y  // bottom-right
             ])
-        };
+        }
+    },
+    hitbox(hb:Hitbox2D):Model2D{
+        if(hb.type===HitboxType2D.rect){
+            return this.rect(hb.min,hb.max)
+        }else if(hb.type===HitboxType2D.circle){
+            return this.circle(hb.radius,undefined,hb.position)
+        }
     }
 }
 export interface Face3{

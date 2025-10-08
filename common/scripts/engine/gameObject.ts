@@ -18,6 +18,8 @@ export abstract class BaseObject2D{
     public is_new:boolean=true
     abstract numberType:number
     abstract stringType:string
+
+    updatable=true
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
     public get position():Vec2{
@@ -71,7 +73,7 @@ export abstract class BaseObject2D{
     }
 }
 
-export interface Layer2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[]}
+export interface Layer2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[],updatables:number[]}
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cellSize: number;
     cells: Map<number, Map<string, Set<GameObject>>> = new Map();
@@ -207,6 +209,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 this.objects[l].objects[o].onDestroy()
             }
             this.objects[l].orden.length=0
+            this.objects[l].updatables.length=0
         }
         this.objects={}
         this.layers=[]
@@ -250,6 +253,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.create(args ?? {});
         this.cells.registry(obj);
 
+        if(obj.updatable){
+            this.objects[layer].updatables.push(obj.id);
+        }
+
         return obj;
     }
 
@@ -270,7 +277,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     add_layer(layer: number) {
         if (this.objects[layer]) return;
-        this.objects[layer] = { orden: [], objects: {} };
+        this.objects[layer] = { orden: [], objects: {},updatables:[] };
         this.layers.push(layer);
     }
     process_object(stream:NetStream,encoders?:Record<string,ObjectEncoder>,priv:boolean=false){
@@ -354,8 +361,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     update(dt:number){
         for(const l in this.objects){
-            for(let j=0;j<this.objects[l].orden.length;j++){
-                const o=this.objects[l].orden[j]
+            for(let j=0;j<this.objects[l].updatables.length;j++){
+                const o=this.objects[l].updatables[j]
                 const obj=this.objects[l].objects[o]
                 if(obj.destroyed)continue
                 obj.update(dt)
@@ -389,6 +396,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(this.objects[obj.layer].objects[obj.id].calldestroy||force_destroy){
             this.ondestroy(this.objects[obj.layer].objects[obj.id])
             this.objects[obj.layer].objects[obj.id].onDestroy()
+            const idx=this.objects[obj.layer].updatables.indexOf(obj.id)
+            if(idx>=0)this.objects[obj.layer].updatables.splice(idx,1)
         }
         this.cells.unregistry(this.objects[obj.layer].objects[obj.id])
     }

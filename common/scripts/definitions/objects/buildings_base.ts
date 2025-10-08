@@ -22,8 +22,8 @@ Buildings.insert(
         idString:"public_bathroom",
         obstacles:[
             {
-                id:"stone",
-                position:v2.new(2,0),
+                id:"wood_door",
+                position:v2.new(0,0),
                 scale:1,
                 rotation:0
             },

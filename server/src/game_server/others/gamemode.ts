@@ -4,7 +4,7 @@ import { type GameItem } from "common/scripts/definitions/utils.ts";
 import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { type GunDef } from "common/scripts/definitions/items/guns.ts";
 import { type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
-import { Backpacks, type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 
 export interface InventoryGiftItem{
     item:GameItem,

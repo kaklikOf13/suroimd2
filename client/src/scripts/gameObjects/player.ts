@@ -5,7 +5,7 @@ import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/it
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { GraphicsDConfig } from "../others/config.ts";
+import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
@@ -389,9 +389,10 @@ export class Player extends GameObject{
         this.container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        /*if(Debug.hitbox){
-            renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_player"),camera.visual_position)
-        }*/
+        if(Debug.hitbox){
+            const model=model2d.hitbox(this.hb)
+            renderer.draw(model,this.game.resources.get_material2D("hitbox"),camera.projectionMatrix,v2.new(0,0),v2.new(1,1))
+        }
     }
     constructor(){
         super()

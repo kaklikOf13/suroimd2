@@ -24,11 +24,21 @@ export const Spawn={
         list:[FloorType.Grass]
     },
 }
+export interface ObstacleBehaviorDoor{
+    type:0,
+    open_delay?:number
+    cant_close?:boolean
+    open_duration:number
+    offset:number
+}
+export interface ObstacleDoorStatus{
+    open:-1|0|1
+    locked:boolean
+}
 export interface ObstacleDef extends Definition{
     health:number
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
-    hotspot?:Vec2
     noCollision?:boolean
     noBulletCollision?:boolean
     invisibleOnMap?:boolean
@@ -63,6 +73,10 @@ export interface ObstacleDef extends Definition{
         break:string
         hit_variations?:number
     }
+
+    expanded_behavior?:(
+        ObstacleBehaviorDoor
+    )
 }
 export interface MaterialDef{
     sounds:string
@@ -150,8 +164,8 @@ Obstacles.insert(
             destroy:0.6,
         },
         frame_transform:{
-            hotspot:v2.new(0,0),
-            scale:2
+            scale:2,
+            hotspot:v2.new(.5,.5)
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
@@ -169,13 +183,13 @@ Obstacles.insert(
             destroy:0.6,
         },
         frame_transform:{
-            hotspot:v2.new(0,0),
-            scale:2
+            scale:2,
+            hotspot:v2.new(.5,.5)
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"tree", //TODO Copper Material
-
+        reflectBullets:true,
         interactDestroy:true,
         lootTable:"copper_crate",
         spawnMode:Spawn.grass
@@ -183,10 +197,12 @@ Obstacles.insert(
     {
         idString:"iron_crate", //Airdrop
         health:170,
-        hotspot:v2.new(0,0),
-        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        hitbox:new RectHitbox2D(v2.new(-0.4,-0.4),v2.new(0.4,0.4)),
         scale:{
-            destroy:0.8
+            destroy:0.8,
+        },
+        frame_transform:{
+            hotspot:v2.new(.5,.5)
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
@@ -200,8 +216,10 @@ Obstacles.insert(
     {
         idString:"gold_crate", //Gold Airdrop
         health:180,
-        hotspot:v2.new(0,0),
-        hitbox:new RectHitbox2D(v2.new(0,0),v2.new(0.8,0.8)),
+        frame_transform:{
+            hotspot:v2.new(.5,.5),
+        },
+        hitbox:new RectHitbox2D(v2.new(-0.4,-0.4),v2.new(0.4,0.4)),
         scale:{
             destroy:0.8
         },
@@ -233,5 +251,24 @@ Obstacles.insert(
             particle:"leaf_01_particle_1"
         },
         spawnMode:Spawn.grass
-    }
+    },
+    {
+        idString:"wood_door",
+        health:180,
+        hitbox:new RectHitbox2D(v2.new(-0.87,-0.15),v2.new(0.87,0.15)),
+        frame_transform:{
+            hotspot:v2.new(0.1,.5),
+            position:v2.new(0.13,0.15),
+            scale:1.5
+        },
+        rotationMode:RotationMode.limited,
+        zIndex:zIndexes.Obstacles3,
+        material:"tree",
+        spawnMode:Spawn.grass,
+        expanded_behavior:{
+            type:0,
+            open_duration:0.15,
+            offset:0
+        }
+    },
 )

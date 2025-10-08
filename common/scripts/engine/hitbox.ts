@@ -1,4 +1,4 @@
-import { NullVec2, type Vec2, v2,Collision,OverlapCollision2D, Orientation } from "./geometry.ts"
+import { type Vec2, v2,Collision,OverlapCollision2D, Orientation } from "./geometry.ts"
 
 import { random, SeededRandom } from "./random.ts";
 import { NetStream } from "./stream.ts";

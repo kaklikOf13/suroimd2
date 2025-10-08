@@ -730,6 +730,30 @@ export const Angle=Object.freeze({
     rad2deg(angle:RadAngle):DegAngle {
         return angle * 180 / Math.PI
     },
+    side_rad(side:Orientation){
+        switch(side){
+            case 0:
+                return 0
+            case 1:
+                return 3.141592/2
+            case 2:
+                return 3.141592
+            case 3:
+                return -(3.141592/2)
+        }
+    },
+    side_deg(side:Orientation){
+        switch(side){
+            case 0:
+                return 0
+            case 1:
+                return 90
+            case 2:
+                return 180
+            case 3:
+                return -90
+        }
+    },
     random_rotation_modded(mode:RotationMode):RadAngle{
         switch(mode){
             case RotationMode.null:
