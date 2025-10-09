@@ -165,7 +165,7 @@ Obstacles.insert(
         },
         frame_transform:{
             scale:2,
-            hotspot:v2.new(.5,.5)
+            hotspot:v2.new(0,0)
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
@@ -178,13 +178,13 @@ Obstacles.insert(
     {
         idString:"copper_crate",
         health:160,
-        hitbox:new RectHitbox2D(v2.new(-0.65,-0.65),v2.new(0.65,0.65)),//new HitboxGroup2D(new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6))),//
+        hitbox:new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6)),//new HitboxGroup2D(new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6))),//
         scale:{
             destroy:0.6,
         },
         frame_transform:{
             scale:2,
-            hotspot:v2.new(.5,.5)
+            hotspot:v2.new(0,0)
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
@@ -202,7 +202,7 @@ Obstacles.insert(
             destroy:0.8,
         },
         frame_transform:{
-            hotspot:v2.new(.5,.5)
+            hotspot:v2.new(0,0)
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
@@ -217,7 +217,7 @@ Obstacles.insert(
         idString:"gold_crate", //Gold Airdrop
         health:180,
         frame_transform:{
-            hotspot:v2.new(.5,.5),
+            hotspot:v2.new(0,0),
         },
         hitbox:new RectHitbox2D(v2.new(-0.4,-0.4),v2.new(0.4,0.4)),
         scale:{

@@ -111,6 +111,7 @@ export class Player extends ServerGameObject{
         interaction:false,
         reload:false,
         swamp_guns:false,
+        attacking:false,
 
         aim_speed:0,
 
@@ -366,9 +367,10 @@ export class Player extends ServerGameObject{
                 source:this.downedBySource
             })
         }else if(!this.parachute&&!this.seat){
-            this.attacking-=dt
+            this.input.attacking=false
             if(this.input.using_item&&this.inventory.currentWeapon&&!this.projectile_holding&&(this.pvpEnabled||this.game.debug.deenable_lobby)){
                 this.inventory.currentWeapon.on_fire(this,this.inventory.currentWeapon as LItem)
+                this.input.attacking=this.inventory.currentWeapon.attacking()
             }
 
             if(this.projectile_holding){
@@ -655,18 +657,18 @@ export class Player extends ServerGameObject{
         this.piercingDamage(params)
     }
     piercingDamage(params: DamageParams) {
-        let totalDamage = params.amount
+        const totalDamage = params.amount
         let shieldDamage = 0
         let healthDamage = 0
 
-        let baseSplash: Omit<DamageSplash, "shield" | "shield_break" | "count"> = {
+        const baseSplash: Omit<DamageSplash, "shield" | "shield_break" | "count"> = {
             critical: params.critical,
             position: params.position,
             taker: this.id,
             taker_layer: this.layer
         }
 
-        let splashes: DamageSplash[] = []
+        const splashes: DamageSplash[] = []
 
         if (this.boost_def.type === BoostType.Shield && this.boost > 0) {
             shieldDamage = Math.min(this.boost, totalDamage)
@@ -883,7 +885,6 @@ export class Player extends ServerGameObject{
             this.game.livingPlayers.splice(idx,1);
         }
     }
-    attacking=0
     override getData(): PlayerData {
         return {
             position:this.position,
@@ -892,7 +893,7 @@ export class Player extends ServerGameObject{
             left_handed:this.left_handed,
             parachute:this.parachute,
             driving:this.seat!==undefined,
-            attacking:this.attacking>0,
+            attacking:this.input.attacking,
             emote:this.input.emote,
             full:{
                 vest:this.vest?this.vest.idNumber!+1:0,

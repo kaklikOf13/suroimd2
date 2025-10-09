@@ -36,6 +36,7 @@ export class GunItem extends LItem{
         c:number
     }
     cap:number
+    switching:boolean=false
 
     ammo:number=0
     liquid:boolean=false
@@ -59,18 +60,27 @@ export class GunItem extends LItem{
     override on_use(_user: Player, _slot?: LItem): void {
       
     }
+    has_consumible(user:Player):boolean{
+        return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
+    }
+    attacking():boolean{
+        return this.use_delay>0&&!this.switching
+    }
     on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
-        if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
-            if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
-                this.burst={
-                    c:this.def.burst.sequence,
-                    t:this.def.burst.delay
+        if(this.has_consumible(user)){
+            if(this.use_delay<=0){
+                this.switching=false
+                if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
+                    this.burst={
+                        c:this.def.burst.sequence,
+                        t:this.def.burst.delay
+                    }
+                    this.use_delay=0
+                }else{
+                    this.shot(user)
+                    this.use_delay=this.def.fireDelay
                 }
-                this.use_delay=0
-            }else{
-                this.shot(user)
-                this.use_delay=this.def.fireDelay
             }
         }
     }
@@ -79,7 +89,6 @@ export class GunItem extends LItem{
     }
     reload(user:Player){
         if(!this.def.reload||this.use_delay>0||user.downed)return
-        user.attacking=0
         if(this.ammo>=this.def.reload.capacity||!user.inventory.oitems[this.def.ammoType]){
             this.reloading=false
             return
@@ -143,7 +152,6 @@ export class GunItem extends LItem{
             user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
         }
 
-        user.attacking=this.def.fireDelay
         user.dirty=true
         user.privateDirtys.current_weapon=true
     }
@@ -222,7 +230,6 @@ export class ConsumibleItem extends LItem{
           item:this.def.idNumber!
       }
       user.dirty=true
-      user.attacking=0
       user.privateDirtys.action=true
       user.actions.play(new ConsumingAction(this))
   }
@@ -284,6 +291,7 @@ export class MeleeItem extends LItem{
     def:MeleeDef
     itemType: InventoryItemType.melee=InventoryItemType.melee
     use_delay:number=0
+    switching:boolean=false
 
     type="melee"
     constructor(def:MeleeDef,droppable=true){
@@ -294,6 +302,9 @@ export class MeleeItem extends LItem{
     }
     is(other: LItem): boolean {
       return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
+    }
+    attacking():boolean{
+        return this.use_delay>0&&!this.switching
     }
     attack(user:Player):void{
         if(user.inventory.weaponIdx!==0)return
@@ -417,8 +428,8 @@ export class GInventory extends Inventory<LItem>{
             const id=((this.currentWeaponDef) as GunDef|MeleeDef)
             if(id.switchDelay&&this.currentWeapon.use_delay<=id.switchDelay){
                 this.currentWeapon!.use_delay=id.switchDelay
+                this.currentWeapon!.switching=true
             }
-            this.owner.attacking=0
         }
 
         this.owner.current_animation=undefined

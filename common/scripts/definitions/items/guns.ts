@@ -265,7 +265,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:11,
+                damage:10,
                 radius:0.014,
                 range:170,
                 speed:40,
@@ -288,9 +288,9 @@ Guns.insert(
     },
     {
         idString:"ar15",
-        fireDelay:0.2,
+        fireDelay:0.12,
         switchDelay:0.7,
-        spread:2,
+        spread:6.5,
         lenght:0.7,
         size:4,
         ammoType:"556mm",
@@ -315,6 +315,7 @@ Guns.insert(
             duration:0.14,
             speed:0.75
         },
+        muzzleFlash:MuzzleFlash.normal,
         speed_mod:0.95,
         gasParticles:GasParticles.automatic
     },
@@ -324,7 +325,7 @@ Guns.insert(
         switchDelay:0.7,
         fireMode:FireMode.Burst,
         burst:{
-            delay:0.08,
+            delay:0.1,
             sequence:3
         },
         spread:1.5,
@@ -336,7 +337,7 @@ Guns.insert(
         quality:ItemQuality.Epic,
         bullet:{
             def:{
-                damage:12,
+                damage:11,
                 radius:0.014,
                 range:190,
                 falloff:0.7,
@@ -357,9 +358,9 @@ Guns.insert(
     },
     {
         idString:"mp5",
-        fireDelay:0.1,
+        fireDelay:0.14,
         switchDelay:0.7,
-        spread:3,
+        spread:2,
         lenght:0.87,
         size:4,
         ammoType:"9mm",

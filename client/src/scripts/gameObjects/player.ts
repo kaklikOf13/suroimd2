@@ -326,7 +326,6 @@ export class Player extends GameObject{
     }
     current_interaction?:Loot|Obstacle|undefined
     update(dt:number): void {
-        this.attacking-=dt
         if(this.dest_pos){
             this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
         }
@@ -407,8 +406,8 @@ export class Player extends GameObject{
         }
         this.sound_animation.animation=undefined
         this.anims.consumible_particles!.enabled=false
-        this.attacking=0
         this.container.stop_all_animations()
+        this.attacking=false
     }
     emote_time:number=0
     add_emote(emote:EmoteDef){
@@ -449,7 +448,6 @@ export class Player extends GameObject{
                         volume:0.4
                     },"players")
                 }
-                this.attacking=0.5
                 break
             }
             case PlayerAnimationType.Consuming:{
@@ -496,16 +494,15 @@ export class Player extends GameObject{
             }
         }
     }
-    attacking=0
+    attacking=false
     attack(){
-        if(this.attacking>0)return
-        if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){
+        if(this.attacking)return
+        if(!this.current_weapon||(this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){
             this.current_animation=undefined
             return
         }
         const d=this.current_weapon as GunDef
         const dur=Math.min(d.fireDelay*0.9,0.1)
-        this.attacking=d.fireDelay+0.2
         if(d.recoil&&!this.anims.fire){
             const w=0.05
             this.anims.fire={
@@ -534,6 +531,7 @@ export class Player extends GameObject{
                 })
             }
         }
+        this.attacking=true
         if(d.muzzleFlash&&!this.sprites.muzzle_flash.visible){
             this.sprites.muzzle_flash.frame=this.game.resources.get_sprite(d.muzzleFlash.sprite)
             if(this.anims.muzzle_flash_light)this.anims.muzzle_flash_light.destroyed=true
@@ -544,8 +542,11 @@ export class Player extends GameObject{
             this.game.addTimeout(()=>{
                 this.anims.muzzle_flash_light!.destroyed=true
                 this.sprites.muzzle_flash.visible=false
-            },dur)
+            },dur*0.9)
         }
+        this.game.addTimeout(()=>{
+            this.attacking=false
+        },d.fireDelay)
         if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(d.caseParticle&&!d.caseParticle.at_begin){
                 const p=new ABParticle2D({
