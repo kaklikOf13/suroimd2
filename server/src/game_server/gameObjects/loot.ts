@@ -129,7 +129,7 @@ export class Loot extends ServerGameObject{
                     break
                 }
                 case "obstacle":{
-                    if(!(other as Obstacle).dead||(other as Obstacle).def.noCollision||!(other.hb))break
+                    if((other as Obstacle).dead||(other as Obstacle).def.noCollision||!(other.hb))break
                     const col=this.hb.overlapCollision(other.hb)
                     if(col){
                         this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))

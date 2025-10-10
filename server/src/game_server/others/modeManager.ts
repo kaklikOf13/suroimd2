@@ -90,6 +90,7 @@ export class SoloGamemodeManager extends GamemodeManager{
         if(this.game.livingPlayers.length<=1){
             this.game.finish()
         }
+        this.game.living_count_dirty=true
     }
     is_ally(_a:Player,_b:Player):boolean{
         return false
@@ -244,6 +245,7 @@ export class TeamsGamemodeManager extends SoloGamemodeManager{
         if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }
+        this.game.living_count_dirty=true
     }
     override is_ally(a:Player,b:Player):boolean{
         return a.teamId===b.teamId
@@ -286,6 +288,7 @@ export class GroupGamemodeManager extends TeamsGamemodeManager{
         if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }
+        this.game.living_count_dirty=true
     }
     override is_ally(a:Player,b:Player):boolean{
         return a.groupId===b.groupId

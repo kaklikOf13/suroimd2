@@ -43,6 +43,7 @@ export interface PrivateUpdate{
         current_weapon:boolean
         action:boolean
         oitems:boolean
+        living_count:boolean
     }
 
     planes:PlaneData[]
@@ -56,6 +57,8 @@ export interface PrivateUpdate{
 
     inventory?:InventoryItemData[]
     action?:{delay:number,type:ActionsType}
+
+    living_count:number[]
     weapons:{
         melee?:MeleeDef
         gun1?:GunDef
@@ -86,6 +89,7 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         priv.dirty.current_weapon,
         priv.dirty.action,
         priv.dirty.oitems,
+        priv.dirty.living_count,
         priv.action!==undefined,
         priv.damages!==undefined,
         priv.deadzone!==undefined,
@@ -142,6 +146,11 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         stream.writePosition(priv.deadzone.position)
         stream.writePosition(priv.deadzone.new_position)
     }
+    if(priv.dirty.living_count){
+        stream.writeArray(priv.living_count,(i,_s)=>{
+            stream.writeUint8(i)
+        },1)
+    }
     stream.writeArray(priv.planes,(e)=>{
         stream.writeID(e.id)
         stream.writePosition(e.pos)
@@ -162,17 +171,19 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         dirtyCurrentWeapon,
         dirtyAction,
         dirtyAmmos,
+        dirtyLivingCount,
         hasAction,
         hasDamages,
         deadZone,
-        liquid
+        liquid,
     ]=stream.readBooleanGroup2()
     priv.dirty={
         inventory:dirtyInventory,
         weapons:dirtyWeapons,
         current_weapon:dirtyCurrentWeapon,
         action:dirtyAction,
-        oitems:dirtyAmmos
+        oitems:dirtyAmmos,
+        living_count:dirtyLivingCount
     }
     if(dirtyInventory){
         priv.dirty.inventory=true
@@ -246,6 +257,13 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             new_position:stream.readPosition()
         }
     }
+    if(dirtyLivingCount){
+        priv.living_count=stream.readArray((_s)=>{
+            return stream.readUint8()
+        },1)
+    }else{
+        priv.living_count=[]
+    }
     priv.planes=stream.readArray(()=>{
         return {
             id:stream.readID(),
@@ -268,12 +286,14 @@ export class UpdatePacket extends Packet{
             current_weapon:false,
             inventory:false,
             weapons:false,
-            oitems:false
+            oitems:false,
+            living_count:false,
         },
         oitems:{},
         health:0,
         max_boost:0,
         max_health:0,
+        living_count:[],
         weapons:{
             gun1:undefined,
             gun2:undefined,

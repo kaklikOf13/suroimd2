@@ -179,6 +179,10 @@ export class MenuManager{
         await this.resources.load_audio("game_normal_music_2",{src:"sounds/musics/game/normal/game_normal_music_2.mp3",volume:1})
         await this.resources.load_audio("game_normal_music_3",{src:"sounds/musics/game/normal/game_normal_music_3.mp3",volume:1})
         await this.resources.load_audio("game_normal_music_4",{src:"sounds/musics/game/normal/game_normal_music_4.mp3",volume:1})
+        await this.resources.load_audio("game_normal_music_5",{src:"sounds/musics/game/normal/game_normal_music_5.mp3",volume:1})
+
+        await this.resources.load_audio("game_campaing_ending_1",{src:"sounds/musics/game/normal/game_campaing_ending_1.mp3",volume:1})
+        await this.resources.load_audio("game_campaing_ending_2",{src:"sounds/musics/game/normal/game_campaing_ending_2.mp3",volume:1})
 
         await this.resources.load_audio("rain_ambience",{src:"sounds/ambience/rain_ambience.mp3",volume:1})
         await this.resources.load_audio("storm_ambience",{src:"sounds/ambience/storm_ambience.mp3",volume:1})

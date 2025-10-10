@@ -263,6 +263,7 @@ export class Obstacle extends GameObject{
         }
         if(this.def.hitbox){
             this.hb=this.def.hitbox.transform(position,data.scale,this.side)
+            this.manager.cells.updateObject(this)
         }
     }
 }

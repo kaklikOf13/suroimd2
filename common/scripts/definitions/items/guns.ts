@@ -410,7 +410,8 @@ Guns.insert(
                 damage:6,
                 radius:0.014,
                 range:60,
-                speed:34,
+                criticalMult:1.5,
+                speed:35,
                 tracer:tracers.medium
             }
         },
@@ -423,7 +424,13 @@ Guns.insert(
             speed:0.77
         },
         speed_mod:1,
-        gasParticles:GasParticles.automatic
+        gasParticles:GasParticles.automatic,
+        muzzleFlash:MuzzleFlash.normal,
+        arms:WeaponsArmRig[2],
+        image:{
+            position:v2.new(0.5,0.0),
+            rotation:0
+        },
     },
     {
         idString:"uzi",
@@ -535,6 +542,16 @@ Guns.insert(
             speed:0.65
         },
         speed_mod:0.9,
+        arms:WeaponsArmRig[1],
+        image:{
+            position:v2.new(0.6,0.04),
+            rotation:0
+        },
+        gasParticles:GasParticles.sniper,
+        muzzleFlash:MuzzleFlash.normal,
+        caseParticle:{
+            position:v2.new(0.6,0.3)
+        }
     },
     {
         idString:"awms",
@@ -568,6 +585,16 @@ Guns.insert(
             speed:0.25
         },
         speed_mod:0.9,
+        arms:WeaponsArmRig[1],
+        image:{
+            position:v2.new(0.6,0.04),
+            rotation:0
+        },
+        gasParticles:GasParticles.sniper,
+        muzzleFlash:MuzzleFlash.normal,
+        caseParticle:{
+            position:v2.new(0.6,0.3)
+        }
     },
     {
         idString:"m870",

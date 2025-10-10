@@ -94,7 +94,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
                             statistic:true
                         },
                     } as ConfigType,
-                    bots: 30,
+                    bots: 39,
                     ping: GameSave.get_variable("cv_game_ping"),
                 });
 
@@ -125,7 +125,9 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
             this.game.clock.stop()
 
             if(this.game_server){
+                this.game_server.clock.stop()
                 this.game_server.running=false
+                this.game_server=undefined
             }
         }
 

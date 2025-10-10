@@ -32,7 +32,6 @@ import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
 import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
 import { PlaneData } from "common/scripts/packets/update_packet.ts";
 import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
-import { Buildings } from "common/scripts/definitions/objects/buildings_base.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -99,6 +98,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     statistics?:GameStatistic
 
     deadzone:DeadZoneManager
+    living_count_dirty:boolean=false
 
     constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
         super(Config.game.config.gameTps,id,clients,PacketManager,[
@@ -124,7 +124,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.new_list=false
         //this.modeManager.generate_map()
         this.modeManager.generate_lobby()
-        this.map.add_building(Buildings.getFromString("public_bathroom"),v2.new(15,15),0)
         this.deadzone=new DeadZoneManager(this,{
             mode:DeadZoneMode.Staged,
             stages:DeadZoneDefinition,
@@ -169,6 +168,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 this.running=false
             }
         }
+        this.living_count_dirty=true
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){

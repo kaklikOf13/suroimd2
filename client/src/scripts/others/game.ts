@@ -95,6 +95,8 @@ export class Game extends ClientGame2D<GameObject>{
     year:2000
   }
 
+  living_count:number[]=[2]
+
   cam3:Camera3D
 
   listners_init(){
@@ -337,6 +339,10 @@ export class Game extends ClientGame2D<GameObject>{
   override on_run(): void {
     
   }
+  ending_music:string[]=[
+    "game_campaing_ending_1",
+    "game_campaing_ending_2"
+  ]
   override on_update(dt:number): void {
     super.on_update(dt)
     this.dead_zone.tick(dt)
@@ -362,15 +368,21 @@ export class Game extends ClientGame2D<GameObject>{
     }
     this.renderer.fullCanvas()
     this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
-    if(!this.music.running){
+    if(!this.music.running&&!this.guiManager.end_game){
       if(Math.random()<=0.0002){
-        this.music.set(random.choose([
-          this.resources.get_audio("game_normal_music_1"),
-          this.resources.get_audio("game_normal_music_2"),
-          this.resources.get_audio("game_normal_music_3"),
-          this.resources.get_audio("game_normal_music_4")
-        ]))
+        this.music.set(this.resources.get_audio(
+          random.choose([
+            "game_normal_music_1",
+            "game_normal_music_2",
+            "game_normal_music_3",
+            "game_normal_music_4",
+            "game_normal_music_5",
+          ])
+        ))
       }
+    }
+    if(this.living_count[0]<=2){
+      this.guiManager.grand_finale()
     }
 
     /*
@@ -401,6 +413,9 @@ export class Game extends ClientGame2D<GameObject>{
       }
       const plane=this.planes.get(p.id)!
       plane.updateData(p)
+    }
+    if(priv.dirty.living_count){
+      this.living_count=priv.living_count
     }
     if(priv.deadzone!==undefined)this.dead_zone.update_from_data(priv.deadzone)
   }

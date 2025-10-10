@@ -173,6 +173,7 @@ export class Player extends ServerGameObject{
         current_weapon:true,
         action:true,
         oitems:true,
+        living_count:true,
     }
 
     apply_modifiers(mods:Partial<PlayerModifiers>){
@@ -593,12 +594,16 @@ export class Player extends ServerGameObject{
                     up.priv.oitems[Ammos.getFromString(a).idNumber!]=this.inventory.oitems[a]
                 }
             }
+            if(this.privateDirtys.living_count){
+                up.priv.living_count=[this.game.livingPlayers.length]
+            }
             this.privateDirtys={
                 inventory:false,
                 weapons:false,
                 current_weapon:false,
                 action:false,
-                oitems:false
+                oitems:false,
+                living_count:this.game.living_count_dirty
             }
             if(this.game.deadzone.dirty){
                 up.priv.deadzone=this.game.deadzone.state
@@ -619,10 +624,10 @@ export class Player extends ServerGameObject{
         this.camera_hb.min.y=this.position.y-(37/2)
         this.camera_hb.max.x=this.position.x+(37/2)
         this.camera_hb.max.y=this.position.y+(37/2)*/
-        this.camera_hb.min.x=Math.floor((this.position.x-(37/2))/8)*8
-        this.camera_hb.min.y=Math.floor((this.position.y-(37/2))/8)*8
-        this.camera_hb.max.x=Math.floor((this.position.x+(37/2))/8)*8
-        this.camera_hb.max.y=Math.floor((this.position.y+(37/2))/8)*8
+        this.camera_hb.min.x=Math.floor((this.position.x-(45/2))/8)*8
+        this.camera_hb.min.y=Math.floor((this.position.y-(45/2))/8)*8
+        this.camera_hb.max.x=Math.floor((this.position.x+(45/2))/8)*8
+        this.camera_hb.max.y=Math.floor((this.position.y+(45/2))/8)*8
         /*const objs=[
             ...Object.values(this.manager.objects[this.layer].objects),
         ]*/
@@ -862,9 +867,6 @@ export class Player extends ServerGameObject{
         }
 
         this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
-        for(let i=0;i<3;i++){
-            this.game.add_player_gore(this,undefined,this.layer)
-        }
         this.dirty=true
         this.game.scene.cells.unregistry(this)
         this.status.rank=this.game.livingPlayers.length+1

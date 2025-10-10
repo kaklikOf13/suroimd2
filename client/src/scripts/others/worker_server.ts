@@ -23,7 +23,7 @@ self.onmessage = (ev) => {
         );
         server.mainloop(true)
 
-        for (let i = 0; i < msg.bots; i++) {
+        /*for (let i = 0; i < msg.bots-1; i++) {
             const bot = server.add_bot()
             const ai=new SimpleBotAi()
             bot.ai=ai
@@ -54,6 +54,11 @@ self.onmessage = (ev) => {
                 bot.boost_def=Boosts[BoostType.Shield]
                 bot.boost=100
             }
+        }*/
+       for (let i = 0; i < msg.bots; i++) {
+            const bot = server.add_bot()
+            const ai=new SimpleBotAi()
+            bot.ai=ai
         }
 
         const ws=new WorkerSocket(self as unknown as Worker)

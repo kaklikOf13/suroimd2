@@ -1,4 +1,4 @@
-import { NullVec2, RectHitbox2D, Vec2, Vec3, v2 } from "common/scripts/engine/mod.ts"
+import { Vec2, Vec3 } from "common/scripts/engine/mod.ts"
 import { type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
 import { Matrix, Model2D, Model3D } from "common/scripts/engine/models.ts";
@@ -20,56 +20,18 @@ export const ColorM={
     rgba(r: number, g: number, b: number, a: number = 255): Color {
         return { r: r / 255, g: g / 255, b: b / 255, a: a / 255 };
     },
-    hex(hex:string):Color{
-        let result:RegExpExecArray|null
-        switch(hex.length){
-            case 4:
-                result = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(result[1], 16)/15,
-                    g:parseInt(result[2], 16)/15,
-                    b:parseInt(result[3], 16)/15,
-                    a:1
-                }
-            case 5:
-                result = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(hex[1], 16)/15,
-                    g:parseInt(hex[2], 16)/15,
-                    b:parseInt(hex[3], 16)/15,
-                    a:parseInt(hex[4], 16)/15
-                }
-            case 7:
-                result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(result[1], 16)/255,
-                    g:parseInt(result[2], 16)/255,
-                    b:parseInt(result[3], 16)/255,
-                    a:1
-                }
-            case 9:
-                result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(result[1], 16)/255,
-                    g:parseInt(result[2], 16)/255,
-                    b:parseInt(result[3], 16)/255,
-                    a:parseInt(result[4], 16)/255
-                }
-            default:
-                throw new Error("Invalid Hex")
-        }
+    hex(hex: string): Color {
+        hex = hex.replace("#", "");
+        if ([3, 4, 6, 8].indexOf(hex.length) === -1) throw new Error("Invalid Hex")
+
+        const toFloat = (v: string) => parseInt(v.repeat(2 / v.length), 16) / 255
+
+        const r = toFloat(hex[0])
+        const g = toFloat(hex[1])
+        const b = toFloat(hex[2])
+        const a = hex.length > 3 ? toFloat(hex[3]) : 1
+
+        return { r, g, b, a };
     },
     number(color:number):Color{
         const r = (color >> 16) & 0xFF
@@ -246,7 +208,7 @@ create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
     const draw=(mat:GLMaterial2D<GL2D_SimpleMatArgs>,matrix:Matrix,model:Model2D,position:Vec2,scale:Vec2)=>{
         gl.gl.useProgram(fac.program)
 
-        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer)
         gl.gl.bufferData(gl.gl.ARRAY_BUFFER, model.vertices, gl.gl.STATIC_DRAW)
 
         gl.gl.enableVertexAttribArray(aPositionLoc)
@@ -658,21 +620,6 @@ export class WebglRenderer extends Renderer {
         if(!matrix)return
         material.draw(material,matrix,model,position,scale)
     }
-    draw_rect2D(rect: RectHitbox2D, material: GLMaterial2D<{}>,matrix:Matrix,offset:Vec2=NullVec2) {
-        const x1 = 0
-        const y1 = 0
-        const x2 = rect.max.x-rect.min.x
-        const y2 = rect.max.x-rect.min.x
-
-        material.draw(material,matrix,{vertices:new Float32Array([
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2
-        ]),tex_coords:new Float32Array([])},v2.sub(rect.position,offset),v2.new(1,1))
-    }
 
     draw_image2D(image: Frame,position: Vec2,model:Float32Array,matrix:Matrix,tint:Color=ColorM.default.white): void {
         const program=this.tex_program
@@ -709,8 +656,8 @@ export class WebglRenderer extends Renderer {
     }
 
     clear() {
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.gl.clearColor(0, 0, 0, 1);
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+        this.gl.clearColor(this.background.r, this.background.g, this.background.b, this.background.a)
         this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
         

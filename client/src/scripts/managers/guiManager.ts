@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
-import { Angle, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { Angle, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
@@ -820,6 +820,7 @@ export class GuiManager{
             }
         }
     }
+    end_game=false
     clear(){
         this.content.killfeed.innerHTML=""
         this.content.killeader_span.innerText=""
@@ -827,11 +828,26 @@ export class GuiManager{
         this.content.killeader_span.innerText="Waiting For A Kill Leader"
         this.content.help_gui.innerText=""
 
+        this.end_game=false
+        this.information_killbox_messages=[]
+        this.information_killbox_time=0
+
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
         HideElement(this.content.gameOver)
         ShowElement(this.content.game_gui)
         this.enableCrosshair()
+    }
+    information_killbox_messages:string[]=[]
+    information_killbox_time:number=0
+    grand_finale(){
+        if(this.end_game)return
+        this.end_game=true
+        this.game.music.set(null)
+        this.game.addTimeout(()=>{
+            this.game.music.set(this.game.resources.get_audio(random.choose(this.game.ending_music)))
+            this.information_killbox_messages.push(`Grand Finale`)
+        },1)
     }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={
@@ -856,11 +872,7 @@ export class GuiManager{
                 const dsd=DamageSources.valueNumber[msg.used]
                 elem.innerHTML=`${this.players_name[msg.killer.id].full} Killed ${this.players_name[msg.victimId].full} With ${dsd.idString}`
                 if(msg.killer.id===this.game.activePlayer!.id){
-                    this.content.information_killbox.innerText=`${msg.killer.kills} Kills`
-                    ShowElement(this.content.information_killbox)
-                    this.game.addTimeout(()=>{
-                        HideElement(this.content.information_killbox)
-                    },3)
+                    this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
                 }
                 if(this.killleader&&msg.killer.id===this.killleader.id){
                     this.killleader.kills=msg.killer.kills
@@ -1062,9 +1074,6 @@ export class GuiManager{
                 }
             }
         }
-
-
-        this.content.debug_show.innerText=`FPS: ${this.game.fps}`
     }
     show_game_over(g:GameOverPacket){
         if(this.game.gameOver)return
@@ -1126,6 +1135,19 @@ export class GuiManager{
             HideElement(this.content.action_info)
         }
         this.update_hint()
+        if(this.information_killbox_messages.length>0){
+            if(this.information_killbox_time<=0){
+                ShowElement(this.content.information_killbox)
+                this.content.information_killbox.innerHTML=this.information_killbox_messages[0]
+            }
+            this.information_killbox_time+=this.game.dt
+            if(this.information_killbox_time>=3){
+                this.information_killbox_time=0
+                this.information_killbox_messages.splice(this.information_killbox_messages.length-1,1)
+                HideElement(this.content.information_killbox)
+            }
+        }
+        this.content.debug_show.innerText=`FPS: ${this.game.fps}`
     }
     set_health(health:number,max_health:number){
         const p=health/max_health

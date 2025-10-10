@@ -252,7 +252,7 @@ export class OtherItem extends LItem{
     is(other: LItem): boolean {
         return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
     }
-    on_use(user: Player,_slot?:LItem): void {
+    on_use(_user: Player,_slot?:LItem): void {
         
     }
     update(_user: Player): void {
@@ -282,6 +282,9 @@ export class ProjectileItem extends LItem{
             def:this.def,
             time:this.def.cook?.fuse_time??10000
         }
+    }
+    attacking():boolean{
+        return this.inventory.owner.projectile_holding!==undefined
     }
     update(_user: Player): void {
       

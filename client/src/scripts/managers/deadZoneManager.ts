@@ -37,7 +37,7 @@ export class DeadZoneManager{
 
         this.set_current(v2.new(20,20),10)
         this.pa=this.game.particles.add_emiter({
-            delay:0.1,
+            delay:0.3,
             particle:()=>{
                 const pos=v2.random2(this.game.camera.visual_position,v2.add(this.game.camera.visual_position,v2.new(this.game.camera.width,this.game.camera.height)))
                 if(this.hitbox.pointInside(pos))return undefined
