@@ -36,14 +36,6 @@ Skins.insert(
         rarity:ItemQuality.Rare,
     },
     {
-        idString:"kaklik",
-        rarity:ItemQuality.Legendary,
-    },
-    {
-        idString:"kitty",
-        rarity:ItemQuality.Mythic,
-    },
-    {
         idString:"justin_winner",
         frame:{
             mount:{
@@ -51,6 +43,18 @@ Skins.insert(
                 normal:"player_mounth_2_1"
             }
         },
-        rarity:ItemQuality.Uncommon,
+        rarity:ItemQuality.Rare,
+    },
+    {
+        idString:"alice_winner",
+        rarity:ItemQuality.Rare,
+    },
+    {
+        idString:"kaklik",
+        rarity:ItemQuality.Legendary,
+    },
+    {
+        idString:"kitty",
+        rarity:ItemQuality.Mythic,
     },
 )

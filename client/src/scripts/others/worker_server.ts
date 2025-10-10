@@ -10,6 +10,7 @@ import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { type GameItem } from "common/scripts/definitions/utils.ts";
 import { Melees } from "common/scripts/definitions/items/melees.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 self.onerror = (e) => {
     console.error("Worker error:", e)
 };
@@ -55,11 +56,39 @@ self.onmessage = (ev) => {
                 bot.boost=100
             }
         }*/
-       for (let i = 0; i < msg.bots; i++) {
+        for (let i = 0; i < msg.bots-1; i++) {
             const bot = server.add_bot()
             const ai=new SimpleBotAi()
             bot.ai=ai
         }
+
+        const bot = server.add_bot()
+        const ai=new SimpleBotAi()
+        bot.ai=ai
+        bot.skin=Skins.getFromString("alice_winner")
+        bot.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
+        bot.inventory.oitems["556mm"]=random.choose([100,200,310])
+        bot.inventory.oitems["762mm"]=random.choose([100,200,310])
+        bot.inventory.oitems["9mm"]=random.choose([100,200,400])
+        bot.inventory.oitems["22lr"]=random.choose([250,500])
+        bot.inventory.oitems["12g"]=random.choose([15,30,60,90])
+        bot.inventory.oitems["308sub"]=random.choose([40,80])
+        bot.inventory.oitems["50cal"]=random.choose([80,160])
+        bot.inventory.oitems["explosive_ammo"]=random.choose([5,10,15,20])
+        bot.inventory.oitems["gasoline"]=random.choose([5,10,15,20])
+        if(Math.random()<=0.5){
+            bot.inventory.set_weapon(0,Melees.getFromString(random.choose(["hammer","axe"])))
+        }
+        bot.vest=Armors.getFromString("tactical_vest")
+        bot.helmet=Armors.getFromString("tactical_helmet")
+        bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,4)
+        bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,2)
+        bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,2)
+        bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,2)
+        bot.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,2)
+
+        bot.boost_def=Boosts[BoostType.Shield]
+        bot.boost=100
 
         const ws=new WorkerSocket(self as unknown as Worker)
         server.clients.fake_connect_other_s(ws)

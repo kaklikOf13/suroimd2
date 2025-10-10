@@ -16,6 +16,7 @@ __                                                                              
 * Debug Menu (Press Delete Or R3 To Access)
 * Fps Analizer
 * Crosshair
+* Alice Winner Skin
 __                                                                                                      __
 ### Items
 * Explosive Ammo - A New Ammo
@@ -27,6 +28,8 @@ __                                                                              
 ### Keys And Controls
 * Swamp Guns Slot (Use F)
 __                                                                                                      __
+## Changes
+__                                                                                                      __
 ### Items
 * Survival Knife Animation
 * Survival Knife Redesign
@@ -36,8 +39,6 @@ __                                                                              
 * Swing Melee Animation
 * Melee Loot View
 * Melees On Loot Table
-__                                                                                                      __
-## Changes
 __                                                                                                      __
 ### Others
 * **Web Workers!!** Now The Game Run 2 times faster in campaing mode

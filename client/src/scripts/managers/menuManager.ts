@@ -296,7 +296,7 @@ export class MenuManager{
         /*this.content.ac_status.innerHTML=`
             <a href="/user/?user=${name}"><button class="btn-blue">My Status</button></a>`*/
     }
-    your_skins:string[]=["default_skin","nick_winner","justin_winner","kaklik"]
+    your_skins:string[]=["default_skin","nick_winner","justin_winner","alice_winner","kaklik"]
     show_your_skins(){
         this.content.submenus.extras.loadout_c.innerHTML=""
         let sel=this.save.get_variable("cv_loadout_skin")

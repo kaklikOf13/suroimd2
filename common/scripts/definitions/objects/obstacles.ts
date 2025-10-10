@@ -105,7 +105,7 @@ export const Obstacles=new Definitions<ObstacleDef,null>((_v)=>{})
 Obstacles.insert(
     {
         idString:"stone",
-        health:150,
+        health:170,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.82),
         scale:{
             destroy:0.7,
@@ -124,7 +124,7 @@ Obstacles.insert(
     },
     {
         idString:"barrel",
-        health:70,
+        health:100,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.57),
         scale:{
             destroy:0.68
@@ -138,7 +138,7 @@ Obstacles.insert(
     },
     {
         idString:"oak_tree",
-        health:80,
+        health:120,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
         scale:{
             destroy:0.9,

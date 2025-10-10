@@ -657,7 +657,7 @@ export class WebglRenderer extends Renderer {
 
     clear() {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-        this.gl.clearColor(this.background.r, this.background.g, this.background.b, this.background.a)
+        this.gl.clearColor(this.background.r, this.background.g, this.background.b, 1)
         this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
         
