@@ -103,6 +103,7 @@ export class Clock {
         this.lastFrameTime = Date.now()
         this.timeScale = timeScale
         this.callback = callback
+        this.tick = this.tick.bind(this)
     }
 
     private interval:number=0
@@ -133,7 +134,7 @@ export class Clock {
                 i(dt);
             }
 
-            self.requestAnimationFrame(this.tick.bind(this));
+            self.requestAnimationFrame(this.tick)
         }
     }
     public start() {
@@ -153,7 +154,7 @@ export class Clock {
     public startRAF() {
         if (!this.running) {
             this.running = true;
-            this.lastFrameTime = performance.now(); // aqui!
+            this.lastFrameTime = performance.now()
             self.requestAnimationFrame(this.tick.bind(this));
         }
     }

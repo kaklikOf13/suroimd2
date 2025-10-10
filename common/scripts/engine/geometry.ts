@@ -25,6 +25,106 @@ export enum RotationMode{
 
 export type HashVec2=bigint
 
+export const v2m=Object.freeze({
+    single(out:Vec2,val:number):Vec2{
+        out.x=val
+        out.y=val
+        return out
+    },
+    zero(out:Vec2):Vec2{
+        out.x=0
+        out.y=0
+        return out
+    },
+    add(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x+b.x; out.y = a.y+b.y; return out; },
+    sub(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x-b.x; out.y = a.y-b.y; return out; },
+    mul(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x*b.x; out.y = a.y*b.y; return out; },
+    div(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x/b.x; out.y = a.y/b.y; return out; },
+    scale(out:Vec2,a:Vec2, b:number):Vec2{ out.x = a.x*b; out.y = a.y*b; return out; },
+    dscale(out:Vec2,a:Vec2, b:number):Vec2{ out.x = a.x/b; out.y = a.y/b; return out; },
+
+    set(out:Vec2,x:number,y:number):Vec2{out.x=x;out.y=y;return out},
+    add_component(out:Vec2,x:number,y:number):Vec2{out.x+=x;out.y+=y;return out},
+    sub_component(out:Vec2,x:number,y:number):Vec2{out.x-=x;out.y-=y;return out},
+    mul_component(out:Vec2,x:number,y:number):Vec2{out.x*=x;out.y*=y;return out},
+    div_component(out:Vec2,x:number,y:number):Vec2{out.x/=x;out.y/=y;return out},
+
+    scale_component(out:Vec2,x:number):Vec2{out.x*=x;out.y*=x;return out},
+
+    min1(v:Vec2,min:number):Vec2{
+        v.x=Math.max(v.x,min)
+        v.y=Math.max(v.y,min)
+        return v
+    },
+    min2(x:Vec2,y:Vec2):Vec2{
+        x.x=Math.max(x.x,y.x)
+        x.y=Math.max(x.y,y.y)
+        return x
+    },
+    max1(v:Vec2,max:number):Vec2{
+        v.x=Math.min(v.x,max)
+        v.y=Math.min(v.y,max)
+        return v
+    },
+    max2(x:Vec2,y:Vec2):Vec2{
+        x.x=Math.min(x.x,y.x)
+        x.y=Math.min(x.y,y.y)
+        return x
+    },
+
+    clamp1(v:Vec2,min:number,max:number):Vec2{
+        v.x=Math.max(Math.min(v.x,max),min)
+        v.y=Math.max(Math.min(v.y,max),min)
+        return v
+    },
+    clamp2(v:Vec2,min:Vec2,max:Vec2):Vec2{
+        v.x=Math.max(Math.min(v.x,max.x),min.x)
+        v.y=Math.max(Math.min(v.y,max.y),min.y)
+        return v
+    },
+    normalizeSafe(v:Vec2,fallback?:Vec2):Vec2 {
+        const eps = 0.000001
+        const len = v2.length(v)
+        if(len>eps){
+            v.x/=len
+            v.y/=len
+        }else{
+            v.x=fallback?.x??1
+            v.y=fallback?.x??0
+        }
+        return v
+    },
+    lerp(a: Vec2, b: Vec2,interpolation: number): Vec2 {
+        a.x+=(b.x-a.x)*interpolation
+        a.y+=(b.y-a.y)*interpolation
+        return a
+    },
+    abs(a: Vec2): Vec2 {
+        a.x=Math.abs(a.x)
+        a.y=Math.abs(a.y)
+        return a
+    },
+    floor(a: Vec2): Vec2 {a.x=Math.floor(a.x);a.y=Math.floor(a.y);return a},
+    ceil(a: Vec2): Vec2 {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y);return a},
+})
+export const v2_sides:Array<Vec2>=[
+    {
+        x:1,
+        y:1,
+    },
+    {
+        x:-1,
+        y:1,
+    },
+    {
+        x:-1,
+        y:-1,
+    },
+    {
+        x:1,
+        y:-1,
+    }
+]
 export const v2 = Object.freeze({
     /**
      * Creates a new `Vec2`
@@ -723,6 +823,7 @@ export const v3 = Object.freeze({
     },
 })
 export const NullVec2:Vec2=v2.new(0,0)
+export const OneVec2:Vec2=v2.new(1,1)
 export const Angle=Object.freeze({
     deg2rad(angle:DegAngle):RadAngle{
         return angle* Math.PI / 180

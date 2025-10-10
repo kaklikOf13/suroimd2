@@ -626,7 +626,7 @@ export class WebglRenderer extends Renderer {
 
         const vertexBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(model), this.gl.STATIC_DRAW)
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, model, this.gl.STATIC_DRAW)
 
         const textureCoordBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
@@ -653,6 +653,9 @@ export class WebglRenderer extends Renderer {
         this.gl.uniform4f(this.factorys2D_consts["texture_ADV"]["tint"],tint.r,tint.g,tint.b,tint.a)
 
         this.gl.drawArrays(this.gl.TRIANGLES, 0, model.length / 2)
+
+        /*this.gl.deleteBuffer(textureCoordBuffer)
+        this.gl.deleteBuffer(vertexBuffer)*/
     }
 
     clear() {

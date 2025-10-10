@@ -1,6 +1,6 @@
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
-import { ExplosionDef, Explosions } from "../../../../common/scripts/definitions/objects/explosions.ts";
+import { ExplosionDef, Explosions } from "common/scripts/definitions/objects/explosions.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Sprite2D } from "../engine/container_2d.ts";
@@ -30,7 +30,7 @@ export class Explosion extends GameObject{
             }
         }
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
       this.sprite.destroy()
     }
     constructor(){

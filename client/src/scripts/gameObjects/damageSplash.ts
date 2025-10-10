@@ -66,7 +66,7 @@ export class DamageSplashOBJ extends GameObject{
 
     lifetime:number=3
 
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.sprite.frame?.free()
         this.sprite.destroy()
     }

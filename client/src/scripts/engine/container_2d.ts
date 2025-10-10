@@ -1,4 +1,4 @@
-import { SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { OneVec2, SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D, GLMaterial2D, GL2D_LightMatArgs } from "./renderer.ts";
 import { type ResourcesManager, type Frame, DefaultTexCoords } from "./resources.ts";
 import { AKeyFrame, FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
@@ -135,7 +135,7 @@ export abstract class Container2DObject {
         if (this.parent) {
             this._real_scale = v2.mult(this.parent._real_scale, this._scale);
             if(this.sync_rotation){
-                this._real_rotation = this.parent._real_rotation + this._rotation;
+                this._real_rotation = this.parent._real_rotation + this._rotation
                 this._real_position = v2.add(
                     v2.rotate_RadAngle(
                         v2.mult(this.parent._real_scale, this.position),
@@ -158,10 +158,10 @@ export abstract class Container2DObject {
                 a: this.parent._real_tint.a * this._tint.a
             };
         } else {
-            this._real_position = this.position;
-            this._real_scale = this._scale;
-            this._real_rotation = this._rotation;
-            this._real_tint = this._tint;
+            this._real_position = this.position
+            this._real_scale = this._scale
+            this._real_rotation = this._rotation
+            this._real_tint = this._tint
         }
     }
 
@@ -304,7 +304,13 @@ export class Graphics2D extends Container2DObject {
                     currentMat=cmd.mat
                     break
                 case "fillColor":
+                    // deno-lint-ignore ban-ts-comment
+                    //@ts-ignore
+                    cmd.type="fillMaterial"
                     currentMat=gl.factorys2D.simple.create({color:cmd.color})
+                    // deno-lint-ignore ban-ts-comment
+                    //@ts-ignore
+                    cmd.mat=currentMat
                     break
                 case "fill":
                     gl.draw(currentModel!,currentMat,cam.matrix,this._real_position,this._real_scale)
@@ -326,11 +332,6 @@ export class Sprite2D extends Container2DObject{
     hotspot:Vec2=v2.new(0,0)
     size?:Vec2
 
-    private _old_scale?:Vec2
-    private _old_hotspot?:Vec2
-    private _old_rotation?:number
-    private _old_size?:Vec2
-
     _real_size:Vec2=v2.new(0,0)
 
     get frame():Frame|undefined{
@@ -338,7 +339,7 @@ export class Sprite2D extends Container2DObject{
     }
     set frame(f:Frame|undefined){
         this._frame=f
-        this.update_model()
+        this.update_real()
     }
 
     frames?:KeyFrameSpriteDef[]
@@ -349,23 +350,23 @@ export class Sprite2D extends Container2DObject{
 
     cam?:CamA
 
+    override update_real(): void {
+        super.update_real()
+        this.update_model()
+    }
+
     update_model(){
         if(!this.frame||!this.cam)return
         this._real_size=this.size??this.frame.frame_size??v2.new(this.frame.source.width,this.frame.source.height)
         this.model=ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100)
-        this._old_hotspot=v2.duplicate(this.hotspot)
-        this._old_scale=v2.duplicate(this._real_scale)
-        this._old_size=v2.duplicate(this._real_size)
-        this._old_rotation=this._real_rotation
         this.old_ms=this.cam.meter_size
-        this.update_real()
     }
 
     model:Float32Array
 
     constructor(){
         super()
-        this.model=ImageModel2D(this.scale,this.rotation,this.hotspot,v2.new(0,0),100)
+        this.model=ImageModel2D(this._real_scale,this.rotation,this.hotspot,v2.new(0,0),100)
     }
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
@@ -376,6 +377,7 @@ export class Sprite2D extends Container2DObject{
         if(frame.zIndex)this.zIndex=frame.zIndex
         if(frame.position)this.position=v2.duplicate(frame.position)
         if(frame.image)this.frame=resources.get_sprite(frame.image)
+        this.update_real()
     }
     
     transform_frame(frame:FrameTransform){
@@ -385,15 +387,10 @@ export class Sprite2D extends Container2DObject{
         if(frame.visible)this.visible=frame.visible
         if(frame.zIndex)this.zIndex=frame.zIndex
         if(frame.position)this.position=v2.duplicate(frame.position)
-        this.update_model()
+        this.update_real()
     }
     override draw(cam:CamA,renderer: Renderer): void {
         this.cam=cam
-        if(
-            (!this._old_rotation||!this._old_scale||!this._old_size||!this._old_hotspot)||
-            (this.old_ms!==cam.meter_size)||
-            (!v2.is(this._old_hotspot,this.hotspot)||this._real_rotation!==this._old_rotation||v2.is(this._real_scale,this._old_scale)||v2.is(this._real_size,this._old_size))
-        )this.update_model()
         if(this.frame)renderer.draw_image2D(this.frame,this._real_position,this.model,cam.matrix,this._real_tint)
     }
 }
@@ -926,6 +923,7 @@ export class Camera2D{
             this.container.add_child(o);
         }
         this.container.updateZIndex();
+        this.container.update_real()
     }
 
     resize(): void {

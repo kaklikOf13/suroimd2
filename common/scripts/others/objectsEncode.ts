@@ -50,6 +50,7 @@ export interface BulletData extends EncodedData{
     full?:{
         speed:number
         angle:number
+        critical:boolean
 
         tracerWidth:number
         tracerHeight:number
@@ -271,7 +272,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     projHeight:stream.readFloat(0,6,2),
                     projColor:stream.readUint32(),
                     projIMG:stream.readUint8(),
-                    projParticle:stream.readUint8()
+                    projParticle:stream.readUint8(),
+                    critical:stream.readBooleanGroup()[0]
                 }
             }
             return ret
@@ -295,6 +297,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 .writeUint32(data.full!.projColor)
                 .writeUint8(data.full!.projIMG)
                 .writeUint8(data.full!.projParticle)
+                .writeBooleanGroup(data.full!.critical)
             }
         }
     },

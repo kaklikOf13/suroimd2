@@ -12,7 +12,7 @@ import { Melees } from "common/scripts/definitions/items/melees.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 self.onerror = (e) => {
-    console.error("Worker error:", e)
+    console.error("Worker error:", e,e.valueOf())
 };
 self.onmessage = (ev) => {
     const msg = ev.data;

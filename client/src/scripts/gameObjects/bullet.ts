@@ -1,6 +1,6 @@
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { ABParticle2D, Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
-import { BaseGameObject2D, CircleHitbox2D, Vec2, random, v2 } from "common/scripts/engine/mod.ts";
+import { BaseGameObject2D, CircleHitbox2D, Vec2, random, v2, v2m } from "common/scripts/engine/mod.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { type Player } from "./player.ts";
@@ -35,7 +35,7 @@ export class Bullet extends GameObject{
         this.sprite_trail.frame=this.game.resources.get_sprite("base_trail")
         this.game.camera.addObject(this.container)
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
       this.container.destroy()
     }
 
@@ -47,6 +47,8 @@ export class Bullet extends GameObject{
 
     particles=0
     par_time=0
+
+    critical:boolean=false
 
     private tticks:number=0
     update(dt:number): void {
@@ -61,7 +63,7 @@ export class Bullet extends GameObject{
         }else{
             if(this.sprite_trail.scale.x<this.maxLength)this.tticks+=dt
             this.manager.cells.updateObject(this)
-            this.position=v2.add(this.hb.position,this.dts)
+            v2m.add(this.hb.position,this.hb.position,this.dts)
 
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
             for(const obj of objs){
@@ -69,7 +71,7 @@ export class Bullet extends GameObject{
                 switch((obj as BaseGameObject2D).stringType){
                     case "player":
                         if((obj as Player).hb&&!(obj as Player).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))&&!(obj as Player).parachute){
-                            (obj as Player).on_hitted(this.position)
+                            (obj as Player).on_hitted(this.position,this.critical)
                             this.dying=true
                         }
                         break
@@ -81,7 +83,7 @@ export class Bullet extends GameObject{
                     case "obstacle":
                         if((obj as Obstacle).def.noBulletCollision||(obj as Obstacle).dead)break
                         if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
-                            (obj as Obstacle).on_hitted(v2.duplicate(this.position))
+                            (obj as Obstacle).on_hitted(this.position)
                             this.dying=true
                         }
                         break
@@ -176,6 +178,7 @@ export class Bullet extends GameObject{
             }
             this.particles=data.full.projParticle
             this.container.visible=true
+            this.critical=data.full.critical
         }
     }
 }

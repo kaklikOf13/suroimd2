@@ -1,5 +1,5 @@
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
-import { ABParticle2D, type Camera2D, type ClientParticle2D, ColorM, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
+import { type Camera2D, ColorM, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
 import { Materials, ObstacleBehaviorDoor, ObstacleDef, ObstacleDoorStatus } from "common/scripts/definitions/objects/obstacles.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { ParticlesEmitter2D, RectHitbox2D, Vec2 } from "common/scripts/engine/mod.ts";
@@ -10,6 +10,7 @@ import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import {CalculateDoorHitbox} from "common/scripts/others/functions.ts"
+import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
     if(def.variations){
@@ -52,7 +53,7 @@ export class Obstacle extends GameObject{
         break?:Sound
         hit?:Sound[]
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
     }

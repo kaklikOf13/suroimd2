@@ -423,6 +423,10 @@ export const model2d={
         }else if(hb.type===HitboxType2D.circle){
             return this.circle(hb.radius,undefined,hb.position)
         }
+        return {
+            tex_coords:new Float32Array([]),
+            vertices:new Float32Array([])
+        }
     }
 }
 export interface Face3{

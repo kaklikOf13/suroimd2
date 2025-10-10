@@ -4,7 +4,7 @@ import { Ammos } from "./items/ammo.ts";
 import { Consumibles } from "./items/consumibles.ts";
 import { DefinitionsMerge } from "../engine/definitions.ts";
 import { Others } from "./others.ts";
-import { Accessories, Armors } from "./items/equipaments.ts";
+import { Accessories, Helmets, Vests } from "./items/equipaments.ts";
 import { MeleeDef, Melees } from "./items/melees.ts";
 import { Backpacks } from "./items/backpacks.ts";
 import { Obstacles, type ObstacleDef } from "./objects/obstacles.ts";
@@ -19,7 +19,8 @@ GameItems.insert_def(Melees.value)
 GameItems.insert_def(Projectiles.value)
 GameItems.insert_def(Ammos.value)
 GameItems.insert_def(Consumibles.value)
-GameItems.insert_def(Armors.value)
+GameItems.insert_def(Vests.value)
+GameItems.insert_def(Helmets.value)
 GameItems.insert_def(Backpacks.value)
 GameItems.insert_def(Accessories.value)
 GameItems.insert_def(Others.value)

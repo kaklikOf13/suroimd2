@@ -5,74 +5,72 @@ import { PlayerModifiers } from "../../others/constants.ts";
 import { v2 } from "common/scripts/engine/geometry.ts";
 import { ItemQuality } from "../../others/item.ts";
 
-export enum EquipamentType{
-    Helmet,
-    Vest,
-}
-export interface EquipamentDef extends Definition{
-    size:number
+export interface VestDef extends Definition{
     defence:number
     reduction:number
     level:number
-    type:EquipamentType
+    tint:number
+}
+export interface HelmetDef extends Definition{
+    defence:number
+    reduction:number
+    level:number
     position?:Vec2
 }
-export const Armors=new Definitions<EquipamentDef,GameItem>((obj)=>{
-    obj.item_type=InventoryItemType.equipament
+export const Vests=new Definitions<VestDef,GameItem>((obj)=>{
+    obj.item_type=InventoryItemType.vest
     obj.quality=ItemQuality.Common
 })
-Armors.insert(
-    //Normals Vest
-    {
-        idString:"basic_vest",
-        defence:0,
-        level:1,
-        reduction:0.1,
-        size:1,
-        type:EquipamentType.Vest,
-    },
+
+export const Helmets=new Definitions<HelmetDef,GameItem>((obj)=>{
+    obj.item_type=InventoryItemType.helmet
+    obj.quality=ItemQuality.Common
+})
+Helmets.insert(
     {
         idString:"basic_helmet",
         defence:0,
         level:1,
         reduction:0.1,
-        size:1,
-        type:EquipamentType.Helmet,
         position:v2.new(0,0)
-    },
-    {
-        idString:"regular_vest",
-        defence:0,
-        level:2,
-        reduction:0.15,
-        size:1.3,
-        type:EquipamentType.Vest,
     },
     {
         idString:"regular_helmet",
         defence:0,
         level:2,
         reduction:0.15,
-        size:1,
-        type:EquipamentType.Helmet,
         position:v2.new(0,0)
-    },
-    {
-        idString:"tactical_vest",
-        defence:0,
-        level:3,
-        reduction:0.20,
-        size:1.7,
-        type:EquipamentType.Vest,
     },
     {
         idString:"tactical_helmet",
         defence:0,
         level:3,
         reduction:0.20,
-        size:1.7,
-        type:EquipamentType.Helmet,
         position:v2.new(0,0)
+    },
+)
+Vests.insert(
+    //Normals Vest
+    {
+        idString:"basic_vest",
+        defence:0,
+        level:1,
+        reduction:0.1,
+        tint:0xffffff
+    },
+    {
+        idString:"regular_vest",
+        defence:0,
+        level:2,
+        reduction:0.15,
+        tint:0x556655
+    },
+    {
+        idString:"tactical_vest",
+        defence:0,
+        level:3,
+        reduction:0.20,
+        tint:0x010011
     },
 )
 export interface AccessorieDef extends Definition{

@@ -9,7 +9,7 @@ export class Decal extends GameObject{
 
     sprite:Sprite2D=new Sprite2D()
 
-    lifetime:number=40
+    lifetime:number=30
 
     create(args: any) {
         this.game.camera.addObject(this.sprite)
@@ -20,7 +20,7 @@ export class Decal extends GameObject{
         hit?:Sound[]
     }
 
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.sprite.destroy()
     }
     dying:boolean=false

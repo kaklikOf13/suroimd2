@@ -161,7 +161,7 @@ export class Vehicle extends ServerGameObject{
             }
         }
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
     }
     override getData(): VehicleData {
         return {

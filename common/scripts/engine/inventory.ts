@@ -1,5 +1,4 @@
-import { v2 } from "./geometry.ts";
-import { random, SeededRandom, type WeightDefinition } from "./random.ts";
+import { random, type WeightDefinition } from "./random.ts";
 import { Numeric, Tags, hasTag, hasTags } from "./utils.ts"
 
 export abstract class Item{
@@ -96,8 +95,6 @@ export class Inventory<ItemBase extends Item = Item>{
         const has_slots:number[]=[]
         let has=0
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&this.slots[i].item.is(item)){
                 has=Math.min(has+this.slots[i].quantity,quantity)
                 has_slots.push(parseInt(i))
@@ -120,8 +117,6 @@ export class Inventory<ItemBase extends Item = Item>{
     remove(item:ItemBase,quantity:number=1):number{
         let ret=quantity
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&this.slots[i].item.is(item)){
                 ret=this.slots[i].remove(ret)
                 if(ret==0){
@@ -143,8 +138,6 @@ export class Inventory<ItemBase extends Item = Item>{
         const has_slots:number[]=[]
         let has=0
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&hasTag(this.slots[i].item.tags,tag)){
                 has=Math.min(has+this.slots[i].quantity,quantity)
                 has_slots.push(parseInt(i))
@@ -293,8 +286,6 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         const has_slots:number[]=[]
         let has=0
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&this.slots[i].item.is(item)){
                 has=Math.min(has+this.slots[i].quantity,quantity)
                 has_slots.push(parseInt(i))
@@ -317,8 +308,6 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
     remove(item:ItemBase,quantity:number=1):number{
         let ret=quantity
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&this.slots[i].item.is(item)){
                 ret=this.slots[i].remove(ret)
                 if(ret==0){
@@ -340,8 +329,6 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         const has_slots:number[]=[]
         let has=0
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&hasTag(this.slots[i].item.tags,tag)){
                 has=Math.min(has+this.slots[i].quantity,quantity)
                 has_slots.push(parseInt(i))
@@ -367,8 +354,6 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         const has_slots:SlotCap<ItemBase>[]=[]
         let has=0
         for(const i in this.slots){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
             if(this.slots[i].item!=null&&hasTag(this.slots[i].item.tags,tag)){
                 has=Math.min(has+this.slots[i].quantity,max)
                 has_slots.push(this.slots[i])

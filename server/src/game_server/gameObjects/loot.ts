@@ -6,11 +6,11 @@ import { type Player } from "./player.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { GameItems } from "common/scripts/definitions/alldefs.ts"
-import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -51,33 +51,31 @@ export class Loot extends ServerGameObject{
                 this.destroy()
                 break
             }
-            case InventoryItemType.equipament:{
-                const d=this.item as unknown as EquipamentDef
-                switch(d.type){
-                    case EquipamentType.Helmet:
-                        if(!user.helmet){
-                            user.helmet=d
-                            user.dirty=true
-                            this.reduce_count(1)
-                        }else if(user.helmet.level<d.level){
-                            user.game.add_loot(user.position,user.helmet as unknown as GameItem,1)
-                            user.helmet=d
-                            user.dirty=true
-                            this.reduce_count(1)
-                        }
-                        break
-                    case EquipamentType.Vest:
-                        if(!user.vest){
-                            user.vest=d
-                            user.dirty=true
-                            this.reduce_count(1)
-                        }else if(user.vest.level<d.level){
-                            user.game.add_loot(user.position,user.vest as unknown as GameItem,1)
-                            user.vest=d
-                            user.dirty=true
-                            this.reduce_count(1)
-                        }
-                        break
+            case InventoryItemType.vest:{
+                const d=this.item as unknown as VestDef
+                if(!user.vest){
+                    user.vest=d
+                    user.dirty=true
+                    this.reduce_count(1)
+                }else if(user.vest.level<d.level){
+                    user.game.add_loot(user.position,user.vest as unknown as GameItem,1)
+                    user.vest=d
+                    user.dirty=true
+                    this.reduce_count(1)
+                }
+                break
+            }
+            case InventoryItemType.helmet:{
+                const d=this.item as unknown as HelmetDef
+                if(!user.helmet){
+                    user.helmet=d
+                    user.dirty=true
+                    this.reduce_count(1)
+                }else if(user.helmet.level<d.level){
+                    user.game.add_loot(user.position,user.helmet as unknown as GameItem,1)
+                    user.helmet=d
+                    user.dirty=true
+                    this.reduce_count(1)
                 }
                 break
             }
@@ -162,7 +160,8 @@ export class Loot extends ServerGameObject{
                 this.hb.radius=GameConstants.loot.radius.consumible
                 break
             case InventoryItemType.backpack:
-            case InventoryItemType.equipament:
+            case InventoryItemType.helmet:
+            case InventoryItemType.vest:
                 this.hb.radius=GameConstants.loot.radius.equipament
                 break
             case InventoryItemType.projectile:

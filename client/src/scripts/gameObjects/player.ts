@@ -1,7 +1,6 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
-import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
@@ -9,7 +8,7 @@ import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
 import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
-import { ABParticle2D, ClientGame2D, type ClientParticle2D } from "../engine/game.ts";
+import { ClientGame2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
@@ -23,14 +22,16 @@ import { type Loot } from "./loot.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { Container2D } from "../engine/container_2d.ts";
-import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
+import { HelmetDef, Helmets, VestDef, Vests } from "common/scripts/definitions/items/equipaments.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
     zIndex=zIndexes.Players
 
-    vest?:EquipamentDef
-    helmet?:EquipamentDef
+    vest?:VestDef
+    helmet?:HelmetDef
     backpack?:BackpackDef
 
     rotation:number=0
@@ -44,6 +45,7 @@ export class Player extends GameObject{
         body:Sprite2D,
         mounth:Sprite2D,
         helmet:Sprite2D,
+        vest:Sprite2D,
         backpack:Sprite2D,
         left_arm:Sprite2D,
         right_arm:Sprite2D,
@@ -81,7 +83,7 @@ export class Player extends GameObject{
 
     left_handed=false
 
-    on_hitted(position:Vec2){
+    on_hitted(position:Vec2,critical:boolean=false){
         if(Math.random()<=0.1){
             const d=new Decal()
             d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
@@ -90,6 +92,15 @@ export class Player extends GameObject{
             d.sprite.position=v2.duplicate(position)
             this.game.scene.objects.add_object(d,this.layer)
         }
+        
+        this.game.sounds.play(this.game.resources.get_audio(
+            critical?
+            "player_headshot":
+            `player_hit_${random.int(1,2)}`
+        ),{
+            position:this.position,
+            max_distance:6,
+        },"player")
     }
 
     current_animation?:PlayerAnimation
@@ -270,6 +281,7 @@ export class Player extends GameObject{
             mounth:this.container.add_animated_sprite("mounth",{hotspot:v2.new(0.3,0.5),scale:1.4,position:v2.new(0.3,0),zIndex:4}),
             backpack:this.container.add_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34,zIndex:3}),
             helmet:this.container.add_sprite("helmet",{zIndex:5}),
+            vest:this.container.add_sprite("vest",{zIndex:0,scale:1.333333,hotspot:v2.new(.5,.5)}),
             left_arm:this.container.add_sprite("left_arm"),
             right_arm:this.container.add_sprite("right_arm"),
             muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
@@ -307,7 +319,8 @@ export class Player extends GameObject{
         if(this.game.activePlayerId===this.id){
             this.game.activePlayer=this
         }
-
+        this.sprites.vest._frame=this.game.resources.get_sprite("player_vest")
+        this.sprites.vest.sync_rotation=false
         this.sprites.emote_container.sync_rotation=false
         this.container.add_child(this.sprites.emote_container)
         this.sprites.emote_container.position=v2.new(0,-1.5)
@@ -334,6 +347,7 @@ export class Player extends GameObject{
         }
         this.container.position=this.position
         this.container.rotation=this.rotation
+        this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
         this.manager.cells.updateObject(this)
         const objs=this.manager.cells.get_objects(this.hb,this.layer)
         this.current_interaction=undefined
@@ -383,7 +397,7 @@ export class Player extends GameObject{
             }
         }
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.anims.consumible_particles!.destroyed=true
         this.container.destroy()
     }
@@ -608,7 +622,7 @@ export class Player extends GameObject{
     set_helmet(helmet:number){
         if(this.helmet&&helmet-1===this.helmet.idNumber!)return
         if(helmet>0){
-            this.helmet=Armors.getFromNumber(helmet-1)
+            this.helmet=Helmets.getFromNumber(helmet-1)
             const h=this.helmet
 
             if(h.position){
@@ -619,6 +633,16 @@ export class Player extends GameObject{
             this.sprites!.helmet.frame=this.game.resources.get_sprite(h.idString+"_world")
         }else{
             this.sprites.helmet.frame=undefined
+        }
+    }
+    set_vest(vest:number){
+        if(this.vest&&vest-1===this.vest.idNumber!)return
+        if(vest>0){
+            this.sprites.vest.visible=true
+            this.vest=Vests.getFromNumber(vest-1)
+            this.sprites!.vest.tint=ColorM.number(this.vest.tint)
+        }else{
+            this.sprites.vest.visible=false
         }
     }
     set_backpack(backpack:number){
@@ -710,11 +734,9 @@ export class Player extends GameObject{
         if(data.full){
             this.position=data.position
             this.set_helmet(data.full.helmet)
+            this.set_vest(data.full.vest)
             this.set_backpack(data.full.backpack)
             this.set_skin(Skins.getFromNumber(data.full.skin))
-            if(data.full.vest>0){
-                this.vest=Armors.getFromNumber(data.full.vest-1)
-            }
 
             this.set_current_weapon(Weapons.valueNumber[data.full.current_weapon])
             if(data.full.animation){

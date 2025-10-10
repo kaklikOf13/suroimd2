@@ -70,8 +70,7 @@ export class MessageTabApp extends TabApp{
         this.messagesContainer = this.element!.querySelector(".chat-messages") as HTMLDivElement
 
         this.addMessage("Hey!", "other")
-        this.addMessage("I Am Alice", "other")
-        this.addMessage("How Are You?", "other")
+        this.addMessage("See Me In The Final. <3", "other")
 
         const btn=this.element!.querySelector("#tab-message-app-send-button") as HTMLButtonElement
         const input=this.element!.querySelector("#tab-message-app-input-msg") as HTMLButtonElement

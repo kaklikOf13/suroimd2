@@ -19,8 +19,8 @@ import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { InventoryGift } from "../others/gamemode.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { EquipamentDef, EquipamentType } from "common/scripts/definitions/items/equipaments.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 export abstract class LItem extends Item{
     abstract on_use(user:Player,slot?:LItem):void
     abstract update(user:Player):void
@@ -563,33 +563,31 @@ export class GInventory extends Inventory<LItem>{
                 this.owner.privateDirtys.inventory=true
                 break
             }
-            case InventoryItemType.equipament:{
-                const d=def as unknown as EquipamentDef
-                switch(d.type){
-                    case EquipamentType.Helmet:
-                        if(!this.owner.helmet){
-                            this.owner.helmet=d
-                            this.owner.dirty=true
-                            return count-1
-                        }else if(this.owner.helmet.level<d.level){
-                            this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
-                            this.owner.helmet=d
-                            this.owner.dirty=true
-                            return count-1
-                        }
-                        break
-                    case EquipamentType.Vest:
-                        if(!this.owner.vest){
-                            this.owner.vest=d
-                            this.owner.dirty=true
-                            return count-1
-                        }else if(this.owner.vest.level<d.level){
-                            this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
-                            this.owner.vest=d
-                            this.owner.dirty=true
-                            return count-1
-                        }
-                        break
+            case InventoryItemType.vest:{
+                const d=def as unknown as VestDef
+                if(!this.owner.vest){
+                    this.owner.vest=d
+                    this.owner.dirty=true
+                    return count-1
+                }else if(this.owner.vest.level<d.level){
+                    this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
+                    this.owner.vest=d
+                    this.owner.dirty=true
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.helmet:{
+                const d=def as unknown as HelmetDef
+                if(!this.owner.helmet){
+                    this.owner.helmet=d
+                    this.owner.dirty=true
+                    return count-1
+                }else if(this.owner.helmet.level<d.level){
+                    this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
+                    this.owner.helmet=d
+                    this.owner.dirty=true
+                    return count-1
                 }
                 break
             }

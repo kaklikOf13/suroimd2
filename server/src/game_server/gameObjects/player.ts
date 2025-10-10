@@ -8,7 +8,6 @@ import { DamageParams } from "../others/utils.ts"
 import { type Obstacle } from "./obstacle.ts"
 import { ActionsManager } from "common/scripts/engine/inventory.ts"
 import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts"
-import { type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts"
 import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts"
 import { type PlayerModifiers } from "common/scripts/others/constants.ts"
 import { AccessoriesManager } from "../player/accesories.ts"
@@ -27,6 +26,7 @@ import { EmoteDef, Emotes } from "common/scripts/definitions/loadout/emotes.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts"
 import { Explosions } from "common/scripts/definitions/objects/explosions.ts"
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -66,8 +66,8 @@ export class Player extends ServerGameObject{
 
     using_healing_speed:number=0.4
 
-    vest?:EquipamentDef
-    helmet?:EquipamentDef
+    vest?:VestDef
+    helmet?:HelmetDef
     accessories:AccessoriesManager
 
     status={
@@ -311,7 +311,7 @@ export class Player extends ServerGameObject{
                     this.piercingDamage({
                         amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence)*100,
                         reason:DamageReason.Abstinence,
-                        position:v2.duplicate(this.position),
+                        position:this.position,
                         critical:false,
                     })
                 }else{
@@ -881,7 +881,7 @@ export class Player extends ServerGameObject{
         p.Eliminator=eliminated_by
         this.client!.emit(p)
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         const idx=this.game.livingPlayers.indexOf(this)
         if(idx!==-1){
             this.game.livingPlayers.splice(idx,1);

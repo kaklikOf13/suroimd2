@@ -1,7 +1,7 @@
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { type Game } from "../others/game.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { ABParticle2D, ClientParticle2D, Graphics2D } from "../engine/mod.ts";
+import { Graphics2D } from "../engine/mod.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import { Color, ColorM } from "../engine/renderer.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
@@ -10,6 +10,7 @@ import { ParticlesEmitter2D } from "common/scripts/engine/particles.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { GraphicsDConfig } from "../others/config.ts";
+import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
 export class DeadZoneManager{
     radius:number=5
     position:Vec2=v2.new(0,0)

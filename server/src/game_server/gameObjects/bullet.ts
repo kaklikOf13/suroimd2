@@ -98,16 +98,17 @@ export class Bullet extends ServerGameObject{
                     if((obj as Obstacle).def.noBulletCollision)break
                     if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
                         const col1=this.hb.overlapCollision((obj as Obstacle).hb)
-                        const col2 = (obj as Obstacle).hb.overlapLine(this.old_position,this.position)!
-                        if(!col2&&!col1)continue
-                        if(!col2)continue
+                        //const col2 = (obj as Obstacle).hb.overlapLine(this.old_position,this.position)!
+                        //if(!col2&&!col1)continue
+                        if(!col1)continue
+                        //if(!col2)continue
                         const od=(obj as Obstacle).health;
                         (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                        if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3&&!this.defs.on_hit_explosion){
+                        /*if((obj as Obstacle).def.reflectBullets&&this.reflectionCount<3&&!this.defs.on_hit_explosion){
                             const rotation = 2 * Math.atan2(col2.normal.y, col2.normal.x) - this.angle
                             this.position = v2.add(this.position, v2.new(Math.sin(rotation), -Math.cos(rotation)))
                             this.reflect(rotation)
-                        }
+                        }*/
                         this.on_hit()
                         if((obj as Obstacle).dead){
                             this.damage-=od*(this.defs.obstacleMult??1)
@@ -149,7 +150,7 @@ export class Bullet extends ServerGameObject{
         b.damage=this.damage/2
         b.reflectionCount=this.reflectionCount+1
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         delete this.game.bullets[this.id]
     }
     tracerColor:number=0
@@ -159,6 +160,7 @@ export class Bullet extends ServerGameObject{
             position:this.position,
             tticks:this.tticks,
             full:{
+                critical:this.critical,
                 initialPos:this.initialPosition,
                 maxDistance:this.maxDistance,
                 radius:(this.hb as CircleHitbox2D).radius,

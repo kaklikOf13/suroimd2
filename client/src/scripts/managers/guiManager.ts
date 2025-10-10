@@ -847,7 +847,7 @@ export class GuiManager{
         this.game.addTimeout(()=>{
             this.game.music.set(this.game.resources.get_audio(random.choose(this.game.ending_music)))
             this.information_killbox_messages.push(`Grand Finale`)
-        },1)
+        },3)
     }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={

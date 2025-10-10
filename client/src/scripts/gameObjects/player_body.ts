@@ -1,5 +1,5 @@
 import { Container2D, Sprite2D } from "../engine/mod.ts";
-import { v2 } from "common/scripts/engine/geometry.ts";
+import { v2, v2m } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { PlayerBodyData } from "common/scripts/others/objectsEncode.ts";
 import { ColorM } from "../engine/renderer.ts";
@@ -20,7 +20,7 @@ export class PlayerBody extends GameObject{
         this.sprite.frame=this.game.resources.get_sprite("player_body")
         this.updatable=false
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.container.destroy()
         this.sprite_text.frame?.free()
     }
@@ -65,7 +65,7 @@ export class PlayerBody extends GameObject{
             this.container.visible=true
         }
         if(v2.distance(this.position,data.position)<=1){
-            this.position=v2.lerp(this.position,data.position,0.8)
+            v2m.lerp(this.position,data.position,0.8)
         }else{
             this.position=data.position
         }

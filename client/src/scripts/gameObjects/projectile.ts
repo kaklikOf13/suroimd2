@@ -1,8 +1,8 @@
-import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
-import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
-import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts";
-import { GameObject } from "../others/gameObject.ts";
-import { Sprite2D } from "../engine/container_2d.ts";
+import { ProjectileData } from "common/scripts/others/objectsEncode.ts"
+import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts"
+import { CircleHitbox2D, v2 } from "common/scripts/engine/mod.ts"
+import { GameObject } from "../others/gameObject.ts"
+import { Sprite2D } from "../engine/container_2d.ts"
 export class Projectile extends GameObject{
     stringType:string="projectile"
     numberType: number=6
@@ -17,7 +17,7 @@ export class Projectile extends GameObject{
     create(_args: Record<string, void>): void {
         this.game.camera.addObject(this.sprite)
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.sprite.destroy()
     }
 

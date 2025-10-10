@@ -29,7 +29,7 @@ import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } f
 import { Creature } from "../gameObjects/creature.ts";
 import {  Material2D, WebglRenderer } from "../engine/renderer.ts";
 import { Plane } from "./planes.ts";
-import { ClientParticle2D, isMobile, RainParticle2D } from "../engine/game.ts";
+import { isMobile } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { Tween } from "svelte/motion";
 import { ToggleElement } from "../engine/utils.ts";
@@ -37,6 +37,7 @@ import { type MenuManager } from "../managers/menuManager.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
 import { Camera3D } from "../engine/container_3d.ts";
+import { ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -388,7 +389,7 @@ export class Game extends ClientGame2D<GameObject>{
     /*
     Ambient
     */
-   if(Math.random()<=0.003){
+   if(Math.random()<=0.005){
     this.bolt()
    }
    //FPS Show
@@ -469,7 +470,7 @@ export class Game extends ClientGame2D<GameObject>{
       console.log("not connected")
       return
     }
-    this.activePlayer?.onDestroy()
+    this.activePlayer?.destroy()
     this.activePlayer=undefined
     const p=new JoinPacket(playerName)
     p.is_mobile=isMobile
