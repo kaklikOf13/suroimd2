@@ -7,18 +7,12 @@ import { Color, ColorM } from "./renderer.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
 
 export abstract class ClientParticle2D extends Particle2D{
-    container:Container2D
     constructor(){
         super()
-        this.container=new Container2D()
-        this.container.visible=false
-        this.container.position=this.position
     }
     override on_create(): void {
-        (this.manager.game as unknown as ClientGame2D).camera.addObject(this.container)
     }
     override on_destroy(): void {
-        this.container.destroy()
     }
 }
 export interface ABParticle2Config{
@@ -65,13 +59,14 @@ export class ABParticle2D extends ClientParticle2D{
     constructor(config:ABParticle2Config){
         super()
         this.config=config
-        this.position=v2.duplicate(config.position)
-        this.container.position=this.position
-        this.container.scale=v2.new(config.scale??1,config.scale??1)
-        this.container.rotation=config.angle??0
-        this.container.zIndex=config.zIndex??0
+        this.sprite.position=config.position
+        this.position=this.sprite._position
+        
+        this.sprite.scale=v2.new(config.scale??1,config.scale??1)
+        this.sprite.rotation=config.angle??0
+        this.sprite.zIndex=config.zIndex??0
         if(config.tint){
-            this.container.tint=ColorM.clone(config.tint)
+            this.sprite.tint=config.tint
         }
     }
     override update(dt: number): void {
@@ -86,7 +81,7 @@ export class ABParticle2D extends ClientParticle2D{
             speed=Numeric.lerp(this.config.speed,this.config.to.speed,tt)
         }
         if(this.config.to?.angle){
-            this.container.rotation=Numeric.lerp(this.config.angle??0,this.config.to.angle,tt)
+            this.sprite._rotation=Numeric.lerp(this.config.angle??0,this.config.to.angle,tt)
         }
         let dire=this.config.direction
         if(this.config.to?.direction){
@@ -94,24 +89,26 @@ export class ABParticle2D extends ClientParticle2D{
         }
         if(this.config.to?.scale){
             this.scale=Numeric.lerp(this.config.scale??1,this.config.to.scale,tt)
-            this.container.scale.x=this.scale
-            this.container.scale.y=this.scale
+            this.sprite._scale._x=this.scale
+            this.sprite._scale._y=this.scale
         }
         if(this.config.to?.tint){
-            this.container.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
+            this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
         }
         const vel=v2.from_RadAngle(dire)
         v2m.scale(vel,vel,speed*dt)
         
-        this.container.position.x+=vel.x
-        this.container.position.y+=vel.y
+        this.sprite._position._x+=vel.x
+        this.sprite.position.y+=vel.y
 
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame2D).resources)
-        this.container.add_child(this.sprite)
-        this.container.visible=true
+        this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame2D).resources);
+        (this.manager.game as unknown as ClientGame2D).camera.addObject(this.sprite)
+    }
+    override on_destroy(): void {
+        this.sprite.destroy()
     }
 }
 export class RainParticle2D extends ClientParticle2D{
@@ -125,17 +122,16 @@ export class RainParticle2D extends ClientParticle2D{
     constructor(config:RainParticle2Config){
         super()
         this.config=config
-        this.position=v2.duplicate(config.position)
-        this.container.position=this.position
-        this.container.scale=v2.new(config.scale?.main??1,config.scale?.main??1)
-        this.container.rotation=config.rotation
+        this.sprite.position=config.position
+        this.position=this.sprite._position
+        this.sprite.scale=v2.new(config.scale?.main??1,config.scale?.main??1)
+        this.sprite.rotation=config.rotation
         this.sprite.hotspot=v2.new(1,.5)
         this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)
         if(config.zindex){
-            this.container.zIndex=config.zindex.main
+            this.sprite.zIndex=config.zindex.main
         }
         this.lifetime=config.lifetime??1
-        
         this.sprite.tint={r:1,b:1,g:1,a:0}
     }
     vel:Vec2=v2.new(0,0)
@@ -146,14 +142,13 @@ export class RainParticle2D extends ClientParticle2D{
                     this.ticks=0
                     this.stage=1
                     this.sprite.set_frame(this.config.frame.wave,(this.manager.game as unknown as ClientGame2D).resources)
-                    this.container.scale=v2.new(0,0)
+                    this.sprite.scale=v2.new(0,0)
                     this.sprite.hotspot=v2.new(.5,.5)
                     if(this.config.zindex){
-                        this.container.zIndex=this.config.zindex.wave
+                        this.sprite.zIndex=this.config.zindex.wave
                     }
                 }
-                this.container.position.x+=this.vel.x*dt
-                this.container.position.y+=this.vel.y*dt
+                v2m.add_component(this.sprite.position,this.vel.x*dt,this.vel.y*dt)
                 this.ticks+=dt
                 this.sprite.tint.a=Numeric.clamp(this.ticks*3,0,1)
                 break
@@ -164,7 +159,7 @@ export class RainParticle2D extends ClientParticle2D{
                 }
                 this.ticks+=2*dt
                 this.sprite.tint.a=1-this.ticks
-                this.container.scale=v2.add(this.container.scale,v2.new(6*dt,6*dt))
+                this.sprite.scale=v2.add(this.sprite.scale,v2.new(6*dt,6*dt))
                 break
             }
         }
@@ -172,8 +167,11 @@ export class RainParticle2D extends ClientParticle2D{
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame2D).resources)
-        this.container.add_child(this.sprite)
-        this.container.visible=true
+        this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame2D).resources);
+        (this.manager.game as unknown as ClientGame2D).camera.addObject(this.sprite)
+        this.sprite.visible=true
+    }
+    override on_destroy(): void {
+        this.sprite.destroy()
     }
 }

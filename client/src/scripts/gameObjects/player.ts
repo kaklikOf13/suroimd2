@@ -377,6 +377,7 @@ export class Player extends GameObject{
                 if(this.hb.collidingWith(o.hb)){
                     switch(o.stringType){
                         case "loot":{
+                            if(!(o as Loot).item)return
                             this.game.guiManager.state.loot=true
                             this.game.guiManager.state.information_box_message=`Take ${(o as Loot).item.idString}${(o as Loot).count>1?`(${(o as Loot).count})`:""}`
                             break
@@ -425,7 +426,9 @@ export class Player extends GameObject{
     }
     emote_time:number=0
     add_emote(emote:EmoteDef){
-        this.game.sounds.play(this.game.resources.get_audio("emote_play"),{},"players")
+        this.game.sounds.play(this.game.resources.get_audio("emote_play"),{
+            max_distance:30
+        },"players")
         this.sprites.emote_container.visible=true
         this.emote_time=0
         this.sprites.emote_sprite.frame=this.game.resources.get_sprite(emote.idString)
@@ -458,7 +461,7 @@ export class Player extends GameObject{
                             this.reset_anim()
                         },
                         position:this.position,
-                        max_distance:5,
+                        max_distance:20,
                         volume:0.4
                     },"players")
                 }
@@ -474,7 +477,7 @@ export class Player extends GameObject{
                     }
                     this.sound_animation.animation=this.game.sounds.play(sound,{
                         position:this.position,
-                        max_distance:5,
+                        max_distance:10,
                         volume:0.7,
                         on_complete:()=>{
                             this.set_current_weapon(this.current_weapon,true)
@@ -615,7 +618,7 @@ export class Player extends GameObject{
             this.game.sounds.play(sound,{
                 volume:0.4,
                 position:this.position,
-                max_distance:7
+                max_distance:30
             },"players")
         }
     }

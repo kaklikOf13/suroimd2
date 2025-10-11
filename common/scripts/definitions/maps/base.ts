@@ -77,14 +77,14 @@ LootTables.add_tables({
         {item:"m870",weight:2},
     ],
     "epic_guns":[
-        {item:"famas",weight:4},
+        {item:"famas",weight:6},
         {item:"spas12",weight:3},
     ],
     "mythic_guns":[
-        {item:"vector",weight:3},
-        {item:"kar98k",weight:1},
+        {item:"vector",weight:6},
+        {item:"kar98k",weight:6},
         {item:"awp",weight:0.5},
-        {item:"m2-2",weight:0.5},
+        {item:"m2-2",weight:0.1},
     ],
     "legendary_guns":[
         {item:"awms",weight:1},
@@ -100,8 +100,8 @@ LootTables.add_tables({
         {table:"legendary_guns",weight:0.01}
     ],
     "melees":[
-        {table:"axe",weight:100},
-        {table:"hammer",weight:5},
+        {table:"axe",weight:10},
+        {table:"hammer",weight:1},
     ],
     "special_guns":[
         {table:"uncommon_guns",weight:29},
@@ -149,20 +149,28 @@ LootTables.add_tables({
     ],
     //Ammos
     "ammos":[
-        {item:"12g",count:10,weight:1},
-        {item:"9mm",count:60,weight:1},
-        {item:"762mm",count:60,weight:1},
-        {item:"556mm",count:60,weight:1},
+        {item:"12g",count:10,weight:5},
+        {item:"9mm",count:60,weight:5},
+        {item:"22lr",count:60,weight:5},
+        {item:"762mm",count:60,weight:5},
+        {item:"556mm",count:60,weight:5},
+        {item:"50cal",count:20,weight:0.1},
         {item:"308sub",count:5,weight:0.05},
+        {item:"gasoline",count:5,weight:0.05},
+        {item:"explosive_ammo",count:2,weight:0.05},
     ],
     "special_ammos":[
-        {item:"12g",count:15,weight:1},
-        {item:"9mm",count:80,weight:1},
-        {item:"762mm",count:80,weight:1},
-        {item:"556mm",count:80,weight:1},
-        {item:"308sub",count:10,weight:0.05},
+        {item:"12g",count:15,weight:5},
+        {item:"9mm",count:80,weight:5},
+        {item:"22lr",count:80,weight:5},
+        {item:"762mm",count:80,weight:5},
+        {item:"556mm",count:80,weight:5},
+        {item:"50cal",count:40,weight:0.3},
+        {item:"308sub",count:10,weight:0.2},
+        {item:"gasoline",count:10,weight:0.2},
+        {item:"explosive_ammo",count:4,weight:0.2},
     ],
-    //Equipments And Backpacks
+    //Armors And Backpacks
     "armors":[
         {item:"basic_vest",weight:10},
         {item:"regular_vest",weight:1},
@@ -227,20 +235,20 @@ LootTables.add_tables({
         [{weight:10,table:"consumibles"},{weight:1,table:""}],
         [{weight:9.5,table:"special_equipments"},{weight:1,table:""}],
         [{weight:1,table:"special_guns"}],
-        [{weight:60,table:""},{weight:1,table:"melees"}],
+        [{weight:40,table:""},{weight:1,table:"melees"}],
     ],
     "iron_crate":[
         [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
         [{weight:10,table:"consumibles"},{weight:1,table:""}],
         [{weight:1,table:"airdrop_equipments"}],
         [{weight:1,table:"mythic_guns"}],
-        [{weight:10,table:""},{weight:1,table:"melees"}],
+        [{weight:5,table:""},{weight:1,table:"melees"}],
     ],
     "gold_crate":[
         [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
         [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
         [{weight:10,table:"airdrop_equipments"},{weight:1,count:2,table:"airdrop_equipments"}],
-        [{weight:1,table:"mythic_guns"}],
+        [{weight:10,table:"legendary_guns"},{weight:1,table:"mythic_guns"}],
         [{weight:1,table:"melees"}],
     ],
     //Animals

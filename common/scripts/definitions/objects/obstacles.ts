@@ -98,7 +98,15 @@ export const Materials:Record<string,MaterialDef>={
     metal:{
         sounds:"metal",
         hit_variations:2
-    }
+    },
+    wood:{
+        sounds:"wood",
+        hit_variations:2
+    },
+    iron:{
+        sounds:"iron",
+        hit_variations:2
+    },
 }
 
 export const Obstacles=new Definitions<ObstacleDef,null>((_v)=>{})
@@ -172,8 +180,7 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
-        material:"tree",
-
+        material:"wood",
         interactDestroy:true,
         lootTable:"wood_crate",
         spawnMode:Spawn.grass
@@ -181,7 +188,7 @@ Obstacles.insert(
     {
         idString:"copper_crate",
         health:160,
-        hitbox:new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6)),//new HitboxGroup2D(new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6))),//
+        hitbox:new RectHitbox2D(v2.new(-0.71,-0.71),v2.new(0.71,0.71)),//new HitboxGroup2D(new RectHitbox2D(v2.new(-0.6,-0.6),v2.new(0.6,0.6))),//
         scale:{
             destroy:0.6,
         },
@@ -191,28 +198,26 @@ Obstacles.insert(
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
-        material:"tree", //TODO Copper Material
+        material:"iron", //TODO Copper Material
         reflectBullets:true,
-        interactDestroy:true,
         lootTable:"copper_crate",
         spawnMode:Spawn.grass
     },
     {
         idString:"iron_crate", //Airdrop
         health:170,
-        hitbox:new RectHitbox2D(v2.new(-0.4,-0.4),v2.new(0.4,0.4)),
+        hitbox:new RectHitbox2D(v2.new(-0.71,-0.71),v2.new(0.71,0.71)),
         scale:{
             destroy:0.8,
         },
         frame_transform:{
-            hotspot:v2.new(0,0)
+            hotspot:v2.new(0,0),
+            scale:2,
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
-        material:"tree",//TODO Iron Material
+        material:"iron",
         reflectBullets:true,
-
-        interactDestroy:true,
         lootTable:"iron_crate",
         spawnMode:Spawn.grass
     },
@@ -221,17 +226,16 @@ Obstacles.insert(
         health:180,
         frame_transform:{
             hotspot:v2.new(0,0),
+            scale:2,
         },
-        hitbox:new RectHitbox2D(v2.new(-0.4,-0.4),v2.new(0.4,0.4)),
+        hitbox:new RectHitbox2D(v2.new(-0.71,-0.71),v2.new(0.71,0.71)),
         scale:{
             destroy:0.8
         },
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
-        material:"tree",
+        material:"iron",
         reflectBullets:true,
-
-        interactDestroy:true,
         lootTable:"gold_crate",
         spawnMode:Spawn.grass
     },

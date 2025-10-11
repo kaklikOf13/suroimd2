@@ -83,7 +83,7 @@ export class Obstacle extends GameObject{
         if(this.sounds&&this.sounds.break){
             this.game.sounds.play(this.sounds.break,{
                 position:this.position,
-                max_distance:13
+                max_distance:30
             })
         }
     }
@@ -115,7 +115,7 @@ export class Obstacle extends GameObject{
             this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{
                 volume:1,
                 position:this.position,
-                max_distance:14
+                max_distance:40,
             },"obstacles")
         }
     }
@@ -204,16 +204,16 @@ export class Obstacle extends GameObject{
         if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(!this.emitter_1){
                 this.emitter_1=this.game.particles.add_emiter({
-                    delay:0.3,
+                    delay:0.5,
                     particle:()=>new ABParticle2D({
                         frame:{
                             image:"gas_smoke_particle"
                         },
                         position:this.position,
-                        speed:random.float(0.7,1),
+                        speed:random.float(0.5,0.7),
                         angle:0,
                         direction:random.float(-1.45,-1.65),
-                        life_time:random.float(1.7,3),
+                        life_time:random.float(4,6),
                         zIndex:zIndexes.Particles,
                         scale:0,
                         tint:ColorM.hex("#fff5"),

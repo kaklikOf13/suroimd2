@@ -156,20 +156,23 @@ export class SoloGamemodeManager extends GamemodeManager{
     override generate_map(): void {
         this.game.map.generate(generation.island({
             generation:{
-                size:v2.new(800,800),
+                size:v2.new(500,500),
                 ground_loot:[{count:900,table:"ground_loot"}],
                 spawn:[
                     [
-                        {id:"oak_tree",count:4000},
-                        {id:"stone",count:3300},
-                        {id:"bush",count:2500},
-                        {id:"wood_crate",count:1200},
-                        {id:"barrel",count:1000}
+                        {id:"oak_tree",count:2900},
+                        {id:"stone",count:2000},
+                        {id:"bush",count:1500},
+                        {id:"wood_crate",count:700},
+                        {id:"copper_crate",count:20},
+                        {id:"iron_crate",count:2},
+                        {id:"gold_crate",count:1},
+                        {id:"barrel",count:700}
                     ]
                 ],
                 terrain:{
                     base:FloorType.Water,
-                    rivers:{
+                    /*rivers:{
                         divisions:100,
                         spawn_floor:1,
                         expansion:32,
@@ -188,10 +191,10 @@ export class SoloGamemodeManager extends GamemodeManager{
                                 weight:1
                             }
                         ]
-                    },
+                    },*/
                     floors:[
                         {
-                            padding:25,
+                            padding:20,
                             type:FloorType.Sand,
                             spacing:0.3,
                             variation:1.3,

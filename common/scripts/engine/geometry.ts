@@ -13,7 +13,6 @@ function float32ToUint32(value: number): number {
     return intView[0]
 }
 
-
 const prime1 = BigInt("2654435761")
 const prime2 = BigInt("2246822519")
 
@@ -25,64 +24,94 @@ export enum RotationMode{
 
 export type HashVec2=bigint
 
+export class Vec2M implements Vec2{
+    on_set:()=>void
+    _x:number
+    _y:number
+
+    get x():number{return this._x}
+    set x(val:number){this._x=val;this.on_set()}
+    get y():number{return this._y}
+    set y(val:number){this._y=val;this.on_set()}
+
+    set(x:number,y:number){
+        this._x=x
+        this._y=y
+        this.on_set()
+    }
+
+    constructor(x:number,y:number,on_set:()=>void=()=>{}){
+        this._x=x
+        this._y=y
+        this.on_set=on_set
+    }
+}
+export class Vec4M{
+    on_set:()=>void
+    _x:number=0
+    _y:number=0
+    _z:number=0
+    _w:number=1
+
+    get r():number{return this._x}
+    set r(val:number){this._x=val;this.on_set()}
+    get g():number{return this._y}
+    set g(val:number){this._y=val;this.on_set()}
+    get b():number{return this._z}
+    set b(val:number){this._z=val;this.on_set()}
+    get a():number{return this._w}
+    set a(val:number){this._w=val;this.on_set()}
+
+    get x():number{return this._x}
+    set x(val:number){this._x=val;this.on_set()}
+    get y():number{return this._y}
+    set y(val:number){this._y=val;this.on_set()}
+    get z():number{return this._z}
+    set z(val:number){this._z=val;this.on_set()}
+    get w():number{return this._w}
+    set w(val:number){this._w=val;this.on_set()}
+    set(x:number,y:number,z:number,w:number){
+        this._x=x
+        this._y=y
+        this._z=z
+        this._w=w
+        this.on_set()
+    }
+
+    constructor(x:number,y:number,z:number,w:number,on_set:()=>void=()=>{}){
+        this._x=x
+        this._y=y
+        this._z=z
+        this._w=w
+        this.on_set=on_set
+    }
+}
 export const v2m=Object.freeze({
-    single(out:Vec2,val:number):Vec2{
-        out.x=val
-        out.y=val
-        return out
-    },
-    zero(out:Vec2):Vec2{
-        out.x=0
-        out.y=0
-        return out
-    },
-    add(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x+b.x; out.y = a.y+b.y; return out; },
-    sub(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x-b.x; out.y = a.y-b.y; return out; },
-    mul(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x*b.x; out.y = a.y*b.y; return out; },
-    div(out:Vec2,a:Vec2, b:Vec2):Vec2{ out.x = a.x/b.x; out.y = a.y/b.y; return out; },
-    scale(out:Vec2,a:Vec2, b:number):Vec2{ out.x = a.x*b; out.y = a.y*b; return out; },
-    dscale(out:Vec2,a:Vec2, b:number):Vec2{ out.x = a.x/b; out.y = a.y/b; return out; },
+    single(out:Vec2,val:number){out.x=val;out.y=val;return out},
+    zero(out:Vec2){out.x=0;out.y=0},
+    add(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x+b.x; out.y = a.y+b.y; },
+    sub(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x-b.x; out.y = a.y-b.y; },
+    mul(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x*b.x; out.y = a.y*b.y; },
+    div(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x/b.x; out.y = a.y/b.y; },
+    scale(out:Vec2,a:Vec2, b:number){ out.x = a.x*b; out.y = a.y*b; },
+    dscale(out:Vec2,a:Vec2, b:number){ out.x = a.x/b; out.y = a.y/b; },
 
-    set(out:Vec2,x:number,y:number):Vec2{out.x=x;out.y=y;return out},
-    add_component(out:Vec2,x:number,y:number):Vec2{out.x+=x;out.y+=y;return out},
-    sub_component(out:Vec2,x:number,y:number):Vec2{out.x-=x;out.y-=y;return out},
-    mul_component(out:Vec2,x:number,y:number):Vec2{out.x*=x;out.y*=y;return out},
-    div_component(out:Vec2,x:number,y:number):Vec2{out.x/=x;out.y/=y;return out},
+    set(out:Vec2,x:number,y:number){out.x=x;out.y=y},
+    add_component(out:Vec2,x:number,y:number){out.x+=x;out.y+=y},
+    sub_component(out:Vec2,x:number,y:number){out.x-=x;out.y-=y},
+    mul_component(out:Vec2,x:number,y:number){out.x*=x;out.y*=y},
+    div_component(out:Vec2,x:number,y:number){out.x/=x;out.y/=y},
 
-    scale_component(out:Vec2,x:number):Vec2{out.x*=x;out.y*=x;return out},
+    scale_component(out:Vec2,x:number){out.x*=x;out.y*=x},
 
-    min1(v:Vec2,min:number):Vec2{
-        v.x=Math.max(v.x,min)
-        v.y=Math.max(v.y,min)
-        return v
-    },
-    min2(x:Vec2,y:Vec2):Vec2{
-        x.x=Math.max(x.x,y.x)
-        x.y=Math.max(x.y,y.y)
-        return x
-    },
-    max1(v:Vec2,max:number):Vec2{
-        v.x=Math.min(v.x,max)
-        v.y=Math.min(v.y,max)
-        return v
-    },
-    max2(x:Vec2,y:Vec2):Vec2{
-        x.x=Math.min(x.x,y.x)
-        x.y=Math.min(x.y,y.y)
-        return x
-    },
+    min1(v:Vec2,min:number){v.x=Math.max(v.x,min);v.y=Math.max(v.y,min)},
+    min2(x:Vec2,y:Vec2){x.x=Math.max(x.x,y.x);x.y=Math.max(x.y,y.y)},
+    max1(v:Vec2,max:number){v.x=Math.min(v.x,max);v.y=Math.min(v.y,max)},
+    max2(x:Vec2,y:Vec2){x.x=Math.min(x.x,y.x);x.y=Math.min(x.y,y.y)},
 
-    clamp1(v:Vec2,min:number,max:number):Vec2{
-        v.x=Math.max(Math.min(v.x,max),min)
-        v.y=Math.max(Math.min(v.y,max),min)
-        return v
-    },
-    clamp2(v:Vec2,min:Vec2,max:Vec2):Vec2{
-        v.x=Math.max(Math.min(v.x,max.x),min.x)
-        v.y=Math.max(Math.min(v.y,max.y),min.y)
-        return v
-    },
-    normalizeSafe(v:Vec2,fallback?:Vec2):Vec2 {
+    clamp1(v:Vec2,min:number,max:number){v.x=Math.max(Math.min(v.x,max),min);v.y=Math.max(Math.min(v.y,max),min)},
+    clamp2(v:Vec2,min:Vec2,max:Vec2){v.x=Math.max(Math.min(v.x,max.x),min.x);v.y=Math.max(Math.min(v.y,max.y),min.y)},
+    normalizeSafe(v:Vec2,fallback?:Vec2) {
         const eps = 0.000001
         const len = v2.length(v)
         if(len>eps){
@@ -92,20 +121,29 @@ export const v2m=Object.freeze({
             v.x=fallback?.x??1
             v.y=fallback?.x??0
         }
-        return v
     },
-    lerp(a: Vec2, b: Vec2,interpolation: number): Vec2 {
-        a.x+=(b.x-a.x)*interpolation
-        a.y+=(b.y-a.y)*interpolation
-        return a
+    lerp(a: Vec2, b: Vec2,interpolation: number) {a.x+=(b.x-a.x)*interpolation;a.y+=(b.y-a.y)*interpolation},
+    abs(a: Vec2){a.x=Math.abs(a.x);a.y=Math.abs(a.y)},
+    floor(a: Vec2) {a.x=Math.floor(a.x);a.y=Math.floor(a.y)},
+    ceil(a: Vec2) {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y)},
+
+    rotate_RadAngle(vec: Vec2, angle: RadAngle) {
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        const x = vec.x
+        const y = vec.y
+        vec.x = x * cos - y * sin
+        vec.y = x * sin + y * cos
     },
-    abs(a: Vec2): Vec2 {
-        a.x=Math.abs(a.x)
-        a.y=Math.abs(a.y)
-        return a
+    rotate_DegAngle(vec:Vec2,angle:DegAngle) {
+        const a=Angle.deg2rad(angle)
+        const cos = Math.cos(a)
+        const sin = Math.sin(a)
+        const x = vec.x
+        const y = vec.y
+        vec.x=x * cos - y * sin
+        vec.y=x * sin + y * cos
     },
-    floor(a: Vec2): Vec2 {a.x=Math.floor(a.x);a.y=Math.floor(a.y);return a},
-    ceil(a: Vec2): Vec2 {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y);return a},
 })
 export const v2_sides:Array<Vec2>=[
     {

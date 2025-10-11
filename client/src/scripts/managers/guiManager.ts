@@ -1086,6 +1086,7 @@ export class GuiManager{
 <span id="gameover-you-win">You Win!</span>
 `
         }else{
+            this.game.music.set(null)
             if(!this.players_name[g.Eliminator])return
             this.content.gameOver_main_message.innerHTML=`
 <span id="gameover-eliminated">Eliminated By</span>

@@ -3,16 +3,16 @@ import { type Player } from "../gameObjects/player.ts";
 import { type GameItem } from "common/scripts/definitions/utils.ts";
 import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { type GunDef } from "common/scripts/definitions/items/guns.ts";
-import { type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 
 export interface InventoryGiftItem{
     item:GameItem,
     count:number
 }
 export interface InventoryGift{
-    helmet?:(player:Player)=>EquipamentDef|undefined
-    vest?:(player:Player)=>EquipamentDef|undefined
+    helmet?:(player:Player)=>HelmetDef|undefined
+    vest?:(player:Player)=>VestDef|undefined
     backpack?:(player:Player)=>BackpackDef|undefined
 
     items?:(player:Player)=>InventoryGiftItem[]
@@ -78,7 +78,7 @@ export const DefaultGamemode:Gamemode={
                 },
             }
         }*/
-       max:70
+       max:100
     },
     game:{
         no_battle_plane:false

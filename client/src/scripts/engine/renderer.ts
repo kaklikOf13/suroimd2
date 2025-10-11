@@ -58,6 +58,18 @@ export const ColorM={
     hex2number(color: string): number {
         return parseInt(color.replace(/^0x/, ''), 16)
     },
+    mult(dst:Color,x:Color,y:Color){
+        dst.r=x.r*y.r
+        dst.g=x.g*y.g
+        dst.b=x.b*y.b
+        dst.a=x.a*y.a
+    },
+    set1(dst:Color,val:Color){
+        dst.r=val.r
+        dst.g=val.g
+        dst.b=val.b
+        dst.a=val.a
+    },
     default:{
         black:{
             r:0,

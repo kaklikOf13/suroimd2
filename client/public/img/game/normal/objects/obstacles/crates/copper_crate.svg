@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    version="1.1"
-   width="112.78345"
-   height="112.78345"
-   viewBox="0 0 112.78346 112.78346"
+   width="156.16785"
+   height="156.16785"
+   viewBox="0 0 156.16787 156.16787"
    id="svg87"
    sodipodi:docname="copper_crate.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
@@ -20,9 +20,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="5.1631474"
-     inkscape:cx="81.539411"
-     inkscape:cy="61.493499"
+     inkscape:zoom="1.2907869"
+     inkscape:cx="-73.598516"
+     inkscape:cy="45.321191"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -431,7 +431,7 @@
     </radialGradient>
   </defs>
   <g
-     transform="matrix(2.0409453,0,0,2.0409453,-432.9724,-596.24803)"
+     transform="matrix(2.8260354,0,0,2.8260354,-599.52383,-825.60666)"
      id="g87">
     <g
        stroke-width="0"

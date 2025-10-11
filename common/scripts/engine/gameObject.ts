@@ -135,7 +135,12 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 
         const layer = obj.layer
         const layerMap = this.getLayerMap(layer)
-        const occupiedKeys = new Set<string>()
+        let entry = this.objectCells.get(obj)
+        if (!entry){
+            this.objectCells.set(obj, { layer, keys: new Set() })
+            entry=this.objectCells.get(obj)
+        }
+        entry!.keys.clear()
 
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
@@ -144,18 +149,16 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
                     layerMap.set(key, new Set());
                 }
                 layerMap.get(key)!.add(obj);
-                occupiedKeys.add(key);
+                entry!.keys.add(key);
             }
         }
-
-        this.objectCells.set(obj, { layer, keys: occupiedKeys });
     }
     get_objects(hitbox: Hitbox2D, layer: number): GameObject[] {
         const rect = hitbox.to_rect()
         this.cellPos(rect.min)
         this.cellPos(rect.max)
 
-        const results = new Set<GameObject>();
+        const results:GameObject[] = []
         const layerMap = this.cells.get(layer);
         if (!layerMap) return [];
 
@@ -164,12 +167,12 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
                 const set = layerMap.get(this.key(x, y));
                 if (set) {
                     for (const obj of set) {
-                        results.add(obj);
+                        results.push(obj);
                     }
                 }
             }
         }
-        return [...results];
+        return results
     }
 }
 export type EncodedData={
@@ -351,9 +354,12 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(let i=0;i<l.length;i++){
             l[i].encodeObject(!last_list.includes(l[i]),stream,encoders,priv)
         }
-        const deletions=last_list.filter(obj =>
-           !l.includes(obj)&&obj.netSync.deletion
-        );
+        const deletions: GameObject[] = []
+        for (let i = 0; i < last_list.length; i++) {
+            const obj = last_list[i]
+            if (obj.netSync.deletion && l.indexOf(obj) === -1) deletions.push(obj)
+        }
+
         stream.writeUint16(deletions.length)
         for(let i=0;i<deletions.length;i++){
             stream.writeUint8(deletions[i].layer)

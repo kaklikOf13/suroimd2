@@ -1,8 +1,8 @@
-import { OneVec2, SmoothShape2D, v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { SmoothShape2D, v2, Vec2, Vec2M, Vec4M } from "common/scripts/engine/geometry.ts";
 import { Color, ColorM, Renderer, WebglRenderer,Material2D, GLMaterial2D, GL2D_LightMatArgs } from "./renderer.ts";
 import { type ResourcesManager, type Frame, DefaultTexCoords } from "./resources.ts";
 import { AKeyFrame, FrameDef, FrameTransform, KeyFrameSpriteDef } from "common/scripts/engine/definitions.ts";
-import { Numeric } from "common/scripts/engine/mod.ts";
+import { Numeric, v2m } from "common/scripts/engine/mod.ts";
 import { Hitbox2D, HitboxType2D } from "common/scripts/engine/hitbox.ts";
 import { ClientGame2D } from "./game.ts";
 import { type Tween } from "./utils.ts";
@@ -33,46 +33,19 @@ export abstract class Container2DObject {
 
     id_on_parent:number=0
 
-    _position: Vec2 = v2.new(0, 0);
+    _position: Vec2M
     get position(): Vec2 {
-        // deno-lint-ignore no-this-alias
-        const self = this;
-        return new Proxy(this._position, {
-            set(target, prop, value) {
-                if (prop === "x" || prop === "y") {
-                    // deno-lint-ignore no-explicit-any
-                    (target as any)[prop] = value;
-                    self.update_real();
-                    return true;
-                }
-                return false;
-            }
-        });
+        return this._position as Vec2
     }
     set position(val: Vec2) {
-        this._position.x=val.x
-        this._position.y=val.y
-        this.update_real();
+        this._position.set(val.x,val.y)
     }
-    _scale: Vec2 = v2.new(1, 1);
+    _scale: Vec2M
     get scale(): Vec2 {
-        // deno-lint-ignore no-this-alias
-        const self = this
-        return new Proxy(this._scale, {
-            set(target, prop, value) {
-                if (prop === "x" || prop === "y") {
-                    // deno-lint-ignore no-explicit-any
-                    (target as any)[prop] = value
-                    self.update_real()
-                    return true
-                }
-                return false
-            }
-        })
+        return this._scale as Vec2
     }
     set scale(val: Vec2) {
-        this._scale=val
-        this.update_real()
+        this._scale.set(val.x,val.y)
     }
 
     _rotation: number = 0
@@ -84,35 +57,18 @@ export abstract class Container2DObject {
         this.update_real()
     }
 
-    _tint: Color = ColorM.rgba(255,255,255,255)
+    _tint: Vec4M
     get tint(): Color {
-        // deno-lint-ignore no-this-alias
-        const self = this
-        return new Proxy(this._tint, {
-            set(target, prop, value) {
-                if (prop === "r" || prop === "g" || prop === "b" || prop === "a") {
-                    // deno-lint-ignore no-explicit-any
-                    (target as any)[prop] = value
-                    self.update_real()
-                    return true
-                }
-                return false
-            }
-        })
+        return this._tint as Color
     }
     set tint(val: Color) {
-        this._tint.r = val.r
-        this._tint.g = val.g
-        this._tint.b = val.b
-        this._tint.a = val.a
-        this.update_real()
+        this._tint.set(val.r,val.g,val.b,val.a)
     }
-
 
     _real_position: Vec2 = v2.new(0, 0);
     _real_scale: Vec2 = v2.new(1, 1);
     _real_rotation: number = 0;
-    _real_tint: Color = ColorM.default.white;
+    _real_tint: Color = ColorM.rgba(255,255,255)
 
     sync_rotation:boolean=true
 
@@ -128,40 +84,47 @@ export abstract class Container2DObject {
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
-        if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1)
+        if(this.parent){
+            let i=this.parent.children.indexOf(this)
+            if(i!==-1)this.parent.children.splice(i,1)
+            i=this.parent.update_children.indexOf(this)
+            if(i!==-1)this.parent.update_children.splice(i,1)
+            i=this.parent.visible_children.indexOf(this)
+            if(i!==-1)this.parent.visible_children.splice(i,1)
+        }
+    }
+
+    constructor(){
+        const bid=this.update_real.bind(this)
+        this._position=new Vec2M(0,0,bid)
+        this._scale=new Vec2M(1,1,bid)
+        this._tint=new Vec4M(1,1,1,1,bid)
     }
 
     update_real(){
-        if (this.parent) {
+        if (this.parent&&!this.parent.object_group) {
             this._real_scale = v2.mult(this.parent._real_scale, this._scale);
             if(this.sync_rotation){
                 this._real_rotation = this.parent._real_rotation + this._rotation
-                this._real_position = v2.add(
-                    v2.rotate_RadAngle(
-                        v2.mult(this.parent._real_scale, this.position),
-                        this.parent._real_rotation
-                    ),
-                    this.parent._real_position
-                );
+                v2m.mul(this._real_position,this._position,this.parent._real_scale)
+                v2m.rotate_RadAngle(this._real_position,this.parent._real_rotation)
+                v2m.add(this._real_position,this._real_position,this.parent._real_position)
             }else{
                 this._real_rotation=this._rotation
-                this._real_position = v2.add(
-                    v2.mult(this.parent._real_scale, this.position),
-                    this.parent._real_position
-                );
+                v2m.mul(this._real_position,this.parent._real_scale, this._position)
+                v2m.add(this._real_position,this._real_position,this.parent._real_position)
             }
 
-            this._real_tint = {
-                r: this.parent._real_tint.r * this._tint.r,
-                g: this.parent._real_tint.g * this._tint.g,
-                b: this.parent._real_tint.b * this._tint.b,
-                a: this.parent._real_tint.a * this._tint.a
-            };
+            ColorM.mult(this._real_tint,this._tint,this.parent._tint)
         } else {
-            this._real_position = this.position
-            this._real_scale = this._scale
+            v2m.set(this._real_position,this._position._x,this._position._y)
+            v2m.set(this._real_scale,this._scale._x,this._scale._y)
             this._real_rotation = this._rotation
-            this._real_tint = this._tint
+
+            if (this.parent)
+                ColorM.mult(this._real_tint,this._tint,this.parent._tint)
+            else
+                ColorM.set1(this._real_tint,this._tint)
         }
     }
 
@@ -174,18 +137,18 @@ export function triangulateConvex(
     polygon: Vec2[],
     texSize: number = 32
 ): Model2D {
-    const vertices: number[] = [];
-    const tex_coords: number[] = [];
+    const vertices: number[] = []
+    const tex_coords: number[] = []
 
     for (let i = 1; i < polygon.length - 1; i++) {
         const tri = [polygon[0], polygon[i], polygon[i + 1]];
 
         for (const v of tri) {
-            vertices.push(v.x, v.y);
+            vertices.push(v.x, v.y)
 
-            const u = v.x / texSize;
-            const vv = v.y / texSize;
-            tex_coords.push(u, vv);
+            const u = v.x / texSize
+            const vv = v.y / texSize
+            tex_coords.push(u, vv)
         }
     }
 
@@ -214,8 +177,8 @@ export class Graphics2D extends Container2DObject {
     paths:number[][]=[]
 
     beginPath(): this {
-        this.current_path=[];   
-        return this;
+        this.current_path.length=0
+        return this
     }
     lineTo(x:number,y:number):this{
         this.current_path.push(v2.new(x,y))
@@ -228,7 +191,7 @@ export class Graphics2D extends Container2DObject {
 
     endPath():this{
         this.command.push({type:"path",path:triangulateConvex(this.current_path,this.repeat_size)})
-        this.current_path=[]
+        this.current_path.length=0
         return this
     }
     fill():this{
@@ -330,7 +293,19 @@ export class Sprite2D extends Container2DObject{
     object_type:string="sprite2d"
     _frame?:Frame
     hotspot:Vec2=v2.new(0,0)
-    size?:Vec2
+    _size?:Vec2M
+
+    get size():Vec2|undefined{
+        return this._size as Vec2|undefined
+    }
+    set size(val:Vec2|undefined){
+        if(val){
+            if(!this._size)this._size=new Vec2M(0,0,this.update_real.bind(this))
+            this._size.set(val.x,val.y)
+        }else{
+            this._size=undefined
+        }
+    }
 
     _real_size:Vec2=v2.new(0,0)
 
@@ -356,7 +331,7 @@ export class Sprite2D extends Container2DObject{
     }
 
     update_model(){
-        if(!this.frame||!this.cam)return
+        if(!this.frame||!this.frame.source||!this.cam)return
         this._real_size=this.size??this.frame.frame_size??v2.new(this.frame.source.width,this.frame.source.height)
         this.model=ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100)
         this.old_ms=this.cam.meter_size
@@ -418,11 +393,7 @@ export class Container2D extends Container2DObject{
     visible_children:Container2DObject[]=[]
     override has_update: boolean=true
 
-    update_deletions(){
-        this.children = this.children.filter(c => !c.destroyed)
-        this.update_children = this.update_children.filter(c => !c.destroyed)
-        this.visible_children = this.visible_children.filter(c => !c.destroyed)
-    }
+    object_group:boolean=false
 
     update_visibility(){
         this.visible_children = this.children.filter(c => c._visible)
@@ -916,13 +887,14 @@ export class Camera2D{
     constructor(renderer:Renderer){
         this.renderer=renderer
         this.zoom=1
+        this.container.object_group=true
     }
 
     addObject(...objects: Container2DObject[]): void {
         for(const o of objects){
             this.container.add_child(o);
         }
-        this.container.updateZIndex();
+        this.container.updateZIndex()
         this.container.update_real()
     }
 

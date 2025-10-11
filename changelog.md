@@ -1,4 +1,4 @@
-# Suroimd.io 2 Alpha 1.5
+# Suroimd.io 2 Pre-Beta
 ## News
 __                                                                                                      __
 ### Mains
