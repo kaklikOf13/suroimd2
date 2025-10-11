@@ -620,14 +620,11 @@ export class Player extends ServerGameObject{
         }
     }
     get_objects(){
-        /*this.camera_hb.min.x=this.position.x-(37/2)
-        this.camera_hb.min.y=this.position.y-(37/2)
-        this.camera_hb.max.x=this.position.x+(37/2)
-        this.camera_hb.max.y=this.position.y+(37/2)*/
-        this.camera_hb.min.x=Math.floor((this.position.x-(45/2))/8)*8
-        this.camera_hb.min.y=Math.floor((this.position.y-(45/2))/8)*8
-        this.camera_hb.max.x=Math.floor((this.position.x+(45/2))/8)*8
-        this.camera_hb.max.y=Math.floor((this.position.y+(45/2))/8)*8
+        this.camera_hb.min.x=this.position.x-20
+        this.camera_hb.min.y=this.position.y-20
+
+        this.camera_hb.max.x=this.position.x+20
+        this.camera_hb.max.y=this.position.y+20
         /*const objs=[
             ...Object.values(this.manager.objects[this.layer].objects),
         ]*/
@@ -746,7 +743,6 @@ export class Player extends ServerGameObject{
             }
         }
     }
-
 
     down(params:DamageParams){
         if(this.downed)return

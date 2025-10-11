@@ -9,7 +9,6 @@ import { zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { model2d } from "common/scripts/engine/models.ts";
-import {CalculateDoorHitbox} from "common/scripts/others/functions.ts"
 import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
@@ -91,7 +90,7 @@ export class Obstacle extends GameObject{
     _add_own_particle(position:Vec2,force:number=1){
         const p=new ABParticle2D({
             frame:{
-                image:this.frame.particle
+                image:this.def.particles_variations?`${this.frame.particle}_${random.int(1,this.def.particles_variations)}`:this.frame.particle
             },
             position,
             speed:random.float(1,2)*force,
@@ -217,8 +216,8 @@ export class Obstacle extends GameObject{
                         life_time:random.float(1.7,3),
                         zIndex:zIndexes.Particles,
                         scale:0,
-                        tint:ColorM.hex("#ffffffdd"),
-                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#ffffff00")}
+                        tint:ColorM.hex("#fff5"),
+                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#fff0")}
                     }),
                     enabled:this.health<=0.35,
                 })
@@ -227,7 +226,7 @@ export class Obstacle extends GameObject{
         if(this.def.expanded_behavior&&this.def.hitbox){
             switch(this.def.expanded_behavior.type){
                 case 0:
-                    this.doors_hitboxes=CalculateDoorHitbox(this.def.hitbox!.toRect(),this.side,this.def.expanded_behavior as ObstacleBehaviorDoor)
+                    //this.doors_hitboxes=CalculateDoorHitbox(this.def.hitbox!.to_rect(),this.side,this.def.expanded_behavior as ObstacleBehaviorDoor)
             }
         }
     }

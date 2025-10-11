@@ -24,6 +24,8 @@ __                                                                              
 * RPG-7 - A Rocket Launcher When use Explosive Ammo
 * M2-2 - A Flamethrower
 * Projectiles Return
+* Vests Icon
+* Vests Visual In Game
 __                                                                                                      __
 ### Keys And Controls
 * Swamp Guns Slot (Use F)

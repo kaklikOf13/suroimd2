@@ -11,7 +11,7 @@ export interface MinMax1{
 export type Random1=MinMax1|number
 export const random=Object.freeze({
     int(min:number,max:number):number{
-        return Math.floor(Math.random()*(max-min)+min)
+        return Math.floor(Math.random()*(max-min+1)+min)
     },
     float(min:number,max:number):number{
         return Math.random()*(max-min)+min

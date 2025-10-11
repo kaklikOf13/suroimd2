@@ -25,7 +25,7 @@ export class Creature extends GameObject{
         this.def=def
         this.main_sprite.set_frame(def.frame.main,this.game.resources)
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.container.destroy()
     }
     update(dt:number): void {

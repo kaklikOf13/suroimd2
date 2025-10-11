@@ -26,7 +26,8 @@ export const generation={
                 map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,hb)
             }
             if(def.generation.terrain.rivers){
-                const rivers=generate_rivers(hitboxes[def.generation.terrain.rivers.spawn_floor].toRect(),def.generation.terrain.rivers.defs,def.generation.terrain.rivers.divisions,random,def.generation.terrain.rivers.expansion,[
+                const r=hitboxes[def.generation.terrain.rivers.spawn_floor].to_rect()
+                const rivers=generate_rivers(new RectHitbox2D(r.min,r.max),def.generation.terrain.rivers.defs,def.generation.terrain.rivers.divisions,random,def.generation.terrain.rivers.expansion,[
                     {name:"main",padding:0}
                 ])
                 for(const r of rivers){

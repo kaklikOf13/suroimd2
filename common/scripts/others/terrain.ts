@@ -1,4 +1,4 @@
-import { Orientation, v2, Vec2 } from "../engine/geometry.ts";
+import { Orientation, v2, v2m, Vec2 } from "../engine/geometry.ts";
 import { Hitbox2D, PolygonHitbox2D } from "../engine/hitbox.ts";
 import { RectHitbox2D } from "../engine/mod.ts";
 import { SeededRandom } from "../engine/random.ts";
@@ -51,14 +51,14 @@ export class TerrainManager {
         const floor: Floor = { type, hb, smooth, layer,jagged,final_hb:final_hb??hb };
         this.floors.push(floor);
 
-        const rect = hb.toRect();
-        const min = this.cell_pos(rect.min);
-        const max = this.cell_pos(rect.max);
+        const rect = hb.to_rect()
+        this.cell_pos(rect.min)
+        this.cell_pos(rect.max)
 
-        for (let y = min.y; y <= max.y; y++) {
+        for (let y = rect.min.y; y <= rect.max.y; y++) {
             if (!this.grid.has(y)) this.grid.set(y, new Map());
 
-            for (let x = min.x; x <= max.x; x++) {
+            for (let x = rect.min.x; x <= rect.max.x; x++) {
                 if (!this.grid.get(y)!.has(x)) this.grid.get(y)!.set(x, { floors: [] });
                 this.grid.get(y)!.get(x)!.floors.push(floor);
             }
@@ -66,29 +66,31 @@ export class TerrainManager {
     }
 
     get_floor(position: Vec2, layer: number): Floor | undefined {
-        const pos = this.cell_pos(position);
+        const pos=v2.duplicate(position)
+        this.cell_pos(pos)
         const floorsInCell = this.grid.get(pos.y)?.get(pos.x)?.floors ?? [];
 
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
             if (floor.layer === layer && floor.hb.pointInside(position)) {
-                return floor;
+                return floor
             }
         }
-        return undefined;
+        return undefined
     }
 
     get_floor_type(position:Vec2,layer:number,place_holder:FloorType):FloorType{
-        const pos = this.cell_pos(position);
+        const pos=v2.duplicate(position)
+        this.cell_pos(pos)
         const floorsInCell = this.grid.get(pos.y)?.get(pos.x)?.floors ?? [];
 
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
             if (floor.layer === layer && floor.hb.pointInside(position)) {
-                return floor.type;
+                return floor.type
             }
         }
-        return place_holder;
+        return place_holder
     }
     cells_to_string(names: Record<FloorType, string>): string {
         const ys = Array.from(this.grid.keys()).sort((a, b) => a - b);
@@ -131,9 +133,9 @@ export class TerrainManager {
 
         return lines.join("\n");
     }
-
-    cell_pos(p: Vec2): Vec2 {
-        return v2.floor(v2.dscale(p, 2));
+    cell_pos(p: Vec2) {
+        v2m.dscale(p,p,10)
+        v2m.floor(p)
     }
 }
 export function init_river(points:RiverPoint[],defs: RiverHitboxDef[]):River{

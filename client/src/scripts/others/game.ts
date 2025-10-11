@@ -37,7 +37,7 @@ import { type MenuManager } from "../managers/menuManager.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
 import { Camera3D } from "../engine/container_3d.ts";
-import { ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
+import { ABParticle2D, ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -244,6 +244,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
+  ambient_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
   constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
@@ -303,6 +304,30 @@ export class Game extends ClientGame2D<GameObject>{
         position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
         rotation:Angle.deg2rad(45),
       }),
+      enabled:this.save.get_variable("cv_graphics_climate")
+    })
+    this.ambient_particles_emitter=this.particles.add_emiter({
+      delay:2.5,
+      particle:()=>{
+        const ang=random.rad()
+        const dir=random.rad()
+        const ret=new ABParticle2D({
+          frame:{
+            image:"leaf_01_particle_1"
+          },
+          life_time:10,
+          direction:dir,
+          position:v2.random2(this.camera.visual_position,v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
+          speed:random.float(0.4,1),
+          angle:ang,
+          scale:random.float(0.5,1),
+          to:{
+            angle:ang+random.float(-6,6),
+            direction:dir+random.float(-3,3),
+          }
+        })
+      return ret
+    },
       enabled:this.save.get_variable("cv_graphics_climate")
     })
     this.dead_zone.append()

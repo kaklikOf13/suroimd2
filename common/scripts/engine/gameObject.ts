@@ -4,9 +4,6 @@ import { type ID } from "./utils.ts"
 import { NetStream } from "./stream.ts";
 import { random } from "./random.ts";
 export type GameObjectID=ID
-export type CameraMain={
-
-}
 export abstract class BaseObject2D{
     public hb:Hitbox2D
     public destroyed:boolean
@@ -87,8 +84,9 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         return `${x}:${y}`;
     }
 
-    private cellPos(pos: Vec2): Vec2 {
-        return v2m.floor(v2.dscale(pos, this.cellSize))
+    private cellPos(pos: Vec2) {
+        v2m.dscale(pos,pos,this.cellSize)
+        v2m.floor(pos)
     }
 
     registry(obj: GameObject) {
@@ -131,16 +129,16 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     updateObject(obj: GameObject) {
         this.removeObjectFromCells(obj)
 
-        const rect = obj.hb.toRect()
-        const min = this.cellPos(rect.min)
-        const max = this.cellPos(rect.max)
+        const rect = obj.hb.to_rect()
+        this.cellPos(rect.min)
+        this.cellPos(rect.max)
 
-        const layer = obj.layer;
+        const layer = obj.layer
         const layerMap = this.getLayerMap(layer)
         const occupiedKeys = new Set<string>()
 
-        for (let y = min.y; y <= max.y; y++) {
-            for (let x = min.x; x <= max.x; x++) {
+        for (let y = rect.min.y; y <= rect.max.y; y++) {
+            for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const key = this.key(x, y);
                 if (!layerMap.has(key)) {
                     layerMap.set(key, new Set());
@@ -153,16 +151,16 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         this.objectCells.set(obj, { layer, keys: occupiedKeys });
     }
     get_objects(hitbox: Hitbox2D, layer: number): GameObject[] {
-        const rect = hitbox.toRect();
-        const min = this.cellPos(rect.min)
-        const max = this.cellPos(rect.max)
+        const rect = hitbox.to_rect()
+        this.cellPos(rect.min)
+        this.cellPos(rect.max)
 
         const results = new Set<GameObject>();
         const layerMap = this.cells.get(layer);
         if (!layerMap) return [];
 
-        for (let y = min.y; y <= max.y; y++) {
-            for (let x = min.x; x <= max.x; x++) {
+        for (let y = rect.min.y; y <= rect.max.y; y++) {
+            for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const set = layerMap.get(this.key(x, y));
                 if (set) {
                     for (const obj of set) {
