@@ -17,7 +17,7 @@
         },
         "config": {
             "gameTps": 60,
-            "netTps": 22
+            "netTps": 30
         },
         "modes":[
             {

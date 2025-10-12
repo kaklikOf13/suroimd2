@@ -24,6 +24,7 @@ __                                                                              
 * RPG-7 - A Rocket Launcher When use Explosive Ammo
 * M2-2 - A Flamethrower
 * Projectiles Return
+* Projectiles Throw And Hold
 * Vests Icon
 * Vests Visual In Game
 __                                                                                                      __
@@ -48,6 +49,7 @@ __                                                                              
 __                                                                                                      __
 ## Fixes
 * **REQUEST ANIMATION FRAME!!!!!** No more Lag
+* **GIANT OPTIMISATION!!!**
 __                                                                                                      __
 # Play The Game
 https://suroimd.io

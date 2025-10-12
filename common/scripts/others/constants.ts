@@ -19,12 +19,12 @@ export const GameConstants={
     loot:{
         velocityDecay:1.7,
         radius:{
-            ammo:0.4,
-            weapon:0.54,
-            consumible:0.4,
-            equipament:0.4,
-            projectile:0.4,
-            skin:0.45
+            ammo:0.38,
+            weapon:0.59,
+            consumible:0.38,
+            equipament:0.38,
+            projectile:0.38,
+            skin:0.38
         }
     },
     tps:25,

@@ -431,6 +431,7 @@ export class Player extends ServerGameObject{
                 amount:this.game.deadzone.damageAt(this.position),
                 critical:false,
                 position:this.position,
+                owner:undefined,
                 reason:DamageReason.DeadZone,
             })
         }
@@ -754,13 +755,21 @@ export class Player extends ServerGameObject{
 
         if(params.owner&&params.owner instanceof Player){
             this.game.send_killfeed_message({
-                killer:{
+                killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Player)?{
                     id:params.owner.id,
-                    kills:params.owner.status.kills
-                },
+                    kills:params.owner.status.kills,
+                    used:DamageSources.keysString[params.source!.idString]
+                }:undefined,
                 victimId:this.id,
+                damage_reason:params.reason,
                 type:KillFeedMessageType.down,
-                used:DamageSources.keysString[params.source!.idString]
+            })
+        }else{
+            this.game.send_killfeed_message({
+                killer:undefined,
+                victimId:this.id,
+                damage_reason:params.reason,
+                type:KillFeedMessageType.down,
             })
         }
 
@@ -801,15 +810,6 @@ export class Player extends ServerGameObject{
         this.update2()
         if(!this.is_npc){
             let killed_by:number=this.id
-            if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
-                this.game.send_killfeed_message({
-                    type:KillFeedMessageType.killleader_dead,
-                    player:{
-                        id:this.id,
-                        kills:this.status.kills
-                    }
-                })
-            }
 
             if(params.owner&&params.owner instanceof Player){
                 if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username||this.is_bot)&&!this.game.modeManager.is_ally(this,params.owner)){
@@ -820,13 +820,14 @@ export class Player extends ServerGameObject{
                 }
                 killed_by=params.owner.id
                 this.game.send_killfeed_message({
-                    killer:{
+                    killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Player)?{
                         id:params.owner.id,
-                        kills:params.owner.status.kills
-                    },
+                        kills:params.owner.status.kills,
+                        used:DamageSources.keysString[params.source!.idString]
+                    }:undefined,
                     victimId:this.id,
                     type:KillFeedMessageType.kill,
-                    used:DamageSources.keysString[params.source!.idString]
+                    damage_reason:params.reason,
                 })
                 if((!this.game.modeManager.kill_leader&&params.owner.status.kills>=3)||(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader.status.kills<params.owner.status.kills)){
                     this.game.modeManager.kill_leader=params.owner
@@ -842,6 +843,23 @@ export class Player extends ServerGameObject{
                 if(this.game.statistics){
                     this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
                 }
+            }else{
+                this.game.send_killfeed_message({
+                    killer:undefined,
+                    victimId:this.id,
+                    type:KillFeedMessageType.kill,
+                    damage_reason:params.reason,
+                })
+            }
+
+            if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
+                this.game.send_killfeed_message({
+                    type:KillFeedMessageType.killleader_dead,
+                    player:{
+                        id:this.id,
+                        kills:this.status.kills
+                    }
+                })
             }
 
             //Respawn

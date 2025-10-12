@@ -1,6 +1,6 @@
 import { Clock, cloneDeep, SignalManager } from "./utils.ts"
 import { BaseObject2D, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
-import { type Vec2 } from "./geometry.ts";
+import { v2, type Vec2 } from "./geometry.ts";
 import { DefinitionsSimple } from "./definitions.ts";
 export abstract class BaseGameObject2D extends BaseObject2D{
     // deno-lint-ignore no-explicit-any
@@ -34,13 +34,13 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.game=game
         this.reset()
     }
+    private _addObject(obj: DefaultGameObject, layer: number, id?: number, args?: Record<string, any>, sv?: Record<string, any>){
+        obj.game = this.game;
+        return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args);
+    }
     reset(){
         this.objects.clear()
-        // deno-lint-ignore no-explicit-any
-        this.objects.add_object=(obj: DefaultGameObject, layer: number, id?: number | undefined, args?: Record<string, any> | undefined, sv?: Record<string, any>)=>{
-            obj.game=this.game
-            return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args)
-        }
+        this.objects.add_object = this._addObject.bind(this);
         this.objects.oncreate=(_id:number,_layer:number,t)=>{
             if(!this.game.objects.getFromNumber(t))return undefined
             return new (this.game.objects.getFromNumber(t))()
@@ -50,7 +50,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
             this.objects.add_layer(cc)
             for(const o of this.scene.objects[c]){
                 const obj=this.objects.add_object(new (this.game.objects.getFromString(o.type))(),cc,o.id,o.vals,{"game":this.game})
-                if(o.position)obj.position=cloneDeep(o.position as Vec2)
+                if(o.position)obj.position=v2.duplicate(o.position as Vec2)
             }
         }
     }

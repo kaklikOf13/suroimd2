@@ -127,8 +127,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.deadzone=new DeadZoneManager(this,{
             mode:DeadZoneMode.Staged,
             stages:DeadZoneDefinition,
+            timeSpeed:Config.game.debug?.dead_zone?.time_speed??1
         })
-        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.Config.game.config.netTps)
         if(Config.database.statistic){
             this.statistics={
                 items:{
@@ -145,6 +145,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }
     }
+    ntt:number=0
     override on_update(): void {
         super.on_update()
         this.deadzone.tick(this.dt)
@@ -168,6 +169,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 this.running=false
             }
         }
+        this.ntt-=this.dt
+        if(this.ntt<=0){
+            this.netUpdate()
+            this.ntt=1/this.Config.game.config.netTps
+        }
         this.living_count_dirty=true
     }
     planes:PlaneDataServer[]=[]
@@ -188,7 +194,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
     override on_stop():void{
         super.on_stop()
         if(this.replay)this.replay.stop()
-        clearInterval(this.net_interval)
         for(const p of this.players){
             this.status.players.push({
                 kills:p.status.kills,
@@ -329,7 +334,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return p
     }
     fineshed:boolean=false
-    net_interval=0
     start(){
         if(this.started||!this.modeManager.start_rules())return
         this.started=true

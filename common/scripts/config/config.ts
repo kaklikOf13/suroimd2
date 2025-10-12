@@ -12,6 +12,9 @@ export interface GamemodeConfig{
 export interface GameDebugOptions{
     deenable_lobby?:boolean
     debug_menu:boolean
+    dead_zone?:{
+        time_speed:number
+    }
 }
 export interface RegionDef{
     host:string

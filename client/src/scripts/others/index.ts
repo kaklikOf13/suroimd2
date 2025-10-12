@@ -82,19 +82,19 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
                         game: {
                             config: {
                                 gameTps: 60,
-                                netTps: 60
+                                netTps: 30
                             },
                             debug:{
                                 deenable_lobby:true,
-                                debug_menu:true
+                                debug_menu:true,
                             }
                         },
                         database: {
                             enabled: false,
-                            statistic:true
+                            statistic:false
                         },
                     } as ConfigType,
-                    bots: 100,
+                    bots: 99,
                     ping: GameSave.get_variable("cv_game_ping"),
                 });
 

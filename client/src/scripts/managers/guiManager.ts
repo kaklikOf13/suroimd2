@@ -1,5 +1,5 @@
 import { Game } from "../others/game.ts";
-import { InventoryItemData } from "common/scripts/definitions/utils.ts";
+import { DamageReason, InventoryItemData } from "common/scripts/definitions/utils.ts";
 import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
 import { Angle, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
@@ -766,6 +766,7 @@ export class GuiManager{
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     process_joined_packet(jp:JoinedPacket){
+        this.game.gameOver=false
         for(const p of jp.players){
             const badge_frame=p.badge!==undefined?Badges.getFromNumber(p.badge).idString:""
             const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/common/loadout/badges/${badge_frame}.svg">`
@@ -869,20 +870,64 @@ export class GuiManager{
                 break
             }
             case KillFeedMessageType.kill:{
-                const dsd=DamageSources.valueNumber[msg.used]
-                elem.innerHTML=`${this.players_name[msg.killer.id].full} Killed ${this.players_name[msg.victimId].full} With ${dsd.idString}`
-                if(msg.killer.id===this.game.activePlayer!.id){
-                    this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
-                }
-                if(this.killleader&&msg.killer.id===this.killleader.id){
-                    this.killleader.kills=msg.killer.kills
-                    this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.killer.id].name}`
+                switch(msg.damage_reason){
+                    case DamageReason.Abstinence:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Died Of Abstinence`
+                        break
+                    case DamageReason.Explosion:
+                    case DamageReason.Player:{
+                        if(!msg.killer)break
+                        const dsd=DamageSources.valueNumber[msg.killer.used]
+                        elem.innerHTML=`${this.players_name[msg.killer.id].full} Killed ${this.players_name[msg.victimId].full} With ${dsd.idString}`
+                        if(msg.killer.id===this.game.activePlayer!.id){
+                            this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
+                        }
+                        if(this.killleader&&msg.killer.id===this.killleader.id){
+                            this.killleader.kills=msg.killer.kills
+                            this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.killer.id].name}`
+                        }
+                        break
+                    }
+                    case DamageReason.DeadZone:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Was Caught By Deadzone`
+                        break
+                    case DamageReason.SideEffect:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Die For SideEffect`
+                        break
+                    case DamageReason.Disconnect:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Give Up`
+                        break
+                    case DamageReason.Bleend:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Bled To Death`
+                        break
                 }
                 break
             }
             case KillFeedMessageType.down:{
-                const dsd=DamageSources.valueNumber[msg.used]
-                elem.innerHTML=`${this.players_name[msg.killer.id].full} Knocked ${this.players_name[msg.victimId].full} With ${dsd.idString}`
+                switch(msg.damage_reason){
+                    case DamageReason.Abstinence:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Fell Due To absticienia`
+                        break
+                    case DamageReason.Player:
+                    case DamageReason.Explosion:{
+                        if(!msg.killer)break
+                        const dsd=DamageSources.valueNumber[msg.killer.used]
+                        elem.innerHTML=`${this.players_name[msg.killer.id].full} Knocked ${this.players_name[msg.victimId].full} With ${dsd.idString}`
+                        break
+                    }
+                    case DamageReason.DeadZone:
+                        elem.innerHTML=`Deadzone Took ${this.players_name[msg.victimId].full} Forces`
+                        break
+                    case DamageReason.SideEffect:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Knocked Out For SideEffect`
+                        break
+                    case DamageReason.Disconnect:
+                        elem.innerHTML=`${this.players_name[msg.victimId].full} Give Up`
+                        break
+                    case DamageReason.Bleend:
+                        elem.innerHTML=`This Killfeed Message Are A Bug. Report`
+                        break
+                }
                 break
             }
             case KillFeedMessageType.killleader_assigned:{

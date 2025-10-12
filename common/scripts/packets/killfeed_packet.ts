@@ -1,3 +1,4 @@
+import { DamageReason } from "../definitions/utils.ts"
 import { type NetStream, Packet } from "../engine/mod.ts"
 export enum KillFeedMessageType{
     kill,
@@ -8,12 +9,13 @@ export enum KillFeedMessageType{
 }
 export interface KillFeedMessageKill{
     type:KillFeedMessageType.kill|KillFeedMessageType.down,
-    killer:{
+    killer?:{
         id:number
         kills:number
+        used:number
     }
+    damage_reason:DamageReason
     victimId:number
-    used:number
 }
 export interface KillFeedMessageKillleader{
     type:KillFeedMessageType.killleader_assigned|KillFeedMessageType.killleader_dead,
@@ -41,10 +43,14 @@ export class KillFeedPacket extends Packet{
         switch(this.message.type){
             case KillFeedMessageType.kill:
             case KillFeedMessageType.down:
-                stream.writeID(this.message.killer.id)
-                stream.writeUint8(this.message.killer.kills)
+                stream.writeBooleanGroup(this.message.killer!==undefined)
+                .writeUint8(this.message.damage_reason)
+                if(this.message.killer){
+                    stream.writeID(this.message.killer.id)
+                    .writeUint8(this.message.killer.kills)
+                    .writeUint16(this.message.killer.used)
+                }
                 stream.writeID(this.message.victimId)
-                stream.writeUint16(this.message.used)
                 break
             case KillFeedMessageType.join:
                 stream.writeID(this.message.playerId)
@@ -64,14 +70,19 @@ export class KillFeedPacket extends Packet{
         } as Record<string,unknown>
         switch(msg.type){
             case KillFeedMessageType.kill:
-            case KillFeedMessageType.down:
-                msg["killer"]={
-                    id:stream.readID(),
-                    kills:stream.readUint8()
+            case KillFeedMessageType.down:{
+                const bg=stream.readBooleanGroup()
+                msg["damage_reason"]=stream.readUint8()
+                if(bg[0]){
+                    msg["killer"]={
+                        id:stream.readID(),
+                        kills:stream.readUint8(),
+                        used:stream.readUint16()
+                    }
                 }
                 msg["victimId"]=stream.readID()
-                msg["used"]=stream.readUint16()
                 break
+            }
             case KillFeedMessageType.join:{
                 msg["playerId"]=stream.readID()
                 msg["playerName"]=stream.readStringSized(28)

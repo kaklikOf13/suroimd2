@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="45.000008mm"
-   height="45.000008mm"
-   viewBox="0 0 45.000008 45.000008"
+   width="45.476437mm"
+   height="45.476437mm"
+   viewBox="0 0 45.476437 45.476437"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
@@ -25,8 +25,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="2.0334082"
-     inkscape:cx="78.93152"
-     inkscape:cy="138.92931"
+     inkscape:cx="80.406876"
+     inkscape:cy="139.91288"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -39,11 +39,11 @@
        id="linearGradient1"
        inkscape:collect="always">
       <stop
-         style="stop-color:#ffde6b;stop-opacity:1;"
+         style="stop-color:#ffde6b;stop-opacity:0.60000002;"
          offset="0"
          id="stop1" />
       <stop
-         style="stop-color:#a08200;stop-opacity:1;"
+         style="stop-color:#a08200;stop-opacity:0.80000001;"
          offset="1"
          id="stop2" />
     </linearGradient>
@@ -63,9 +63,9 @@
      inkscape:label="Camada 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(7.5000033,7.5000023)">
+     transform="translate(7.7382183,7.7382174)">
     <circle
-       style="fill:url(#radialGradient2);stroke:#8c6200;stroke-width:1.52357;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#radialGradient2);stroke:#8c6200;stroke-width:2;stroke-dasharray:none;stroke-opacity:1"
        id="path1"
        cx="15"
        cy="15.000001"
