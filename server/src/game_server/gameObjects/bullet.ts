@@ -1,4 +1,4 @@
-import {CircleHitbox2D, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import {CircleHitbox2D, Numeric, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { BulletDef, DamageReason } from "common/scripts/definitions/utils.ts";
 import { Obstacle } from "./obstacle.ts";
@@ -57,7 +57,7 @@ export class Bullet extends ServerGameObject{
         this.old_position=v2.duplicate(this.position)
         this.tticks+=dt
         const disT=v2.distance(this.initialPosition,this.position)/this.maxDistance
-        this.position=v2.add(this.position,v2.scale(this.velocity,dt))
+        v2m.add_component(this.position,this.velocity.x*dt,this.velocity.y*dt)
         this.manager.cells.updateObject(this)
         const objs=this.manager.cells.get_objects(this.hb,this.layer)
         for(const obj of objs){
@@ -124,7 +124,7 @@ export class Bullet extends ServerGameObject{
     ammo:string=""
     create(args: {defs:BulletDef,position:Vec2,owner:Player,ammo:string,critical?:boolean,source?:DamageSourceDef}): void {
         this.defs=args.defs
-        this.hb=new CircleHitbox2D(v2.duplicate(args.position),this.defs.radius*this.modifiers.size)
+        this.hb=new CircleHitbox2D(args.position,this.defs.radius*this.modifiers.size)
         this.initialPosition=v2.duplicate(this.hb.position)
         this.maxDistance=this.defs.range/2.5
         

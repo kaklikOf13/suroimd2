@@ -460,14 +460,6 @@ export class GInventory extends Inventory<LItem>{
     }
     give_gun(dd:GunDef):boolean{
         const id=dd.idString
-        if(!this.weapons[1]){
-            this.set_weapon(1,dd)
-            return true
-        }
-        if(!this.weapons[2]){
-            this.set_weapon(2,dd)
-            return true
-        }
         if(dd.dual&&!dd.dual_from){
             if(this.weapons[1]?.def.idString===dd.idString){
                 this.set_weapon(1,Guns.getFromString(id+"_dual"),false)
@@ -476,6 +468,14 @@ export class GInventory extends Inventory<LItem>{
                 this.set_weapon(2,Guns.getFromString(id+"_dual"),false)
                 return true
             }
+        }
+        if(!this.weapons[1]){
+            this.set_weapon(1,dd)
+            return true
+        }
+        if(!this.weapons[2]){
+            this.set_weapon(2,dd)
+            return true
         }
         if(this.weaponIdx>0){
             this.set_weapon(this.weaponIdx as keyof typeof this.weapons,dd)

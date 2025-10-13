@@ -66,7 +66,7 @@ export class ABParticle2D extends ClientParticle2D{
         this.sprite.rotation=config.angle??0
         this.sprite.zIndex=config.zIndex??0
         if(config.tint){
-            this.sprite.tint=config.tint
+            this.sprite.tint=ColorM.clone(config.tint)
         }
     }
     override update(dt: number): void {

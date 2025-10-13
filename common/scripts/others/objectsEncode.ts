@@ -29,6 +29,7 @@ export interface PlayerData extends EncodedData{
     position:Vec2
     rotation:number
     dead:boolean
+    shield:boolean
     left_handed:boolean
     driving:boolean
     attacking:boolean
@@ -135,21 +136,23 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 rotation:stream.readRad(),
                 full:undefined,
                 dead:false,
+                shield:false,
                 left_handed:false,
                 driving:false,
                 attacking:false
             }
             const bg1=stream.readBooleanGroup()
             ret.dead=bg1[0]
-            ret.left_handed=bg1[1]
-            ret.driving=bg1[2]
-            ret.attacking=bg1[3]
-            if(bg1[4]){
+            ret.shield=bg1[1]
+            ret.left_handed=bg1[2]
+            ret.driving=bg1[3]
+            ret.attacking=bg1[4]
+            if(bg1[5]){
                 ret.parachute={
                     value:stream.readFloat(0,1,1)
                 }
             }
-            if(bg1[5]){
+            if(bg1[6]){
                 ret.emote=Emotes.getFromNumber(stream.readUint16())
             }
             if(full){
@@ -193,6 +196,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeRad(data.rotation)
             .writeBooleanGroup(
                 data.dead,
+                data.shield,
                 data.left_handed,
                 data.driving,
                 data.attacking,

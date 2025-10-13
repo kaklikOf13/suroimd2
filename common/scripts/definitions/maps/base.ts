@@ -118,8 +118,8 @@ LootTables.add_tables({
         {table:"addiction",weight:0.7},
     ],
     "special_consumibles":[
-        {table:"healing",weight:13},
-        {table:"adrenaline",weight:6},
+        {table:"healing",count:2,weight:13},
+        {table:"adrenaline",count:2,weight:6},
         {table:"shield",count:2,weight:2},
         {table:"addiction",count:2,weight:0.7},
     ],
@@ -128,24 +128,24 @@ LootTables.add_tables({
         {item:"medikit",count:1,weight:0.6},
     ],
     "adrenaline":[
-        {item:"soda",count:1,weight:3},
-        {item:"inhaler",count:1,weight:1},
-        {item:"yellow_pills",count:1,weight:0.6},
+        {item:"soda",count:1,weight:100},
+        {item:"inhaler",count:1,weight:40},
+        {item:"yellow_pills",count:1,weight:3},
     ],
     "shield":[
-        {item:"small_blue_potion",count:2,weight:3},
-        {item:"blue_potion",count:1,weight:1},
-        {item:"blue_pills",count:1,weight:0.6},
+        {item:"small_blue_potion",count:2,weight:100},
+        {item:"blue_potion",count:1,weight:40},
+        {item:"blue_pills",count:1,weight:3},
     ],
     "addiction":[
-        {item:"small_red_crystal",count:4,weight:3},
-        {item:"red_crystal",count:2,weight:1},
-        {item:"red_pills",count:1,weight:0.6},
+        {item:"small_red_crystal",count:4,weight:100},
+        {item:"red_crystal",count:2,weight:40},
+        {item:"red_pills",count:1,weight:3},
     ],
     "mana":[
-        {item:"small_purple_potion",count:2,weight:3},
-        {item:"purple_potion",count:1,weight:1},
-        {item:"purple_pills",count:1,weight:0.6},
+        {item:"small_purple_potion",count:2,weight:100},
+        {item:"purple_potion",count:1,weight:40},
+        {item:"purple_pills",count:1,weight:3},
     ],
     //Ammos
     "ammos":[

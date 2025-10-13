@@ -449,11 +449,11 @@ export class AnimatedContainer2D extends Container2D{
         this.game=game
     }
     stop_all_animations(){
-      for(const a of this.current_animations){
-        for(const t of a.tweens){
-            t.kill()
+        for(const a of this.current_animations){
+            for(const t of a.tweens){
+                t.kill()
+            }
         }
-      }
         this.current_animations=[]
     }
     play_animation(anim:AKeyFrame[],on_complete?:()=>void){

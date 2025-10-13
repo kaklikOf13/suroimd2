@@ -138,10 +138,11 @@ export class Loot extends ServerGameObject{
             }
             
         }
-        this.velocity=v2.scale(this.velocity,1/(1+dt*GameConstants.loot.velocityDecay))
+        v2m.scale(this.velocity,this.velocity,1/(1+dt*GameConstants.loot.velocityDecay))
     }
     push(speed:number,angle:number){
-        this.velocity=v2.add(this.velocity,v2.scale(v2.from_RadAngle(angle),speed))
+        const a=v2.from_RadAngle(angle)
+        v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
     create(args: {position:Vec2,item:GameItem,count:number}): void {
         this.hb=new CircleHitbox2D(v2.new(0,0),0.3)

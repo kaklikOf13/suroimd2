@@ -1,5 +1,5 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
@@ -82,6 +82,8 @@ export class Player extends GameObject{
     dead:boolean=false
 
     left_handed=false
+    
+    shield:boolean=false
 
     on_hitted(position:Vec2,critical:boolean=false){
         if(Math.random()<=0.1){
@@ -92,6 +94,26 @@ export class Player extends GameObject{
             d.sprite.position=v2.duplicate(position)
             this.game.scene.objects.add_object(d,this.layer)
         }
+
+        if(!this.shield){
+            this.game.particles.add_particle(new ABParticle2D({
+                scale:0.1,
+                frame:{
+                    image:`blood_splash_${random.int(1,3)}`,
+                },
+                direction:random.rad(),
+                life_time:0.5,
+                position:position,
+                speed:random.float(0.1,0.5),
+                angle:random.rad(),
+                tint:ColorM.rgba(170,10,40),
+                to:{
+                    scale:1.5,
+                    tint:ColorM.rgba(170,10,40,0)
+                },
+                zIndex:zIndexes.Particles
+            }))
+        }
         
         this.game.sounds.play(this.game.resources.get_audio(
             critical?
@@ -101,6 +123,53 @@ export class Player extends GameObject{
             position:this.position,
             max_distance:6,
         },"player")
+    }
+
+    on_die(){
+        for(let i=0;i<5;i++){
+            this.game.particles.add_particle(new ABParticle2D({
+                scale:0.1,
+                frame:{
+                    image:`blood_splash_${random.int(1,3)}`,
+                },
+                direction:random.rad(),
+                life_time:0.5,
+                position:this.position,
+                speed:random.float(2,4),
+                angle:random.rad(),
+                tint:ColorM.rgba(170,10,40),
+                to:{
+                    scale:1.8,
+                    tint:ColorM.rgba(170,10,40,0)
+                },
+                zIndex:zIndexes.Particles
+            }))
+        }
+        const d=new Decal()
+        d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
+        d.sprite.scale=v2.random(2,3)
+        d.sprite.rotation=random.rad()
+        d.sprite.position=v2.duplicate(this.position)
+        this.game.scene.objects.add_object(d,this.layer)
+        for(let i=0;i<4;i++){
+            this.game.particles.add_particle(new ABParticle2D({
+                scale:0.1,
+                frame:{
+                    image:`player_gore_${random.int(1,2)}`,
+                },
+                direction:random.rad(),
+                life_time:0.7,
+                position:this.position,
+                speed:random.float(5,6),
+                angle:random.rad(),
+                tint:ColorM.default.white,
+                to:{
+                    scale:1.7,
+                    tint:ColorM.rgba(255,255,255,0)
+                },
+                zIndex:zIndexes.Particles
+            }))
+        }
     }
 
     current_animation?:PlayerAnimation
@@ -416,6 +485,7 @@ export class Player extends GameObject{
     }
     reset_anim(){
         this.sprites.muzzle_flash.visible=false
+        this.container.stop_all_animations()
         this.current_animation=undefined
         if(this.sound_animation.animation)this.sound_animation.animation.stop()
         if(!this.sprites.mounth.frames&&this.anims.mount_anims){
@@ -424,8 +494,13 @@ export class Player extends GameObject{
         }
         this.sound_animation.animation=undefined
         this.anims.consumible_particles!.enabled=false
-        this.container.stop_all_animations()
         this.attacking=false
+        if(this.anims.fire){
+            if(this.anims.fire.left_arm)this.anims.fire.left_arm.kill()
+            if(this.anims.fire.right_arm)this.anims.fire.right_arm.kill()
+            if(this.anims.fire.weapon)this.anims.fire.weapon.kill()
+            this.anims.fire=undefined
+        }
     }
     emote_time:number=0
     add_emote(emote:EmoteDef){
@@ -719,7 +794,11 @@ export class Player extends GameObject{
         }
         if(data.dead&&!this.dead){
             this.dead=data.dead
+            this.on_die()
             this.container.destroy()
+            v2m.add(this.sprites.emote_container._position,this.container.position,this.sprites.emote_container._position)
+            this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
+            this.game.camera.addObject(this.sprites.emote_container)
         }
         if(data.attacking){
             this.attack()

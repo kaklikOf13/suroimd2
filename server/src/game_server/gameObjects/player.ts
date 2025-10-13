@@ -692,6 +692,7 @@ export class Player extends ServerGameObject{
 
             if (this.boost === 0) {
                 this.invensibility_time = 0.35
+                this.boost_def=Boosts[BoostType.Null]
             }
         } else {
             healthDamage = Math.min(this.health, totalDamage)
@@ -882,7 +883,6 @@ export class Player extends ServerGameObject{
 
         this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
         this.dirty=true
-        this.game.scene.cells.unregistry(this)
         this.status.rank=this.game.livingPlayers.length+1
     }
     send_game_over(win:boolean=false,eliminated_by:number=0){
@@ -906,6 +906,7 @@ export class Player extends ServerGameObject{
             position:this.position,
             rotation:this.rotation,
             dead:this.dead,
+            shield:this.boost_def===Boosts[BoostType.Shield]&&this.boost>0,
             left_handed:this.left_handed,
             parachute:this.parachute,
             driving:this.seat!==undefined,
