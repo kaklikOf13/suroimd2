@@ -83,7 +83,7 @@ export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
 })
 Consumibles.insert(
     {
-        idString:"gauze",
+        idString:"bandage",
         side_effects:[
             {
                 type:SideEffectType.Heal,

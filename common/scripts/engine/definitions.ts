@@ -180,32 +180,61 @@ export class ExtendedMap<K, V> extends Map<K, V> {
         return mapper(this._get(key))
     }
 }
-export interface Language{
-    name:string,
-    // deno-lint-ignore no-explicit-any
-    value:Record<string,any>
+export interface Language {
+    code: string
+    name: string
+    values: Record<string, any>
+    all_values?: string
 }
-export class LocalizatorDefs{
-    language:Language
-    constructor(language:Language){
-        this.language=language
+
+export class TranslationManager {
+    private _language: Language
+
+    constructor(language: Language) {
+        this._language = language
     }
-    // deno-lint-ignore no-explicit-any
-    protected _get(val:string[],vv:Record<string,any>,err:string):string{
-        if(val.length==1){
-            return vv[val[0]]
-        }else if(val.length>1){
-            if(typeof vv[val[0]]!=="object")return err
-            // deno-lint-ignore no-explicit-any
-            return this._get(val.slice(1,val.length),(vv[val[0]] as Record<string,any>),err)
+
+    setLanguage(language: Language) {
+        this._language = language
+    }
+
+    getLanguage(): Language {
+        return this._language
+    }
+    get(key: string, replace: Record<string, string> = {}): string {
+        const lang = this._language
+        if (lang.all_values !== undefined) {
+            return this._interpolate(lang.all_values, replace)
         }
-        throw new Error("Null Translation")
+
+        const value = this._resolveValue(lang.values, key.split("."))
+        if (value === undefined || typeof value !== "string") {
+            console.warn(`[TranslationManager] Missing translation for "${key}"`)
+            return key
+        }
+
+        return this._interpolate(value, replace);
     }
-    /**
-     * mydivision.sub.aaa
-     */
-    get(val:string):string{
-        return this._get(val.split("."),this.language.value,val)
+    private _resolveValue(obj: Record<string, any>, path: string[]): any {
+        let current: any = obj
+        for (let i = 0; i < path.length; i++) {
+            current = current?.[path[i]]
+            if (current === undefined) return undefined
+        }
+        return current
+    }
+    private _interpolate(template: string, values: Record<string, string>): string {
+        let result = template
+
+        result = result.replace(/\$\{([^}]+)\}/g, (_, key) => {
+            return values[key] ?? "${" + key + "}";
+        })
+
+        result = result.replace(/\$\[([^\]]+)\]/g, (_, key) => {
+            return values[key] ?? "$[" + key + "]";
+        })
+
+        return result
     }
 }
 export interface FrameTransform{

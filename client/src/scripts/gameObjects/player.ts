@@ -379,13 +379,16 @@ export class Player extends GameObject{
                         case "loot":{
                             if(!(o as Loot).item)return
                             this.game.guiManager.state.loot=true
-                            this.game.guiManager.state.information_box_message=`Take ${(o as Loot).item.idString}${(o as Loot).count>1?`(${(o as Loot).count})`:""}`
+                            this.game.guiManager.state.information_box_message=this.game.language.get("interact-loot",{
+                                source:this.game.language.get((o as Loot).item.idString+"_name"),
+                                count:(o as Loot).count>1?`(${(o as Loot).count})`:""
+                            })
                             break
                         }
                         case "obstacle":{
                             if((o as Obstacle).def.interactDestroy&&!(o as Obstacle).dead){
                                 this.game.guiManager.state.interact=true
-                                this.game.guiManager.state.information_box_message=`Break`
+                                this.game.guiManager.state.information_box_message=this.game.language.get("interact-obstacle-break",{})
                             }
                             break
                         }

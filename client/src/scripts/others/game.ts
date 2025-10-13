@@ -38,6 +38,7 @@ import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
 import { Camera3D } from "../engine/container_3d.ts";
 import { ABParticle2D, ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
+import { TranslationManager } from "common/scripts/engine/definitions.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -79,6 +80,8 @@ export class Game extends ClientGame2D<GameObject>{
   //minimap:MinimapManager=new MinimapManager(this)
 
   dead_zone:DeadZoneManager=new DeadZoneManager(this)
+
+  language:TranslationManager
 
   tab:TabManager=new TabManager(this)
 
@@ -245,11 +248,12 @@ export class Game extends ClientGame2D<GameObject>{
   }
   rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
   ambient_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
-  constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
+  constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,translation:TranslationManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
       this.scene.objects.add_layer(i)
     }
+    this.language=translation
     this.scene.objects.encoders=ObjectsE;
 
     this.renderer.background=ColorM.hex("#000");
@@ -257,6 +261,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.menuManager=menu
 
     this.cam3=new Camera3D(this.renderer)
+
+
 
     if(Debug.hitbox){
       const hc={color:ColorM.hex("#ee000099")}

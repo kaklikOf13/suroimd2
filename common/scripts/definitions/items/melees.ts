@@ -217,7 +217,7 @@ Melees.insert(
         animation:AnimationSwing(0.6)
     },
     {
-        idString:"hammer",
+        idString:"sledgehammer",
         damage:50,
         offset:0.6,
         quality:ItemQuality.Rare,

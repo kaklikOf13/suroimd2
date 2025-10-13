@@ -782,7 +782,7 @@ Guns.insert(
         speed_mod:0.5,
     },
     {
-        idString:"m2-2",
+        idString:"m2_2",
         fireDelay:0.07,
         spread:3,
         lenght:1,

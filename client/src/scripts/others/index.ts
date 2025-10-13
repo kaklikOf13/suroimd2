@@ -13,11 +13,13 @@ import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts"
 import { ConfigType } from "common/scripts/config/config.ts";
 import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
-(() => {
+import { NewMDLanguageManager } from "./languages.ts";
+(async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)
     inputs.bind(canvas)
     const sounds=new SoundManager()
+    const tm=await NewMDLanguageManager("english","/languages")
     sounds.volumes={
         "players":1,
         "music":1,
@@ -63,7 +65,7 @@ import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket
             this.elements.play_button_campaign.addEventListener("click",(_e)=>{
                 this.playGame({offline:true})
             })
-            this.game=new Game(inputs,menu_manager,sounds,GameSave,resources,renderer)
+            this.game=new Game(inputs,menu_manager,sounds,GameSave,resources,tm,renderer)
             this.game.listners_init()
             this.game.init_gui(gui)
             this.game.onstop=this.closeGame.bind(this)

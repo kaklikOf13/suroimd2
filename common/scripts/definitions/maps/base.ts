@@ -84,7 +84,7 @@ LootTables.add_tables({
         {item:"vector",weight:6},
         {item:"kar98k",weight:6},
         {item:"awp",weight:0.5},
-        {item:"m2-2",weight:0.1},
+        {item:"m2_2",weight:0.1},
     ],
     "legendary_guns":[
         {item:"awms",weight:1},
@@ -101,7 +101,7 @@ LootTables.add_tables({
     ],
     "melees":[
         {table:"axe",weight:10},
-        {table:"hammer",weight:1},
+        {table:"sledgehammer",weight:1},
     ],
     "special_guns":[
         {table:"uncommon_guns",weight:29},
@@ -124,7 +124,7 @@ LootTables.add_tables({
         {table:"addiction",count:2,weight:0.7},
     ],
     "healing":[
-        {item:"gauze",count:5,weight:1},
+        {item:"bandage",count:5,weight:1},
         {item:"medikit",count:1,weight:0.6},
     ],
     "adrenaline":[

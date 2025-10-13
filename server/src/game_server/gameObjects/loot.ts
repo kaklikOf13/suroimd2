@@ -1,4 +1,4 @@
-import { CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { LootData } from "common/scripts/others/objectsEncode.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
@@ -108,7 +108,7 @@ export class Loot extends ServerGameObject{
     }
     oldPos:Vec2=v2.new(-1,-1)
     update(dt:number): void {
-        this.position=v2.add(this.position,v2.scale(this.velocity,dt))
+        v2m.add_component(this.position,this.velocity.x*dt,this.velocity.y*dt)
         if(!v2.is(this.position,this.oldPos)){
             this.dirtyPart=true
             this.oldPos=v2.duplicate(this.position)
@@ -122,7 +122,7 @@ export class Loot extends ServerGameObject{
                     if(other.id===this.id)continue
                     const col=this.hb.overlapCollision(other.hb)
                     if(col){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.025))
                     }
                     break
                 }

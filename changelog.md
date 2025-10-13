@@ -11,6 +11,7 @@ __                                                                              
 * Badges
 * Loot Sounds And Gui
 * Alternative Vehicles Control
+* Translations
 __                                                                                                      __
 ### Menu
 * Debug Menu (Press Delete Or R3 To Access)

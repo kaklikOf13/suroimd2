@@ -1,0 +1,83 @@
+{
+    "values":{
+        "game-name":"Suroimd.io 2",
+
+        "barrel_name":"Barrel",
+
+        "bandage_name":"Bandage",
+        "medikit_name":"Medikit",
+        "soda_name":"Soda",
+        "inhaler_name":"Inhaler",
+        "yellow_pills_name":"Yellow Pills",
+        "small_blue_potion_name":"Small Blue Potion",
+        "blue_potion_name":"Blue Potion",
+        "blue_pills_name":"Blue Pills",
+        "small_purple_potion_name":"Small Purple Potion",
+        "purple_potion_name":"Purple Potion",
+        "purple_pills_name":"Purple Pills",
+        "small_red_crystal_name":"Small Red Crystal",
+        "red_crystal_name":"Red Crystal",
+        "red_pills_name":"Red Pills",
+
+        "12g_name":"12G",
+        "762mm_name":"7.62MM",
+        "556mm_name":"5.56MM",
+        "9mm_name":"9MM",
+        "22lr_name":"22LR",
+        "50cal_name":"50Cal",
+        "308sub_name":".308 Sub-Sonic",
+        "explosive_ammo_name":"Explosive Ammo",
+        "gasoline_name":"Gasoline",
+        "mana_mm_name":"Mana-MM LOL",
+
+        "survival_knife_name":"Survival Knife",
+        "axe_name":"Axe",
+        "sledgehammer_name":"Sledgehammer",
+
+        "m9_name":"M9",
+        "m9_dual_name":"Dual M9",
+        "pfeifer_zeliska_name":"Pfeifer Zeliska 600 Nitro Express",
+        "pfeifer_zeliska_dual_name":"Dual Pfeifer Zeliska",
+        "ak47_name":"AK47",
+        "ar15_name":"AR15",
+        "famas_name":"Famas",
+        "mp5_name":"MP5",
+        "vector_name":"Vector",
+        "uzi_name":"Uzi",
+        "kar98k_name":"Kar98k",
+        "awp_name":"AWP",
+        "awms_name":"AWM-S",
+        "m870_name":"M870",
+        "spas12_name":"Spas-12",
+        "hp18_name":"HP18",
+        "rpg7_name":"RPG-7",
+        "m2_2_name":"M2-2",
+
+        "killfeed-join":"${player} Joined",
+
+        "killfeed-kill-abstinence":"${player} Died Of Abstinence",
+        "killfeed-kill-player":"${player1} Killed ${player2} With ${source}",
+        "killfeed-kill-explosion":"${player1} Explode ${player2} With ${source}",
+        "killfeed-kill-deadzone":"${player} Was Caught By Deadzone",
+        "killfeed-kill-side-effect":"${player} Die For SideEffect",
+        "killfeed-kill-disconnect":"${player} Give Up",
+        "killfeed-kill-bleend":"${player} Bled To Death",
+
+        "killfeed-down-abstinence":"${player} Fell Due To Abstinence",
+        "killfeed-down-player":"${player1} Knocked Out ${player2} With ${source}",
+        "killfeed-down-deadzone":"Deadzone Took ${player} Forces",
+        "killfeed-down-side-effect":"${player} Knocked Out For SideEffect",
+        "killfeed-down-disconnect":"${player} Give Up",
+        "killfeed-down-bleend":"This Killfeed Message Are A Bug - Report",
+        "killfeed-killleader-assigned":"${player} Become The Kill Leader",
+        "killfeed-killleader-dead":"The Kill Leader Are Dead",
+
+        "killleader-wait":"Waiting For A Kill Leader",
+
+        "interact-loot":"Take ${source}${count}",
+        "interact-obstacle-break":"Break",
+
+        "gameover-eliminated-by":"<span id='gameover-eliminated'>Eliminated By</span> ${player}",
+        "gameover-you-win":"<span id='gameover-you-win'>You Win!</span>"
+    }
+}

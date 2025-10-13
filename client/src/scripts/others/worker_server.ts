@@ -24,11 +24,11 @@ self.onmessage = (ev) => {
         );
         server.mainloop(true)
 
-        /*for (let i = 0; i < msg.bots-1; i++) {
+        for (let i = 0; i < msg.bots-1; i++) {
             const bot = server.add_bot()
             const ai=new SimpleBotAi()
             bot.ai=ai
-            bot.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
+            /*bot.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
             bot.inventory.oitems["556mm"]=random.choose([100,200,310])
             bot.inventory.oitems["762mm"]=random.choose([100,200,310])
             bot.inventory.oitems["9mm"]=random.choose([100,200,400])
@@ -39,27 +39,19 @@ self.onmessage = (ev) => {
             bot.inventory.oitems["explosive_ammo"]=random.choose([5,10,15,20])
             bot.inventory.oitems["gasoline"]=random.choose([5,10,15,20])
             if(Math.random()<=0.5){
-                bot.inventory.set_weapon(0,Melees.getFromString(random.choose(["hammer","axe"])))
+                bot.inventory.set_weapon(0,Melees.getFromString(random.choose(["sledgehammer","axe"])))
             }
-            //bot.vest=Armors.getFromString(random.choose(["basic_vest","regular_vest","tactical_vest"]))
-            //bot.vest=Armors.getFromString("regular_vest")
-            bot.vest=Armors.getFromString("tactical_vest")
-            bot.helmet=Armors.getFromString(random.choose(["basic_helmet","regular_helmet","tactical_helmet"]))
+            bot.vest=Vests.getFromString(random.choose(["basic_vest","regular_vest","tactical_vest"]))
+            bot.helmet=Helmets.getFromString(random.choose(["basic_helmet","regular_helmet","tactical_helmet"]))
             bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,4)
             bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,2)
             bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,2)
             bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,2)
             bot.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,2)
-
             if(Math.random()<=0.5){
                 bot.boost_def=Boosts[BoostType.Shield]
                 bot.boost=100
-            }
-        }*/
-        for (let i = 0; i < msg.bots-1; i++) {
-            const bot = server.add_bot()
-            const ai=new SimpleBotAi()
-            bot.ai=ai
+            }*/
         }
 
         const bot = server.add_bot()
@@ -77,7 +69,7 @@ self.onmessage = (ev) => {
         bot.inventory.oitems["explosive_ammo"]=random.choose([5,10,15,20])
         bot.inventory.oitems["gasoline"]=random.choose([5,10,15,20])
         if(Math.random()<=0.5){
-            bot.inventory.set_weapon(0,Melees.getFromString(random.choose(["hammer","axe"])))
+            bot.inventory.set_weapon(0,Melees.getFromString(random.choose(["sledgehammer","axe"])))
         }
         bot.vest=Vests.getFromString("tactical_vest")
         bot.helmet=Helmets.getFromString("tactical_helmet")
