@@ -64,7 +64,7 @@ export class GunItem extends LItem{
         return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
     }
     attacking():boolean{
-        return this.use_delay>0&&!this.switching
+        return this.use_delay>0&&!this.switching&&this.ammo>0
     }
     on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return

@@ -192,9 +192,6 @@ export class Game extends ClientGame2D<GameObject>{
         case "next_weapon":
           this.action.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)})
           break
-        case "expanded_inventory":
-          this.guiManager.set_all_inventory(!this.guiManager.all_inventory_enabled)
-          break
         case "debug_menu":
           if(!this.menuManager.api_settings.debug.debug_menu)break
           ToggleElement(this.guiManager.content.debug_menu)

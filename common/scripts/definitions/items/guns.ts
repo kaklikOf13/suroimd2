@@ -288,9 +288,9 @@ Guns.insert(
     },
     {
         idString:"ar15",
-        fireDelay:0.12,
+        fireDelay:0.06,
         switchDelay:0.7,
-        spread:6.5,
+        spread:8,
         lenght:0.7,
         size:4,
         ammoType:"556mm",
@@ -648,7 +648,7 @@ Guns.insert(
         lenght:1,
         ammoType:"12g",
         ammoSpawnAmount:18,
-        jitterRadius:0.13,
+        jitterRadius:0.14,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Epic,
         size:4.5,
@@ -656,12 +656,12 @@ Guns.insert(
         muzzleFlash:MuzzleFlash.normal,
         bullet:{
             def:{
-                damage:8,
+                damage:7,
                 radius:0.012,
                 speed:32,
                 range:54,
-                criticalMult:1.15,
-                falloff:0.7,
+                criticalMult:1.1,
+                falloff:0.65,
                 tracer:tracers.small
             },
             count:9

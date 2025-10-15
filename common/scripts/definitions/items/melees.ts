@@ -136,6 +136,7 @@ Melees.insert(
         radius:0.5,
         size:0,
         attack_delay:0.2,
+        switchDelay:0.5,
         damage_delays:[0.11],
         arms:{
             right:{
@@ -189,12 +190,13 @@ Melees.insert(
     },
     {
         idString:"axe",
-        damage:35,
+        damage:33,
         offset:0.6,
         quality:ItemQuality.Uncommon,
         radius:0.9,
         size:2,
         attack_delay:0.5,
+        switchDelay:0.5,
         damage_delays:[0.4],
         arms:{
             right:{
@@ -218,12 +220,13 @@ Melees.insert(
     },
     {
         idString:"sledgehammer",
-        damage:50,
+        damage:49.5,
         offset:0.6,
         quality:ItemQuality.Rare,
         radius:0.9,
         size:3,
         attack_delay:0.8,
+        switchDelay:0.5,
         damage_delays:[0.6],
         arms:{
             right:{ 

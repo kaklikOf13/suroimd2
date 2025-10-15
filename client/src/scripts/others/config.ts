@@ -136,10 +136,6 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.R1],
         keys:[]
     },
-    "expanded_inventory":{
-        buttons:[GamepadButtonID.Y],
-        keys:[Key.I]
-    },
     "debug_menu":{
         buttons:[GamepadButtonID.R3],
         keys:[Key.Delete]

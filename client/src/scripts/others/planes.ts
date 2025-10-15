@@ -60,7 +60,7 @@ export class Plane{
         }
         if(this.initial){
             this.id=data.id
-            this.container.position=this.dest_pos
+            this.container.position=this.dest_pos!
             this.initial=false
         }
     }

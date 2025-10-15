@@ -377,12 +377,7 @@ export class GuiManager{
         weapon2:document.querySelector("#game-weapon-slot-01") as HTMLDivElement,
         weapon3:document.querySelector("#game-weapon-slot-02") as HTMLDivElement,
 
-        e_weapon1:document.querySelector("#game-weapon-slot-expanded-00") as HTMLDivElement,
-        e_weapon2:document.querySelector("#game-weapon-slot-expanded-01") as HTMLDivElement,
-        e_weapon3:document.querySelector("#game-weapon-slot-expanded-02") as HTMLDivElement,
-
         ammos:document.querySelector("#ammos-inventory") as HTMLDivElement,
-        ammos_all:document.querySelector("#all-inventory-ammos") as HTMLDivElement,
 
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
         
@@ -392,14 +387,10 @@ export class GuiManager{
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
 
         gui_items:document.querySelector("#gui-items") as HTMLSpanElement,
-        gui_items_all:document.querySelector("#all-inventory-items") as HTMLSpanElement,
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
 
         debug_show:document.querySelector("#debug-show") as HTMLDivElement,
-
-        all_inventory:document.querySelector("#all-inventory") as HTMLDivElement,
-        close_all_inventory:document.querySelector("#close-all-inventory") as HTMLButtonElement,
 
         post_proccess:{
             vignetting:document.querySelector("#vignetting-gfx") as HTMLDivElement,
@@ -491,49 +482,27 @@ export class GuiManager{
                 }
             }
         }
-
-        const dropW2=(w:number)=>{
-            return ()=>{
-                this.game.action.actions.push({type:InputActionType.drop,drop:w,drop_kind:1})
-            }
-        }
-        
         const selecW=(w:number)=>{
             return ()=>{
                 this.game.action.actions.push({type:InputActionType.set_hand,hand:w})
             }
         }
-        this.content.weapon1.addEventListener("mouseup",dropW(0))
-        this.content.weapon2.addEventListener("mouseup",dropW(1))
-        this.content.weapon3.addEventListener("mouseup",dropW(2))
-
-        this.content.e_weapon2.addEventListener("click",dropW2(1))
-        this.content.e_weapon3.addEventListener("click",dropW2(2))
+        this.content.weapon1.addEventListener("mousedown",dropW(0))
+        this.content.weapon2.addEventListener("mousedown",dropW(1))
+        this.content.weapon3.addEventListener("mousedown",dropW(2))
 
         this.content.weapon1.addEventListener("touchstart",selecW(0))
         this.content.weapon2.addEventListener("touchstart",selecW(1))
         this.content.weapon3.addEventListener("touchstart",selecW(2))
 
         this.update_ammos({})
-        this.update_gui_items([
-        ])
         document.addEventListener("contextmenu", e => e.preventDefault());
-        this.clear()
         HideElement(this.content.gameD)
         ShowElement(this.content.menuD)
         HideElement(this.content.emote_wheel.main)
         HideElement(this.content.information_killbox)
 
-        this.content.close_all_inventory.addEventListener("click",this.set_all_inventory.bind(this,false))
-    }
-    all_inventory_enabled:boolean=false
-    set_all_inventory(enabled:boolean){
-        if(enabled){
-            ShowElement(this.content.all_inventory)
-        }else{
-            HideElement(this.content.all_inventory)
-        }
-        this.all_inventory_enabled=enabled
+        this.handle_slot_click=this.handle_slot_click.bind(this)
     }
     mobile_init(){
         this.mobile_open()
@@ -570,9 +539,6 @@ export class GuiManager{
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
             this.game.input_manager.emit("actiondown",{action:"interact"})
-        })
-        this.mobile_content.btn_inventory.addEventListener("click",()=>{
-            this.set_all_inventory(!this.all_inventory_enabled)
         })
         this.mobile_content.btn_reload.addEventListener("click",()=>{
             this.game.input_manager.emit("actiondown",{action:"reload"})
@@ -638,7 +604,6 @@ export class GuiManager{
         if(this.game.client){
             this.game.client.on("gameover",this.show_game_over.bind(this))
         }
-        this.set_all_inventory(false)
         HideElement(this.content.post_proccess.tiltshift)
         HideElement(this.content.post_proccess.recolor)
         HideElement(this.content.post_proccess.vignetting)
@@ -649,39 +614,37 @@ export class GuiManager{
             ShowElement(this.content.post_proccess.recolor)
         }
         this.game.renderer.canvas.focus()
+
+        this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
     }
-    ammos_cache:{
-        normal:Record<string,HTMLDivElement>,
-        all:Record<string,HTMLDivElement>
-    }={normal:{},all:{}}
+    handle_slot_click(e:MouseEvent){
+        const t=e.currentTarget as HTMLDivElement
+        if(e.button==2){
+            if(t.dataset.drop_kind==="2"){
+                this.game.action.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.drop!),drop_kind:2})
+            }else if(t.dataset.drop_kind==="3"){
+                this.game.action.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.slot!),drop_kind:3})
+            }
+        }else if(e.button===0){
+            if(t.dataset.drop_kind==="3"){
+                this.game.action.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+            }
+        }
+    }
+    ammos_cache:Map<string,HTMLDivElement>=new Map()
     update_ammos(ammos:Record<string,number>){
         const ak=Object.keys(ammos)
-        const ack=Object.keys(this.ammos_cache.normal)
+        const ack=Array.from(this.ammos_cache.entries())
         if(ack.length===ak.length&&ack.length>0){
             for(const a of ak){
                 const def=Ammos.getFromString(a)
                 const c=`${ammos[a]}${def.liquid?"l":""}`
-                const c1=this.ammos_cache.normal[a].querySelector(".count") as HTMLSpanElement
+                const c1=this.ammos_cache.get(a)!.querySelector(".count") as HTMLSpanElement
                 c1.innerText=`${c}`
-                const c2=this.ammos_cache.all[a].querySelector(".slot-count") as HTMLSpanElement
-                c2.innerText=`${c}`
             }
         }else{
-            const dropA=(a:number)=>{
-                return (e:MouseEvent)=>{
-                    if(e.button==2){
-                        this.game.action.actions.push({type:InputActionType.drop,drop:a,drop_kind:2})
-                    }
-                }
-            }
-            const dropA2=(a:number)=>{
-                return ()=>{
-                    this.game.action.actions.push({type:InputActionType.drop,drop:a,drop_kind:2})
-                }
-            }
             this.content.ammos.innerHTML=""
-            this.content.ammos_all.innerHTML=""
-            this.ammos_cache={all:{},normal:{}}
+            this.ammos_cache.clear()
             for(const a of ak){
                 const def=Ammos.getFromString(a)
                 const c=`${ammos[a]}${def.liquid?"l":""}`
@@ -689,80 +652,71 @@ export class GuiManager{
                     <image class="icon" src="img/game/common/items/ammos/${a}.svg"></image>
                     <span class="count">${c}</span>
                 </div>`
-                
-                const htm2=`<div class="inventory-item-slot" id="ammo-all-${a}">
-                    <img class="slot-image" src="img/game/common/items/ammos/${a}.svg"></img>
-                    <span class="slot-count">${c}</span>
-                </div>`
 
                 this.content.ammos.insertAdjacentHTML("beforeend", htm);
-                this.content.ammos_all.insertAdjacentHTML("beforeend", htm2);
-                this.ammos_cache.normal[a]=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
-                this.ammos_cache.normal[a].addEventListener("mouseup",dropA(def.idNumber!))
-                this.ammos_cache.all[a]=this.content.ammos_all.querySelector(`#ammo-all-${a}`) as HTMLDivElement
-                this.ammos_cache.all[a].addEventListener("click",dropA2(def.idNumber!))
+                const ele=this.content.ammos.querySelector(`#ammo-${a}`) as HTMLDivElement
+                this.ammos_cache.set(a,ele)
+                ele.dataset.drop_kind="2"
+                ele.dataset.drop=def.idNumber!.toString()
+                ele.addEventListener("mousedown",this.handle_slot_click)
             }
         }
     }
-    items_cache:Record<string,HTMLDivElement>={}
-    items?:Record<string,number>
-    update_gui_items(slots:InventoryItemData[]){
-        this.content.gui_items.innerHTML=""
-        let i=0;
-        const Ic=(i:number)=>{
-            return (e:MouseEvent)=>{
-                if(e.button==2){
-                    this.game.action.actions.push({type:InputActionType.drop,drop:i,drop_kind:3})
-                }
+    items?: Record<string, number>
+    private slotElements: HTMLDivElement[] = []
+
+    update_gui_items(slots: InventoryItemData[]) {
+        const res = this.game.resources
+        while (this.slotElements.length < slots.length) {
+            const el = document.createElement("div")
+            el.className = "inventory-item-slot"
+
+            const number = document.createElement("div")
+            number.className = "slot-number"
+            el.appendChild(number)
+
+            const count = document.createElement("div")
+            count.className = "slot-count"
+            el.appendChild(count)
+
+            const img = document.createElement("img")
+            img.className = "slot-image"
+            el.appendChild(img)
+
+            el.dataset.drop_kind = "3"
+            el.addEventListener("mousedown", this.handle_slot_click)
+
+            this.slotElements.push(el)
+            this.content.gui_items.appendChild(el)
+        }
+
+        const items: Record<string, number> = {}
+        for (let i = 0; i < slots.length; i++) {
+            const s = slots[i]
+            const el = this.slotElements[i]
+            const number = el.children[0] as HTMLDivElement
+            const count = el.children[1] as HTMLDivElement
+            const img = el.children[2] as HTMLImageElement
+
+            number.textContent = `${i + 4}`
+
+            if (s.count > 0) {
+                const def = GameItems.valueNumber[s.idNumber]
+                count.textContent = `${s.count}`
+                img.src = res.get_sprite(def.idString).src
+                img.style.display = "block"
+                el.dataset.slot = i.toString()
+                el.style.display = ""
+                items[def.idString] = (items[def.idString] ?? 0) + s.count
+            } else {
+                count.textContent = ""
+                img.style.display = "none"
+                el.dataset.slot = ""
+                el.style.display = ""
             }
         }
-        const Ic2=(i:number)=>{
-            return ()=>{
-                this.game.action.actions.push({type:InputActionType.use_item,slot:i})
-            }
-        }
-        
-        const Ic3=(i:number)=>{
-            return ()=>{
-                this.game.action.actions.push({type:InputActionType.drop,drop:i,drop_kind:4})
-            }
-        }
-        const items:Record<string,number>={}
-        for(const s of slots){
-            if(s.count>0){
-                const def=GameItems.valueNumber[s.idNumber]
-                this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot" id="inventory-slot-${i}">
-                <div class="slot-number">${i+4}</div>
-                <div class="slot-count">${s.count}</div>
-                <img class="slot-image" src="${this.game.resources.get_sprite(def.idString).src}"></img>
-                </div>`)
-                const vv=this.content.gui_items.querySelector(`#inventory-slot-${i}`) as HTMLDialogElement
-                vv.addEventListener("mouseup",Ic(i))
-                vv.addEventListener("click",Ic2(i))
-                if(items[def.idString]){
-                    items[def.idString]+=s.count
-                }else{
-                    items[def.idString]=s.count
-                }
-            }else{
-                this.content.gui_items.insertAdjacentHTML("beforeend",`<div class="inventory-item-slot">
-                <div class="slot-number">${i+4}</div>
-                </div>`)
-            }
-            i++
-        }
-        this.content.gui_items_all.innerHTML=""
-        this.items_cache={}
-        for(const i of Object.keys(items)){
-            this.items_cache[i]=document.createElement("div")
-            this.items_cache[i].classList.add("inventory-item-slot")
-            this.items_cache[i].insertAdjacentHTML("beforeend",`
-                <div class="slot-count">${items[i]}</div>
-                <img class="slot-image" src="${this.game.resources.get_sprite(i).src}">`)
-            this.items_cache[i].addEventListener("click",Ic3(GameItems.keysString[i]))
-            this.content.gui_items_all.appendChild(this.items_cache[i])
-        }
-        this.items=items
+
+        this.items = items
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     process_joined_packet(jp:JoinedPacket){
@@ -790,27 +744,18 @@ export class GuiManager{
     }
     update_hint(){
         const state=this.state
-        this.content.help_gui.innerHTML=``
+        this.content.help_gui.innerHTML=""
         if(state.driving){
-            this.content.help_gui.insertAdjacentHTML("beforeend",`
-                <span>R - Reverse</span>
-                <span>E - Leave</span>
-                `)
+            this.content.help_gui.insertAdjacentHTML("beforeend","<span>R - Reverse</span><span>E - Leave</span>")
         }
         if(state.gun){
-            this.content.help_gui.insertAdjacentHTML("beforeend",`
-                <span>R - Reload</span>
-                `)
+            this.content.help_gui.insertAdjacentHTML("beforeend","<span>R - Reload</span>")
         }
         if(state.loot){
-            this.content.help_gui.insertAdjacentHTML("beforeend",`
-                <span>E - Take Loot</span>
-                `)
+            this.content.help_gui.insertAdjacentHTML("beforeend","<span>E - Take Loot</span>")
         }
         if(state.interact){
-            this.content.help_gui.insertAdjacentHTML("beforeend",`
-                <span>E - Interact</span>
-                `)
+            this.content.help_gui.insertAdjacentHTML("beforeend","<span>E - Interact</span>")
         }
         if(state.information_box_message!==this.content.information_interact.innerHTML){
             if(state.information_box_message===""){
@@ -828,10 +773,6 @@ export class GuiManager{
         this.killleader=undefined
         this.content.help_gui.innerText=""
 
-        if(this.game){
-            this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
-        }
-
         this.end_game=false
         this.information_killbox_messages=[]
         this.information_killbox_time=0
@@ -841,6 +782,10 @@ export class GuiManager{
         HideElement(this.content.gameOver)
         ShowElement(this.content.game_gui)
         this.enableCrosshair()
+        
+        this.content.gui_items.innerHTML=""
+        this.slotElements.length=0
+        this.items={}
     }
     information_killbox_messages:string[]=[]
     information_killbox_time:number=0
@@ -967,7 +912,6 @@ export class GuiManager{
         const svgUrl = `data:image/svg+xml;base64,${btoa(svg)}`
         document.body.style.cursor = `url(${svgUrl}) ${size/2} ${size/2}, crosshair`
     }
-
     disableCrosshair() {
         document.body.style.cursor = "default"
     }
@@ -984,59 +928,38 @@ export class GuiManager{
         if(priv.dirty.weapons){
             let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
             let img=this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
-
-            let name2=this.content.e_weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
-            let img2=this.content.e_weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
             if(priv.weapons.melee){
                 name.innerText=priv.weapons.melee.idString
-                name2.innerText=priv.weapons.melee.idString
                 const src=this.game.resources.get_sprite(priv.weapons.melee.idString).src
                 img.src=src
-                img2.src=src
                 this.weapons[0]=priv.weapons.melee
                 img.style.display="block"
-                img2.style.display="block"
             }else{
                 name.innerText=""
-                name2.innerText=""
             }
             name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
             img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
-            name2=this.content.e_weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
-            img2=this.content.e_weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
             if(priv.weapons.gun1){
                 name.innerText=priv.weapons.gun1.idString
-                name2.innerText=priv.weapons.gun1.idString
                 const src=this.game.resources.get_sprite(priv.weapons.gun1.idString).src
                 img.src=src
-                img2.src=src
                 this.weapons[1]=priv.weapons.gun1
                 img.style.display="block"
-                img2.style.display="block"
             }else{
                 name.innerText=""
-                name2.innerText=""
                 img.style.display="none"
-                img2.style.display="none"
             }
             name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
             img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
-            name2=this.content.e_weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
-            img2=this.content.e_weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
             if(priv.weapons.gun2){
                 name.innerText=priv.weapons.gun2.idString
-                name2.innerText=priv.weapons.gun2.idString
                 const src=this.game.resources.get_sprite(priv.weapons.gun2.idString).src
                 img.src=src
-                img2.src=src
                 this.weapons[2]=priv.weapons.gun2
                 img.style.display="block"
-                img2.style.display="block"
             }else{
                 name.innerText=""
-                name2.innerText=""
                 img.style.display="none"
-                img2.style.display="none"
             }
         }
         if(priv.dirty.current_weapon&&priv.current_weapon){
