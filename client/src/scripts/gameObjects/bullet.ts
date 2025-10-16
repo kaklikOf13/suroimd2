@@ -28,7 +28,7 @@ export class Bullet extends GameObject{
 
     sendDelete: boolean=true;
     sprite_trail:Sprite2D=new Sprite2D()
-    sprite_projectile:Sprite2D=new Sprite2D()
+    sprite_projectile?:Sprite2D=new Sprite2D()
     container:Container2D=new Container2D()
 
     create(_args: Record<string, void>) {
@@ -56,7 +56,7 @@ export class Bullet extends GameObject{
         if(this.dying||v2.distance(this.initialPosition,this.position)>this.maxDistance){
             this.dying=true
             this.tticks-=dt
-            this.sprite_projectile.visible=false
+            this.sprite_projectile?.destroy()
             if(this.tticks<=0){
                 this.destroy()
             }
@@ -137,15 +137,9 @@ export class Bullet extends GameObject{
         this.sprite_trail.position.x=0
         this.sprite_trail.position.y=0
         this.container.visible=false
-        this.sprite_projectile.hotspot=v2.new(.5,.5)
-        this.sprite_projectile.zIndex=2
-        this.sprite_projectile.position.x=0
-        this.sprite_projectile.position.y=0
         this.container.add_child(this.sprite_trail)
-        this.container.add_child(this.sprite_projectile)
         this.container.updateZIndex()
         this.container.zIndex=zIndexes.Bullets
-        this.sprite_projectile.visible=false
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
       /*if(Debug.hitbox){
@@ -161,20 +155,27 @@ export class Bullet extends GameObject{
             this.hb=new CircleHitbox2D(data.position,data.full.radius)
             this.speed=data.full.speed
             this.container.rotation=data.full.angle
-            this.velocity=v2.maxDecimal(v2.scale(v2.from_RadAngle(data.full.angle),this.speed),4)
+            this.velocity=v2.from_RadAngle(data.full.angle)
+            v2m.scale(this.velocity,this.velocity,this.speed)
             this.sprite_trail.scale!.y=data.full.tracerHeight
             this.maxLength=data.full.tracerWidth
             this.sprite_trail.tint=ColorM.number(data.full.tracerColor)
 
             this.sprite_trail.scale.x=0
 
-            this.sprite_projectile.scale.x=data.full.projWidth
-            this.sprite_projectile.scale.y=data.full.projHeight
-    
-            this.sprite_projectile.tint=ColorM.number(data.full.projColor)
             if(data.full.projIMG){
+                this.sprite_projectile=new Sprite2D()
+                this.sprite_projectile.hotspot=v2.new(.5,.5)
+                this.sprite_projectile.zIndex=2
+                this.sprite_projectile.position.x=0
+                this.sprite_projectile.position.y=0
+                this.sprite_projectile.scale.x=data.full.projWidth
+                this.sprite_projectile.scale.y=data.full.projHeight
+
+                this.sprite_projectile.tint=ColorM.number(data.full.projColor)
                 this.sprite_projectile.frame=this.game.resources.get_sprite(images[data.full.projIMG-1])
-                this.sprite_projectile.visible=true
+
+                this.container.add_child(this.sprite_projectile)
             }
             this.particles=data.full.projParticle
             this.container.visible=true

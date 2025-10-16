@@ -219,7 +219,7 @@ export class Obstacle extends GameObject{
                         tint:ColorM.hex("#fff5"),
                         to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#fff0")}
                     }),
-                    enabled:this.health<=0.35,
+                    enabled:this.health<=0.45,
                 })
             }
         }

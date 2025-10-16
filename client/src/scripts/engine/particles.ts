@@ -124,7 +124,7 @@ export class RainParticle2D extends ClientParticle2D{
         this.config=config
         this.sprite.position=config.position
         this.position=this.sprite._position
-        this.sprite.scale=v2.new(config.scale?.main??1,config.scale?.main??1)
+        v2m.single(this.sprite.scale,config.scale?.main??1)
         this.sprite.rotation=config.rotation
         this.sprite.hotspot=v2.new(1,.5)
         this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)
@@ -142,7 +142,7 @@ export class RainParticle2D extends ClientParticle2D{
                     this.ticks=0
                     this.stage=1
                     this.sprite.set_frame(this.config.frame.wave,(this.manager.game as unknown as ClientGame2D).resources)
-                    this.sprite.scale=v2.new(0,0)
+                    v2m.zero(this.sprite.scale)
                     this.sprite.hotspot=v2.new(.5,.5)
                     if(this.config.zindex){
                         this.sprite.zIndex=this.config.zindex.wave

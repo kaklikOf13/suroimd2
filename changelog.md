@@ -50,8 +50,8 @@ __                                                                              
 * Remove Expanded Inventory
 __                                                                                                      __
 ## Fixes
-* **REQUEST ANIMATION FRAME!!!!!** No more Lag
-* **GIANT OPTIMISATION!!!**
+* **GIANT OPTIMISATION!!!** No More Lag
+* **REQUEST ANIMATION FRAME!**
 __                                                                                                      __
 # Play The Game
 https://suroimd.io

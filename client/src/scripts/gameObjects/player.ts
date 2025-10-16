@@ -406,7 +406,6 @@ export class Player extends GameObject{
             scale:2.6
         })
     }
-    current_interaction?:Loot|Obstacle|undefined
     update(dt:number): void {
         if(this.dest_pos){
             this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
@@ -414,12 +413,10 @@ export class Player extends GameObject{
         if(this.dest_rot){
             this.rotation=Numeric.lerp_rad(this.rotation,this.dest_rot!,this.game.inter_global)
         }
-        this.container.position=this.position
+        this.container._position.set(this.position.x,this.position.y)
         this.container.rotation=this.rotation
         this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
         this.manager.cells.updateObject(this)
-        const objs=this.manager.cells.get_objects(this.hb,this.layer)
-        this.current_interaction=undefined
         if(this.emote_time<2.5){
             this.emote_time+=dt
         }else{
@@ -437,37 +434,6 @@ export class Player extends GameObject{
                 },
                 ease:ease.circOut
             })
-        }
-        if(this.game.activePlayerId===this.id){
-            this.game.guiManager.state.loot=false
-            this.game.guiManager.state.interact=false
-            this.game.guiManager.state.information_box_message=""
-            for(const o of objs){
-                if(this.hb.collidingWith(o.hb)){
-                    switch(o.stringType){
-                        case "loot":{
-                            if(!(o as Loot).item)return
-                            this.game.guiManager.state.loot=true
-                            this.game.guiManager.state.information_box_message=this.game.language.get("interact-loot",{
-                                source:this.game.language.get((o as Loot).item.idString+"_name"),
-                                count:(o as Loot).count>1?`(${(o as Loot).count})`:""
-                            })
-                            break
-                        }
-                        case "obstacle":{
-                            if((o as Obstacle).def.interactDestroy&&!(o as Obstacle).dead){
-                                this.game.guiManager.state.interact=true
-                                this.game.guiManager.state.information_box_message=this.game.language.get("interact-obstacle-break",{})
-                            }
-                            break
-                        }
-                    }
-                }
-                if(this.game.guiManager.state.loot||this.game.guiManager.state.interact){
-                    this.current_interaction=o
-                    break
-                }
-            }
         }
     }
     override on_destroy(): void {
@@ -530,7 +496,7 @@ export class Player extends GameObject{
             case PlayerAnimationType.Reloading:{
                 if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined;break}
                 const d=this.current_weapon as GunDef
-                
+
                 const sound=this.game.resources.get_audio((d.reload?.reload_alt&&this.current_animation.alt_reload)?`${d.idString}_reload_alt`:`${d.idString}_reload`)
                 if(sound){
                     if(this.sound_animation.animation)this.sound_animation.animation.stop()

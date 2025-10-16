@@ -238,8 +238,8 @@ export class Game extends ClientGame2D<GameObject>{
         }
       }
     }
-    this.action.angle=angle;
-    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving){
+    this.action.angle=angle
+    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving&&this.running){
       (this.activePlayer as Player).rotation=this.action.angle
     }
   }
@@ -258,8 +258,6 @@ export class Game extends ClientGame2D<GameObject>{
     this.menuManager=menu
 
     this.cam3=new Camera3D(this.renderer)
-
-
 
     if(Debug.hitbox){
       const hc={color:ColorM.hex("#ee000099")}

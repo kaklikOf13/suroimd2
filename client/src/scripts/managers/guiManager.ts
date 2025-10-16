@@ -17,6 +17,9 @@ import { JoystickEvent } from "../engine/keys.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
 import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 import { EmoteDef, Emotes} from "common/scripts/definitions/loadout/emotes.ts";
+import { type Loot } from "../gameObjects/loot.ts";
+import { type Obstacle } from "../gameObjects/obstacle.ts";
+import { type Player } from "../gameObjects/player.ts";
 const crosshairSVG = `
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -434,6 +437,14 @@ export class GuiManager{
         1:undefined,
         2:undefined
     }
+    weapons_content={
+        weapon1_name:this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement,
+        weapon1_image:this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement,
+        weapon2_name:this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement,
+        weapon2_image:this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement,
+        weapon3_name:this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement,
+        weapon3_image:this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement,
+    }
     action?:{delay:number,start:number,type:ActionsType}
 
     currentWeapon?:HTMLDivElement
@@ -441,6 +452,23 @@ export class GuiManager{
     killleader?:{
         id:number
         kills:number
+    }
+
+    _makeHint(texts: string[]) {
+        const div = document.createElement("div")
+        for (const t of texts) {
+            const span = document.createElement("span")
+            span.textContent = t
+            div.appendChild(span)
+        }
+        this.content.help_gui.appendChild(div)
+        return div
+    }
+    helpTexts = {
+        driving: this._makeHint(["R - Reverse", "E - Leave"]),
+        gun: this._makeHint(["R - Reload"]),
+        loot: this._makeHint(["E - Take Loot"]),
+        interact: this._makeHint(["E - Interact"]),
     }
     constructor(){
         this.set_health(100,100)
@@ -740,22 +768,12 @@ export class GuiManager{
         gun:false,
         loot:false,
         interact:false,
-        information_box_message:"a"
+        information_box_message:""
     }
     update_hint(){
         const state=this.state
-        this.content.help_gui.innerHTML=""
-        if(state.driving){
-            this.content.help_gui.insertAdjacentHTML("beforeend","<span>R - Reverse</span><span>E - Leave</span>")
-        }
-        if(state.gun){
-            this.content.help_gui.insertAdjacentHTML("beforeend","<span>R - Reload</span>")
-        }
-        if(state.loot){
-            this.content.help_gui.insertAdjacentHTML("beforeend","<span>E - Take Loot</span>")
-        }
-        if(state.interact){
-            this.content.help_gui.insertAdjacentHTML("beforeend","<span>E - Interact</span>")
+        for (const [key, el] of Object.entries(this.helpTexts)) {
+            el.style.display = this.state[key as keyof HelpGuiState] ? "" : "none";
         }
         if(state.information_box_message!==this.content.information_interact.innerHTML){
             if(state.information_box_message===""){
@@ -926,8 +944,8 @@ export class GuiManager{
         }
 
         if(priv.dirty.weapons){
-            let name=this.content.weapon1.querySelector(".weapon-slot-name") as HTMLSpanElement
-            let img=this.content.weapon1.querySelector(".weapon-slot-image") as HTMLImageElement
+            let name=this.weapons_content.weapon1_name
+            let img=this.weapons_content.weapon1_image
             if(priv.weapons.melee){
                 name.innerText=priv.weapons.melee.idString
                 const src=this.game.resources.get_sprite(priv.weapons.melee.idString).src
@@ -937,8 +955,8 @@ export class GuiManager{
             }else{
                 name.innerText=""
             }
-            name=this.content.weapon2.querySelector(".weapon-slot-name") as HTMLSpanElement
-            img=this.content.weapon2.querySelector(".weapon-slot-image") as HTMLImageElement
+            name=this.weapons_content.weapon2_name
+            img=this.weapons_content.weapon2_image
             if(priv.weapons.gun1){
                 name.innerText=priv.weapons.gun1.idString
                 const src=this.game.resources.get_sprite(priv.weapons.gun1.idString).src
@@ -949,8 +967,8 @@ export class GuiManager{
                 name.innerText=""
                 img.style.display="none"
             }
-            name=this.content.weapon3.querySelector(".weapon-slot-name") as HTMLSpanElement
-            img=this.content.weapon3.querySelector(".weapon-slot-image") as HTMLImageElement
+            name=this.weapons_content.weapon3_name
+            img=this.weapons_content.weapon3_image
             if(priv.weapons.gun2){
                 name.innerText=priv.weapons.gun2.idString
                 const src=this.game.resources.get_sprite(priv.weapons.gun2.idString).src
@@ -1125,17 +1143,67 @@ export class GuiManager{
             }
         }
         this.content.debug_show.innerText=`FPS: ${this.game.fps}`
+        this.update_active_player(this.game.activePlayer)
     }
+    current_interaction?:Loot|Obstacle
+    update_active_player(player?:Player){
+        const old_inter=this.current_interaction
+        this.current_interaction=undefined
+        if(player){
+            const objs=this.game.scene.objects.cells.get_objects(player.hb,player.layer)
+            for(const o of objs){
+                if(player.hb.collidingWith(o.hb)){
+                    switch(o.stringType){
+                        case "loot":{
+                            if(old_inter===o)return
+                            if(!(o as Loot).item)continue
+                            this.state.information_box_message=this.game.language.get("interact-loot",{
+                                source:this.game.language.get((o as Loot).item.idString+"_name"),
+                                count:(o as Loot).count>1?`(${(o as Loot).count})`:""
+                            })
+                            this.current_interaction=o as Loot
+                            this.state.loot=true
+                            this.update_hint()
+                            return
+                        }
+                        case "obstacle":{
+                            if((o as Obstacle).def.interactDestroy&&!(o as Obstacle).dead){
+                                if(old_inter===o)return
+                                this.state.interact=true
+                                this.state.information_box_message=this.game.language.get("interact-obstacle-break",{})
+                                this.current_interaction=o as Obstacle
+                                this.update_hint()
+                            }
+                            return
+                        }
+                    }
+                }
+            }
+        }
+        this.game.guiManager.state.information_box_message=""
+        this.state.interact=false
+        this.state.loot=false
+        this.update_hint()
+    }
+
+    health:number=-1
+    boost:number=-1
+    boost_type:BoostType=BoostType.Null
     set_health(health:number,max_health:number){
         const p=health/max_health
+        if(p==this.health)return
+        this.health=health
         this.content.health_bar_interior.style.width =`${p*100}%`
         this.content.health_bar_animation.style.width=`${p*100}%`
         this.content.health_bar_amount.innerText=`${health}/${max_health}`
     }
-    set_boost(boost:number,max_boost:number,_type:BoostType){
+    set_boost(boost:number,max_boost:number,type:BoostType){
         const p=boost/max_boost
+        if(p==this.boost&&this.boost_type==type)return
+        this.boost=boost
+        this.boost_type=type
         this.content._bar_interior.style.width =`${p*100}%`
         this.content._bar_amount.innerText=`${boost}/${max_boost}`
-        this.content._bar_interior.style.backgroundColor=Boosts[_type].color
+        this.content._bar_interior.style.backgroundColor=Boosts[type].color
     }
 }
