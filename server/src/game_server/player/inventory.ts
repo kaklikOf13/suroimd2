@@ -88,7 +88,7 @@ export class GunItem extends LItem{
         return user.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
     }
     reload(user:Player){
-        if(!this.def.reload||this.use_delay>0||user.downed)return
+        if(!this.def.reload||user.downed)return
         if(this.ammo>=this.def.reload.capacity||!user.inventory.oitems[this.def.ammoType]){
             this.reloading=false
             return

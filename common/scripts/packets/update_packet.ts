@@ -16,26 +16,6 @@ export interface DamageSplash{
     critical:boolean
     shield_break:boolean
 }
-export interface PlaneData{
-    direction:number
-    pos:Vec2
-    complete:boolean
-    type:number
-    id:number
-}
-export enum DeadZoneState{
-    Deenabled,
-    Advancing,
-    Waiting,
-    Finished
-}
-export interface DeadZoneUpdate{
-    state:DeadZoneState
-    position:Vec2
-    radius:number
-    new_position:Vec2
-    new_radius:number
-}
 export interface PrivateUpdate{
     dirty:{
         inventory:boolean
@@ -43,10 +23,7 @@ export interface PrivateUpdate{
         current_weapon:boolean
         action:boolean
         oitems:boolean
-        living_count:boolean
     }
-
-    planes:PlaneData[]
 
     health:number
     max_health:number
@@ -58,7 +35,6 @@ export interface PrivateUpdate{
     inventory?:InventoryItemData[]
     action?:{delay:number,type:ActionsType}
 
-    living_count:number[]
     weapons:{
         melee?:MeleeDef
         gun1?:GunDef
@@ -71,8 +47,6 @@ export interface PrivateUpdate{
         liquid:boolean
     }
 
-    deadzone?:DeadZoneUpdate
-
     oitems:Record<number,number>
 
     damages:DamageSplash[]
@@ -83,16 +57,14 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     stream.writeUint8(priv.boost)
     stream.writeUint8(priv.max_boost)
     stream.writeUint8(priv.boost_type)
-    stream.writeBooleanGroup2(
+    stream.writeBooleanGroup(
         priv.dirty.inventory,
         priv.dirty.weapons,
         priv.dirty.current_weapon,
         priv.dirty.action,
         priv.dirty.oitems,
-        priv.dirty.living_count,
         priv.action!==undefined,
         priv.damages!==undefined,
-        priv.deadzone!==undefined,
         priv.current_weapon?.liquid
     )
     if(priv.dirty.inventory){
@@ -139,25 +111,6 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             }
         },1)
     }
-    if(priv.deadzone){
-        stream.writeUint8(priv.deadzone.state)
-        stream.writeFloat(priv.deadzone.radius,0,3000,3)
-        stream.writeFloat(priv.deadzone.new_radius,0,3000,3)
-        stream.writePosition(priv.deadzone.position)
-        stream.writePosition(priv.deadzone.new_position)
-    }
-    if(priv.dirty.living_count){
-        stream.writeArray(priv.living_count,(i,_s)=>{
-            stream.writeUint8(i)
-        },1)
-    }
-    stream.writeArray(priv.planes,(e)=>{
-        stream.writeID(e.id)
-        stream.writePosition(e.pos)
-        stream.writeRad(e.direction)
-        stream.writeBooleanGroup(e.complete)
-        stream.writeUint8(e.type)
-    },1)
 }
 function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     priv.health=stream.readUint8()
@@ -171,19 +124,16 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         dirtyCurrentWeapon,
         dirtyAction,
         dirtyAmmos,
-        dirtyLivingCount,
         hasAction,
         hasDamages,
-        deadZone,
         liquid,
-    ]=stream.readBooleanGroup2()
+    ]=stream.readBooleanGroup()
     priv.dirty={
         inventory:dirtyInventory,
         weapons:dirtyWeapons,
         current_weapon:dirtyCurrentWeapon,
         action:dirtyAction,
         oitems:dirtyAmmos,
-        living_count:dirtyLivingCount
     }
     if(dirtyInventory){
         priv.dirty.inventory=true
@@ -248,31 +198,6 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             }
         }
     }
-    if(deadZone){
-        priv.deadzone={
-            state:stream.readUint8(),
-            radius:stream.readFloat(0,3000,3),
-            new_radius:stream.readFloat(0,3000,3),
-            position:stream.readPosition(),
-            new_position:stream.readPosition()
-        }
-    }
-    if(dirtyLivingCount){
-        priv.living_count=stream.readArray((_s)=>{
-            return stream.readUint8()
-        },1)
-    }else{
-        priv.living_count=[]
-    }
-    priv.planes=stream.readArray(()=>{
-        return {
-            id:stream.readID(),
-            pos:stream.readPosition(),
-            direction:stream.readRad(),
-            complete:stream.readBooleanGroup()[0],
-            type:stream.readUint8()
-        }
-    },1)
 }
 export class UpdatePacket extends Packet{
     ID=2
@@ -287,13 +212,11 @@ export class UpdatePacket extends Packet{
             inventory:false,
             weapons:false,
             oitems:false,
-            living_count:false,
         },
         oitems:{},
         health:0,
         max_boost:0,
         max_health:0,
-        living_count:[],
         weapons:{
             gun1:undefined,
             gun2:undefined,
@@ -307,7 +230,6 @@ export class UpdatePacket extends Packet{
         },
         damages:[],
         inventory:undefined,
-        planes:[],
     }
 
     objects?:NetStream

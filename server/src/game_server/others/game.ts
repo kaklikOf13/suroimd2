@@ -1,4 +1,4 @@
-import { ID, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
+import { ID, NetStream, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
 import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
@@ -11,8 +11,8 @@ import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
 import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
-import { ExplosionDef } from "../../../../common/scripts/definitions/objects/explosions.ts";
-import { ProjectileDef } from "../../../../common/scripts/definitions/objects/projectiles.ts";
+import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
+import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
@@ -30,8 +30,8 @@ import { FloorType } from "common/scripts/others/terrain.ts";
 import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
 import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
 import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
-import { PlaneData } from "common/scripts/packets/update_packet.ts";
 import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
+import { GeneralUpdatePacket, PlaneData } from "common/scripts/packets/general_update.ts"
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -99,6 +99,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
     deadzone:DeadZoneManager
     living_count_dirty:boolean=false
+
+    general_update:GeneralUpdatePacket=new GeneralUpdatePacket()
 
     constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
         super(Config.game.config.gameTps,id,clients,PacketManager,[
@@ -174,7 +176,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
             this.netUpdate()
             this.ntt=1/this.Config.game.config.netTps
         }
-        this.living_count_dirty=true
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
@@ -216,8 +217,21 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 p.update2()
             }
         }
+        this.general_update.content.planes=this.planes
+        this.general_update.content.deadzone=undefined
+        if(this.living_count_dirty){
+            this.general_update.content.living_count=[this.livingPlayers.length]
+        }
+        this.living_count_dirty=false
+        if(this.deadzone.dirty){
+            this.general_update.content.deadzone=this.deadzone.state
+        }
+        const s=new NetStream(new ArrayBuffer(5*1024))
+        s.writeUint16(this.general_update.ID)
+        this.general_update.encode(s)
         this.scene.objects.update_to_net()
         this.scene.objects.apply_destroy_queue()
+        this.clients.sendStream(s)
     }
     add_player(id:number|undefined,username:string,packet:JoinPacket,layer:number=Layers.Normal,connected=true):Player{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player

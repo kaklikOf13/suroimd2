@@ -39,6 +39,7 @@ import { TabManager } from "../managers/tabManager.ts";
 import { Camera3D } from "../engine/container_3d.ts";
 import { ABParticle2D, ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
 import { TranslationManager } from "common/scripts/engine/definitions.ts";
+import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -141,11 +142,6 @@ export class Game extends ClientGame2D<GameObject>{
           break
         case "interact":
           this.action.interact=true
-          if(this.activePlayer&&this.activePlayer.current_interaction&&this.activePlayer.current_interaction.stringType==="loot"&&(this.activePlayer.current_interaction as Loot).pickup_sound){
-            this.sounds.play((this.activePlayer.current_interaction as Loot).pickup_sound!,{
-
-            },"loot")
-          }
           break
         case "swamp_guns":
           this.action.swamp_guns=true
@@ -433,18 +429,18 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   planes:Map<number,Plane>=new Map()
-  proccess_private(priv:PrivateUpdate){
-    for(const p of priv.planes){
+  proccess_general(up:GeneralUpdate){
+    for(const p of up.planes){
       if(!this.planes.has(p.id)){
         this.planes.set(p.id,new Plane(this))
       }
       const plane=this.planes.get(p.id)!
       plane.updateData(p)
     }
-    if(priv.dirty.living_count){
-      this.living_count=priv.living_count
+    if(up.dirty.living_count){
+      this.living_count=up.living_count
     }
-    if(priv.deadzone!==undefined)this.dead_zone.update_from_data(priv.deadzone)
+    if(up.deadzone!==undefined)this.dead_zone.update_from_data(up.deadzone)
   }
   bolt_tween?:Tween<Lights2D>
   bolt(){
@@ -470,8 +466,10 @@ export class Game extends ClientGame2D<GameObject>{
     this.light_map.quality=this.save.get_variable("cv_graphics_lights")
     this.client.on("update",(up:UpdatePacket)=>{
       this.guiManager.update_gui(up.priv)
-      this.proccess_private(up.priv)
       this.scene.objects.proccess_list(up.objects!,true)
+    })
+    this.client.on("general_update",(up:GeneralUpdatePacket)=>{
+      this.proccess_general(up.content)
     })
     this.client.on("killfeed",(kfp:KillFeedPacket)=>{
       this.guiManager.add_killfeed_message(kfp.message)

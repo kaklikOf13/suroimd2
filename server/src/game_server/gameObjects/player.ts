@@ -173,7 +173,6 @@ export class Player extends ServerGameObject{
         current_weapon:true,
         action:true,
         oitems:true,
-        living_count:true,
     }
 
     apply_modifiers(mods:Partial<PlayerModifiers>){
@@ -493,12 +492,15 @@ export class Player extends ServerGameObject{
                         break
                     case InputActionType.debug_give:
                         if(this.game.debug.debug_menu){
-                            this.inventory.give_item(GameItems.valueString[a.item],a.count,true)
+                            const l=GameItems.valueString[a.item]
+                            if(!l)break
+                            this.inventory.give_item(l,a.count,true)
                         }
                         break
                     case InputActionType.debug_spawn:
                         if(this.game.debug.debug_menu){
                             const l=GameItems.valueString[a.item]
+                            if(!l)break
                             this.game.add_loot(this.position,l,a.count,this.layer)
                             if(l.item_type===InventoryItemType.gun){
                                 this.game.add_loot(this.position,Ammos.getFromString((l as unknown as GunDef).ammoType) as unknown as GameItem,((l as unknown as GunDef).ammoSpawnAmount??0)*a.count)
@@ -554,7 +556,6 @@ export class Player extends ServerGameObject{
             up.priv.max_boost=this.maxBoost
             up.priv.boost_type=this.boost_def.type
             up.priv.inventory=[]
-            up.priv.planes=this.game.planes
             if(this.splashDelay<=0){
                 up.priv.damages=this.damagesSplash
                 this.damagesSplash=[]
@@ -595,19 +596,12 @@ export class Player extends ServerGameObject{
                     up.priv.oitems[Ammos.getFromString(a).idNumber!]=this.inventory.oitems[a]
                 }
             }
-            if(this.privateDirtys.living_count){
-                up.priv.living_count=[this.game.livingPlayers.length]
-            }
             this.privateDirtys={
                 inventory:false,
                 weapons:false,
                 current_weapon:false,
                 action:false,
                 oitems:false,
-                living_count:this.game.living_count_dirty
-            }
-            if(this.game.deadzone.dirty){
-                up.priv.deadzone=this.game.deadzone.state
             }
 
             if(this.actions.current_action){

@@ -1,9 +1,9 @@
-import { DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/update_packet.ts";
 import { Game } from "../others/game.ts";
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
+import { DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 export const DeadZoneDefinition: DeadZoneStage[] = [
     {
         state: DeadZoneState.Deenabled,

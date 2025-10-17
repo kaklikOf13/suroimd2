@@ -288,7 +288,7 @@ Guns.insert(
     },
     {
         idString:"ar15",
-        fireDelay:0.06,
+        fireDelay:0.1,
         switchDelay:0.7,
         spread:8,
         lenght:0.7,
