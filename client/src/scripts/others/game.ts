@@ -404,7 +404,7 @@ export class Game extends ClientGame2D<GameObject>{
         ))
       }
     }
-    if(this.living_count[0]<=2){
+    if(this.living_count&&this.living_count[0]<=2){
       this.guiManager.grand_finale()
     }
 

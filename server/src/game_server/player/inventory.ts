@@ -36,7 +36,7 @@ export class GunItem extends LItem{
         c:number
     }
     cap:number
-    switching:boolean=false
+    firing:boolean=false
 
     ammo:number=0
     liquid:boolean=false
@@ -64,13 +64,13 @@ export class GunItem extends LItem{
         return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
     }
     attacking():boolean{
-        return this.use_delay>0&&!this.switching&&!this.reloading&&this.ammo>0
+        return this.use_delay>0&&this.firing&&!this.reloading&&this.ammo>0
     }
     on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
         if(this.has_consumible(user)){
             if(this.use_delay<=0){
-                this.switching=false
+                this.firing=true
                 if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
                     this.burst={
                         c:this.def.burst.sequence,
@@ -162,14 +162,17 @@ export class GunItem extends LItem{
                 this.reload(user)
             }
             this.use_delay-=1/user.game.tps
-            if(this.burst&&this.use_delay<=0){
-                if(this.burst.c<=0||this.ammo<=0){
-                    this.burst=undefined
-                    this.use_delay=this.def.fireDelay
-                }else{
-                    this.burst.c--
-                    this.use_delay=this.burst.t
-                    this.shot(user)
+            if(this.use_delay<=0){
+                this.firing=false
+                if(this.burst){
+                    if(this.burst.c<=0||this.ammo<=0){
+                        this.burst=undefined
+                        this.use_delay=this.def.fireDelay
+                    }else{
+                        this.burst.c--
+                        this.use_delay=this.burst.t
+                        this.shot(user)
+                    }
                 }
             }
         }
@@ -294,7 +297,7 @@ export class MeleeItem extends LItem{
     def:MeleeDef
     itemType: InventoryItemType.melee=InventoryItemType.melee
     use_delay:number=0
-    switching:boolean=false
+    firing:boolean=false
 
     type="melee"
     constructor(def:MeleeDef,droppable=true){
@@ -307,7 +310,7 @@ export class MeleeItem extends LItem{
       return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
     }
     attacking():boolean{
-        return this.use_delay>0&&!this.switching
+        return this.use_delay>0&&this.firing
     }
     attack(user:Player):void{
         if(user.inventory.weaponIdx!==0)return
@@ -354,11 +357,14 @@ export class MeleeItem extends LItem{
               user.game.addTimeout(this.attack.bind(this,user),t)
               this.use_delay=this.def.attack_delay
             }
+            this.firing=true
         }
     }
     update(user: Player): void {
         if(this.use_delay>0){
             this.use_delay-=1/user.game.tps
+        }else{
+            this.firing=false
         }
     }
 }
@@ -431,7 +437,7 @@ export class GInventory extends Inventory<LItem>{
             const id=((this.currentWeaponDef) as GunDef|MeleeDef)
             if(id.switchDelay&&this.currentWeapon.use_delay<=id.switchDelay){
                 this.currentWeapon!.use_delay=id.switchDelay
-                this.currentWeapon!.switching=true
+                this.currentWeapon!.firing=true
             }
         }
 

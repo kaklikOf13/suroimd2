@@ -219,6 +219,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
         this.general_update.content.planes=this.planes
         this.general_update.content.deadzone=undefined
+        this.general_update.content.dirty.living_count=this.living_count_dirty
         if(this.living_count_dirty){
             this.general_update.content.living_count=[this.livingPlayers.length]
         }
@@ -255,6 +256,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         },this.map.random)
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
+
+        this.living_count_dirty=true
 
         if(connected){
             this.send_killfeed_message({

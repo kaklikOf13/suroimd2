@@ -812,6 +812,10 @@ export class GuiManager{
         this.end_game=true
         this.game.music.set(null)
         this.game.addTimeout(()=>{
+            if(this.game.living_count[0]>2){
+                this.end_game=false
+                return
+            }
             this.game.music.set(this.game.resources.get_audio(random.choose(this.game.ending_music)))
             this.information_killbox_messages.push(`Grand Finale`)
         },3)

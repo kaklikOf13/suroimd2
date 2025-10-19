@@ -871,6 +871,8 @@ export class Player extends ServerGameObject{
             }
 
             this.game.modeManager.on_player_die(this)
+
+            this.game.living_count_dirty=true
         }else{
             this.inventory.drop_all()
         }

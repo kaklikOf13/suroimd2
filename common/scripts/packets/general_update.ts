@@ -70,6 +70,7 @@ function decode_general_update(stream:NetStream,up:GeneralUpdate){
             new_position:stream.readPosition()
         }
     }
+    up.dirty.living_count=living_count
     if(living_count){
         up.living_count=stream.readArray((_s)=>{
             return stream.readUint8()
