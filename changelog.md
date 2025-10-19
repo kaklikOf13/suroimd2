@@ -18,6 +18,7 @@ __                                                                              
 * Fps Analizer
 * Crosshair
 * Alice Winner Skin
+* A New Background Art
 __                                                                                                      __
 ### Items
 * Explosive Ammo - A New Ammo

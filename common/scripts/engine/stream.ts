@@ -7,8 +7,9 @@ export class NetStream {
     protected static readonly decoder = new TextDecoder();
     protected static readonly encoder = new TextEncoder();
 
-    private readonly _view: DataView;
-    private readonly _u8Array: Uint8Array;
+    readonly _view: DataView;
+    readonly _u8Array: Uint8Array;
+    private static _tmpU8 = new Uint8Array(4096)
 
     get buffer(): ArrayBufferLike { return this._view.buffer; }
 
@@ -22,6 +23,11 @@ export class NetStream {
     ) {
         this._view = new DataView(source, byteOffset, byteLength);
         this._u8Array = new Uint8Array(source, byteOffset, byteLength);
+    }
+
+    clear(){
+        this.index=0
+        this.length=0
     }
 
     /**
@@ -286,24 +292,15 @@ export class NetStream {
      * @returns A UTF-8 string conforming to the output of {@link TextDecoder#decode}, with the decoder's encoding set to UTF-8
      */
     readStringSized(bytes: number): string {
-        if (bytes === 0) {
-            return "";
+        if (bytes === 0) return "";
+
+        const buf = NetStream._tmpU8;
+        let i = 0, c = 0;
+        while (i < bytes && (c = this.readUint8()) !== 0) {
+            buf[i++] = c;
         }
-
-        const chars = [];
-        let c: number;
-        let i = 0;
-
-        do {
-            if ((c = this.readUint8()) === 0) {
-                break;
-            }
-
-            chars[i++] = c;
-        } while (i < bytes);
-        if(this.index>this.length)this.length=this.index
-
-        return new TextDecoder().decode(new Uint8Array(chars));
+        if (i === 0) return "";
+        return NetStream.decoder.decode(buf.subarray(0, i));
     }
     readString(){
         const s=this.readUint24()
@@ -577,19 +574,16 @@ export class NetStream {
      * @param elementReader A function allowing to read any given element from the stream
      */
     readArray<T>(elementReader: (stream: this) => T, bytes: 1 | 2 | 3 | 4): T[] {
-        return Array.from(
-            {
-                length: (() => {
-                    switch (bytes) {
-                        case 1: return this.readUint8();
-                        case 2: return this.readUint16();
-                        case 3: return this.readUint24();
-                        case 4: return this.readUint32();
-                    }
-                })()
-            },
-            () => elementReader(this)
-        );
+        let len = 0;
+        switch (bytes) {
+            case 1: len = this.readUint8(); break
+            case 2: len = this.readUint16(); break
+            case 3: len = this.readUint24(); break
+            case 4: len = this.readUint32(); break
+        }
+        const arr = new Array<T>(len)
+        for (let i = 0; i < len; i++) arr[i] = elementReader(this)
+        return arr
     }
 
     /**
@@ -601,7 +595,7 @@ export class NetStream {
      * occurs if this is not a positive integer such that `offset + length` is smaller than the length of `src`'s buffer
      */
     writeStream(src: NetStream, offset = 0, length = src.index - offset): this {
-        this._u8Array.set(src._u8Array.slice(offset, offset + length), this.index);
+        this._u8Array.set(src._u8Array.subarray(offset, offset + length), this.index);
         this.index += length;
         if(this.index>this.length)this.length=this.index
         return this;
@@ -616,7 +610,7 @@ export class NetStream {
      */
     writeStreamDynamic(src: NetStream): this {
         this.writeUint24(src.length)
-        this._u8Array.set(src._u8Array.slice(0, src.length), this.index);
+        this._u8Array.set(src._u8Array.subarray(0, src.length), this.index);
         this.index += src.length;
         if(this.index>this.length)this.length=this.index
         return this;

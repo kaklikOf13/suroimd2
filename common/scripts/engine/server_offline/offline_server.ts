@@ -36,55 +36,24 @@ export class BasicSocket{
 }
 export class OfflineSocket extends BasicSocket{
     output?:OfflineSocket
+    private static _event: MessageEvent<any> = { data: null } as any;
     constructor(output?:OfflineSocket,lag=10){
         super()
         this.output=output
-        this.send=(s)=>{
-            if(this.output)
-            setTimeout(this.output?.message.bind(this.output,{
-              data: s,
-              lastEventId: "",
-              origin: "",
-              ports: [],
-              source: null,
-              // deno-lint-ignore no-explicit-any
-              initMessageEvent: function (_type: string, _bubbles?: boolean | undefined, _cancelable?: boolean | undefined, _data?: any, _origin?: string | undefined, _lastEventId?: string | undefined, _source?: MessageEventSource | null | undefined, _ports?: MessagePort[] | undefined): void {
-                throw new Error("Function not implemented.");
-              },
-              bubbles: false,
-              cancelBubble: false,
-              cancelable: false,
-              composed: false,
-              currentTarget: null,
-              defaultPrevented: false,
-              eventPhase: 0,
-              isTrusted: false,
-              returnValue: false,
-              srcElement: null,
-              target: null,
-              timeStamp: 0,
-              type: "",
-              composedPath: function (): EventTarget[] {
-                throw new Error("Function not implemented.");
-              },
-              initEvent: function (_type: string, _bubbles?: boolean | undefined, _cancelable?: boolean | undefined): void {
-                throw new Error("Function not implemented.");
-              },
-              preventDefault: function (): void {
-                throw new Error("Function not implemented.");
-              },
-              stopImmediatePropagation: function (): void {
-                throw new Error("Function not implemented.");
-              },
-              stopPropagation: function (): void {
-                throw new Error("Function not implemented.");
-              },
-              NONE: 0,
-              CAPTURING_PHASE: 1,
-              AT_TARGET: 2,
-              BUBBLING_PHASE: 3
-            }),lag)
-        }
+        
+        this.send = (s) => {
+            if (!this.output) return;
+            const out = this.output;
+            const ev = OfflineSocket._event;
+            // deno-lint-ignore ban-ts-comment
+            //@ts-ignore
+            ev.data = s;
+            if (out.onmessage){
+                setTimeout(() => {
+                    out.onmessage!(ev);
+                }, lag)
+            }
+        };
     }
     open(){
         this.readyState=this.OPEN
@@ -109,6 +78,7 @@ export class Client{
     protected signals:SignalManager
     onopen?:()=>void
     show_errors:boolean=true
+    private _rxStream = new NetStream(new ArrayBuffer(1024 * 40))
     constructor(websocket:BasicSocket,packet_manager:PacketsManager,ip:string=""){
         this.ws=websocket
         this.opened=false
@@ -123,23 +93,29 @@ export class Client{
         }
         if(this.show_errors){
             this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
-                if (msg.data instanceof ArrayBuffer){
-                    const packet=this.manager.decode(new NetStream(msg.data))
-                    this.signals.emit(packet.Name,packet)
-                }else if(msg.data instanceof Blob){
-                    const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
-                    this.signals.emit(packet.Name,packet)
+                let buf: ArrayBufferLike | null = null
+                if (msg.data instanceof ArrayBuffer) buf = msg.data
+                else if (msg.data instanceof Blob) {
+                    buf=await msg.data.arrayBuffer()
+                }
+
+                if (buf) {
+                    const packet = this.manager.decode(new NetStream(buf));
+                    this.signals.emit(packet.Name, packet);
                 }
             }
         }else{
             this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
                 try{
-                    if (msg.data instanceof ArrayBuffer){
-                        const packet=this.manager.decode(new NetStream(msg.data))
-                        this.signals.emit(packet.Name,packet)
-                    }else if(msg.data instanceof Blob){
-                        const packet=this.manager.decode(new NetStream(await msg.data.arrayBuffer()))
-                        this.signals.emit(packet.Name,packet)
+                    let buf: ArrayBufferLike | null = null
+                    if (msg.data instanceof ArrayBuffer) buf = msg.data
+                    else if (msg.data instanceof Blob) {
+                        buf=await msg.data.arrayBuffer()
+                    }
+
+                    if (buf) {
+                        const packet = this.manager.decode(new NetStream(buf));
+                        this.signals.emit(packet.Name, packet);
                     }
                 }catch(error){
                     console.error("decode Message Error:",error)
@@ -156,16 +132,16 @@ export class Client{
             })
         }
     }
+    private stream_cache:NetStream=new NetStream(new ArrayBuffer(1024 * 30))
     /**
      * Send A `Packet` To `Server/Client`
      * @param packet To Send
      */
     emit(packet: Packet): void {
-        if (this.ws.readyState !== WebSocket.OPEN) return;
-        const stream = new NetStream(new ArrayBuffer(1024 * 30))
-        this.manager.encode(packet, stream)
-        const usedBuffer = stream.buffer.slice(0, stream.length)
-        if (this.ws.send) this.ws.send(usedBuffer)
+        if (this.ws.readyState !== WebSocket.OPEN) return
+        this.stream_cache.clear()
+        this.manager.encode(packet, this.stream_cache)
+        if (this.ws.send) this.ws.send(this.stream_cache._u8Array.subarray(0,this.stream_cache.length))
     }
 
     /**
@@ -179,8 +155,7 @@ export class Client{
     }
     sendStream(stream:NetStream){
         if (this.ws.readyState !== WebSocket.OPEN) return
-        const usedBuffer = stream.buffer.slice(0, stream.length)
-        if (this.ws.send) this.ws.send(usedBuffer)
+        if (this.ws.send) this.ws.send(stream._u8Array.subarray(0, stream.length))
     }
     /**
      * Disconnect Websocket

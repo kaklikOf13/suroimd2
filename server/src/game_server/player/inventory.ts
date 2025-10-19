@@ -64,7 +64,7 @@ export class GunItem extends LItem{
         return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
     }
     attacking():boolean{
-        return this.use_delay>0&&!this.switching&&this.ammo>0
+        return this.use_delay>0&&!this.switching&&!this.reloading&&this.ammo>0
     }
     on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
@@ -121,7 +121,7 @@ export class GunItem extends LItem{
         }
         if(this.def.bullet){
             const bc=this.def.bullet.count??1
-            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
+            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1)
             for(let i=0;i<bc;i++){
                 let ang=user.rotation
                 if(this.def.spread){

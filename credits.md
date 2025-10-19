@@ -17,6 +17,8 @@
 * @rivals2444
 * I Wanna Be The Guy
 * NoCopyrightSound
+## Additional Art
+* @sentido_ss 
 ## Creator
 * Kaklik
 ## Special Thanks To
