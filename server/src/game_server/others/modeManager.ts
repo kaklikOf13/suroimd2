@@ -194,16 +194,16 @@ export class SoloGamemodeManager extends GamemodeManager{
                     },*/
                     floors:[
                         {
-                            padding:20,
+                            padding:30,
                             type:FloorType.Sand,
-                            spacing:0.3,
-                            variation:1.3,
+                            spacing:3,
+                            variation:3,
                         },
                         {
                             padding:14,
                             type:FloorType.Grass,
-                            spacing:0.3,
-                            variation:1.3,
+                            spacing:3,
+                            variation:3,
                         }
                     ]
                 }

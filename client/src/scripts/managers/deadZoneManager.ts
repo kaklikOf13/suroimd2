@@ -5,12 +5,12 @@ import { Graphics2D } from "../engine/mod.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import { Color, ColorM } from "../engine/renderer.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
-import { DeadZoneUpdate } from "common/scripts/packets/update_packet.ts";
 import { ParticlesEmitter2D } from "common/scripts/engine/particles.ts";
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { GraphicsDConfig } from "../others/config.ts";
 import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
+import { DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 export class DeadZoneManager{
     radius:number=5
     position:Vec2=v2.new(0,0)

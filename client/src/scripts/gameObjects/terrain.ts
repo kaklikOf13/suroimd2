@@ -3,6 +3,9 @@ import { Graphics2D } from "../engine/container_2d.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { type Game } from "../others/game.ts";
+import { HitboxType2D, PolygonHitbox2D } from "common/scripts/engine/hitbox.ts";
+import { model2d } from "common/scripts/engine/models.ts";
+import { Debug } from "../others/config.ts";
 
 export class TerrainM extends TerrainManager{
     map!:MapConfig
@@ -27,6 +30,16 @@ export class TerrainM extends TerrainManager{
             graphic.endPath()
             graphic.fill_color(ColorM.number(Floors[f.type].default_color))
             graphic.fill()
+        }
+
+        if(Debug.hitbox){
+            for(const f of this.floors){
+                graphic.fill_color(ColorM.hex("#ff0"))
+                if(f.hb.type===HitboxType2D.polygon)
+                for(const p of (f.hb as PolygonHitbox2D).points){
+                    graphic.drawModel(model2d.circle(0.1,8,p))
+                }
+            }
         }
         graphic.fill_color(ColorM.hex("#0005"))
         graphic.beginPath()

@@ -6,7 +6,7 @@ import { Numeric, v2m } from "common/scripts/engine/mod.ts";
 import { Hitbox2D, HitboxType2D } from "common/scripts/engine/hitbox.ts";
 import { ClientGame2D } from "./game.ts";
 import { type Tween } from "./utils.ts";
-import { ImageModel2D, Matrix, matrix4, Model2D, model2d } from "common/scripts/engine/models.ts";
+import { ImageModel2D, Matrix, matrix4, Model2D, model2d, triangulateConvex } from "common/scripts/engine/models.ts";
 export interface CamA{
     matrix:Matrix
     position:Vec2
@@ -133,31 +133,6 @@ export abstract class Container2DObject {
 
     abstract draw(cam:CamA,renderer: Renderer): void;
 }
-export function triangulateConvex(
-    polygon: Vec2[],
-    texSize: number = 32
-): Model2D {
-    const vertices: number[] = []
-    const tex_coords: number[] = []
-
-    for (let i = 1; i < polygon.length - 1; i++) {
-        const tri = [polygon[0], polygon[i], polygon[i + 1]];
-
-        for (const v of tri) {
-            vertices.push(v.x, v.y)
-
-            const u = v.x / texSize
-            const vv = v.y / texSize
-            tex_coords.push(u, vv)
-        }
-    }
-
-    return {
-        vertices: new Float32Array(vertices),
-        tex_coords: new Float32Array(tex_coords)
-    };
-}
-
 type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material2D }
   | { type: 'fillColor'; color:Color }

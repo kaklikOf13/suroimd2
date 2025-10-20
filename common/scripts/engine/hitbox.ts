@@ -579,31 +579,26 @@ export function jaggedRectangle(
     variation: number,
     random: SeededRandom
 ): Vec2[] {
-    const topLeft = v2.duplicate(min);
-    const topRight = v2.new(max.x, min.y);
-    const bottomRight = v2.duplicate(max);
-    const bottomLeft = v2.new(min.x, max.y);
-
     const points: Vec2[] = [];
+    const v = variation / 2;
+    const getVar = () => random.float(-v, v)
 
-    variation = variation / 2;
-    const getVariation = (): number => random.float(-variation, variation);
-
-    for (let x = topLeft.x + spacing; x < topRight.x; x += spacing) {
-        points.push(v2.new(x, topLeft.y + getVariation()));
+    for (let x = min.x; x <= max.x; x += spacing) {
+        points.push(v2.new(x, min.y + getVar()))
     }
-    for (let y = topRight.y + spacing; y < bottomRight.y; y += spacing) {
-        points.push(v2.new(topRight.x + getVariation(), y));
+    for (let y = min.y; y <= max.y; y += spacing) {
+        points.push(v2.new(max.x + getVar(), y))
     }
-    for (let x = bottomRight.x - spacing; x > bottomLeft.x; x -= spacing) {
-        points.push(v2.new(x, bottomRight.y + getVariation()));
+    for (let x = max.x; x >= min.x; x -= spacing) {
+        points.push(v2.new(x, max.y + getVar()))
     }
-    for (let y = bottomLeft.y - spacing; y > topLeft.y; y -= spacing) {
-        points.push(v2.new(bottomLeft.x + getVariation(), y));
+    for (let y = max.y; y >= min.y; y -= spacing) {
+        points.push(v2.new(min.x + getVar(), y))
     }
 
     return points;
 }
+
 export class PolygonHitbox2D extends BaseHitbox2D {
     override readonly type = HitboxType2D.polygon;
     points: Vec2[];
@@ -770,20 +765,20 @@ export class PolygonHitbox2D extends BaseHitbox2D {
     }
 
     override encode(stream: NetStream): void {
-        stream.writeUint16(this.points.length);
+        stream.writeUint24(this.points.length)
         for (const p of this.points) {
-            stream.writePosition(p);
+            stream.writePosition(p)
         }
-        stream.writePosition(this.position);
+        stream.writePosition(this.position)
     }
 
     static decode(stream: NetStream): PolygonHitbox2D {
-        const len = stream.readUint16();
+        const len = stream.readUint24();
         const pts: Vec2[] = [];
         for (let i = 0; i < len; i++) {
-            pts.push(stream.readPosition());
+            pts.push(stream.readPosition())
         }
-        const center = stream.readPosition();
+        const center = stream.readPosition()
         return new PolygonHitbox2D(pts, center);
     }
 

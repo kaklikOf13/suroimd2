@@ -429,6 +429,106 @@ export const model2d={
         }
     }
 }
+export function triangulateConvex(polygon: Vec2[], texSize = 32): Model2D {
+  if (!polygon || polygon.length < 3) return { vertices: new Float32Array(0), tex_coords: new Float32Array(0) }
+
+  const EPS = 1e-6
+  const pts = removeDupAndCollinear(polygon, EPS)
+  if (pts.length < 3) return { vertices: new Float32Array(0), tex_coords: new Float32Array(0) }
+  if (signedArea(pts) < 0) pts.reverse()
+
+  const indices = earClipIndices(pts, EPS)
+  const verts: number[] = []
+  const tex: number[] = []
+
+  for (let k = 0; k < indices.length; k++) {
+    const v = pts[indices[k]]
+    verts.push(v.x, v.y)
+    tex.push(v.x / texSize, v.y / texSize)
+  }
+
+  return { vertices: new Float32Array(verts), tex_coords: new Float32Array(tex) }
+}
+
+function signedArea(pts: Vec2[]): number {
+  let a = 0
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++)
+    a += (pts[j].x * pts[i].y - pts[i].x * pts[j].y)
+  return a * 0.5
+}
+
+function removeDupAndCollinear(src: Vec2[], eps = 1e-6): Vec2[] {
+  if (src.length <= 3) return src.map(p => v2.duplicate(p))
+  const tmp: Vec2[] = []
+  for (let i = 0; i < src.length; i++) {
+    const p = src[i]
+    const prev = tmp.length ? tmp[tmp.length - 1] : null
+    if (!prev || v2.distanceSquared(prev, p) > eps * eps) tmp.push(v2.duplicate(p))
+  }
+  if (tmp.length > 1 && v2.distanceSquared(tmp[0], tmp[tmp.length - 1]) <= eps * eps) tmp.pop()
+  if (tmp.length <= 3) return tmp
+
+  const out: Vec2[] = []
+  for (let i = 0; i < tmp.length; i++) {
+    const a = tmp[(i - 1 + tmp.length) % tmp.length]
+    const b = tmp[i]
+    const c = tmp[(i + 1) % tmp.length]
+    const abx = b.x - a.x, aby = b.y - a.y
+    const bcx = c.x - b.x, bcy = c.y - b.y
+    const cross = Math.abs(abx * bcy - aby * bcx)
+    if (cross > eps) out.push(b)
+  }
+  return out.length ? out : tmp
+}
+
+function earClipIndices(pts: Vec2[], EPS = 1e-6): number[] {
+  const n = pts.length
+  const V: number[] = []
+  for (let i = 0; i < n; i++) V.push(i)
+  const res: number[] = []
+
+  const isCCW = (a: Vec2, b: Vec2, c: Vec2) => ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) > EPS
+  const pointInTriangle = (p: Vec2, a: Vec2, b: Vec2, c: Vec2) => {
+    const v0x = c.x - a.x, v0y = c.y - a.y
+    const v1x = b.x - a.x, v1y = b.y - a.y
+    const v2x = p.x - a.x, v2y = p.y - a.y
+    const dot00 = v0x * v0x + v0y * v0y
+    const dot01 = v0x * v1x + v0y * v1y
+    const dot02 = v0x * v2x + v0y * v2y
+    const dot11 = v1x * v1x + v1y * v1y
+    const dot12 = v1x * v2x + v1y * v2y
+    const denom = dot00 * dot11 - dot01 * dot01
+    if (Math.abs(denom) < 1e-12) return false
+    const u = (dot11 * dot02 - dot01 * dot12) / denom
+    const v = (dot00 * dot12 - dot01 * dot02) / denom
+    return u >= -1e-9 && v >= -1e-9 && (u + v) <= 1 + 1e-9
+  }
+
+  let guard = 0
+  while (V.length > 3 && guard++ < 10000) {
+    let ear = false
+    for (let i = 0; i < V.length; i++) {
+      const iPrev = V[(i - 1 + V.length) % V.length]
+      const iCurr = V[i]
+      const iNext = V[(i + 1) % V.length]
+      const a = pts[iPrev], b = pts[iCurr], c = pts[iNext]
+      if (!isCCW(a, b, c)) continue
+      let inside = false
+      for (const vi of V) {
+        if (vi === iPrev || vi === iCurr || vi === iNext) continue
+        if (pointInTriangle(pts[vi], a, b, c)) { inside = true; break }
+      }
+      if (inside) continue
+      res.push(iPrev, iCurr, iNext)
+      V.splice(i, 1)
+      ear = true
+      break
+    }
+    if (!ear) V.splice(1, 1)
+  }
+  if (V.length === 3) res.push(V[0], V[1], V[2])
+  return res
+}
 export interface Face3{
     p1:Vec3
     p2:Vec3
