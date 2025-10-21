@@ -2,7 +2,7 @@ import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Definitions,Definition, DeepPartial } from "../../engine/mod.ts";
 import { mergeDeep } from "../../engine/utils.ts";
 import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../../others/item.ts";
-import { type BulletDef, GameItem, InventoryItemType } from "../utils.ts";
+import { type BulletDef, InventoryItemType } from "../utils.ts";
 export enum FireMode{
     Auto,
     Single,
@@ -94,6 +94,7 @@ export type GunDef={
     }
     gasParticles?:GasParticle
     dual?:DeepPartial<GunDef>&DualAdditional
+    item_type?:InventoryItemType.gun
 }&({
     dual_from?:undefined
 }|{
@@ -101,7 +102,7 @@ export type GunDef={
     dual_offset:number
 })&Definition
 
-export const Guns=new Definitions<GunDef,GameItem>((g)=>{
+export const Guns=new Definitions<GunDef,{}>((g)=>{
     g.item_type=InventoryItemType.gun
     if(g.dual&&!g.dual_from){
         const dd=mergeDeep({},g,g.dual,{dual_from:g.idString}) as GunDef

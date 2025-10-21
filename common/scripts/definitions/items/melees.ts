@@ -3,9 +3,10 @@ import { Angle, v2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts";
 import { ease } from "../../engine/utils.ts";
 import { DefaultFistRig, FistRig, ItemQuality, WeaponRig } from "../../others/item.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
     quality:ItemQuality
+    item_type?:InventoryItemType.melee
     damage:number
     radius:number
     offset:number
@@ -124,7 +125,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
         },
     ]
 }
-export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{
+export const Melees=new Definitions<MeleeDef,{}>((g)=>{
     g.item_type=InventoryItemType.melee
 })
 Melees.insert(

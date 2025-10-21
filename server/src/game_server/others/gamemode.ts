@@ -1,10 +1,10 @@
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { type Player } from "../gameObjects/player.ts";
-import { type GameItem } from "common/scripts/definitions/utils.ts";
 import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { type GunDef } from "common/scripts/definitions/items/guns.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { GameItem } from "common/scripts/definitions/alldefs.ts";
 
 export interface InventoryGiftItem{
     item:GameItem,

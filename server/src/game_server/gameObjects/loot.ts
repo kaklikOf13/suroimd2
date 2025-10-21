@@ -3,9 +3,9 @@ import { LootData } from "common/scripts/others/objectsEncode.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type Obstacle } from "./obstacle.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts"
+import { GameItem, GameItems } from "common/scripts/definitions/alldefs.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -33,14 +33,14 @@ export class Loot extends ServerGameObject{
         }
     }
     interact(user: Player): void {
-        switch(this.item.item_type){
+        switch(this.item.item_type!){
             case InventoryItemType.gun:{
-                const r=user.inventory.give_gun(this.item as unknown as GunDef)
+                const r=user.inventory.give_gun(this.item as GunDef)
                 if(r)this.reduce_count(1)
                 break
             }
             case InventoryItemType.melee:{
-                user.inventory.set_weapon(0,this.item as unknown as MeleeDef)
+                user.inventory.set_weapon(0,this.item as MeleeDef)
                 this.reduce_count(1)
                 break
             }
@@ -52,13 +52,13 @@ export class Loot extends ServerGameObject{
                 break
             }
             case InventoryItemType.vest:{
-                const d=this.item as unknown as VestDef
+                const d=this.item as VestDef
                 if(!user.vest){
                     user.vest=d
                     user.dirty=true
                     this.reduce_count(1)
                 }else if(user.vest.level<d.level){
-                    user.game.add_loot(user.position,user.vest as unknown as GameItem,1)
+                    user.game.add_loot(user.position,user.vest as GameItem,1)
                     user.vest=d
                     user.dirty=true
                     this.reduce_count(1)
@@ -66,13 +66,13 @@ export class Loot extends ServerGameObject{
                 break
             }
             case InventoryItemType.helmet:{
-                const d=this.item as unknown as HelmetDef
+                const d=this.item as HelmetDef
                 if(!user.helmet){
                     user.helmet=d
                     user.dirty=true
                     this.reduce_count(1)
                 }else if(user.helmet.level<d.level){
-                    user.game.add_loot(user.position,user.helmet as unknown as GameItem,1)
+                    user.game.add_loot(user.position,user.helmet,1)
                     user.helmet=d
                     user.dirty=true
                     this.reduce_count(1)
@@ -80,7 +80,7 @@ export class Loot extends ServerGameObject{
                 break
             }
             case InventoryItemType.backpack:{
-                const d=this.item as unknown as BackpackDef
+                const d=this.item as BackpackDef
                 if(user.inventory.backpack.level<d.level){
                     user.dirty=true
                     user.inventory.set_backpack(d)
@@ -88,16 +88,14 @@ export class Loot extends ServerGameObject{
                 }
                 break
             }
-            case InventoryItemType.other:
             case InventoryItemType.accessorie:
                 break
             case InventoryItemType.scope:
-                
                 break
             case InventoryItemType.skin:
                 if(user.skin.idString!==this.item.idString){
-                    this.game.add_loot(this.position,user.skin as unknown as GameItem,1)
-                    user.skin=this.item as unknown as SkinDef
+                    this.game.add_loot(this.position,user.skin,1)
+                    user.skin=this.item as SkinDef
                     user.dirty=true
                     this.reduce_count(1)
                 }
@@ -168,7 +166,6 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.projectile:
                 this.hb.radius=GameConstants.loot.radius.projectile
                 break
-            case InventoryItemType.other:
             case InventoryItemType.accessorie:
             case InventoryItemType.skin:
                 this.hb.radius=GameConstants.loot.radius.skin

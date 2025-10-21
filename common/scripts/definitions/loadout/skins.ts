@@ -18,7 +18,8 @@ export interface SkinDef extends Definition{
         no?:boolean
         no_auto_talk:boolean
     }
-    rarity:ItemQuality,
+    quality:ItemQuality,
+    item_type?:InventoryItemType.skin
 }
 
 
@@ -29,11 +30,11 @@ export const Skins=new Definitions<SkinDef,GameItem>((g)=>{
 Skins.insert(
     {
         idString:"default_skin",
-        rarity:ItemQuality.Common,
+        quality:ItemQuality.Common,
     },
     {
         idString:"nick_winner",
-        rarity:ItemQuality.Rare,
+        quality:ItemQuality.Rare,
     },
     {
         idString:"justin_winner",
@@ -43,18 +44,18 @@ Skins.insert(
                 normal:"player_mounth_2_1"
             }
         },
-        rarity:ItemQuality.Rare,
+        quality:ItemQuality.Rare,
     },
     {
         idString:"alice_winner",
-        rarity:ItemQuality.Rare,
+        quality:ItemQuality.Rare,
     },
     {
         idString:"kaklik",
-        rarity:ItemQuality.Legendary,
+        quality:ItemQuality.Legendary,
     },
     {
         idString:"kitty",
-        rarity:ItemQuality.Mythic,
+        quality:ItemQuality.Mythic,
     },
 )

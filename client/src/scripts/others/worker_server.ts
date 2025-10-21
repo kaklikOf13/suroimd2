@@ -1,16 +1,15 @@
 import { OfflineGameServer } from "./offline.ts";
 import { OfflineClientsManager, random } from "common/scripts/engine/mod.ts";
-import { PacketManager } from "common/scripts/others/constants.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
 import { SimpleBotAi } from "../../../../server/src/game_server/player/simple_bot_ai.ts";
 import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
-import { type GameItem } from "common/scripts/definitions/utils.ts";
 import { Melees } from "common/scripts/definitions/items/melees.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Helmets, Vests } from "common/scripts/definitions/items/equipaments.ts";
+import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 self.onerror = (e) => {
     console.error("Worker error:", e,e.valueOf())
 };
@@ -43,11 +42,11 @@ self.onmessage = (ev) => {
             }
             bot.vest=Vests.getFromString(random.choose(["basic_vest","regular_vest","tactical_vest"]))
             bot.helmet=Helmets.getFromString(random.choose(["basic_helmet","regular_helmet","tactical_helmet"]))
-            bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,4)
-            bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,2)
-            bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,2)
-            bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,2)
-            bot.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,2)
+            bot.inventory.give_item(Consumibles.getFromString("medikit"),4)
+            bot.inventory.give_item(Consumibles.getFromString("yellow_pills"),2)
+            bot.inventory.give_item(Consumibles.getFromString("red_pills"),2)
+            bot.inventory.give_item(Consumibles.getFromString("blue_pills"),2)
+            bot.inventory.give_item(Consumibles.getFromString("purple_pills"),2)
             if(Math.random()<=0.5){
                 bot.boost_def=Boosts[BoostType.Shield]
                 bot.boost=100
@@ -57,7 +56,7 @@ self.onmessage = (ev) => {
         const bot = server.add_bot()
         const ai=new SimpleBotAi()
         bot.ai=ai
-        bot.skin=Skins.getFromString("alice_winner")
+        //bot.skin=Skins.getFromString("alice_winner")
         bot.inventory.set_backpack(Backpacks.getFromString("tactical_pack"))
         bot.inventory.oitems["556mm"]=random.choose([100,200,310])
         bot.inventory.oitems["762mm"]=random.choose([100,200,310])
@@ -73,11 +72,11 @@ self.onmessage = (ev) => {
         }
         bot.vest=Vests.getFromString("tactical_vest")
         bot.helmet=Helmets.getFromString("tactical_helmet")
-        bot.inventory.give_item(Consumibles.getFromString("medikit") as unknown as GameItem,4)
-        bot.inventory.give_item(Consumibles.getFromString("yellow_pills") as unknown as GameItem,2)
-        bot.inventory.give_item(Consumibles.getFromString("red_pills") as unknown as GameItem,2)
-        bot.inventory.give_item(Consumibles.getFromString("blue_pills") as unknown as GameItem,2)
-        bot.inventory.give_item(Consumibles.getFromString("purple_pills") as unknown as GameItem,2)
+        bot.inventory.give_item(Consumibles.getFromString("medikit"),4)
+        bot.inventory.give_item(Consumibles.getFromString("yellow_pills"),2)
+        bot.inventory.give_item(Consumibles.getFromString("red_pills"),2)
+        bot.inventory.give_item(Consumibles.getFromString("blue_pills"),2)
+        bot.inventory.give_item(Consumibles.getFromString("purple_pills"),2)
 
         bot.boost_def=Boosts[BoostType.Shield]
         bot.boost=100

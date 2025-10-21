@@ -1,6 +1,6 @@
 import { Definitions,Definition, v2 } from "../../engine/mod.ts"
-import { DefaultFistRig, FistRig, WeaponRig } from "../../others/item.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { DefaultFistRig, FistRig, ItemQuality, WeaponRig } from "../../others/item.ts";
+import { InventoryItemType } from "../utils.ts";
 
 export type ProjectileDef={
     explosion?:string
@@ -32,8 +32,11 @@ export type ProjectileDef={
 
     arms?:FistRig
     image?:WeaponRig
+
+    quality:ItemQuality
+    item_type?:InventoryItemType.projectile
 }&Definition
-export const Projectiles=new Definitions<ProjectileDef,GameItem>((v)=>{
+export const Projectiles=new Definitions<ProjectileDef,{}>((v)=>{
     v.item_type=InventoryItemType.projectile
 })
 const GrenadeRig={
@@ -62,7 +65,8 @@ Projectiles.insert(
         },
         speed_mod:1,
         arms:DefaultFistRig,
-        image:GrenadeRig
+        image:GrenadeRig,
+        quality:ItemQuality.Common
     },
     //Mirv
     {
@@ -85,7 +89,8 @@ Projectiles.insert(
             world:"proj_mirv"
         },
         arms:DefaultFistRig,
-        image:GrenadeRig
+        image:GrenadeRig,
+        quality:ItemQuality.Common
     },
     {
         idString:"submirv_grenade",
@@ -106,7 +111,8 @@ Projectiles.insert(
             world:"proj_submirv"
         },
         arms:DefaultFistRig,
-        image:GrenadeRig
+        image:GrenadeRig,
+        quality:ItemQuality.Common
     },
     {
         idString:"bomb_staff_projectile",
@@ -128,7 +134,8 @@ Projectiles.insert(
             world:"proj_bomb_staff"
         },
         arms:DefaultFistRig,
-        image:GrenadeRig
+        image:GrenadeRig,
+        quality:ItemQuality.Common
     },
     {
         idString:"fireball_projectile",
@@ -150,6 +157,7 @@ Projectiles.insert(
             world:"proj_fireball"
         },
         arms:DefaultFistRig,
-        image:GrenadeRig
+        image:GrenadeRig,
+        quality:ItemQuality.Common
     },
 )

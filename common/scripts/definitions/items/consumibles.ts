@@ -4,7 +4,7 @@ import { Definitions,Definition } from "../../engine/mod.ts"
 import { DefaultFistRig, ItemQuality } from "../../others/item.ts";
 import { Boosts, BoostType } from "../player/boosts.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 
 export enum ConsumibleCondition{
     UnfullHealth,
@@ -77,8 +77,9 @@ export interface ConsumibleDef extends Definition{
     boost_type?:BoostType
     drink?:boolean
     animation?:AKeyFrame[]
+    item_type?:InventoryItemType.consumible
 }
-export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
+export const Consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
     i.item_type=InventoryItemType.consumible
 })
 Consumibles.insert(

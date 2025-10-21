@@ -17,9 +17,9 @@ export interface FloorDef {
 export interface RiversDef { weight: number; rivers: RiverDef[] }[]
 
 export const Floors: Record<FloorType, FloorDef> = {
-    [FloorType.Grass]: { default_color: 0x5e8739 },
-    [FloorType.Sand]: { default_color: 0xcfa138 },
-    [FloorType.Water]: { default_color: 0x3e54a3, speed_mult: 0.6 },
+    [FloorType.Grass]: { default_color: 0x4d9635},
+    [FloorType.Sand]: { default_color: 0xb59924 },
+    [FloorType.Water]: { default_color: 0x2466a2, speed_mult: 0.6 },
 };
 
 export interface Floor {

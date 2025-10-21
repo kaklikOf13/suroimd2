@@ -1,5 +1,5 @@
 import { ID, NetStream, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
-import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
+import { GameConstants, Layers, LayersL } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts"
@@ -10,7 +10,7 @@ import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
+import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
@@ -19,7 +19,7 @@ import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "com
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
-import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
+import { DamageSourceDef, GameItem } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
@@ -32,6 +32,7 @@ import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
 import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
 import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
 import { GeneralUpdatePacket, PlaneData } from "common/scripts/packets/general_update.ts"
+import {PacketManager} from "common/scripts/packets/packet_manager.ts"
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2

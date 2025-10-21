@@ -1,5 +1,5 @@
 import { v2 } from "../../engine/geometry.ts";
-import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, Vec2, FrameTransform } from "../../engine/mod.ts";
+import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, FrameTransform } from "../../engine/mod.ts";
 import { zIndexes } from "../../others/constants.ts";
 import { RectHitbox2D } from "../../engine/hitbox.ts";
 import { FloorType } from "../../others/terrain.ts";
@@ -245,7 +245,7 @@ Obstacles.insert(
         hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
         noCollision:true,
         scale:{
-            destroy:1
+            destroy:0.8
         },
         frame_transform:{
             scale:1

@@ -1,5 +1,5 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
-import { ActionPacket, LayersL, zIndexes } from "common/scripts/others/constants.ts";
+import { LayersL, zIndexes } from "common/scripts/others/constants.ts";
 import { Angle, Client, DefaultSignals, KDate, Numeric, ParticlesEmitter2D, Vec2, model2d, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
@@ -14,7 +14,7 @@ import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
 import { Debug } from "./config.ts";
-import { type DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { type DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { Decal } from "../gameObjects/decal.ts";
 import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
@@ -34,7 +34,7 @@ import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { Tween } from "svelte/motion";
 import { ToggleElement } from "../engine/utils.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
-import { InputActionType } from "common/scripts/packets/action_packet.ts";
+import { ActionPacket, InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
 import { Camera3D } from "../engine/container_3d.ts";
 import { ABParticle2D, ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
@@ -68,7 +68,7 @@ export class Game extends ClientGame2D<GameObject>{
   //0.35=l4 8x
   //0.53=l3 4x
   //0.63=l2 2x
-  //0.78=l1 1x
+  //0.73=l1 1x
   //1=l-1 0.5x
   //1.5=l-2 0.25x
   //1.75=l-3 0.1x
@@ -263,8 +263,8 @@ export class Game extends ClientGame2D<GameObject>{
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
     this.grid_mat=(this.renderer as WebglRenderer).factorys2D.grid.create({
-      color:ColorM.hex("#0003"),
-      gridSize:5,
+      color:ColorM.rgba(0,0,10,70),
+      gridSize:3,
       width:0.04
     })
     this.grid_gfx.fill_material(this.grid_mat)

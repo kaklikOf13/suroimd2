@@ -1,4 +1,4 @@
-import { EmoteDef, Emotes } from "../definitions/loadout/emotes.ts";
+import { GameObjectsDefs, type GameObjectDef } from "../definitions/alldefs.ts";
 import { ObstacleDef, ObstacleDoorStatus, Obstacles } from "../definitions/objects/obstacles.ts";
 import { Orientation } from "../engine/geometry.ts";
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
@@ -33,7 +33,7 @@ export interface PlayerData extends EncodedData{
     left_handed:boolean
     driving:boolean
     attacking:boolean
-    emote?:EmoteDef
+    emote?:GameObjectDef
     parachute?:{
         value:number
     }
@@ -153,7 +153,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 }
             }
             if(bg1[6]){
-                ret.emote=Emotes.getFromNumber(stream.readUint16())
+                ret.emote=GameObjectsDefs.valueNumber[stream.readUint16()]
             }
             if(full){
                 const bg2=stream.readBooleanGroup()
@@ -207,7 +207,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 stream.writeFloat(data.parachute.value,0,1,1)
             }
             if(data.emote){
-                stream.writeUint16(data.emote.idNumber!)
+                stream.writeUint16(GameObjectsDefs.keysString[data.emote.idString])
             }
             if(full){
                 stream.writeBooleanGroup(data.full?.animation!==undefined)

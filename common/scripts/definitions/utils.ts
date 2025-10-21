@@ -33,14 +33,13 @@ export enum InventoryItemType{
     helmet,
     vest,
     projectile,
-    other,
     melee,
     accessorie,
     backpack,
     skin,
     scope
 }
-export interface GameItem extends Definition{
+export interface GameItemBase extends Definition{
     item_type:InventoryItemType
     quality:ItemQuality
 }

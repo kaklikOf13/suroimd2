@@ -1,4 +1,3 @@
-import { GameItem } from "common/scripts/definitions/utils.ts";
 import { type Player } from "../gameObjects/player.ts";
 import { type Game } from "./game.ts";
 import { type ServerGameObject } from "./gameObject.ts";

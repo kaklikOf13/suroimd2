@@ -1,16 +1,3 @@
-import { PacketsManager } from "../engine/packets.ts"
-export { JoinPacket } from "../packets/join_packet.ts"
-export { ActionPacket } from "../packets/action_packet.ts"
-export { GameOverPacket } from "../packets/gameOver.ts"
-import { JoinPacket } from "../packets/join_packet.ts"
-import { ActionPacket } from "../packets/action_packet.ts"
-import { GameOverPacket } from "../packets/gameOver.ts"
-import { UpdatePacket } from "../packets/update_packet.ts"
-import { KillFeedPacket } from "../packets/killfeed_packet.ts";
-import { JoinedPacket } from "../packets/joined_packet.ts";
-import { MapPacket } from "../packets/map_packet.ts";
-import { GeneralUpdatePacket } from "../packets/general_update.ts";
-
 export const GameConstants={
     player:{
         defaultName:"Player",
@@ -40,16 +27,6 @@ export enum Layers{
 export const LayersL=[
     Layers.Normal
 ]
-
-export const PacketManager:PacketsManager=new PacketsManager()
-PacketManager.add_packet(JoinPacket)
-PacketManager.add_packet(ActionPacket)
-PacketManager.add_packet(UpdatePacket)
-PacketManager.add_packet(GameOverPacket)
-PacketManager.add_packet(KillFeedPacket)
-PacketManager.add_packet(JoinedPacket)
-PacketManager.add_packet(MapPacket)
-PacketManager.add_packet(GeneralUpdatePacket)
 
 export enum zIndexes{
     Terrain,

@@ -2,17 +2,16 @@ import { type Player } from "../gameObjects/player.ts";
 import { Angle, CircleHitbox2D, Definition, getPatterningShape, Numeric, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
 import { Inventory, Item, Slot } from "common/scripts/engine/inventory.ts";
-import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ConsumingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 import { ConsumibleCondition, ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
-import { OtherDef } from "common/scripts/definitions/others.ts";
-import { GameItems, WeaponDef } from "common/scripts/definitions/alldefs.ts";
+import { GameItem, GameItems, WeaponDef } from "common/scripts/definitions/alldefs.ts";
 import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { ProjectileDef, Projectiles } from "../../../../common/scripts/definitions/objects/projectiles.ts";
+import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
 import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
@@ -240,28 +239,6 @@ export class ConsumibleItem extends LItem{
     
   }
 }
-export class OtherItem extends LItem{
-    def:OtherDef
-    cap: number
-    itemType: InventoryItemType.other=InventoryItemType.other
-
-    type="other"
-    constructor(def:OtherDef,droppable:boolean=true){
-        super()
-        this.def=def
-        this.cap=def.size
-        this.droppable=droppable
-    }
-    is(other: LItem): boolean {
-        return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
-    }
-    on_use(_user: Player,_slot?:LItem): void {
-        
-    }
-    update(_user: Player): void {
-      
-    }
-}
 export class ProjectileItem extends LItem{
     def:ProjectileDef
     itemType: InventoryItemType.projectile=InventoryItemType.projectile
@@ -275,7 +252,7 @@ export class ProjectileItem extends LItem{
         this.inventory=inventory
     }
     is(other: LItem): boolean {
-        return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
+        return (other instanceof ProjectileItem)&&other.def.idNumber==this.def.idNumber
     }
     on_use(user: Player,_slot?:LItem): void {
         user.inventory.set_hand_item(this)
@@ -495,15 +472,15 @@ export class GInventory extends Inventory<LItem>{
         let l:Loot
         if(this.weapons[slot].itemType===InventoryItemType.gun){
             if(this.weapons[slot].ammo>0){
-                this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
+                this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType),this.weapons[slot].ammo)
             }
             if(this.weapons[slot].def.dual_from){
-                for(let i=0;i<2;i++)l=this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
+                for(let i=0;i<2;i++)l=this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from),1)
             }else{
-                l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+                l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def,1)
             }
         }else if(this.weapons[slot].itemType===InventoryItemType.melee&&this.weapons[slot].def.idString!==this.default_melee.idString){
-            l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+            l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def,1)
             this.set_weapon(0,this.default_melee,false)
             return
         }else{
@@ -534,7 +511,7 @@ export class GInventory extends Inventory<LItem>{
       const a=Ammos.getFromNumber(idx)
       const rc=Math.min(a.drop_count??60,this.oitems[a.idString])
       this.consume_ammo(a.idString,rc)
-      this.owner.game.add_loot(this.owner.position,a as unknown as GameItem,rc)
+      this.owner.game.add_loot(this.owner.position,a,rc)
     }
     give_item(def:GameItem,count:number,drop_n:boolean=true):number{
         switch(def.item_type){
@@ -576,7 +553,7 @@ export class GInventory extends Inventory<LItem>{
                     this.owner.dirty=true
                     return count-1
                 }else if(this.owner.vest.level<d.level){
-                    this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
+                    this.owner.game.add_loot(this.owner.position,this.owner.vest,1)
                     this.owner.vest=d
                     this.owner.dirty=true
                     return count-1
@@ -590,7 +567,7 @@ export class GInventory extends Inventory<LItem>{
                     this.owner.dirty=true
                     return count-1
                 }else if(this.owner.helmet.level<d.level){
-                    this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
+                    this.owner.game.add_loot(this.owner.position,this.owner.helmet,1)
                     this.owner.helmet=d
                     this.owner.dirty=true
                     return count-1
@@ -617,7 +594,7 @@ export class GInventory extends Inventory<LItem>{
             }
             case InventoryItemType.skin:{
                 if(this.owner.skin.idString!==def.idString){
-                    this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+                    this.owner.game.add_loot(this.owner.position,this.owner.skin,1)
                     this.owner.skin=def as unknown as SkinDef
                     this.owner.dirty=true
                     return count-1
@@ -636,7 +613,7 @@ export class GInventory extends Inventory<LItem>{
         const s=this.slots[si]
         if(s?.item&&s.quantity>0){
             const c=Math.min(count,s.quantity)
-            this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,c)
+            this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,c)
             s.remove(c)
             this.owner.privateDirtys.inventory=true
         }
@@ -721,7 +698,7 @@ export class GInventory extends Inventory<LItem>{
         this.drop_weapon(2)
         const l:Loot[]=[]
         for(const s of Object.keys(this.oitems)){
-            const def=Ammos.getFromString(s) as unknown as GameItem
+            const def=Ammos.getFromString(s)
             //const pos=this.owner.hb.randomPoint()
             const dir=random.float(-3.141592,3.141592)
             const r=(this.owner.hb as CircleHitbox2D).radius
@@ -737,23 +714,23 @@ export class GInventory extends Inventory<LItem>{
             delete this.oitems[s]
         }
         if(this.owner.vest){
-            this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.owner.vest,1)
             this.owner.vest=undefined
         }
         if(this.owner.helmet){
-            this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.owner.helmet,1)
             this.owner.helmet=undefined
         }
         if(this.backpack&&this.backpack.level){
-            this.owner.game.add_loot(this.owner.position,this.backpack as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.backpack,1)
             this.set_backpack()
         }
         if(this.owner.skin.idString!==this.owner.loadout.skin){
-            this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.owner.skin,1)
         }
         for(const s of this.slots){
             if(s.item&&s.quantity>0){
-                this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,s.quantity)
+                this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity)
                 s.remove(s.quantity)
             }
         }

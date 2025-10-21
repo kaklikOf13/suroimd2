@@ -6,6 +6,9 @@ import { BehaviourTree, Default_Tree_Settings } from "common/scripts/engine/AI/b
 import { bots_actions, BotSettings, BotWorld, EaseBotBRTree } from "../defs/bot_ia_tree.ts";
 import { EmoteDef, Emotes } from "common/scripts/definitions/loadout/emotes.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
+import { Ammos } from "common/scripts/definitions/items/ammo.ts";
+import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
+import { GameObjectDef } from "common/scripts/definitions/alldefs.ts";
 
 export abstract class BotAi{
     constructor(){
@@ -20,11 +23,13 @@ export class SimpleBotAi extends BotAi{
     }
     rot_speed:number
     movement_time=0
-    emotes:EmoteDef[]=[
+    emotes:GameObjectDef[]=[
         Emotes.getFromString("emote_sad"),
         Emotes.getFromString("emote_happy"),
         Emotes.getFromString("emote_md_logo"),
         Emotes.getFromString("emote_neutral"),
+        ...Object.values(Ammos.value),
+        ...Object.values(Consumibles.value)
     ]
     override AI(player: Player,dt:number): void {
         player.input.interaction=player.seat?Math.random()<0.001:Math.random()<0.1

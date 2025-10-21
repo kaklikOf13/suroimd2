@@ -2,7 +2,7 @@ import { Definition, Definitions } from "../../engine/definitions.ts";
 import { ItemQuality } from "../../others/item.ts";
 
 export interface EmoteDef extends Definition{
-    rarity:ItemQuality,
+    quality:ItemQuality,
 }
 export const Emotes=new Definitions<EmoteDef,{}>((e)=>{
     e.idString="emote_"+e.idString
@@ -10,18 +10,18 @@ export const Emotes=new Definitions<EmoteDef,{}>((e)=>{
 Emotes.insert(
     {
         idString:"happy",
-        rarity:ItemQuality.Common
+        quality:ItemQuality.Common
     },
     {
         idString:"sad",
-        rarity:ItemQuality.Common
+        quality:ItemQuality.Common
     },
     {
         idString:"neutral",
-        rarity:ItemQuality.Common
+        quality:ItemQuality.Common
     },
     {
         idString:"md_logo",
-        rarity:ItemQuality.Common
+        quality:ItemQuality.Common
     },
 )

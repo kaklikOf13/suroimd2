@@ -1,6 +1,6 @@
 import { Game } from "../others/game.ts";
 import { DamageReason, InventoryItemData } from "common/scripts/definitions/utils.ts";
-import { ActionsType, GameOverPacket } from "common/scripts/others/constants.ts";
+import { ActionsType } from "common/scripts/others/constants.ts";
 import { Angle, Numeric, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { DamageSources, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { InputActionType } from "common/scripts/packets/action_packet.ts";
@@ -20,6 +20,7 @@ import { EmoteDef, Emotes} from "common/scripts/definitions/loadout/emotes.ts";
 import { type Loot } from "../gameObjects/loot.ts";
 import { type Obstacle } from "../gameObjects/obstacle.ts";
 import { type Player } from "../gameObjects/player.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 const crosshairSVG = `
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg

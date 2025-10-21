@@ -5,9 +5,10 @@ import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { DamageReason, GameItem } from "common/scripts/definitions/utils.ts";
+import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { LootTables } from "common/scripts/definitions/maps/base.ts";
 import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
+import { GameItem } from "common/scripts/definitions/alldefs.ts";
 
 export class Obstacle extends ServerGameObject{
     stringType:string="obstacle"

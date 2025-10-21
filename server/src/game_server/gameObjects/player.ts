@@ -1,14 +1,14 @@
 import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket, InputAction, InputActionType } from "common/scripts/packets/action_packet.ts"
 import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts"
-import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts"
+import { ActionsType, GameConstants } from "common/scripts/others/constants.ts"
 import { GInventory,GunItem,LItem} from "../player/inventory.ts"
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts"
 import { DamageParams } from "../others/utils.ts"
 import { type Obstacle } from "./obstacle.ts"
 import { ActionsManager } from "common/scripts/engine/inventory.ts"
-import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts"
-import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts"
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { DamageSourceDef, DamageSources, GameItems, GameObjectDef, Weapons } from "common/scripts/definitions/alldefs.ts"
 import { type PlayerModifiers } from "common/scripts/others/constants.ts"
 import { AccessoriesManager } from "../player/accesories.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -22,11 +22,12 @@ import { Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { BotAi } from "../player/simple_bot_ai.ts"
-import { EmoteDef, Emotes } from "common/scripts/definitions/loadout/emotes.ts"
+import { Emotes } from "common/scripts/definitions/loadout/emotes.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts"
 import { Explosions } from "common/scripts/definitions/objects/explosions.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -117,7 +118,7 @@ export class Player extends ServerGameObject{
 
         actions:[] as InputAction[],
 
-        emote:undefined as EmoteDef|undefined,
+        emote:undefined as GameObjectDef|undefined,
         is_mobile:false
     }
 
@@ -503,7 +504,7 @@ export class Player extends ServerGameObject{
                             if(!l)break
                             this.game.add_loot(this.position,l,a.count,this.layer)
                             if(l.item_type===InventoryItemType.gun){
-                                this.game.add_loot(this.position,Ammos.getFromString((l as unknown as GunDef).ammoType) as unknown as GameItem,((l as unknown as GunDef).ammoSpawnAmount??0)*a.count)
+                                this.game.add_loot(this.position,Ammos.getFromString((l as unknown as GunDef).ammoType),((l as unknown as GunDef).ammoSpawnAmount??0)*a.count)
                             }
                         }
                         break

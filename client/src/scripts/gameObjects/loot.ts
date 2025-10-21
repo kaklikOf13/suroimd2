@@ -3,8 +3,8 @@ import { Angle, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Camera2D, Container2D, type Renderer, type Sound, Sprite2D } from "../engine/mod.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts"
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItem, GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ease } from "common/scripts/engine/utils.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
@@ -65,7 +65,7 @@ export class Loot extends GameObject{
         if(data.full){
             this.item=GameItems.valueNumber[data.full.item]
             this.count=data.full.count
-            switch(this.item.item_type){
+            switch(this.item.item_type!){
                 case InventoryItemType.gun:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
@@ -79,7 +79,7 @@ export class Loot extends GameObject{
                 case InventoryItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true;
-                    this.sprite_main.scale=v2.new(.9,.9);
+                    this.sprite_main.scale=v2.new(2,2);
                     this.sprite_outline.scale=v2.new(1.5,1.5);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.ammo
                     this.pickup_sound=this.game.resources.get_audio("ammo_pickup")
@@ -132,8 +132,6 @@ export class Loot extends GameObject{
                     this.sprite_main.scale=v2.new(0.8,0.8);
                     this.sprite_outline.scale=v2.new(0.9,0.9);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.projectile
-                    break
-                case InventoryItemType.other:
                     break
                 case InventoryItemType.melee:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)

@@ -7,13 +7,13 @@ import "../news/new.ts"
 import { SoundManager } from "../engine/sounds.ts";
 import { OfflineGameServer } from "./offline.ts";
 import { BasicSocket, Client, IPLocation } from "common/scripts/engine/mod.ts";
-import { PacketManager } from "common/scripts/others/constants.ts";
 import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { InputManager } from "../engine/keys.ts"
 import { ConfigType } from "common/scripts/config/config.ts";
 import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
 import { NewMDLanguageManager } from "./languages.ts";
+import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 (async() => {
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
     const inputs=new InputManager(100)

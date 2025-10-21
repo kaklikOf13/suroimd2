@@ -1,17 +1,18 @@
 import { Definition, Definitions } from "../../engine/definitions.ts";
 import { ItemQuality } from "../../others/item.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 
 export interface BackpackDef extends Definition{
     max:Record<string,number>
-    rarity:ItemQuality
+    item_type?:InventoryItemType.backpack
+    quality:ItemQuality
     level:number
     no_world_image?:boolean
     slots:number
 }
 
 
-export const Backpacks=new Definitions<BackpackDef,GameItem>((g)=>{
+export const Backpacks=new Definitions<BackpackDef,{}>((g)=>{
     g.item_type=InventoryItemType.backpack
 })
 
@@ -50,7 +51,7 @@ Backpacks.insert(
             "red_pills":2,
             "pocket_portal":3,
         },
-        rarity:ItemQuality.Common,
+        quality:ItemQuality.Common,
         no_world_image:true,
         slots:3,
     },
@@ -68,7 +69,7 @@ Backpacks.insert(
             "explosive_ammo":10,
             "gasoline":10,
         },
-        rarity:ItemQuality.Common,
+        quality:ItemQuality.Common,
         slots:4,
     },
     {
@@ -85,7 +86,7 @@ Backpacks.insert(
             "explosive_ammo":15,
             "gasoline":15,
         },
-        rarity:ItemQuality.Common,
+        quality:ItemQuality.Uncommon,
         slots:5,
     },
     {
@@ -102,7 +103,7 @@ Backpacks.insert(
             "explosive_ammo":20,
             "gasoline":20,
         },
-        rarity:ItemQuality.Common,
+        quality:ItemQuality.Rare,
         slots:6,
     }
 )

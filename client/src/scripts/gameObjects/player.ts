@@ -1,12 +1,12 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
-import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
+import { GameItem, GameObjectDef, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
 import { ClientGame2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
@@ -18,13 +18,12 @@ import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { ParticlesEmitter2D} from "common/scripts/engine/particles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { ease, Numeric } from "common/scripts/engine/utils.ts";
-import { type Loot } from "./loot.ts";
-import { type Obstacle } from "./obstacle.ts";
-import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { Container2D } from "../engine/container_2d.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
 import { HelmetDef, Helmets, VestDef, Vests } from "common/scripts/definitions/items/equipaments.ts";
+import { Emotes } from "common/scripts/definitions/loadout/emotes.ts";
+import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -362,6 +361,7 @@ export class Player extends GameObject{
             emote_bg:new Sprite2D(),
             emote_sprite:new Sprite2D()
         }
+        this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
         this.anims.consumible_particles=this.game.particles.add_emiter({
             delay:0.5,
             particle:()=>new ABParticle2D({
@@ -391,7 +391,6 @@ export class Player extends GameObject{
         this.sprites.vest._frame=this.game.resources.get_sprite("player_vest")
         this.sprites.vest.sync_rotation=false
         this.sprites.emote_container.sync_rotation=false
-        this.container.add_child(this.sprites.emote_container)
         this.sprites.emote_container.position=v2.new(0,-1.5)
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
@@ -417,28 +416,34 @@ export class Player extends GameObject{
         this.container.rotation=this.rotation
         this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
         this.manager.cells.updateObject(this)
-        if(this.emote_time<2.5){
-            this.emote_time+=dt
-        }else{
-            this.anims.emote=this.game.addTween({
-                target:this.sprites.emote_container.scale,
-                duration:0.8,
-                to:{
-                    x:0,
-                    y:0
-                },
-                onComplete:()=>{
-                    if(this.emote_time<2.5)return
-                    this.sprites.emote_container.visible=false
-                    this.anims.emote=undefined
-                },
-                ease:ease.circOut
-            })
+        if(this.sprites.emote_container.visible){
+            this.sprites.emote_container.position=this.position
+            v2m.add_component(this.sprites.emote_container.position,0,-1.5)
+            if(this.emote_time<2.5){
+                this.emote_time+=dt
+            }else{
+                this.anims.emote=this.game.addTween({
+                    target:this.sprites.emote_container.scale,
+                    duration:0.8,
+                    to:{
+                        x:0,
+                        y:0
+                    },
+                    onComplete:()=>{
+                        if(this.emote_time<2.5)return
+                        this.sprites.emote_container.visible=false
+                        this.sprites.emote_container.destroy()
+                        this.anims.emote=undefined
+                    },
+                    ease:ease.circOut
+                })
+            }
         }
     }
     override on_destroy(): void {
         this.anims.consumible_particles!.destroyed=true
         this.container.destroy()
+        if(this.sprites.emote_container.visible)this.sprites.emote_container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
         if(Debug.hitbox){
@@ -469,10 +474,11 @@ export class Player extends GameObject{
         }
     }
     emote_time:number=0
-    add_emote(emote:EmoteDef){
+    add_emote(emote:GameObjectDef){
         this.game.sounds.play(this.game.resources.get_audio("emote_play"),{
             max_distance:30
         },"players")
+        if(!this.sprites.emote_container.visible)this.game.camera.addObject(this.sprites.emote_container)
         this.sprites.emote_container.visible=true
         this.emote_time=0
         this.sprites.emote_sprite.frame=this.game.resources.get_sprite(emote.idString)
@@ -762,9 +768,6 @@ export class Player extends GameObject{
             this.dead=data.dead
             this.on_die()
             this.container.destroy()
-            v2m.add(this.sprites.emote_container._position,this.container.position,this.sprites.emote_container._position)
-            this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
-            this.game.camera.addObject(this.sprites.emote_container)
         }
         if(data.attacking){
             this.attack()

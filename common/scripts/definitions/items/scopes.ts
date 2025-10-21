@@ -1,50 +1,51 @@
 import { Definition, Definitions } from "../../engine/definitions.ts";
 import { ItemQuality } from "../../others/item.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 
 export interface ScopeDef extends Definition{
     scope_view:number
     droppable:boolean
     quality:ItemQuality
+    item_type?:InventoryItemType.scope
 }
-export const Others=new Definitions<ScopeDef,GameItem>((i)=>{
+export const Scopes=new Definitions<ScopeDef,{}>((i)=>{
     i.item_type=InventoryItemType.scope
 })
-Others.insert(
+Scopes.insert(
     {
         idString:"scope_1x",
         scope_view:0.78,
         droppable:false,
-        quality:ItemQuality.Developer
+        quality:ItemQuality.Common
     },
     {
         idString:"scope_2x",
         scope_view:0.63,
         droppable:true,
-        quality:ItemQuality.Developer
+        quality:ItemQuality.Common
     },
     {
         idString:"scope_4x",
         scope_view:0.53,
         droppable:true,
-        quality:ItemQuality.Developer
+        quality:ItemQuality.Uncommon
     },
     {
         idString:"scope_8x",
         scope_view:0.35,
         droppable:true,
-        quality:ItemQuality.Developer
+        quality:ItemQuality.Rare
     },
     {
         idString:"scope_16x",
         scope_view:0.27,
         droppable:true,
-        quality:ItemQuality.Developer
+        quality:ItemQuality.Epic
     },
     {
         idString:"scope_32x",
         scope_view:0.14,
         droppable:true,
-        quality:ItemQuality.Developer
+        quality:ItemQuality.Mythic
     },
 )
