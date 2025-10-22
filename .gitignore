@@ -42,5 +42,9 @@ vite.config.ts.timestamp-*
 database
 database/*
 
+release
+release/*
+pnpm-lock.yaml
+
 go.sum
 go.work.sum

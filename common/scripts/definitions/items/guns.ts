@@ -399,7 +399,7 @@ Guns.insert(
         idString:"vector",
         fireDelay:0.05,
         switchDelay:0.7,
-        spread:1,
+        spread:2,
         lenght:0.68,
         size:4,
         ammoType:"9mm",
@@ -408,11 +408,11 @@ Guns.insert(
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
-                damage:6,
+                damage:7,
                 radius:0.014,
                 range:60,
                 criticalMult:1.5,
-                speed:35,
+                speed:40,
                 tracer:tracers.medium
             }
         },
