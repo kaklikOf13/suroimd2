@@ -22,8 +22,6 @@ import { Container2D } from "../engine/container_2d.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
 import { HelmetDef, Helmets, VestDef, Vests } from "common/scripts/definitions/items/equipaments.ts";
-import { Emotes } from "common/scripts/definitions/loadout/emotes.ts";
-import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1

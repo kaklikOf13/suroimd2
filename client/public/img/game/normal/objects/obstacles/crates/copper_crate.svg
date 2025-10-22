@@ -20,9 +20,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.2907869"
-     inkscape:cx="-73.598516"
-     inkscape:cy="45.321191"
+     inkscape:zoom="3.6508967"
+     inkscape:cx="41.085797"
+     inkscape:cy="55.739731"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -473,30 +473,6 @@
          stroke="none"
          id="path57"
          style="fill:url(#color-6)" />
-      <path
-         d="m 217.63277,297.63277 h 20.40014 c -1.9343,0.69735 -3.54716,1.93163 -5.93002,2.45156 -4.37618,0.95486 -11.16019,2.09758 -13.31455,6.79801 -0.45862,1.00062 -0.84144,1.94139 -1.15557,2.82805 z"
-         fill="url(#color-7)"
-         stroke="none"
-         id="path58"
-         style="fill:url(#color-7)" />
-      <path
-         d="m 262.36723,297.63277 v 14.89644 c -3.7824,-6.85768 -11.41118,-13.09154 -18.22657,-14.89644 z"
-         fill="url(#color-8)"
-         stroke="none"
-         id="path59"
-         style="fill:url(#color-8)" />
-      <path
-         d="M 217.63277,342.36723 V 320.6357 c 2.53599,4.86611 8.30116,7.27303 8.684,14.16413 l 0.14497,0.12426 c 1.91186,3.82372 4.33991,6.19501 7.04242,7.44314 z"
-         fill="url(#color-9)"
-         stroke="none"
-         id="path60"
-         style="fill:url(#color-9)" />
-      <path
-         d="m 262.36723,342.36723 h -17.74698 c 7.20595,-2.56534 14.22738,-9.17427 17.74698,-15.30808 z"
-         fill="url(#color-10)"
-         stroke="none"
-         id="path61"
-         style="fill:url(#color-10)" />
       <g
          stroke="none"
          id="g66">

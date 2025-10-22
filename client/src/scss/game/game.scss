@@ -28,6 +28,10 @@
     left: 0px;
     right: 0px;
     pointer-events: all;
+    &:focus {
+        outline: none !important;
+        border: none !important;
+    }
 }
 #game-gui {
     top: 0px;

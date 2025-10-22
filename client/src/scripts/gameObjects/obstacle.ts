@@ -10,6 +10,7 @@ import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
+import { Color } from "../engine/renderer.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
     if(def.variations){
@@ -87,10 +88,11 @@ export class Obstacle extends GameObject{
             })
         }
     }
+    particle_tint?:Color
     _add_own_particle(position:Vec2,force:number=1){
         const p=new ABParticle2D({
             frame:{
-                image:this.def.particles_variations?`${this.frame.particle}_${random.int(1,this.def.particles_variations)}`:this.frame.particle
+                image:this.def.particles?.variations?`${this.frame.particle}_${random.int(1,this.def.particles.variations)}`:this.frame.particle
             },
             position,
             speed:random.float(1,2)*force,
@@ -99,6 +101,7 @@ export class Obstacle extends GameObject{
             life_time:random.float(1,2),
             zIndex:zIndexes.Particles,
             scale:random.float(0.5,1),
+            tint:this.particle_tint,
             to:{
                 speed:random.float(0.1,1),
                 angle:random.float(-3.1415,3.1415),
@@ -200,6 +203,10 @@ export class Obstacle extends GameObject{
         this.frame.base=GetObstacleBaseFrame(this.def,this.variation)
         this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
         this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
+
+        if(this.def.particles){
+            if(this.def.particles.tint)this.particle_tint=ColorM.number(this.def.particles.tint)
+        }
 
         if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(!this.emitter_1){

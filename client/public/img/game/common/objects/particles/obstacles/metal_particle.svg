@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="15.085302mm"
-   height="18.026649mm"
-   viewBox="0 0 15.085302 18.026651"
+   width="21.227409mm"
+   height="25.455645mm"
+   viewBox="0 0 21.227409 25.455646"
    version="1.1"
    id="svg5"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
-   sodipodi:docname="barrel_particle.svg"
+   sodipodi:docname="metal_particle.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="true"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.2999535"
-     inkscape:cx="56.925113"
-     inkscape:cy="168.08294"
+     inkscape:zoom="5.199814"
+     inkscape:cx="45.290082"
+     inkscape:cy="49.328688"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -44,10 +44,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="matrix(1.1828569,0,0,1.1828569,-31.651982,-29.137754)">
+     transform="matrix(1.1828569,0,0,1.1828569,-30.983962,-28.421333)">
     <path
-       style="fill:#484848;fill-opacity:1;stroke:#000000;stroke-width:0.372064;stroke-opacity:1"
-       d="m 26.993426,39.481746 2.289707,-13.308924 2.504367,-1.28796 0.930194,1.860387 2.719027,-0.787086 v 2.003494 l 2.432814,-1.001748 -0.572427,2.146601 1.931941,-0.64398 -3.363008,11.019216 -1.71728,-2.146601 -0.930194,1.860387 -0.858641,-2.075047 -1.502619,1.788835 -0.429321,-2.361262 -1.788833,2.432815 z"
+       style="fill:#ffffff;fill-opacity:1;stroke:#979797;stroke-width:1.62554;stroke-dasharray:none;stroke-opacity:1"
+       d="m 27.218696,43.837499 2.935066,-17.06007 3.210228,-1.650974 1.192371,2.38474 3.48539,-1.008927 v 2.568182 l 3.118507,-1.284092 -0.733767,2.751625 2.476463,-0.825487 -4.310879,14.125003 -2.201298,-2.751625 -1.192371,2.384741 -1.100651,-2.659903 -1.926135,2.293022 -0.550326,-3.026789 -2.293019,3.118509 z"
        id="path2"
        sodipodi:nodetypes="ccccccccccccccccc" />
   </g>
