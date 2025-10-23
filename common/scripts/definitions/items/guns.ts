@@ -400,7 +400,7 @@ Guns.insert(
         fireDelay:0.05,
         switchDelay:0.7,
         spread:2,
-        lenght:0.68,
+        lenght:0.6,
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:99,
@@ -425,11 +425,11 @@ Guns.insert(
             speed:0.77
         },
         speed_mod:1,
-        gasParticles:GasParticles.automatic,
+        gasParticles:GasParticles.pistols,
         muzzleFlash:MuzzleFlash.normal,
         arms:WeaponsArmRig[2],
         image:{
-            position:v2.new(0.5,0.0),
+            position:v2.new(0.3,0.0),
             rotation:0
         },
     },

@@ -1,5 +1,5 @@
 import { Particle2D } from "common/scripts/engine/particles.ts";
-import { Container2D, Sprite2D } from "./container_2d.ts";
+import { Sprite2D } from "./container_2d.ts";
 import { type ClientGame2D } from "./game.ts";
 import { type FrameDef } from "common/scripts/engine/definitions.ts";
 import { v2, v2m, Vec2 } from "common/scripts/engine/geometry.ts";

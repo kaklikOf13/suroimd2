@@ -89,7 +89,7 @@ export class Obstacle extends GameObject{
         }
     }
     particle_tint?:Color
-    _add_own_particle(position:Vec2,force:number=1){
+    _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         const p=new ABParticle2D({
             frame:{
                 image:this.def.particles?.variations?`${this.frame.particle}_${random.int(1,this.def.particles.variations)}`:this.frame.particle
@@ -100,7 +100,7 @@ export class Obstacle extends GameObject{
             direction:random.float(-3.1415,3.1415),
             life_time:random.float(1,2),
             zIndex:zIndexes.Particles,
-            scale:random.float(0.5,1),
+            scale:small?random.float(0.2,0.5):random.float(0.5,1),
             tint:this.particle_tint,
             to:{
                 speed:random.float(0.1,1),
@@ -113,7 +113,7 @@ export class Obstacle extends GameObject{
         
     }
     on_hitted(position:Vec2){
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position)
+        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
             this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{
                 volume:1,

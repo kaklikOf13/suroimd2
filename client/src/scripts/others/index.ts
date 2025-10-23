@@ -107,8 +107,10 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
             }else{
                 const reg=menu_manager.api_settings.regions[GameSave.get_variable("cv_game_region")]
                 const ser=new IPLocation(reg.host,reg.port)
-                const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).text())
-                socket=new WebSocket(ser.toString("ws") + "/api/" + ghost + "/ws") as unknown as BasicSocket
+                const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).json())
+                if(ghost.status===0){
+                    socket=new WebSocket(`ws${ghost.address}/api/ws`) as unknown as BasicSocket
+                }
             }
             const c=new Client(socket!,PacketManager)
             c.onopen=this.game.connect.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))

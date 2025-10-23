@@ -82,7 +82,7 @@ export class Explosion extends ServerGameObject{
                         (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
                         break
                     case "loot":
-                        (obj as Loot).push(6*(v2.distance(this.position,obj.position)/this.radius),v2.lookTo(this.position,obj.position))
+                        (obj as Loot).push(Math.min(0,v2.distance(obj.position,this.position)-this.radius)*-6,v2.lookTo(this.position,obj.position))
                         break
                 }
             }

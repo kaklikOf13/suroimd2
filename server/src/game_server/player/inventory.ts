@@ -88,7 +88,7 @@ export class GunItem extends LItem{
     }
     reload(user:Player){
         if(!this.def.reload||user.downed)return
-        if(this.ammo>=this.def.reload.capacity||!user.inventory.oitems[this.def.ammoType]){
+        if(this.ammo>=this.def.reload.capacity||!user.inventory.oitems[this.def.ammoType]||this.use_delay>0){
             this.reloading=false
             return
         }
@@ -156,7 +156,7 @@ export class GunItem extends LItem{
     }
     update(user:Player){
         if(user.inventory.currentWeapon===this&&!user.actions.current_action){
-            if((this.ammo<=0||this.reloading)&&this.def.reload){
+            if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
                 this.reloading=true
                 this.reload(user)
             }

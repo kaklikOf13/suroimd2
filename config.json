@@ -30,6 +30,7 @@
             "port": 8080
         }
     },
+    "this_region":"local",
     "vite":{
         "port":3000,
         "allowed_hosts":[]

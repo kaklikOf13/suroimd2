@@ -44,6 +44,7 @@ export interface ConfigType {
         host: HostConfig
         modes:GamemodeConfig[]
     }
+    this_region:string
     vite:{
         port:number
         allowed_hosts?:true|string[]

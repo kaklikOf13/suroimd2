@@ -53,7 +53,10 @@ export interface ObstacleDef extends Definition{
         dead?:string
         particle?:string
     }
-    particles_variations?:number
+    particles?:{
+        variations?:number
+        tint?:number
+    }
     variations?:number
     zIndex?:number
     rotationMode?:number
@@ -129,7 +132,9 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles1,
         material:"stone",
-        particles_variations:2,
+        particles:{
+            variations:2
+        },
         spawnMode:Spawn.grass,
         variations:2,
     },
@@ -145,6 +150,12 @@ Obstacles.insert(
         onDestroyExplosion:"barrel_explosion",
         material:"metal",
         reflectBullets:true,
+        frame:{
+            particle:"metal_particle"
+        },
+        particles:{
+            tint:0x484848
+        },
         spawnMode:Spawn.grass
     },
     {
@@ -183,6 +194,12 @@ Obstacles.insert(
         material:"wood",
         interactDestroy:true,
         lootTable:"wood_crate",
+        frame:{
+            particle:"plank_particle"
+        },
+        particles:{
+            tint:0x583b08
+        },
         spawnMode:Spawn.grass
     },
     {
@@ -201,6 +218,12 @@ Obstacles.insert(
         material:"iron", //TODO Copper Material
         reflectBullets:true,
         lootTable:"copper_crate",
+        frame:{
+            particle:"metal_particle"
+        },
+        particles:{
+            tint:0xcc742d
+        },
         spawnMode:Spawn.grass
     },
     {
@@ -219,6 +242,12 @@ Obstacles.insert(
         material:"iron",
         reflectBullets:true,
         lootTable:"iron_crate",
+        frame:{
+            particle:"metal_particle"
+        },
+        particles:{
+            tint:0x656877
+        },
         spawnMode:Spawn.grass
     },
     {
@@ -237,6 +266,12 @@ Obstacles.insert(
         material:"iron",
         reflectBullets:true,
         lootTable:"gold_crate",
+        frame:{
+            particle:"metal_particle"
+        },
+        particles:{
+            tint:0xffd92b
+        },
         spawnMode:Spawn.grass
     },
     {

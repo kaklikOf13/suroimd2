@@ -38,6 +38,13 @@ export interface PlaneDataServer extends PlaneData{
     target_pos:Vec2
     called:boolean
 }
+export interface GameData {
+    living_count: number
+    can_join: boolean
+    running: boolean
+    started_time: number
+    started:boolean
+}
 export interface GameStatus{
     players:{
         name:string
@@ -102,6 +109,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
     living_count_dirty:boolean=false
 
     general_update:GeneralUpdatePacket=new GeneralUpdatePacket()
+
+    on_update_data:((data:GameData)=>void)[]=[]
+    started_time:number=0
 
     constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
         super(Config.game.config.gameTps,id,clients,PacketManager,[
@@ -178,6 +188,18 @@ export class Game extends ServerGame2D<ServerGameObject>{
             this.ntt=1/this.Config.game.config.netTps
         }
     }
+    update_data(){
+        const data:GameData={
+            living_count:this.livingPlayers.length,
+            can_join:this.modeManager.can_join(),
+            running:this.running,
+            started_time:this.started_time,
+            started:this.started
+        }
+        for(const c of this.on_update_data){
+            c(data)
+        }
+    }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
         const dir=v2.lookTo(v2.new(0,0),position)
@@ -203,6 +225,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 username:p.name,
             })
         }
+        this.update_data()
         console.log(`Game ${this.id} Stopped`)
     }
     killing_game:boolean=false
@@ -273,9 +296,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
             }
         }
         p.inventory.set_current_weapon_index(0)
+        this.update_data()
         return p
     }
     override on_run(): void {
+        this.update_data()
     }
     async activate_player(username:string,packet:JoinPacket,client:Client){
         const p=this.add_player(client.ID,username,packet) as Player;
@@ -331,11 +356,11 @@ export class Game extends ServerGame2D<ServerGameObject>{
             this.statistics.loadout.uses[p.loadout.skin]=(this.statistics.loadout.uses[p.loadout.skin]??0)+1
         }
 
-        if(Math.random()<0.2){
+        /*if(Math.random()<0.2){
             const vehicle=this.add_vehicle(p.position,Vehicles.getFromString(random.choose(["bike","jeep"])))
             vehicle.seats[0].set_player(p)
             p.dirty=true
-        }
+        }*/
         return p
     }
     add_npc(name?:string,layer?:number):Player{
@@ -357,14 +382,17 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.started=true
         this.modeManager.on_start()
         this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
+        this.started_time=performance.now()
         if(this.replay)this.replay.start()
-        console.log(`Game ${this.id} Started`)
         this.deadzone.start()
+        this.update_data()
+        console.log(`Game ${this.id} Started`)
     }
     finish(){
         if(this.fineshed)return
         this.fineshed=true
         this.modeManager.on_finish()
+        this.update_data()
         console.log(`Game ${this.id} Fineshed`)
     }
     add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal):Bullet{

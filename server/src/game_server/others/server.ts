@@ -1,59 +1,124 @@
-import { Server,Cors, ClientsManager} from "../../engine/mod.ts"
-import { Game } from "./game.ts"
-import { Game2D, ID, PacketsManager, random } from "common/scripts/engine/mod.ts";
-import { v1 as uuid } from "https://deno.land/std@0.224.0/uuid/mod.ts"
-import { Layers } from "common/scripts/others/constants.ts";
-import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
-import { ServerReplayRecorder2D } from "../../engine/replay.ts";
-import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
+import { Server,Cors} from "../../engine/mod.ts"
+import { ID, SignalManager } from "common/scripts/engine/mod.ts"
+import { type ConfigType, type GameConfig, type RegionDef } from "common/scripts/config/config.ts";
+import { type WorkerMessage, WorkerMessages } from "./gameWorker.ts";
+import { type GameData } from "./game.ts";
+let worker_path: string;
+if (import.meta.filename?.endsWith(".ts")) {
+    worker_path = "./gameWorker.ts";
+} else {
+    worker_path = "./gameWorker.js";
+}
+
+export class GameContainer {
+    data: GameData = {
+        can_join: false,
+        living_count: 0,
+        running: false,
+        started_time: 0,
+        started:false
+    };
+
+    readonly id: number;
+    readonly worker: Worker;
+    signals: SignalManager = new SignalManager();
+    server:GameServer
+
+    address:string=""
+
+    constructor(server:GameServer,id: number) {
+        this.id = id;
+        this.server=server
+
+        const url = new URL(worker_path, import.meta.url).href;
+
+        this.worker = new Worker(url, {
+            name: "game_worker",
+            type: "module"
+        })
+
+        this.worker.addEventListener("message", (e) => {
+            const msg=e.data as WorkerMessage
+            switch(msg.type){
+                case WorkerMessages.SetData:
+                    this.data=msg.data
+                    break
+            }
+        })
+        
+        this.worker.postMessage({
+            type:WorkerMessages.Begin,
+            config:this.server.config,
+            id:this.id,
+            port:this.server.config.game.host.port+this.id+1
+        } as WorkerMessage)
+
+        this.address=`${this.server.self_region.ssh?"s":""}://${this.server.self_region.host}:${this.server.self_region.port+this.id+1}`
+    }
+
+    create(team_size:number) {
+        this.worker.postMessage({
+            type:WorkerMessages.NewGame,
+            team_size:team_size
+        } as WorkerMessage)
+    }
+}
+
 export class GameServer{
     server:Server
-    games:Game[]
+    games:Map<number,GameContainer>=new Map()
     game_handles:Record<ID,string>
     config:ConfigType
     td:TextDecoder=new TextDecoder("utf-8")
     te:TextEncoder=new TextEncoder()
+
+    self_region:RegionDef
     constructor(server:Server,config:ConfigType){
         this.server=server
+        this.self_region=config.regions[config.this_region]
         this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
             const game=this.get_game()
-            return Cors(new Response(`game/${game}`,{status:200}))
+            const msg=game===undefined
+            ?{
+                status:1,
+            }:{
+                status:0,
+                address:game.address
+            }
+            return Cors(new Response(JSON.stringify(msg),{status:200}))
         })
         this.server.route("/api/game-status",(_req:Request,url:string[], _info: Deno.ServeHandlerInfo)=>{
             return Cors(new Response(Deno.readFileSync(`database/games/game-${url[url.length-1]}`),{status:200}))
         })
-        this.games=[]
         this.game_handles={}
         this.config=config
         this.addGame()
         Deno.mkdirSync("database/games",{recursive:true})
         Deno.mkdirSync("database/replays",{recursive:true})
     }
-    get_game(config?:GameConfig):ID{
-        for(const g of this.games){
-            if(g.running&&g.modeManager.can_join()){
-                return g.id
+    get_game(config?:GameConfig):GameContainer|undefined{
+        for(const g of this.games.values()){
+            if(g.data.running&&g.data.can_join){
+                return g
             }
         }
-        for(let g=0;g<this.games.length;g++){
-            if(!this.games[g].running){
-                this.removeGame(g)
-                g--
-            }
-        }
-        if(this.games.length<this.config.game.max_games){
-            const g=this.addGame()
-            return g.id
-        }
-        return -1
+        return this.addGame()
+        
     }
-    addGame():Game{
-        const id=this.games.length
-        this.games.push(new Game(new ClientsManager(new PacketsManager()),id,this.config))
-        this.games[id].replay=new ServerReplayRecorder2D(this.games[id] as unknown as Game2D,ObjectsE)
+    addGame(id?:number):GameContainer|undefined{
+        if(!id)id=this.games.size
+        if(!this.games.get(id)){
+            if(this.games.size<this.config.game.max_games){
+                this.games.set(id,new GameContainer(this,id))
+            }else{
+                return undefined
+            }
+        }
+        this.games.get(id)?.create(1)
+        /*this.games[id].replay=new ServerReplayRecorder2D(this.games[id] as unknown as Game2D,ObjectsE)
         this.games[id].string_id=uuid.generate() as string
-        this.games[id].mainloop()
-        const handler=(this.games[id].clients as ClientsManager).handler_log(()=>{
+        this.games[id].mainloop()*/
+        /*const handler=(this.games[id].clients as ClientsManager).handler_log(()=>{
             let idC=random.id()
             while(this.games[id].scene.objects.exist(
                 idC,
@@ -65,7 +130,7 @@ export class GameServer{
         })
         this.server.route(`api/game/${id}/ws`,handler)
         this.game_handles[id]=`api/game/${id}`
-        this.games[id].on_stop=()=>{
+        /*this.games[id].on_stop=()=>{
             Game.prototype.on_stop.call(this.games[id])
             if(this.config.database.enabled){
                 const f=Deno.openSync(`database/games/game-${this.games[id].string_id}`,{write:true,create:true})
@@ -130,14 +195,8 @@ export class GameServer{
                     })
                 });
             }
-        }
-        console.log(`Game ${id} Initialized`)
-        return this.games[id]
-    }
-    removeGame(id:ID){
-        this.game_handles[id] ? this.server.remove_route(`api/game/${id}/ws`) : null
-        delete this.game_handles[id]
-        this.games.splice(id,1)
+        }*/
+        return this.games.get(id)
     }
     run(){
         this.server.run()

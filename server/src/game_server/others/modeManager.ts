@@ -165,7 +165,7 @@ export class SoloGamemodeManager extends GamemodeManager{
                         {id:"bush",count:1500},
                         {id:"wood_crate",count:700},
                         {id:"copper_crate",count:20},
-                        {id:"iron_crate",count:2},
+                        {id:"iron_crate",count:1},
                         {id:"gold_crate",count:1},
                         {id:"barrel",count:700}
                     ]
