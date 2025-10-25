@@ -1,0 +1,111 @@
+@use "../../../../src/scss/palette.scss";
+@use "../../../../src/scss/utils/buttons.scss";
+@use "../../../../src/scss/utils/others.scss";
+@use "../../../../src/scss/fonts.scss";
+.hidden {
+  display: none !important;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #0f172a;
+  color: #fff;
+}
+
+.forum {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  background: #0f172a;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+  background: url("/img/menu/background/background.png") no-repeat center center;
+  background-size: cover;
+}
+
+#posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-item {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.post-body {
+  margin-top: 12px;
+  color: #eee;
+  font-family: "Russo-One", sans-serif;
+}
+
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.comment {
+  border-top: 1px solid #e2e8f0;
+  padding: 8px 0;
+  color: #eee;
+  font-family: "Russo-One", sans-serif;
+}
+.delete-comment{
+  font-size: 15px;
+  padding: 5px;
+}
+
+.delete-post{
+  margin-top: 10px;
+  font-size: 15px;
+  padding: 5px;
+}
+textarea {
+  width: 90%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 8px;
+  font-family: inherit;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comment-form button {
+  align-self: flex-start;
+}

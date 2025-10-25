@@ -1,4 +1,4 @@
-import { Container2D, Sprite2D } from "../engine/container.ts"
+import { Container2D, Sprite2D } from "../engine/container_2d.ts"
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts"
 import { zIndexes } from "common/scripts/others/constants.ts"
 import { CreatureData } from "common/scripts/others/objectsEncode.ts"
@@ -25,7 +25,7 @@ export class Creature extends GameObject{
         this.def=def
         this.main_sprite.set_frame(def.frame.main,this.game.resources)
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.container.destroy()
     }
     update(dt:number): void {

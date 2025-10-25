@@ -1,15 +1,16 @@
 {
   "tasks": {
     "dev": "deno run -A npm:vite",
-    "dev:electron":"npx electron electron/dev.js",
-    "dev:window":"deno task dev & deno task dev:electron",
+    "dev:electron": "npx electron electron/dev.js",
+    "dev:window": "deno task dev & npx electron electron/dev.js",
     "build": "deno run -A npm:vite build",
-    "install":"npm i vite @sveltejs/vite-plugin-svelte sass canvas maxrects-packer minimatch semver && deno install --allow-scripts=npm:electron@38.0.0,npm:canvas@3.1.2",
-    "clear":"rm -rf deno.lock && rm -rf package-lock.json && rm -rf package.json && rm -rf node_modules"
+    "build:electron": "deno run -A electron/build_electron.ts",
+    "install": "npm i vite @sveltejs/vite-plugin-svelte fdir sass node canvas maxrects-packer minimatch types semver electron@31.3.0 electron-package",
+    "clear": "rm -rf deno.lock && rm -rf package-lock.json && rm -rf package.json && rm -rf node_modules"
   },
-  "nodeModulesDir": "auto",
+  "nodeModulesDir": "manual",
   "importMap": "../common/deps.json",
   "compilerOptions": {
-        "lib": ["dom", "deno.ns"]
-    }
+    "lib": ["dom", "deno.ns"]
+  }
 }

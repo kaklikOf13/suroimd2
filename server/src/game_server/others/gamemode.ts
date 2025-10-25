@@ -1,5 +1,26 @@
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { type Player } from "../gameObjects/player.ts";
+import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { type GunDef } from "common/scripts/definitions/items/guns.ts";
+import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { GameItem } from "common/scripts/definitions/alldefs.ts";
 
+export interface InventoryGiftItem{
+    item:GameItem,
+    count:number
+}
+export interface InventoryGift{
+    helmet?:(player:Player)=>HelmetDef|undefined
+    vest?:(player:Player)=>VestDef|undefined
+    backpack?:(player:Player)=>BackpackDef|undefined
+
+    items?:(player:Player)=>InventoryGiftItem[]
+
+    melee?:(player:Player)=>MeleeDef|undefined
+    gun1?:(player:Player)=>GunDef|undefined
+    gun2?:(player:Player)=>GunDef|undefined
+}
 export interface Gamemode{
     player:{
         boosts:{
@@ -18,27 +39,52 @@ export interface Gamemode{
                 speed:number
             }
             default_boost:BoostType
+        },
+        respawn?:{
+            max_respawn?:number
+            keep_inventory?:boolean
+            insert_inventory?:InventoryGift
         }
+        max:number
+    }
+    game:{
+        no_battle_plane?:boolean
+        map:string
+        lobby:string
     }
 }
 export const DefaultGamemode:Gamemode={
     player:{
         boosts:{
             adrenaline:{
-                decay:0.35,
-                speed:0.25,
-                regen:0.0112
+                decay:0.3,
+                speed:0.2,
+                regen:0.01
             },
             mana:{
                 regen:0.03
             },
             addiction:{
-                decay:0.3,
-                damage:1,
-                speed:1,
+                decay:0.25,
+                damage:0.8,
+                speed:0.8,
                 abstinence:0.009
             },
             default_boost:BoostType.Adrenaline
         },
+        /*respawn:{
+            max_respawn:2,
+            insert_inventory:{
+                backpack(_player) {
+                    return Backpacks.getFromString("basic_pack")
+                },
+            }
+        }*/
+        max:100
+    },
+    game:{
+        no_battle_plane:false,
+        map:"normal",
+        lobby:"lobby"
     }
 }

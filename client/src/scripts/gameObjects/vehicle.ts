@@ -1,7 +1,7 @@
-import { Container2D, Sprite2D } from "../engine/container.ts";
+import { Container2D, Sprite2D } from "../engine/container_2d.ts";
 import { VehicleData } from "common/scripts/others/objectsEncode.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { v2, v2m, Vec2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Numeric } from "common/scripts/engine/mod.ts";
 import { GameObject } from "../others/gameObject.ts";
@@ -20,13 +20,13 @@ export class Vehicle extends GameObject{
     }
 
 
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.container.destroy()
     }
     update(dt:number): void {
         if(this.dest_pos){
             //this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
-            this.container.position=v2.lerp(this.container.position,this.dest_pos,this.game.inter_global)
+            v2m.lerp(this.container.position,this.dest_pos,this.game.inter_global)
             this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.dest_rot!,this.game.inter_global)
             this.manager.cells.updateObject(this)
         }

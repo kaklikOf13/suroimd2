@@ -1,9 +1,12 @@
-import { v2 } from "../../engine/geometry.ts";
+import { AKeyFrame } from "../../engine/definitions.ts";
+import { Angle, v2 } from "../../engine/geometry.ts";
 import { Definitions,Definition } from "../../engine/mod.ts";
+import { ease } from "../../engine/utils.ts";
 import { DefaultFistRig, FistRig, ItemQuality, WeaponRig } from "../../others/item.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
     quality:ItemQuality
+    item_type?:InventoryItemType.melee
     damage:number
     radius:number
     offset:number
@@ -16,21 +19,126 @@ export interface MeleeDef extends Definition{
     speed_mod?:number
     arms?:FistRig
     image?:WeaponRig
+    animation?:AKeyFrame[]
 }
-
-export const Melees=new Definitions<MeleeDef,GameItem>((g)=>{
+export function AnimationSwing(time:number):AKeyFrame[]{
+    const r=Angle.deg2rad(90)
+    return [
+        {
+            time:0,
+            actions:[
+            ]
+        },
+        {
+            time:time*0.3,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        rotation:r+0.4,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0.1))
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"left_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.left!.rotation-0.2,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0.1))
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation+0.2,
+                        position:v2.add(DefaultFistRig.right!.position,v2.new(-0.07,0.05))
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.15,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        rotation:r-1,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0))
+                    },
+                },
+                {
+                    fuser:"left_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.left!.rotation+0.1,
+                        position:v2.add(DefaultFistRig.left!.position,v2.new(-0.05,0.1))
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation-0.3,
+                        position:v2.add(DefaultFistRig.right!.position,v2.new(0.15,-0.15))
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.7,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        rotation:r,
+                        position:DefaultFistRig.left!.position
+                    }
+                },
+                {
+                    fuser:"left_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.left!.rotation,
+                        position:DefaultFistRig.left!.position
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation,
+                        position:DefaultFistRig.right!.position
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+    ]
+}
+export const Melees=new Definitions<MeleeDef,{}>((g)=>{
     g.item_type=InventoryItemType.melee
 })
 Melees.insert(
     {
         idString:"survival_knife",
-        damage:18,
+        damage:15,
         offset:0.5,
         quality:ItemQuality.Common,
         radius:0.5,
         size:0,
-        attack_delay:0.55,
-        damage_delays:[0.1],
+        attack_delay:0.2,
+        switchDelay:0.5,
+        damage_delays:[0.11],
         arms:{
             right:{
                 position:DefaultFistRig.right!.position,
@@ -48,27 +156,97 @@ Melees.insert(
             rotation:-0.5,
             zIndex:1,
             left_handed_suport:true,
-            hotspot:v2.new(0.25,0.5)
-        }
+            hotspot:v2.new(0.33,0.5)
+        },
+        animation:[
+            {
+                time:0,
+                actions:[
+                ]
+            },
+            {
+                time:0.1,
+                actions:[
+                    {
+                        fuser:"weapon",
+                        type:"tween",
+                        yoyo:true,
+                        to:{
+                            rotation:DefaultFistRig.right!.rotation-1,
+                            position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                        }
+                    },
+                    {
+                        fuser:"right_arm",
+                        type:"tween",
+                        yoyo:true,
+                        to:{
+                            rotation:DefaultFistRig.right!.rotation-0.4,
+                            position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                        }
+                    }
+                ]
+            }
+        ]
     },
     {
         idString:"axe",
-        damage:35,
-        offset:0.5,
+        damage:33,
+        offset:0.6,
         quality:ItemQuality.Uncommon,
-        radius:0.6,
+        radius:0.9,
         size:2,
-        attack_delay:0.8,
-        damage_delays:[0.3]
+        attack_delay:0.5,
+        switchDelay:0.5,
+        damage_delays:[0.4],
+        arms:{
+            right:{
+                position:DefaultFistRig.right!.position,
+                rotation:DefaultFistRig.right!.rotation,
+                zIndex:2,
+            },
+            left:{
+                position:DefaultFistRig.left!.position,
+                rotation:DefaultFistRig.left!.rotation,
+                zIndex:2,
+            }
+        },
+        image:{
+            position:DefaultFistRig.left!.position,
+            rotation:Angle.deg2rad(90),
+            zIndex:1,
+            hotspot:v2.new(0.2,0.4)
+        },
+        animation:AnimationSwing(0.6)
     },
     {
-        idString:"hammer",
-        damage:60,
-        offset:0.5,
+        idString:"sledgehammer",
+        damage:49.5,
+        offset:0.6,
         quality:ItemQuality.Rare,
-        radius:0.6,
-        size:2.5,
-        attack_delay:1.2,
-        damage_delays:[0.4]
+        radius:0.9,
+        size:3,
+        attack_delay:0.8,
+        switchDelay:0.5,
+        damage_delays:[0.6],
+        arms:{
+            right:{ 
+                position:DefaultFistRig.right!.position,
+                rotation:DefaultFistRig.right!.rotation,
+                zIndex:2,
+            },
+            left:{
+                position:DefaultFistRig.left!.position,
+                rotation:DefaultFistRig.left!.rotation,
+                zIndex:2,
+            }
+        },
+        image:{
+            position:DefaultFistRig.left!.position,
+            rotation:Angle.deg2rad(90),
+            zIndex:1,
+            hotspot:v2.new(0.2,0.3)
+        },
+        animation:AnimationSwing(0.9)
     },
 )

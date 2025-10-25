@@ -1,39 +1,40 @@
 import { Hitbox2D, NetStream, NullHitbox2D, NullVec2, PolygonHitbox2D, RectHitbox2D, SeededRandom, Vec2, jaggedRectangle, random, v2 } from "common/scripts/engine/mod.ts";
 import { type Game } from "./game.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
-
-import { IslandDef, LootTables } from "common/scripts/definitions/maps/base.ts"
-import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts";
-import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts";
-import { Layers } from "common/scripts/others/constants.ts";
-import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
-import { Creatures } from "common/scripts/definitions/objects/creatures.ts";
+import { ObstacleDef, Obstacles, SpawnMode, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts"
+import { IslandDef, MapDef } from "common/scripts/definitions/maps/base.ts"
+import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
+import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts"
+import { Layers } from "common/scripts/others/constants.ts"
+import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts"
+import { Creatures } from "common/scripts/definitions/objects/creatures.ts"
+import {BuildingDef} from "common/scripts/definitions/objects/buildings_base.ts"
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export const generation={
     island:(def:IslandDef)=>{
         return (map:GameMap,random:SeededRandom)=>{
             //Terrain
-            map.size=def.generation.size
-            map.terrain.add_floor(def.generation.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),Layers.Normal,false)
+            map.size=def.size
+            map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),Layers.Normal,false)
             let cp=0
             const hitboxes:Hitbox2D[]=[]
-            for(const f of def.generation.terrain.floors.sort()){
+            for(const f of def.terrain.floors.sort()){
                 cp+=f.padding
                 const min=v2.new(cp,cp),max=v2.new(map.size.x-cp,map.size.y-cp)
                 const hb=new PolygonHitbox2D(jaggedRectangle(min,max,f.spacing,f.variation,random))
                 hitboxes.push(hb)
                 map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,hb)
             }
-            if(def.generation.terrain.rivers){
-                const rivers=generate_rivers(hitboxes[def.generation.terrain.rivers.spawn_floor].toRect(),def.generation.terrain.rivers.defs,def.generation.terrain.rivers.divisions,random,def.generation.terrain.rivers.expansion,[
+            if(def.terrain.rivers){
+                const r=hitboxes[def.terrain.rivers.spawn_floor].to_rect()
+                const rivers=generate_rivers(new RectHitbox2D(r.min,r.max),def.terrain.rivers.defs,def.terrain.rivers.divisions,random,def.terrain.rivers.expansion,[
                     {name:"main",padding:0}
                 ])
                 for(const r of rivers){
                     map.terrain.add_floor(FloorType.Water,r.collisions.main,Layers.Normal)
                 }
             }
-            for(const spawn of def.generation.spawn??[]){
+            for(const spawn of def.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
                     if(Creatures.exist(item.id)){
@@ -59,11 +60,11 @@ export const generation={
                     }
                 }
             }
-            for(const l of def.generation.ground_loot??[]){
+            for(const l of def.ground_loot??[]){
                 const count=random.irandom1(l.count)
                 const layer=l.layer??Layers.Normal
                 for(let idx=0;idx<count;idx++){
-                    const loot=LootTables.get_loot(l.table,{withammo:true})
+                    const loot=map.game.loot_tables.get_loot(l.table,{withammo:true})
                     const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2.new(0,0),0.6),-1,layer,{
                         type:SpawnModeType.blacklist,
                         list:[FloorType.Water]
@@ -134,9 +135,10 @@ export class GameMap{
         }
         return pos
     }
-    add_obstacle(def:ObstacleDef):Obstacle{
+    add_obstacle(def:ObstacleDef,rotation?:number):Obstacle{
         const o=this.game.scene.objects.add_object(new Obstacle(),Layers.Normal,undefined,{
-            def:def
+            def:def,
+            rotation
         }) as Obstacle
         this.objects.push(o)
         return o
@@ -155,11 +157,29 @@ export class GameMap{
         o.manager.cells.updateObject(o)
         return o
     }
-    generate(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
+    generate(definition:MapDef,seed:number=random.float(0,231412)){
+        const random=new SeededRandom(seed)
+        this.random=random
+
+        this.game.loot_tables.clear()
+        this.game.loot_tables.add_tables(definition.loot_tables)
+
+        if(definition.generation.island)generation.island(definition.generation.island)(this,random)
+
+        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
+    }
+    generate_with_algorithm(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
         const random=new SeededRandom(seed)
         this.random=random
         algorithm(this,random)
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
+    }
+    add_building(def:BuildingDef,position:Vec2,side:0|1|2|3=0){
+        for(const o of def.obstacles){
+            const odef=Obstacles.getFromString(o.id)
+            const obj=this.add_obstacle(odef,o.rotation)
+            obj.set_position(v2.add_with_orientation(position,o.position,side))
+        }
     }
     encode(seed:number):MapPacket{
         const p=new MapPacket()

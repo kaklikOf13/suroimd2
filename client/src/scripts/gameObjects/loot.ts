@@ -2,12 +2,13 @@ import { LootData } from "common/scripts/others/objectsEncode.ts";
 import { Angle, CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { type Camera2D, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts"
+import { type Camera2D, Container2D, type Renderer, type Sound, Sprite2D } from "../engine/mod.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItem, GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ease } from "common/scripts/engine/utils.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
+import { v2m } from "common/scripts/engine/geometry.ts";
 export class Loot extends GameObject{
     stringType:string="loot"
     numberType: number=2
@@ -15,16 +16,19 @@ export class Loot extends GameObject{
     container:Container2D=new Container2D()
 
     item!:GameItem
+    count:number=1
 
     sprite_main:Sprite2D=new Sprite2D()
     sprite_outline:Sprite2D=new Sprite2D()
+
+    pickup_sound:Sound|undefined
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.new(3,3),0.3)
         this.game.camera.addObject(this.container)
     }
     update(dt:number): void {
         if(this.dest_pos){
-            this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
+            v2m.lerp(this.position,this.dest_pos,this.game.inter_global)
         }
         this.container.position=this.position
         this.manager.cells.updateObject(this)
@@ -43,8 +47,8 @@ export class Loot extends GameObject{
         this.container.add_child(this.sprite_main)
         this.container.updateZIndex()
     }
-    override onDestroy(): void {
-      this.container.destroy()
+    override on_destroy(): void {
+        this.container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
         /*if(Debug.hitbox){
@@ -60,7 +64,8 @@ export class Loot extends GameObject{
         }
         if(data.full){
             this.item=GameItems.valueNumber[data.full.item]
-            switch(this.item.item_type){
+            this.count=data.full.count
+            switch(this.item.item_type!){
                 case InventoryItemType.gun:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
@@ -68,14 +73,16 @@ export class Loot extends GameObject{
                     this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2.new(1.5,1.5);
-                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.gun
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.weapon
+                    this.pickup_sound=this.game.resources.get_audio("gun_pickup")
                     break
                 case InventoryItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true;
-                    this.sprite_main.scale=v2.new(.9,.9);
+                    this.sprite_main.scale=v2.new(2,2);
                     this.sprite_outline.scale=v2.new(1.5,1.5);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.ammo
+                    this.pickup_sound=this.game.resources.get_audio("ammo_pickup")
                     break
                 case InventoryItemType.consumible:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
@@ -85,9 +92,9 @@ export class Loot extends GameObject{
                     this.sprite_main.scale=v2.new(1.5,1.5);
                     this.sprite_outline.scale=v2.new(0.9,0.9);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.consumible
+                    this.pickup_sound=this.game.resources.get_audio(`${this.item.idString}_pickup`)
                     break
                 case InventoryItemType.backpack:
-                case InventoryItemType.equipament:
                     this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
@@ -95,10 +102,46 @@ export class Loot extends GameObject{
                     this.sprite_main.scale=v2.new(0.8,0.8);
                     this.sprite_outline.scale=v2.new(0.9,0.9);
                     (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
+                    this.pickup_sound=this.game.resources.get_audio(`backpack_pickup`)
                     break
-                case InventoryItemType.other:
+                case InventoryItemType.vest:
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_main.scale=v2.new(0.8,0.8);
+                    this.sprite_outline.scale=v2.new(0.9,0.9);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
+                    this.pickup_sound=this.game.resources.get_audio(`vest_pickup`)
+                    break
+                case InventoryItemType.helmet:
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_main.scale=v2.new(0.8,0.8);
+                    this.sprite_outline.scale=v2.new(0.9,0.9);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
+                    this.pickup_sound=this.game.resources.get_audio(`helmet_pickup`)
+                    break
+                case InventoryItemType.projectile:
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true
+                    this.sprite_main.scale=v2.new(0.8,0.8);
+                    this.sprite_outline.scale=v2.new(0.9,0.9);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.projectile
                     break
                 case InventoryItemType.melee:
+                    this.sprite_main.frame=this.game.resources.get_sprite(this.item.idString)
+                    this.sprite_main.rotation=Angle.deg2rad(-30)
+                    this.sprite_main.visible=true
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
+                    this.sprite_outline.visible=true;
+                    this.sprite_outline.scale=v2.new(1.5,1.5);
+                    (this.hb as CircleHitbox2D).radius=GameConstants.loot.radius.weapon
+                    this.pickup_sound=this.game.resources.get_audio("gun_pickup")
                     break
                 case InventoryItemType.accessorie:
                     break

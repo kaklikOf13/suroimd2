@@ -1,4 +1,4 @@
-import { NullVec2, type Vec2, v2,Collision,OverlapCollision2D, Orientation } from "./geometry.ts"
+import { type Vec2, v2,Collision,OverlapCollision2D, Orientation, v2m, v2_sides, Rect } from "./geometry.ts"
 
 import { random, SeededRandom } from "./random.ts";
 import { NetStream } from "./stream.ts";
@@ -11,7 +11,10 @@ export enum HitboxType2D{
     group,
     polygon
 }
-
+export type IntersectionRes = {
+    readonly point: Vec2
+    readonly normal: Vec2
+} | null|undefined;
 export interface Hitbox2DMapping {
     [HitboxType2D.null]:NullHitbox2D
     [HitboxType2D.circle]:CircleHitbox2D
@@ -25,11 +28,12 @@ export abstract class BaseHitbox2D{
     abstract collidingWith(other: Hitbox2D):boolean
     abstract overlapCollision(other:Hitbox2D):OverlapCollision2D
     abstract colliding_with_line(a:Vec2,b:Vec2):boolean
+    abstract overlapLine(a:Vec2,b:Vec2):IntersectionRes
     abstract pointInside(point:Vec2):boolean
     abstract center():Vec2
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
-    abstract toRect():RectHitbox2D
+    abstract to_rect():Rect
     abstract transform(position?:Vec2,scale?:number,orientation?:Orientation):Hitbox2D
     abstract clone():Hitbox2D
     abstract readonly position:Vec2
@@ -62,14 +66,21 @@ export class NullHitbox2D extends BaseHitbox2D{
     override colliding_with_line(_a:Vec2,_b:Vec2):boolean{
         return false
     }
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
+    }
     override center(): Vec2 {
         return this.position
     }
     override randomPoint(): Vec2 {
       return this.position
     }
-    override toRect():RectHitbox2D{
-        return new RectHitbox2D(this.position,v2.new(0,0))
+    override to_rect():Rect{
+        const pos=v2.duplicate(this.position)
+        return {
+            min:pos,
+            max:pos
+        }
     }
     override scale(_scale: number): void {}
     override is_null():boolean{
@@ -101,7 +112,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
     position:Vec2
     constructor(position:Vec2,radius:number){
         super()
-        this.position=position
+        this.position=v2.duplicate(position)
         this.radius=radius
     }
     override collidingWith(other: Hitbox2D): boolean {
@@ -117,13 +128,15 @@ export class CircleHitbox2D extends BaseHitbox2D{
         if(other){
             switch(other.type){
                 case HitboxType2D.circle:{
-                    const r = this.radius + other.radius;
-                    const toP1 = v2.sub(other.position, this.position);
-                    const distSqr = v2.squared(toP1);
+                    const r = this.radius + other.radius
+                    const toP1 = v2.sub(other.position, this.position)
+                    const distSqr = v2.squared(toP1)
+
+                    v2m.normalizeSafe(toP1)
 
                     return distSqr < r * r
                         ? {
-                            dir: v2.normalizeSafe(toP1),
+                            dir: toP1,
                             pen: r - Math.sqrt(distSqr)
                         }
                         : undefined
@@ -162,44 +175,74 @@ export class CircleHitbox2D extends BaseHitbox2D{
 
         return false
     }
+    override overlapLine(a_p:Vec2,b_p:Vec2): IntersectionRes {
+        let d = v2.sub(b_p, a_p)
+        const len = Math.max(v2.length(d), 0.000001)
+        d = v2.normalizeSafe(d)
+
+        const m = v2.sub(a_p, this.position)
+        const b = v2.dot(m, d)
+        const c = v2.dot(m, m) - this.radius * this.radius
+
+        if (c > 0 && b > 0) return null
+
+        const discSq = b * b - c
+        if (discSq < 0) return null
+
+        const disc = Math.sqrt(discSq)
+        const t = -b < disc
+            ? disc - b
+            : -b - disc;
+
+        if (t <= len) {
+            const point = v2.add(a_p, v2.scale(d, t))
+            return {
+                point,
+                normal: v2.normalize(v2.sub(point,this.position))
+            };
+        }
+
+        return null;
+    }
     override center(): Vec2 {
-      return this.position
+        return this.position
     }
     override scale(scale: number): void {
-      this.radius*=scale
+        this.radius*=scale
     }
     override randomPoint(): Vec2 {
         const angle = random.float(0,Math.PI*2)
         const length = random.float(0,this.radius)
         return v2.new(this.position.x+(Math.cos(angle)*length),this.position.y+(Math.sin(angle)*length))
     }
-    override toRect():RectHitbox2D{
-        return RectHitbox2D.positioned(this.position,v2.new(this.radius,this.radius))
+    override to_rect():Rect{
+        const pos=v2.duplicate(this.position)
+        const size=v2.new(this.radius*2,this.radius*2)
+        v2m.add(size,pos,size)
+        return {
+            min:pos,
+            max:size
+        }
     }
     override transform(position?:Vec2,scale?:number,orientation:Orientation=0):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D
         if(scale){
-            ret.scale(scale)
+            ret.radius*=scale
         }
         if(position){
-            const p=v2.mult(position,v2.sided(orientation))
-            ret.position.x=p.x
-            ret.position.y=p.y
+            v2m.mul(ret.position,position,v2_sides[orientation])
         }
         return ret
     }
     override translate(position: Vec2,orientation:Orientation=0): void {
-        const p=v2.mult(position,v2.sided(orientation))
-        this.position.x=p.x
-        this.position.y=p.y
+        v2m.mul(this.position,position,v2_sides[orientation])
     }
     override clone():CircleHitbox2D{
         return new CircleHitbox2D(v2.duplicate(this.position),this.radius)
     }
-    
     override clamp(min:Vec2,max:Vec2){
-        const mm=v2.new(this.radius,this.radius)
-        this.position=v2.clamp2(this.position,v2.add(min,mm),v2.sub(max,mm))
+        const vv=v2.new(this.radius,this.radius)
+        v2m.clamp2(this.position,v2.add(min,vv),v2.sub(max,vv))
     }
     override encode(stream:NetStream){
         stream.writePosition(this.position)
@@ -221,6 +264,11 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     static positioned(position:Vec2,size:Vec2):RectHitbox2D{
         return new RectHitbox2D(position,v2.add(position,size))
+    }
+    static centered(position:Vec2,size:Vec2):RectHitbox2D{
+        v2m.sub_component(position,size.x/2,size.y/2)
+        v2m.add(size,position,size)
+        return new RectHitbox2D(position,size)
     }
     get position():Vec2{
         return this.min
@@ -298,32 +346,93 @@ export class RectHitbox2D extends BaseHitbox2D{
 
         return tmin <= dist && tmax >= 0;
     }
+    override overlapLine(a_point:Vec2,b_point:Vec2): IntersectionRes {
+        let tmin = 0
+        let tmax = Number.MAX_VALUE
 
+        const eps = 1e-5
+        const r = a_point
+
+        let d = v2.sub(b_point, a_point)
+        const dist = v2.length(d)
+        d = v2.normalizeSafe(d)
+
+        let absDx = Math.abs(d.x)
+        let absDy = Math.abs(d.y)
+
+        if (absDx < eps) {
+            d.x = eps * 2
+            absDx = d.x
+        }
+        if (absDy < eps) {
+            d.y = eps * 2
+            absDy = d.y
+        }
+
+        if (absDx > eps) {
+            const tx1 = (this.min.x - r.x) / d.x
+            const tx2 = (this.max.x - r.x) / d.x
+            tmin = Numeric.max(tmin, Numeric.min(tx1, tx2))
+            tmax = Numeric.min(tmax, Numeric.max(tx1, tx2))
+            if (tmin > tmax) return null
+        }
+
+        if (absDy > eps) {
+            const ty1 = (this.min.y - r.y) / d.y
+            const ty2 = (this.max.y - r.y) / d.y
+
+            tmin = Numeric.max(tmin, Numeric.min(ty1, ty2))
+            tmax = Numeric.min(tmax, Numeric.max(ty1, ty2))
+
+            if (tmin > tmax) return null
+        }
+
+        if (tmin > dist) return null
+
+        const p = v2.add(a_point, v2.scale(d, tmin));
+
+        const c = v2.add(this.min, v2.scale(v2.sub(this.max, this.min), 0.5));
+        const p0 = v2.sub(p, c)
+        const d0 = v2.scale(v2.sub(this.min, this.max), 0.5);
+
+        const x = p0.x / Math.abs(d0.x) * 1.001;
+        const y = p0.y / Math.abs(d0.y) * 1.001;
+
+        return {
+            point: p,
+            normal: v2.normalizeSafe(
+                v2.new(Math.trunc(x), Math.trunc(y)),
+                v2.new(1, 0)
+            )
+        };
+    }
     override center(): Vec2 {
         return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))
     }
     override scale(scale: number): void {
-        const centerX = (this.min.x + this.max.x) / 2;
-        const centerY = (this.min.y + this.max.y) / 2;
-
-        this.min = v2.new((this.min.x - centerX) * scale + centerX, (this.min.y - centerY) * scale + centerY);
-        this.max = v2.new((this.max.x - centerX) * scale + centerX, (this.max.y - centerY) * scale + centerY);
+        const centerX = (this.min.x + this.max.x) / 2
+        const centerY = (this.min.y + this.max.y) / 2
+        v2m.set(this.min,(this.min.x - centerX) * scale + centerX, (this.min.y - centerY) * scale + centerY)
+        v2m.set(this.max,(this.max.x - centerX) * scale + centerX, (this.max.y - centerY) * scale + centerY)
     }
     override randomPoint(): Vec2 {
         return v2.random2(this.min,this.max)
     }
-    override toRect():RectHitbox2D{
-        return this
+    override to_rect():Rect{
+        return {
+            min:v2.duplicate(this.min),
+            max:v2.duplicate(this.max)
+        }
     }
     override transform(
         position: Vec2 = v2.new(0, 0),
-        scale: number = 1,
+        scale?: number,
         orientation: Orientation = 0
     ): RectHitbox2D {
-        const size = v2.sub(this.max, this.min);
-        const scaledSize = v2.scale(size, scale);
+        const size = v2.sub(this.max, this.min)
+        const scaledSize = v2.scale(size, scale??1)
 
-        let finalSize: Vec2;
+        let finalSize: Vec2
         switch (orientation) {
             case 0:
             case 2:
@@ -338,16 +447,16 @@ export class RectHitbox2D extends BaseHitbox2D{
                 break;
         }
 
-        const min = v2.duplicate(position);
+        const min = position
         const max = v2.add(position, finalSize);
 
         return new RectHitbox2D(min, max);
     }
 
     override translate(position: Vec2, orientation: Orientation = 0): void {
-        const size = v2.sub(this.max, this.min);
+        const size = v2.sub(this.max, this.min)
 
-        let finalSize: Vec2;
+        let finalSize: Vec2
         switch (orientation) {
             case 0:
             case 2:
@@ -362,8 +471,8 @@ export class RectHitbox2D extends BaseHitbox2D{
                 break;
         }
 
-        this.min = v2.duplicate(position);
-        this.max = v2.add(position, finalSize);
+        v2m.set(this.min,position.x,position.y)
+        v2m.add(this.max,position, finalSize) 
     }
     override clone():RectHitbox2D{
         return new RectHitbox2D(this.min,this.max)
@@ -405,25 +514,30 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override colliding_with_line(a:Vec2,b:Vec2):boolean{
         return this.hitboxes.some(hitbox => hitbox.colliding_with_line(a,b));
     }
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
+    }
 
     override center(): Vec2 {
-        return this.toRect().center();
+        return this.to_rect().min;
     }
     override randomPoint(): Vec2 {
         return this.hitboxes[random.int(0,this.hitboxes.length)].randomPoint()
     }
-    override toRect():RectHitbox2D{
+    override to_rect():Rect{
         const min = v2.new(Number.MAX_VALUE, Number.MAX_VALUE);
-        const max = v2.new(0, 0);
+        const max = v2.new(0, 0)
         for (const hitbox of this.hitboxes) {
-            const toRect = hitbox.toRect();
-            min.x = Numeric.min(min.x, toRect.min.x);
-            min.y = Numeric.min(min.y, toRect.min.y);
-            max.x = Numeric.max(max.x, toRect.max.x);
-            max.y = Numeric.max(max.y, toRect.max.y);
+            const toRect = hitbox.to_rect()
+            min.x = Numeric.min(min.x, toRect.min.x)
+            min.y = Numeric.min(min.y, toRect.min.y)
+            max.x = Numeric.max(max.x, toRect.max.x)
+            max.y = Numeric.max(max.y, toRect.max.y)
         }
-
-        return new RectHitbox2D(min, max);
+        return {
+            min:min,
+            max:max
+        }
     }
     override scale(scale: number): void {
         for(const hitbox of this.hitboxes){
@@ -433,7 +547,7 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override is_null():boolean{
         return false
     }
-    override transform(position:Vec2=v2.new(0,0),scale?:number,orientation?:Orientation): HitboxGroup2D {
+    override transform(position:Vec2=v2.new(0,0),scale:number=1,orientation?:Orientation): HitboxGroup2D {
         this.position = position;
 
         return new HitboxGroup2D(
@@ -465,31 +579,26 @@ export function jaggedRectangle(
     variation: number,
     random: SeededRandom
 ): Vec2[] {
-    const topLeft = v2.duplicate(min);
-    const topRight = v2.new(max.x, min.y);
-    const bottomRight = v2.duplicate(max);
-    const bottomLeft = v2.new(min.x, max.y);
-
     const points: Vec2[] = [];
+    const v = variation / 2;
+    const getVar = () => random.float(-v, v)
 
-    variation = variation / 2;
-    const getVariation = (): number => random.float(-variation, variation);
-
-    for (let x = topLeft.x + spacing; x < topRight.x; x += spacing) {
-        points.push(v2.new(x, topLeft.y + getVariation()));
+    for (let x = min.x; x <= max.x; x += spacing) {
+        points.push(v2.new(x, min.y + getVar()))
     }
-    for (let y = topRight.y + spacing; y < bottomRight.y; y += spacing) {
-        points.push(v2.new(topRight.x + getVariation(), y));
+    for (let y = min.y; y <= max.y; y += spacing) {
+        points.push(v2.new(max.x + getVar(), y))
     }
-    for (let x = bottomRight.x - spacing; x > bottomLeft.x; x -= spacing) {
-        points.push(v2.new(x, bottomRight.y + getVariation()));
+    for (let x = max.x; x >= min.x; x -= spacing) {
+        points.push(v2.new(x, max.y + getVar()))
     }
-    for (let y = bottomLeft.y - spacing; y > topLeft.y; y -= spacing) {
-        points.push(v2.new(bottomLeft.x + getVariation(), y));
+    for (let y = max.y; y >= min.y; y -= spacing) {
+        points.push(v2.new(min.x + getVar(), y))
     }
 
     return points;
 }
+
 export class PolygonHitbox2D extends BaseHitbox2D {
     override readonly type = HitboxType2D.polygon;
     points: Vec2[];
@@ -566,23 +675,16 @@ export class PolygonHitbox2D extends BaseHitbox2D {
     }
 
     override pointInside(point: Vec2): boolean {
+        const { x, y } = point;
         let inside = false;
-        const n = this.points.length;
+        const count = this.points.length;
+        for (let i = 0, j = count - 1; i < count; j = i++) {
+            const { x: xi, y: yi } = this.points[i]
+            const { x: xj, y: yj } = this.points[j]
 
-        for (let i = 0, j = n - 1; i < n; j = i++) {
-            const pi = this.points[i];
-            const pj = this.points[j];
-
-            // Verifica se o ponto está exatamente sobre a aresta
-            if (Collision.point_on_segment(point, pi, pj)) {
-                return true; // Considera como "dentro"
+            if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) {
+                inside = !inside;
             }
-
-            // Ray casting: verifica se a linha horizontal do ponto cruza a aresta
-            const intersects = (pi.y > point.y) !== (pj.y > point.y) &&
-                point.x < ((pj.x - pi.x) * (point.y - pi.y)) / (pj.y - pi.y) + pi.x;
-
-            if (intersects) inside = !inside;
         }
 
         return inside;
@@ -594,6 +696,9 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             if (Collision.line_colliding_with_line(a, b, p1, p2)) return true;
         }
         return false;
+    }
+    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+        return undefined
     }
 
     override center(): Vec2 {
@@ -608,24 +713,27 @@ export class PolygonHitbox2D extends BaseHitbox2D {
     }
 
     override randomPoint(): Vec2 {
-        const rect = this.toRect();
+        const rect = this.to_rect();
         let p: Vec2;
         do {
-            p = rect.randomPoint();
-        } while (!this.pointInside(p));
+            p = v2.random2(rect.min,rect.max)
+        } while (!this.pointInside(p))
         return p;
     }
 
-    override toRect(): RectHitbox2D {
+    override to_rect(): Rect {
         const min = v2.new(Number.MAX_VALUE, Number.MAX_VALUE);
         const max = v2.new(-Number.MAX_VALUE, -Number.MAX_VALUE);
         for (const p of this.points) {
-            min.x = Math.min(min.x, p.x);
-            min.y = Math.min(min.y, p.y);
-            max.x = Math.max(max.x, p.x);
-            max.y = Math.max(max.y, p.y);
+            min.x = Math.min(min.x, p.x)
+            min.y = Math.min(min.y, p.y)
+            max.x = Math.max(max.x, p.x)
+            max.y = Math.max(max.y, p.y)
         }
-        return new RectHitbox2D(min, max);
+        return {
+            min:min,
+            max:max
+        }
     }
 
     override transform(position: Vec2 = v2.new(0,0), scale = 1, orientation: Orientation = 0): PolygonHitbox2D {
@@ -651,26 +759,26 @@ export class PolygonHitbox2D extends BaseHitbox2D {
     }
 
     override clamp(min: Vec2, max: Vec2): void {
-        const rect = this.toRect();
-        const move = v2.clamp2(rect.position, min, max);
+        const rect = this.to_rect();
+        const move = v2.clamp2(rect.min, min, max);
         this.translate(move);
     }
 
     override encode(stream: NetStream): void {
-        stream.writeUint16(this.points.length);
+        stream.writeUint24(this.points.length)
         for (const p of this.points) {
-            stream.writePosition(p);
+            stream.writePosition(p)
         }
-        stream.writePosition(this.position);
+        stream.writePosition(this.position)
     }
 
     static decode(stream: NetStream): PolygonHitbox2D {
-        const len = stream.readUint16();
+        const len = stream.readUint24();
         const pts: Vec2[] = [];
         for (let i = 0; i < len; i++) {
-            pts.push(stream.readPosition());
+            pts.push(stream.readPosition())
         }
-        const center = stream.readPosition();
+        const center = stream.readPosition()
         return new PolygonHitbox2D(pts, center);
     }
 

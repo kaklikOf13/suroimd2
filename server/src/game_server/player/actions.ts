@@ -3,7 +3,6 @@ import { type Player } from "../gameObjects/player.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type ConsumibleItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
-import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 
 export class ReloadAction extends Action<Player>{
     delay:number
@@ -41,8 +40,8 @@ export class ReloadAction extends Action<Player>{
         if(consumed+this.item.ammo>this.item.def.reload!.capacity){
             consumed=this.item.def.reload!.capacity-this.item.ammo
         }
-        if(consumed>user.inventory.ammos[def.ammoType]){
-            consumed=user.inventory.ammos[def.ammoType]
+        if(consumed>user.inventory.oitems[def.ammoType]){
+            consumed=user.inventory.oitems[def.ammoType]
         }
         this.item.ammo+=user.inventory.consume_ammo(def.ammoType,consumed)
         user.privateDirtys.current_weapon=true

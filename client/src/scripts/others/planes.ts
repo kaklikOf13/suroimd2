@@ -1,9 +1,9 @@
-import { PlaneData } from "common/scripts/packets/update_packet.ts";
-import { Container2D, Sprite2D } from "../engine/container.ts";
+import { Container2D, Sprite2D } from "../engine/container_2d.ts";
 import { type Game } from "./game.ts";
 import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { SoundInstance } from "../engine/sounds.ts";
+import { PlaneData } from "common/scripts/packets/general_update.ts";
 
 export class Plane{
     container:Container2D=new Container2D()
@@ -60,7 +60,7 @@ export class Plane{
         }
         if(this.initial){
             this.id=data.id
-            this.container.position=this.dest_pos
+            this.container.position=this.dest_pos!
             this.initial=false
         }
     }

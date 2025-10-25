@@ -13,7 +13,6 @@ function float32ToUint32(value: number): number {
     return intView[0]
 }
 
-
 const prime1 = BigInt("2654435761")
 const prime2 = BigInt("2246822519")
 
@@ -25,6 +24,145 @@ export enum RotationMode{
 
 export type HashVec2=bigint
 
+export class Vec2M implements Vec2{
+    on_set:()=>void
+    _x:number
+    _y:number
+
+    get x():number{return this._x}
+    set x(val:number){this._x=val;this.on_set()}
+    get y():number{return this._y}
+    set y(val:number){this._y=val;this.on_set()}
+
+    set(x:number,y:number){
+        this._x=x
+        this._y=y
+        this.on_set()
+    }
+
+    constructor(x:number,y:number,on_set:()=>void=()=>{}){
+        this._x=x
+        this._y=y
+        this.on_set=on_set
+    }
+}
+export class Vec4M{
+    on_set:()=>void
+    _x:number=0
+    _y:number=0
+    _z:number=0
+    _w:number=1
+
+    get r():number{return this._x}
+    set r(val:number){this._x=val;this.on_set()}
+    get g():number{return this._y}
+    set g(val:number){this._y=val;this.on_set()}
+    get b():number{return this._z}
+    set b(val:number){this._z=val;this.on_set()}
+    get a():number{return this._w}
+    set a(val:number){this._w=val;this.on_set()}
+
+    get x():number{return this._x}
+    set x(val:number){this._x=val;this.on_set()}
+    get y():number{return this._y}
+    set y(val:number){this._y=val;this.on_set()}
+    get z():number{return this._z}
+    set z(val:number){this._z=val;this.on_set()}
+    get w():number{return this._w}
+    set w(val:number){this._w=val;this.on_set()}
+    set(x:number,y:number,z:number,w:number){
+        this._x=x
+        this._y=y
+        this._z=z
+        this._w=w
+        this.on_set()
+    }
+
+    constructor(x:number,y:number,z:number,w:number,on_set:()=>void=()=>{}){
+        this._x=x
+        this._y=y
+        this._z=z
+        this._w=w
+        this.on_set=on_set
+    }
+}
+export const v2m=Object.freeze({
+    single(out:Vec2,val:number){out.x=val;out.y=val;return out},
+    zero(out:Vec2){out.x=0;out.y=0},
+    add(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x+b.x; out.y = a.y+b.y; },
+    sub(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x-b.x; out.y = a.y-b.y; },
+    mul(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x*b.x; out.y = a.y*b.y; },
+    div(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x/b.x; out.y = a.y/b.y; },
+    scale(out:Vec2,a:Vec2, b:number){ out.x = a.x*b; out.y = a.y*b; },
+    dscale(out:Vec2,a:Vec2, b:number){ out.x = a.x/b; out.y = a.y/b; },
+
+    set(out:Vec2,x:number,y:number){out.x=x;out.y=y},
+    add_component(out:Vec2,x:number,y:number){out.x+=x;out.y+=y},
+    sub_component(out:Vec2,x:number,y:number){out.x-=x;out.y-=y},
+    mul_component(out:Vec2,x:number,y:number){out.x*=x;out.y*=y},
+    div_component(out:Vec2,x:number,y:number){out.x/=x;out.y/=y},
+
+    scale_component(out:Vec2,x:number){out.x*=x;out.y*=x},
+
+    min1(v:Vec2,min:number){v.x=Math.max(v.x,min);v.y=Math.max(v.y,min)},
+    min2(x:Vec2,y:Vec2){x.x=Math.max(x.x,y.x);x.y=Math.max(x.y,y.y)},
+    max1(v:Vec2,max:number){v.x=Math.min(v.x,max);v.y=Math.min(v.y,max)},
+    max2(x:Vec2,y:Vec2){x.x=Math.min(x.x,y.x);x.y=Math.min(x.y,y.y)},
+
+    clamp1(v:Vec2,min:number,max:number){v.x=Math.max(Math.min(v.x,max),min);v.y=Math.max(Math.min(v.y,max),min)},
+    clamp2(v:Vec2,min:Vec2,max:Vec2){v.x=Math.max(Math.min(v.x,max.x),min.x);v.y=Math.max(Math.min(v.y,max.y),min.y)},
+    normalizeSafe(v:Vec2,fallback?:Vec2) {
+        const eps = 0.000001
+        const len = v2.length(v)
+        if(len>eps){
+            v.x/=len
+            v.y/=len
+        }else{
+            v.x=fallback?.x??1
+            v.y=fallback?.x??0
+        }
+    },
+    lerp(a: Vec2, b: Vec2,interpolation: number) {a.x+=(b.x-a.x)*interpolation;a.y+=(b.y-a.y)*interpolation},
+    abs(a: Vec2){a.x=Math.abs(a.x);a.y=Math.abs(a.y)},
+    floor(a: Vec2) {a.x=Math.floor(a.x);a.y=Math.floor(a.y)},
+    ceil(a: Vec2) {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y)},
+
+    rotate_RadAngle(vec: Vec2, angle: RadAngle) {
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        const x = vec.x
+        const y = vec.y
+        vec.x = x * cos - y * sin
+        vec.y = x * sin + y * cos
+    },
+    rotate_DegAngle(vec:Vec2,angle:DegAngle) {
+        const a=Angle.deg2rad(angle)
+        const cos = Math.cos(a)
+        const sin = Math.sin(a)
+        const x = vec.x
+        const y = vec.y
+        vec.x=x * cos - y * sin
+        vec.y=x * sin + y * cos
+    },
+})
+export const v2_sides:Array<Vec2>=[
+    {
+        x:1,
+        y:1,
+    },
+    {
+        x:-1,
+        y:1,
+    },
+    {
+        x:-1,
+        y:-1,
+    },
+    {
+        x:1,
+        y:-1,
+    }
+]
 export const v2 = Object.freeze({
     /**
      * Creates a new `Vec2`
@@ -422,13 +560,338 @@ export const v2 = Object.freeze({
         return `{${Vec2.x},${Vec2.y}}`
     },
 })
+export interface Vec3{
+    x:number
+    y:number
+    z:number
+}
+export const v3 = Object.freeze({
+    /**
+     * Creates a new `Vec3`
+     * @param x The horizontal (x-axis) coordinate
+     * @param y The vertical (y-axis) coordinate
+     * @param z The depth (z-axis) coordinate
+     * @returns A new `Vec2` With X and Y Cords
+     */
+    new(x:number, y:number,z:number): Vec3 {
+        return {x, y,z}
+    },
+    /**
+     * Return Random Vec2
+     */
+    random(min:number, max:number):Vec3 {
+        return {x:random.float(min,max),y:random.float(min,max),z:random.float(min,max)}
+    },
+    random2(min:Vec3, max:Vec3):Vec3 {
+        return {x:random.float(min.x,max.x),y:random.float(min.y,max.y),z:random.float(min.z,max.z)}
+    },
+    
+    /**
+     * Return Random Vec2
+     */
+    random_s(min:number, max:number,random:SeededRandom):Vec3 {
+        return {x:random.float(min,max),y:random.float(min,max),z:random.float(min,max)}
+    },
+    random2_s(min:Vec3, max:Vec3,random:SeededRandom):Vec3 {
+        return {x:random.float(min.x,max.x),y:random.float(min.y,max.y),z:random.float(min.z,max.z)}
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns A new `Vec3` With `x`+`y`
+     */
+    add(x:Vec3, y:Vec3):Vec3 {
+        return this.new(x.x+y.x,x.y+y.y,x.z+y.z)
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns A new `Vec3` With `x`-`y`
+     */
+    sub(x:Vec3, y:Vec3):Vec3 {
+        return this.new(x.x-y.x,x.y-y.y,x.z-y.z)
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns A new `Vec3` With `x`*`y`
+     */
+    mult(x:Vec3, y:Vec3):Vec3 {
+        return this.new(x.x*y.x,x.y*y.y,x.z*y.z)
+    },
+    /**
+     * @param x `Vec21`
+     * @param y `Vec22`
+     * @returns A new `Vec2` With `x`/`y`
+     */
+    div(x:Vec3, y:Vec3):Vec3 {
+        return this.new(x.x/y.x,x.y/y.y,x.z/y.z)
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns `boolean` of operation `x`>`y`
+     */
+    greater(x:Vec3, y:Vec3):boolean {
+        return x.x>y.x&&x.y>y.y&&x.z>y.z
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns `boolean` of operation `x`<`y`
+     */
+    less(x:Vec3, y:Vec3):boolean {
+        return x.x<y.x&&x.y<y.y&&x.z<y.z
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns `boolean` of operation `x`==`y`
+     */
+    is(x:Vec3, y:Vec3):boolean {
+        return x.x==y.x&&x.y==y.y&&x.z==y.z
+    },
+    /**
+     * @param v `Vec3`
+     * @param scale `Scale`
+     * @returns A new `Vec3` With `v`*`scale`
+     */
+    scale(v:Vec3, scale:number):Vec3 {
+        return this.new(v.x*scale,v.y*scale,v.z*scale)
+    },
+    /**
+     * @param v `Vec3`
+     * @param dscale `DeScale`
+     * @returns A new `Vec3` With `v`/`dscale`
+     */
+    dscale(v:Vec3, dscale:number):Vec3 {
+        return this.new(v.x/dscale,v.y/dscale,v.z/dscale)
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @param min `Limit`
+     * @returns A new `Vec3` With Limit down 
+     */
+    min1(v:Vec3,min:number):Vec3{
+        return this.new(Math.max(v.x,min),Math.max(v.y,min),Math.max(v.z,min))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @param min `Limit`
+     * @returns A new `Vec3` With Limit down 
+     */
+    min3(v:Vec3,min:Vec3):Vec3{
+        return this.new(Math.max(v.x,min.x),Math.max(v.y,min.y),Math.max(v.z,min.z))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @param max `Limit`
+     * @returns A new `Vec3` With Limit down 
+     */
+    max1(v:Vec3,max:number):Vec3{
+        return this.new(Math.min(v.x,max),Math.min(v.y,max),Math.min(v.z,max))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @param max `Limit`
+     * @returns A new `Vec3` With Limit down 
+     */
+    max3(v:Vec3,max:Vec3):Vec3{
+        return this.new(Math.min(v.x,max.x),Math.min(v.y,max.y),Math.min(v.z,max.z))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @param min `Min Limit`
+     * @param max `Max Limit`
+     * @returns A new `Vec3` With Limit
+     */
+    clamp1(v:Vec3,min:number,max:number):Vec3{
+        return this.new(Math.max(Math.min(v.x,max),min),Math.max(Math.min(v.y,max),min),Math.max(Math.min(v.z,max),min))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @param min `Min Limit`
+     * @param max `Max Limit`
+     * @returns A new `Vec3` With Limit
+     */
+    clamp3(v:Vec3,min:Vec3,max:Vec3):Vec3{
+        return this.new(Math.max(Math.min(v.x,max.x),min.x),Math.max(Math.min(v.y,max.y),min.y),Math.max(Math.min(v.z,max.z),min.y))
+    },
+    /**
+     * 
+     * @param vec The Vector
+     * @param decimalPlaces `number of max decimals`
+     * @returns max decimal `Vec3`
+     */
+    maxDecimal(vec:Vec3,decimalPlaces:number=3):Vec3{
+        const factor = Math.pow(10, decimalPlaces)
+        return this.new(Math.round(vec.x * factor) / factor,Math.round(vec.y * factor) / factor,Math.round(vec.z * factor) / factor)
+    },
+    /**
+     * 
+     * @param vec `Vec3`
+     * @returns Rounded`Vec3`
+     */
+    round(vec:Vec3):Vec3{
+        return this.new(Math.round(vec.x),Math.round(vec.y),Math.round(vec.z))
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns A new `Vec3` With distance of `Vec3a` and `Vec3b`
+     */
+    distanceSquared(x:Vec3,y:Vec3):number{
+        const dx=x.x-y.x
+        const dy=x.y-y.y
+        const dz=x.z-y.z
+        return dx*dx+dy*dy+dz*dz
+    },
+    /**
+     * @param x `Vec3a`
+     * @param y `Vec3b`
+     * @returns A new `Vec3` With distance squared of `Vec3a` and `Vec3b`
+     */
+    distance(x:Vec3,y:Vec3):number{
+        const dx=x.x-y.x
+        const dy=x.y-y.y
+        const dz=x.z-y.z
+        return Math.sqrt(dx*dx+dy*dy+dz*dz)
+    },
+    /**
+     * @param Vec `Vec3`
+     * @returns A new `Vec3` With squared of `Vec`
+     */
+    squared(Vec:Vec3):number{
+        return Vec.x*Vec.x+Vec.y*Vec.y+Vec.z*Vec.z
+    },
+    dot(x: Vec3, y: Vec3): number {
+        return x.x * y.x + x.y * y.y + x.z * y.z;
+    },
+    /**
+     * @param v The `Vec3` used in lenght
+     * @returns 
+     */
+    length(v: Vec3): number {
+        return Math.sqrt(this.squared(v))
+    },
+    
+    /**
+     * 
+     * @param v `Vec3`
+     * @returns A new Absolute `Vec3`
+     */
+    absolute(v:Vec3):Vec3{
+        return this.new(Math.abs(v.x),Math.abs(v.y),Math.abs(v.z))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @returns A new Interger `Vec3`
+     */
+    floor(v:Vec3):Vec3{
+        return this.new(Math.floor(v.x),Math.floor(v.y),Math.floor(v.z))
+    },
+    /**
+     * 
+     * @param v `Vec3`
+     * @returns A new Ceil `Vec3`
+     */
+    ceil(v:Vec3):Vec3{
+        return this.new(Math.ceil(v.x),Math.ceil(v.y),Math.ceil(v.z))
+    },
+    neg(vec:Vec3):Vec3{
+        return this.new(-vec.x,-vec.y,-vec.z)
+    },
+    /**
+     * 
+     * @param current The current `Vec2` Position
+     * @param end The Final `Vec2` Position
+     * @param interpolation 
+     * @returns 
+     */
+    lerp(current: Vec3, end: Vec3,interpolation: number): Vec3 {
+        return this.add(this.scale(current,1-interpolation), this.scale(end,interpolation))
+    },
+    /**
+     * @param v The `Vec3` to normalize
+     * @param fallback A `Vec3` to clone and return in case the normalization operation fails
+     * @returns A `Vec3` whose length is 1 and is parallel to the original v
+     */
+    normalizeSafe(v:Vec3,fallback?:Vec3):Vec3 {
+        const eps = 0.000001
+        const len = this.length(v)
+        fallback??=this.new(1,0,0)
+        return len > eps
+            ? {
+                x:v.x/len,
+                y:v.y/len,
+                z:v.z/len,
+            }:this.duplicate(fallback)
+    },
+    /**
+     * @param v The `Vec3` to normalize
+     * @returns A `Vec3` whose length is 1 and is parallel to the original v
+     */
+    normalize(v:Vec3): Vec3 {
+        const eps = 0.000001
+        const len = v2.length(v)
+        return eps
+            ? {
+                x:v.x/len,
+                y:v.y/len,
+                z:v.z/len,
+            }: this.duplicate(v)
+    },
+    /**
+     * 
+     * @param v The `Vec3` To Duplication
+     * @returns The Duplicated Vec3
+     */
+    duplicate(v:Vec3):Vec3{
+        return this.new(v.x,v.y,v.z)
+    },
+    toString(v:Vec3):string{
+        return `{${v.x},${v.y},${v.z}}`
+    },
+})
 export const NullVec2:Vec2=v2.new(0,0)
+export const OneVec2:Vec2=v2.new(1,1)
 export const Angle=Object.freeze({
     deg2rad(angle:DegAngle):RadAngle{
         return angle* Math.PI / 180
     },
     rad2deg(angle:RadAngle):DegAngle {
         return angle * 180 / Math.PI
+    },
+    side_rad(side:Orientation){
+        switch(side){
+            case 0:
+                return 0
+            case 1:
+                return 3.141592/2
+            case 2:
+                return 3.141592
+            case 3:
+                return -(3.141592/2)
+        }
+    },
+    side_deg(side:Orientation){
+        switch(side){
+            case 0:
+                return 0
+            case 1:
+                return 90
+            case 2:
+                return 180
+            case 3:
+                return -90
+        }
     },
     random_rotation_modded(mode:RotationMode):RadAngle{
         switch(mode){
@@ -655,15 +1118,8 @@ export const Collision=Object.freeze({
         return ccw(p1, q1, q2) !== ccw(p2, q1, q2) &&
             ccw(p1, p2, q1) !== ccw(p1, p2, q2);
     },
-    point_on_segment(p: Vec2, a: Vec2, b: Vec2, epsilon = 1e-6): boolean {
-        const cross = (b.y - a.y) * (p.x - a.x) - (b.x - a.x) * (p.y - a.y);
-        if (Math.abs(cross) > epsilon) return false;
-
-        const dot = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
-        if (dot < 0) return false;
-
-        const lenSq = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
-        return dot <= lenSq;
-    }
-
 })
+export interface Rect{
+    min:Vec2
+    max:Vec2
+}

@@ -6,7 +6,7 @@ import { ConfigType } from "common/scripts/config/config.ts";
 const con=require("../../config.json") as ConfigType
 const config: UserConfig = {
     server: {
-        port: 3000,
+        port: con.vite.port,
         strictPort: true,
         host: "0.0.0.0",
         proxy: {
@@ -16,6 +16,7 @@ const config: UserConfig = {
                 rewrite: (path) => path.replace(/^\/api/, ""),
             },
         },
+        allowedHosts:con.vite.allowed_hosts
     },
     preview: {
         port: 3000,

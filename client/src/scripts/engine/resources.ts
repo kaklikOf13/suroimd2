@@ -159,6 +159,7 @@ export class ResourcesManager{
             ret.source.addEventListener("load",()=>{
                 const sp=ret as Frame
                 sp.texture=loadTexture(this.gl,sp.source)!
+                ret.frame_size=v2.new(sp.source.width,sp.source.height)
                 resolve(ret)
             });
             ret.source.src=src

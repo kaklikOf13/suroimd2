@@ -1,7 +1,11 @@
+import { GameObjectsDefs, type GameObjectDef } from "../definitions/alldefs.ts";
+import { ObstacleDef, ObstacleDoorStatus, Obstacles } from "../definitions/objects/obstacles.ts";
+import { Orientation } from "../engine/geometry.ts";
 import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
 export enum PlayerAnimationType{
     Reloading,
     Consuming,
+    Melee
 }
 export type PlayerAnimation={
 }&({
@@ -10,6 +14,8 @@ export type PlayerAnimation={
 }|{
     type:PlayerAnimationType.Consuming
     item:number
+}|{
+    type:PlayerAnimationType.Melee
 })
 export interface PlayerData extends EncodedData{
     full?:{
@@ -23,9 +29,11 @@ export interface PlayerData extends EncodedData{
     position:Vec2
     rotation:number
     dead:boolean
+    shield:boolean
     left_handed:boolean
     driving:boolean
     attacking:boolean
+    emote?:GameObjectDef
     parachute?:{
         value:number
     }
@@ -34,6 +42,7 @@ export interface PlayerData extends EncodedData{
 export interface LootData extends EncodedData{
     full?:{
         item:number
+        count:number
     }
     position:Vec2
 }
@@ -42,6 +51,7 @@ export interface BulletData extends EncodedData{
     full?:{
         speed:number
         angle:number
+        critical:boolean
 
         tracerWidth:number
         tracerHeight:number
@@ -51,6 +61,7 @@ export interface BulletData extends EncodedData{
         projHeight:number
         projColor:number
         projIMG:number
+        projParticle:number
 
         radius:number
         initialPos:Vec2
@@ -69,10 +80,14 @@ export interface ExplosionData extends EncodedData{
 export interface ObstacleData extends EncodedData{
     full?:{
         position:Vec2
-        definition:number
-        rotation:number
+        definition:ObstacleDef
+        rotation:{
+            side:Orientation
+            rotation:number
+        }
         variation:number
     }
+    door?:ObstacleDoorStatus
     dead:boolean
     health:number
     scale:number
@@ -88,6 +103,7 @@ export interface ProjectileData extends EncodedData{
 export interface PlayerBodyData extends EncodedData{
     full?:{
         name:string
+        badge?:number
         gore_type:number
         gore_id:number
     }
@@ -120,19 +136,24 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 rotation:stream.readRad(),
                 full:undefined,
                 dead:false,
+                shield:false,
                 left_handed:false,
                 driving:false,
                 attacking:false
             }
             const bg1=stream.readBooleanGroup()
             ret.dead=bg1[0]
-            ret.left_handed=bg1[1]
-            ret.driving=bg1[2]
-            ret.attacking=bg1[3]
-            if(bg1[4]){
+            ret.shield=bg1[1]
+            ret.left_handed=bg1[2]
+            ret.driving=bg1[3]
+            ret.attacking=bg1[4]
+            if(bg1[5]){
                 ret.parachute={
                     value:stream.readFloat(0,1,1)
                 }
+            }
+            if(bg1[6]){
+                ret.emote=GameObjectsDefs.valueNumber[stream.readUint16()]
             }
             if(full){
                 const bg2=stream.readBooleanGroup()
@@ -158,6 +179,11 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                                 item:stream.readUint16()
                             }
                             break
+                        case PlayerAnimationType.Melee:
+                            ret.full.animation={
+                                type:tp,
+                            }
+                            break
                     }
                 }
             }
@@ -170,13 +196,18 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             .writeRad(data.rotation)
             .writeBooleanGroup(
                 data.dead,
+                data.shield,
                 data.left_handed,
                 data.driving,
                 data.attacking,
-                data.parachute!==undefined
+                data.parachute!==undefined,
+                data.emote!==undefined
             )
             if(data.parachute){
                 stream.writeFloat(data.parachute.value,0,1,1)
+            }
+            if(data.emote){
+                stream.writeUint16(GameObjectsDefs.keysString[data.emote.idString])
             }
             if(full){
                 stream.writeBooleanGroup(data.full?.animation!==undefined)
@@ -194,6 +225,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                         case PlayerAnimationType.Consuming:
                             stream.writeUint16(data.full!.animation.item)
                             break
+                        case PlayerAnimationType.Melee:
+                            break
                     }
                 }
             }
@@ -207,7 +240,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             }
             if(full){
                 ret.full={
-                    item:stream.readUint16()
+                    item:stream.readUint16(),
+                    count:stream.readUint8()
                 }
             }
             return ret
@@ -218,6 +252,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writePosition(data.position)
             if(full){
                 stream.writeUint16(data.full!.item)
+                stream.writeUint8(data.full!.count)
             }
         }
     },
@@ -240,7 +275,9 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                     projWidth:stream.readFloat(0,6,2),
                     projHeight:stream.readFloat(0,6,2),
                     projColor:stream.readUint32(),
-                    projIMG:stream.readUint8()
+                    projIMG:stream.readUint8(),
+                    projParticle:stream.readUint8(),
+                    critical:stream.readBooleanGroup()[0]
                 }
             }
             return ret
@@ -263,6 +300,8 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 .writeFloat(data.full!.projHeight,0,6,2)
                 .writeUint32(data.full!.projColor)
                 .writeUint8(data.full!.projIMG)
+                .writeUint8(data.full!.projParticle)
+                .writeBooleanGroup(data.full!.critical)
             }
         }
     },
@@ -270,18 +309,28 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         //19 Full Alloc
         decode:(full:boolean,stream:NetStream)=>{
             const bools=stream.readBooleanGroup()//1
+            
             const ret:ObstacleData={
                 scale:stream.readFloat(0,3,3),//3
                 dead:bools[0],
                 health:stream.readFloat(0,1,1),
-                full:undefined
+                full:undefined,
+            }
+            if(bools[1]){
+                ret.door={
+                    locked:stream.readBooleanGroup()[0],
+                    open:stream.readInt8() as -1|0|1
+                }
             }
             if(full){
                 ret.full={
-                    definition:stream.readUint24(),//3
-                    position:stream.readPosition(),//8
-                    rotation:stream.readRad(),//3
-                    variation:stream.readUint8()+1,//1
+                    definition:Obstacles.getFromNumber(stream.readUint24()),
+                    position:stream.readPosition(),
+                    rotation:{
+                        rotation:stream.readFloat(-3.141592,3.141592,3),
+                        side:stream.readUint8() as Orientation,
+                    },//3
+                    variation:stream.readUint8()+1,
                 }
             }
             return ret
@@ -289,13 +338,18 @@ export const ObjectsE:Record<string,ObjectEncoder>={
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         encode(full:boolean,data:ObstacleData,stream:NetStream){
-            stream.writeBooleanGroup(data.dead)
+            stream.writeBooleanGroup(data.dead,data.door!==undefined)
             .writeFloat(data.scale,0,3,3)
             .writeFloat(data.health,0,1,1)
+            if(data.door){
+                stream.writeBooleanGroup(data.door.locked)
+                .writeInt8(data.door.open)
+            }
             if(full){
-                stream.writeUint24(data.full!.definition)
+                stream.writeUint24(data.full!.definition.idNumber!)
                 .writePosition(data.full!.position)
-                .writeRad(data.full!.rotation)
+                .writeFloat(data.full!.rotation.rotation,-3.141592,3.141592,3)
+                .writeUint8(data.full!.rotation.side)
                 .writeUint8(data.full!.variation-1)
             }
         }
@@ -352,8 +406,10 @@ export const ObjectsE:Record<string,ObjectEncoder>={
                 moving:stream.readBooleanGroup()[0]
             }
             if(full){
+                const b=stream.readUint16()
                 ret.full={
                     name:stream.readStringSized(30),
+                    badge:b===0?undefined:b-1,
                     gore_type:stream.readUint8(),
                     gore_id:stream.readUint8(),
                 }
@@ -366,6 +422,7 @@ export const ObjectsE:Record<string,ObjectEncoder>={
             stream.writePosition(data.position)
             .writeBooleanGroup(data.moving)
             if(full){
+                stream.writeUint16((data.full!.badge??-1)+1)
                 stream.writeStringSized(30,data.full!.name)
                 stream.writeUint8(data.full!.gore_type)
                 stream.writeUint8(data.full!.gore_id)

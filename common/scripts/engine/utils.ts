@@ -96,11 +96,14 @@ export class Clock {
     public callback: (dt:number)=>void;
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
+    running:boolean=false
+
     constructor(targetFPS: number, timeScale: number, callback: (dt:number)=>void) {
         this.frameDuration = 1000 / targetFPS
         this.lastFrameTime = Date.now()
         this.timeScale = timeScale
         this.callback = callback
+        this.tick = this.tick.bind(this)
     }
 
     private interval:number=0
@@ -117,20 +120,47 @@ export class Clock {
     clear_interval(id:number){
         if(this.intervals.has(id))this.intervals.delete(id)
     }
+    tick(currentTime?: number) {
+        if (this.running) {
+            if (currentTime === undefined) currentTime = performance.now();
 
-    public start() {
-        this.interval=setInterval(() => {
-            const currentTime = Date.now()
-            const elapsedTime = currentTime - this.lastFrameTime
-            this.lastFrameTime = Date.now()
-            const dt=(elapsedTime/1000)*this.timeScale
-            this.callback(dt)
-            for(const i of this.intervals.values()){
-                i(dt)
+            const elapsedTime = currentTime - this.lastFrameTime;
+            this.lastFrameTime = currentTime;
+
+            const dt = (elapsedTime / 1000) * this.timeScale;
+
+            this.callback(dt);
+            for (const i of this.intervals.values()) {
+                i(dt);
             }
-        }, this.frameDuration)
+
+            self.requestAnimationFrame(this.tick)
+        }
+    }
+    public start() {
+        if(!this.running){
+            this.interval=setInterval(() => {
+                const currentTime = Date.now()
+                const elapsedTime = currentTime - this.lastFrameTime
+                this.lastFrameTime = Date.now()
+                const dt=(elapsedTime/1000)*this.timeScale
+                this.callback(dt)
+                for(const i of this.intervals.values()){
+                    i(dt)
+                }
+            }, this.frameDuration)
+        }
+    }
+    public startRAF() {
+        if (!this.running) {
+            this.running = true;
+            this.lastFrameTime = performance.now()
+            self.requestAnimationFrame(this.tick.bind(this));
+        }
     }
     public stop(){
+        this.running=false
+        if(!this.running)
         clearInterval(this.interval)
     }
 }
@@ -443,9 +473,10 @@ export const Numeric={
     clamp(value:number,min:number,max:number):number{
         return value<max?value>min?value:min:max
     },
-    maxDecimals(value:number,decimalPlaces=3):number{
-        const factor = Math.pow(10, decimalPlaces)
-        return Math.round(value * factor) / factor
+    maxDecimals(value: number, decimalPlaces = 3): number {
+        if (!isFinite(value)) return value;
+        const factor = 10 ** decimalPlaces;
+        return Math.trunc(value * factor) / factor;
     },
     lerp(start:number,dest:number,inter:number):number{
         return  (start*(1-inter))+(dest*inter)

@@ -1,12 +1,9 @@
-import { v2, Vec2 } from "./geometry.ts"
+import { v2, v2m, Vec2 } from "./geometry.ts"
 import { type Hitbox2D, NullHitbox2D } from "./hitbox.ts"
 import { type ID } from "./utils.ts"
 import { NetStream } from "./stream.ts";
 import { random } from "./random.ts";
 export type GameObjectID=ID
-export type CameraMain={
-
-}
 export abstract class BaseObject2D{
     public hb:Hitbox2D
     public destroyed:boolean
@@ -18,6 +15,8 @@ export abstract class BaseObject2D{
     public is_new:boolean=true
     abstract numberType:number
     abstract stringType:string
+
+    updatable=true
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
     public get position():Vec2{
@@ -33,9 +32,10 @@ export abstract class BaseObject2D{
     updateData(_data:EncodedData):void{}
     getData():EncodedData{return {full:{}}}
     abstract update(dt:number):void
+    net_update():void{}
     // deno-lint-ignore no-explicit-any
     abstract create(args:Record<string,any>):void
-    onDestroy():void{}
+    on_destroy():void{}
     destroy():void{
         if(this.destroyed)return
         this.destroyed=true
@@ -70,7 +70,7 @@ export abstract class BaseObject2D{
     }
 }
 
-export interface Layer2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[]}
+export interface Layer2D<GameObject extends BaseObject2D> {objects:Record<GameObjectID,GameObject>,orden:number[],updatables:number[]}
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cellSize: number;
     cells: Map<number, Map<string, Set<GameObject>>> = new Map();
@@ -84,8 +84,9 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         return `${x}:${y}`;
     }
 
-    private cellPos(pos: Vec2): Vec2 {
-        return v2.floor(v2.dscale(pos, this.cellSize));
+    private cellPos(pos: Vec2) {
+        v2m.dscale(pos,pos,this.cellSize)
+        v2m.floor(pos)
     }
 
     registry(obj: GameObject) {
@@ -97,8 +98,8 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     }
 
     clear() {
-        this.cells.clear();
-        this.objectCells.clear();
+        this.cells.clear()
+        this.objectCells.clear()
     }
 
     private getLayerMap(layer: number): Map<string, Set<GameObject>> {
@@ -122,54 +123,56 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
                 }
             }
         }
-        this.objectCells.delete(obj);
+        this.objectCells.delete(obj)
     }
 
     updateObject(obj: GameObject) {
-        this.removeObjectFromCells(obj);
+        this.removeObjectFromCells(obj)
 
-        const rect = obj.hb.toRect();
-        const min = this.cellPos(rect.min);
-        const max = this.cellPos(rect.max);
+        const rect = obj.hb.to_rect()
+        this.cellPos(rect.min)
+        this.cellPos(rect.max)
 
-        const layer = obj.layer;
-        const layerMap = this.getLayerMap(layer);
-        const occupiedKeys = new Set<string>();
+        const layer = obj.layer
+        const layerMap = this.getLayerMap(layer)
+        let entry = this.objectCells.get(obj)
+        if (!entry){
+            this.objectCells.set(obj, { layer, keys: new Set() })
+            entry=this.objectCells.get(obj)
+        }
+        entry!.keys.clear()
 
-        for (let y = min.y; y <= max.y; y++) {
-            for (let x = min.x; x <= max.x; x++) {
+        for (let y = rect.min.y; y <= rect.max.y; y++) {
+            for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const key = this.key(x, y);
                 if (!layerMap.has(key)) {
                     layerMap.set(key, new Set());
                 }
                 layerMap.get(key)!.add(obj);
-                occupiedKeys.add(key);
+                entry!.keys.add(key);
             }
         }
-
-        this.objectCells.set(obj, { layer, keys: occupiedKeys });
     }
-
     get_objects(hitbox: Hitbox2D, layer: number): GameObject[] {
-        const rect = hitbox.toRect();
-        const min = this.cellPos(rect.min);
-        const max = this.cellPos(rect.max);
+        const rect = hitbox.to_rect()
+        this.cellPos(rect.min)
+        this.cellPos(rect.max)
 
-        const results = new Set<GameObject>();
+        const results:GameObject[] = []
         const layerMap = this.cells.get(layer);
         if (!layerMap) return [];
 
-        for (let y = min.y; y <= max.y; y++) {
-            for (let x = min.x; x <= max.x; x++) {
+        for (let y = rect.min.y; y <= rect.max.y; y++) {
+            for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const set = layerMap.get(this.key(x, y));
                 if (set) {
                     for (const obj of set) {
-                        results.add(obj);
+                        results.push(obj);
                     }
                 }
             }
         }
-        return [...results];
+        return results
     }
 }
 export type EncodedData={
@@ -203,14 +206,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(const l in this.objects){
             for(let j=0;j<this.objects[l].orden.length;j++){
                 const o=this.objects[l].orden[j]
-                this.objects[l].objects[o].onDestroy()
+                this.objects[l].objects[o].on_destroy()
             }
             this.objects[l].orden.length=0
+            this.objects[l].updatables.length=0
         }
         this.objects={}
-        this.layers=[]
-        this.new_objects=[]
-        this.destroy_queue=[]
+        this.layers.length=0
+        this.new_objects.length=0
+        this.destroy_queue.length=0
         this.cells.clear()
     }
 
@@ -249,6 +253,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.create(args ?? {});
         this.cells.registry(obj);
 
+        if(obj.updatable){
+            this.objects[layer].updatables.push(obj.id);
+        }
+
         return obj;
     }
 
@@ -269,7 +277,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     add_layer(layer: number) {
         if (this.objects[layer]) return;
-        this.objects[layer] = { orden: [], objects: {} };
+        this.objects[layer] = { orden: [], objects: {},updatables:[] };
         this.layers.push(layer);
     }
     process_object(stream:NetStream,encoders?:Record<string,ObjectEncoder>,priv:boolean=false){
@@ -297,7 +305,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                     obj.updateData(data)
                 }
                 if(b[2]){
-                    obj.destroy()
+                    if(obj.netSync.deletion)obj.destroy()
+                    else obj.on_destroy()
                 }
             }
         }
@@ -320,7 +329,11 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(let i=0;i<os;i++){
             const c=stream.readUint8()
             const id=stream.readID()
-            if(process_deletion&&this.objects[c]&&this.objects[c].objects[id])this.objects[c].objects[id].destroy()
+            if(process_deletion&&this.objects[c]&&this.objects[c].objects[id]){
+                const obj=this.objects[c].objects[id]
+                if(obj.netSync.deletion)obj.destroy()
+                else obj.on_destroy()
+            }
         }
     }
     encode_all(full:boolean=false,stream?:NetStream,encoders?:Record<string,ObjectEncoder>,priv?:boolean):NetStream{
@@ -341,9 +354,12 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(let i=0;i<l.length;i++){
             l[i].encodeObject(!last_list.includes(l[i]),stream,encoders,priv)
         }
-        const deletions=last_list.filter(obj =>
-           !l.includes(obj)&&obj.netSync.deletion
-        );
+        const deletions: GameObject[] = []
+        for (let i = 0; i < last_list.length; i++) {
+            const obj = last_list[i]
+            if (obj.netSync.deletion && l.indexOf(obj) === -1) deletions.push(obj)
+        }
+
         stream.writeUint16(deletions.length)
         for(let i=0;i<deletions.length;i++){
             stream.writeUint8(deletions[i].layer)
@@ -353,8 +369,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     update(dt:number){
         for(const l in this.objects){
-            for(let j=0;j<this.objects[l].orden.length;j++){
-                const o=this.objects[l].orden[j]
+            for(let j=0;j<this.objects[l].updatables.length;j++){
+                const o=this.objects[l].updatables[j]
                 const obj=this.objects[l].objects[o]
                 if(obj.destroyed)continue
                 obj.update(dt)
@@ -370,6 +386,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const idx=this.objects[l].orden[j]
                 this.objects[l].objects[idx].dirty=false
                 this.objects[l].objects[idx].dirtyPart=false
+                this.objects[l].objects[idx].net_update()
             }
         }
         this.new_objects.length=0
@@ -386,7 +403,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     unregister(obj:GameObject,force_destroy:boolean=false){
         if(this.objects[obj.layer].objects[obj.id].calldestroy||force_destroy){
             this.ondestroy(this.objects[obj.layer].objects[obj.id])
-            this.objects[obj.layer].objects[obj.id].onDestroy()
+            this.objects[obj.layer].objects[obj.id].on_destroy()
+            const idx=this.objects[obj.layer].updatables.indexOf(obj.id)
+            if(idx>=0)this.objects[obj.layer].updatables.splice(idx,1)
         }
         this.cells.unregistry(this.objects[obj.layer].objects[obj.id])
     }

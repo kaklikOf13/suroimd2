@@ -15,6 +15,7 @@ export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
+export const accounts=true
 export enum GraphicsDConfig {
     None=0,
     Normal,
@@ -63,6 +64,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.R2],
         keys:[Key.Mouse_Left]
     },
+    "emote_wheel":{
+        buttons:[GamepadButtonID.L2],
+        keys:[Key.Mouse_Right]
+    },
     "reload":{
         buttons:[GamepadButtonID.X],
         keys:[Key.R]
@@ -71,9 +76,17 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.A],
         keys:[Key.E]
     },
-    "full_map":{
-        buttons:[GamepadButtonID.Select],
+    "swamp_guns":{
+        buttons:[GamepadButtonID.L3],
+        keys:[Key.F]
+    },
+    "full_tab":{
+        buttons:[GamepadButtonID.Start],
         keys:[Key.M]
+    },
+    "hide_tab":{
+        buttons:[GamepadButtonID.Select],
+        keys:[Key.N]
     },
     "weapon1":{
         buttons:[],
@@ -123,9 +136,9 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.R1],
         keys:[]
     },
-    "expanded_inventory":{
-        buttons:[GamepadButtonID.Y],
-        keys:[Key.I]
+    "debug_menu":{
+        buttons:[GamepadButtonID.R3],
+        keys:[Key.Delete]
     }
 }
 export const Debug={

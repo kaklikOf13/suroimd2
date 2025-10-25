@@ -1,9 +1,11 @@
+import { Ammos } from "../definitions/items/ammo.ts";
 import { type GunDef, Guns } from "../definitions/items/guns.ts";
 import { type MeleeDef, Melees } from "../definitions/items/melees.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
 import { Vec2 } from "../engine/geometry.ts";
 import { type NetStream, Packet } from "../engine/mod.ts"
+import { Numeric } from "../engine/utils.ts";
 import { ActionsType } from "../others/constants.ts";
 export interface DamageSplash{
     count:number
@@ -14,23 +16,14 @@ export interface DamageSplash{
     critical:boolean
     shield_break:boolean
 }
-export interface PlaneData{
-    direction:number
-    pos:Vec2
-    complete:boolean
-    type:number
-    id:number
-}
 export interface PrivateUpdate{
     dirty:{
         inventory:boolean
         weapons:boolean
         current_weapon:boolean
         action:boolean
-        ammos:boolean
+        oitems:boolean
     }
-
-    planes:PlaneData[]
 
     health:number
     max_health:number
@@ -41,6 +34,7 @@ export interface PrivateUpdate{
 
     inventory?:InventoryItemData[]
     action?:{delay:number,type:ActionsType}
+
     weapons:{
         melee?:MeleeDef
         gun1?:GunDef
@@ -50,9 +44,10 @@ export interface PrivateUpdate{
     current_weapon?:{
         slot:number
         ammo:number
+        liquid:boolean
     }
 
-    ammos:Record<number,number>
+    oitems:Record<number,number>
 
     damages:DamageSplash[]
 }
@@ -67,9 +62,11 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         priv.dirty.weapons,
         priv.dirty.current_weapon,
         priv.dirty.action,
-        priv.dirty.ammos,
+        priv.dirty.oitems,
         priv.action!==undefined,
-        priv.damages!==undefined)
+        priv.damages!==undefined,
+        priv.current_weapon?.liquid
+    )
     if(priv.dirty.inventory){
         stream.writeArray<InventoryItemData>(priv.inventory!,(i)=>{
             stream.writeUint16(i.idNumber)
@@ -84,7 +81,11 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     }
     if(priv.dirty.current_weapon){
         stream.writeInt8(priv.current_weapon!.slot)
-        stream.writeUint16(priv.current_weapon!.ammo)
+        if(priv.current_weapon!.liquid){
+            stream.writeFloat32(Numeric.maxDecimals(priv.current_weapon!.ammo,1))
+        }else{
+            stream.writeUint16(priv.current_weapon!.ammo)
+        }
     }
     if(priv.dirty.action&&priv.action){
         stream.writeFloat(priv.action.delay,0,20,3)
@@ -99,19 +100,17 @@ function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             stream.writeUint8(d.taker_layer)
         },1)
     }
-    if(priv.dirty.ammos){
-        stream.writeArray(Object.entries(priv.ammos),(i)=>{
+    if(priv.dirty.oitems){
+        stream.writeArray(Object.entries(priv.oitems),(i)=>{
+            const def=Ammos.getFromNumber(i[0] as unknown as number)
             stream.writeUint8(i[0] as unknown as number)
-            stream.writeUint16(i[1] as unknown as number)
+            if(def.liquid){
+                stream.writeFloat32(Numeric.maxDecimals(i[1],1))
+            }else{
+                stream.writeUint16(i[1] as unknown as number)
+            }
         },1)
     }
-    stream.writeArray(priv.planes,(e)=>{
-        stream.writeID(e.id)
-        stream.writePosition(e.pos)
-        stream.writeRad(e.direction)
-        stream.writeBooleanGroup(e.complete)
-        stream.writeUint8(e.type)
-    },1)
 }
 function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     priv.health=stream.readUint8()
@@ -126,13 +125,15 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
         dirtyAction,
         dirtyAmmos,
         hasAction,
-        hasDamages]=stream.readBooleanGroup()
+        hasDamages,
+        liquid,
+    ]=stream.readBooleanGroup()
     priv.dirty={
         inventory:dirtyInventory,
         weapons:dirtyWeapons,
         current_weapon:dirtyCurrentWeapon,
         action:dirtyAction,
-        ammos:dirtyAmmos
+        oitems:dirtyAmmos,
     }
     if(dirtyInventory){
         priv.dirty.inventory=true
@@ -158,7 +159,8 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     if(dirtyCurrentWeapon){
         priv.current_weapon={
             slot:stream.readInt8(),
-            ammo:stream.readUint16()
+            ammo:liquid?Numeric.maxDecimals(stream.readFloat32(),1):stream.readUint16(),
+            liquid:liquid
         }
     }
     if(dirtyAction){
@@ -186,20 +188,16 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
     }
     if(dirtyAmmos){
         const len=stream.readUint8()
-        priv.ammos={}
+        priv.oitems={}
         for(let i=0;i<len;i++){
-            priv.ammos[stream.readUint8()]=stream.readUint16()
+            const def=Ammos.getFromNumber(stream.readUint8())
+            if(def.liquid){
+                priv.oitems[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
+            }else{
+                priv.oitems[def.idNumber!]=stream.readUint16()
+            }
         }
     }
-    priv.planes=stream.readArray(()=>{
-        return {
-            id:stream.readID(),
-            pos:stream.readPosition(),
-            direction:stream.readRad(),
-            complete:stream.readBooleanGroup()[0],
-            type:stream.readUint8()
-        }
-    },1)
 }
 export class UpdatePacket extends Packet{
     ID=2
@@ -213,9 +211,9 @@ export class UpdatePacket extends Packet{
             current_weapon:false,
             inventory:false,
             weapons:false,
-            ammos:false
+            oitems:false,
         },
-        ammos:{},
+        oitems:{},
         health:0,
         max_boost:0,
         max_health:0,
@@ -227,11 +225,11 @@ export class UpdatePacket extends Packet{
         action:undefined,
         current_weapon:{
             ammo:0,
-            slot:0
+            slot:0,
+            liquid:false
         },
         damages:[],
         inventory:undefined,
-        planes:[]
     }
 
     objects?:NetStream

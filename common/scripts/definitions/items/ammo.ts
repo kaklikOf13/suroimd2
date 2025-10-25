@@ -1,20 +1,23 @@
 import { Definitions,Definition } from "../../engine/mod.ts"
 import { ItemQuality } from "../../others/item.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 
 export interface AmmoDef extends Definition{
-    size:number
     tint:number
     defaultTrail:number
     strongTrail:number
     defaultProj:number
     strongProj:number
     ammoType:string
+
+    liquid?:boolean
     drop_count?:number
+
+    item_type?:InventoryItemType.ammo
+    quality:ItemQuality
 }
-export const Ammos=new Definitions<AmmoDef,GameItem>((i)=>{
+export const Ammos=new Definitions<AmmoDef,{}>((i)=>{
     i.item_type=InventoryItemType.ammo
-    i.quality=ItemQuality.Common
 })
 Ammos.insert(
     //Normals
@@ -26,8 +29,8 @@ Ammos.insert(
         defaultProj:0xcfada0,
         strongProj:0xdb2218,
         tint:0xff0000,
-        size:0.01,
         drop_count:15,
+        quality:ItemQuality.Common
     },
     {
         idString:"762mm",
@@ -37,7 +40,7 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x0000ff,
-        size:0.0029,
+        quality:ItemQuality.Common
     },
     {
         idString:"556mm",
@@ -47,7 +50,7 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x00ff00,
-        size:0.0029,
+        quality:ItemQuality.Common
     },
     {
         idString:"9mm",
@@ -57,7 +60,7 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0xffff00,
-        size:0.0015,
+        quality:ItemQuality.Common
     },
     {
         idString:"22lr",
@@ -67,7 +70,7 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0xffffff,
-        size:0.001,
+        quality:ItemQuality.Common
     },
     //Anothers
     {
@@ -78,7 +81,7 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x000000,
-        size:0.013,
+        quality:ItemQuality.Epic
     },
     {
         idString:"308sub",
@@ -88,18 +91,29 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x001330,
-        size:0.08,
         drop_count:10,
+        quality:ItemQuality.Mythic
     },
     {
-        idString:"40mm",
-        ammoType:"40mm",
-        defaultTrail:0x889fcb,
-        strongTrail:0x009fcb,
+        idString:"explosive_ammo",
+        ammoType:"explosive_ammo",
+        defaultTrail:0x616d61,
+        strongTrail:0x2b402b,
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x001330,
-        size:0.09,
+        quality:ItemQuality.Legendary
+    },
+    {
+        idString:"gasoline",
+        ammoType:"gasoline",
+        defaultTrail:0xefef33,
+        strongTrail:0x889fcb,
+        defaultProj:0xefef9f,
+        strongProj:0xefef33,
+        liquid:true,
+        tint:0x001330,
+        quality:ItemQuality.Mythic
     },
     {
         idString:"mana_mm",
@@ -109,6 +123,6 @@ Ammos.insert(
         defaultProj:0xefef9f,
         strongProj:0xefef33,
         tint:0x001330,
-        size:0.09,
+        quality:ItemQuality.Legendary
     }
 )

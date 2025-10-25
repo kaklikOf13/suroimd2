@@ -6,7 +6,6 @@
 * @kaklik
 * @namerio
 * @cheerfulbull_29688
-* @bien.star
 * @endermanking
 * @littlethief69
 ## Sound Designers
@@ -15,5 +14,13 @@
 ## Musics
 * @.ryanzero
 * @rivals2444
+* I Wanna Be The Guy
+* NoCopyrightSound
+## Additional Art
+* @sentido_ss
+* @bien.star
 ## Creator
 * Kaklik
+## Special Thanks To
+@hasanger 
+@1092384

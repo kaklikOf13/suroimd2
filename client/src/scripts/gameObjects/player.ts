@@ -1,15 +1,14 @@
 import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, Vec2 } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
 import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
-import { Armors, EquipamentDef } from "../../../../common/scripts/definitions/items/equipaments.ts";
-import { WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
+import { GameItem, GameObjectDef, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
-import { GraphicsDConfig } from "../others/config.ts";
+import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { Decal } from "./decal.ts";
-import { GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
-import { ABParticle2D, ClientGame2D, type ClientParticle2D } from "../engine/game.ts";
+import { ClientGame2D } from "../engine/game.ts";
 import { ColorM } from "../engine/renderer.ts";
 import { SoundInstance } from "../engine/sounds.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
@@ -18,14 +17,18 @@ import { DefaultFistRig } from "common/scripts/others/item.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { ParticlesEmitter2D} from "common/scripts/engine/particles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
-import { Numeric } from "common/scripts/engine/utils.ts";
+import { ease, Numeric } from "common/scripts/engine/utils.ts";
+import { Container2D } from "../engine/container_2d.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
+import { HelmetDef, Helmets, VestDef, Vests } from "common/scripts/definitions/items/equipaments.ts";
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
     zIndex=zIndexes.Players
 
-    vest?:EquipamentDef
-    helmet?:EquipamentDef
+    vest?:VestDef
+    helmet?:HelmetDef
     backpack?:BackpackDef
 
     rotation:number=0
@@ -39,6 +42,7 @@ export class Player extends GameObject{
         body:Sprite2D,
         mounth:Sprite2D,
         helmet:Sprite2D,
+        vest:Sprite2D,
         backpack:Sprite2D,
         left_arm:Sprite2D,
         right_arm:Sprite2D,
@@ -46,6 +50,10 @@ export class Player extends GameObject{
         weapon2:Sprite2D,
         muzzle_flash:Sprite2D,
         parachute:Sprite2D,
+
+        emote_container:Container2D,
+        emote_bg:Sprite2D,
+        emote_sprite:Sprite2D
     }
     anims:{
         fire?:{
@@ -58,6 +66,7 @@ export class Player extends GameObject{
         consumible_particles?:ParticlesEmitter2D<ClientParticle2D>
         mount_anims:KeyFrameSpriteDef[]
         mount_open:string
+        emote?:Tween<Vec2>
     }={consumible_particle:"healing_particle",mount_anims:[],mount_open:""}
     sound_animation:{
         animation?:SoundInstance
@@ -70,8 +79,10 @@ export class Player extends GameObject{
     dead:boolean=false
 
     left_handed=false
+    
+    shield:boolean=false
 
-    on_hitted(position:Vec2){
+    on_hitted(position:Vec2,critical:boolean=false){
         if(Math.random()<=0.1){
             const d=new Decal()
             d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
@@ -79,6 +90,82 @@ export class Player extends GameObject{
             d.sprite.rotation=random.rad()
             d.sprite.position=v2.duplicate(position)
             this.game.scene.objects.add_object(d,this.layer)
+        }
+
+        if(!this.shield){
+            this.game.particles.add_particle(new ABParticle2D({
+                scale:0.1,
+                frame:{
+                    image:`blood_splash_${random.int(1,3)}`,
+                },
+                direction:random.rad(),
+                life_time:0.5,
+                position:position,
+                speed:random.float(0.1,0.5),
+                angle:random.rad(),
+                tint:ColorM.rgba(170,10,40),
+                to:{
+                    scale:1.5,
+                    tint:ColorM.rgba(170,10,40,0)
+                },
+                zIndex:zIndexes.Particles
+            }))
+        }
+        
+        this.game.sounds.play(this.game.resources.get_audio(
+            critical?
+            "player_headshot":
+            `player_hit_${random.int(1,2)}`
+        ),{
+            position:this.position,
+            max_distance:6,
+        },"player")
+    }
+
+    on_die(){
+        for(let i=0;i<5;i++){
+            this.game.particles.add_particle(new ABParticle2D({
+                scale:0.1,
+                frame:{
+                    image:`blood_splash_${random.int(1,3)}`,
+                },
+                direction:random.rad(),
+                life_time:0.5,
+                position:this.position,
+                speed:random.float(2,4),
+                angle:random.rad(),
+                tint:ColorM.rgba(170,10,40),
+                to:{
+                    scale:1.8,
+                    tint:ColorM.rgba(170,10,40,0)
+                },
+                zIndex:zIndexes.Particles
+            }))
+        }
+        const d=new Decal()
+        d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
+        d.sprite.scale=v2.random(2,3)
+        d.sprite.rotation=random.rad()
+        d.sprite.position=v2.duplicate(this.position)
+        this.game.scene.objects.add_object(d,this.layer)
+        for(let i=0;i<4;i++){
+            this.game.particles.add_particle(new ABParticle2D({
+                scale:0.1,
+                frame:{
+                    image:`player_gore_${random.int(1,2)}`,
+                },
+                direction:random.rad(),
+                life_time:0.7,
+                position:this.position,
+                speed:random.float(5,6),
+                angle:random.rad(),
+                tint:ColorM.default.white,
+                to:{
+                    scale:1.7,
+                    tint:ColorM.rgba(255,255,255,0)
+                },
+                zIndex:zIndexes.Particles
+            }))
         }
     }
 
@@ -258,15 +345,21 @@ export class Player extends GameObject{
         this.sprites={
             body:this.container.add_animated_sprite("body",{scale:1.333333,zIndex:4}),
             mounth:this.container.add_animated_sprite("mounth",{hotspot:v2.new(0.3,0.5),scale:1.4,position:v2.new(0.3,0),zIndex:4}),
-            backpack:this.container.add_animated_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34,zIndex:3}),
-            helmet:this.container.add_animated_sprite("helmet",{zIndex:5}),
-            left_arm:this.container.add_animated_sprite("left_arm"),
-            right_arm:this.container.add_animated_sprite("right_arm"),
-            muzzle_flash:this.container.add_animated_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
-            parachute:this.container.add_animated_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5)}),
-            weapon:this.container.add_animated_sprite("weapon"),
-            weapon2:this.container.add_animated_sprite("weapon2")
+            backpack:this.container.add_sprite("backpack",{position:v2.new(-0.27,0),scale:1.34,zIndex:3}),
+            helmet:this.container.add_sprite("helmet",{zIndex:5}),
+            vest:this.container.add_sprite("vest",{zIndex:0,scale:1.333333,hotspot:v2.new(.5,.5)}),
+            left_arm:this.container.add_sprite("left_arm"),
+            right_arm:this.container.add_sprite("right_arm"),
+            muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
+            parachute:this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5)}),
+            weapon:this.container.add_sprite("weapon"),
+            weapon2:this.container.add_sprite("weapon2"),
+
+            emote_container:new Container2D(),
+            emote_bg:new Sprite2D(),
+            emote_sprite:new Sprite2D()
         }
+        this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
         this.anims.consumible_particles=this.game.particles.add_emiter({
             delay:0.5,
             particle:()=>new ABParticle2D({
@@ -293,33 +386,75 @@ export class Player extends GameObject{
         if(this.game.activePlayerId===this.id){
             this.game.activePlayer=this
         }
+        this.sprites.vest._frame=this.game.resources.get_sprite("player_vest")
+        this.sprites.vest.sync_rotation=false
+        this.sprites.emote_container.sync_rotation=false
+        this.sprites.emote_container.position=v2.new(0,-1.5)
+        this.sprites.emote_container.add_child(this.sprites.emote_bg)
+        this.sprites.emote_container.add_child(this.sprites.emote_sprite)
+        this.sprites.emote_container.visible=false
+        this.sprites.emote_bg.set_frame({
+            image:"emote_background",
+            hotspot:v2.new(.5,.5),
+            scale:1.5
+        },this.game.resources)
+        this.sprites.emote_sprite.transform_frame({
+            hotspot:v2.new(.5,.5),
+            scale:2.6
+        })
     }
     update(dt:number): void {
-        this.attacking-=dt
         if(this.dest_pos){
             this.position=v2.lerp(this.position,this.dest_pos,this.game.inter_global)
         }
         if(this.dest_rot){
             this.rotation=Numeric.lerp_rad(this.rotation,this.dest_rot!,this.game.inter_global)
         }
-        this.container.position=this.position
+        this.container._position.set(this.position.x,this.position.y)
         this.container.rotation=this.rotation
+        this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
         this.manager.cells.updateObject(this)
+        if(this.sprites.emote_container.visible){
+            this.sprites.emote_container.position=this.position
+            v2m.add_component(this.sprites.emote_container.position,0,-1.5)
+            if(this.emote_time<2.5){
+                this.emote_time+=dt
+            }else{
+                this.anims.emote=this.game.addTween({
+                    target:this.sprites.emote_container.scale,
+                    duration:0.8,
+                    to:{
+                        x:0,
+                        y:0
+                    },
+                    onComplete:()=>{
+                        if(this.emote_time<2.5)return
+                        this.sprites.emote_container.visible=false
+                        this.sprites.emote_container.destroy()
+                        this.anims.emote=undefined
+                    },
+                    ease:ease.circOut
+                })
+            }
+        }
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         this.anims.consumible_particles!.destroyed=true
         this.container.destroy()
+        if(this.sprites.emote_container.visible)this.sprites.emote_container.destroy()
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        /*if(Debug.hitbox){
-            renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_player"),camera.visual_position)
-        }*/
+        if(Debug.hitbox){
+            const model=model2d.hitbox(this.hb)
+            renderer.draw(model,this.game.resources.get_material2D("hitbox"),camera.projectionMatrix,v2.new(0,0),v2.new(1,1))
+        }
     }
     constructor(){
         super()
     }
     reset_anim(){
         this.sprites.muzzle_flash.visible=false
+        this.container.stop_all_animations()
         this.current_animation=undefined
         if(this.sound_animation.animation)this.sound_animation.animation.stop()
         if(!this.sprites.mounth.frames&&this.anims.mount_anims){
@@ -328,8 +463,34 @@ export class Player extends GameObject{
         }
         this.sound_animation.animation=undefined
         this.anims.consumible_particles!.enabled=false
-        this.attacking=0
-        this.container.stop_all_animations()
+        this.attacking=false
+        if(this.anims.fire){
+            if(this.anims.fire.left_arm)this.anims.fire.left_arm.kill()
+            if(this.anims.fire.right_arm)this.anims.fire.right_arm.kill()
+            if(this.anims.fire.weapon)this.anims.fire.weapon.kill()
+            this.anims.fire=undefined
+        }
+    }
+    emote_time:number=0
+    add_emote(emote:GameObjectDef){
+        this.game.sounds.play(this.game.resources.get_audio("emote_play"),{
+            max_distance:30
+        },"players")
+        if(!this.sprites.emote_container.visible)this.game.camera.addObject(this.sprites.emote_container)
+        this.sprites.emote_container.visible=true
+        this.emote_time=0
+        this.sprites.emote_sprite.frame=this.game.resources.get_sprite(emote.idString)
+        this.sprites.emote_container.scale=v2.new(0,0)
+        if(this.anims.emote)this.anims.emote.kill()
+        this.game.addTween({
+            target:this.sprites.emote_container.scale,
+            duration:0.9,
+            to:{
+                x:1,
+                y:1
+            },
+            ease:ease.elasticOut
+        })
     }
     play_animation(animation:PlayerAnimation){
         if(this.current_animation!==undefined)return
@@ -339,7 +500,7 @@ export class Player extends GameObject{
             case PlayerAnimationType.Reloading:{
                 if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){this.current_animation=undefined;break}
                 const d=this.current_weapon as GunDef
-                
+
                 const sound=this.game.resources.get_audio((d.reload?.reload_alt&&this.current_animation.alt_reload)?`${d.idString}_reload_alt`:`${d.idString}_reload`)
                 if(sound){
                     if(this.sound_animation.animation)this.sound_animation.animation.stop()
@@ -348,11 +509,10 @@ export class Player extends GameObject{
                             this.reset_anim()
                         },
                         position:this.position,
-                        max_distance:5,
+                        max_distance:20,
                         volume:0.4
                     },"players")
                 }
-                this.attacking=0.5
                 break
             }
             case PlayerAnimationType.Consuming:{
@@ -365,7 +525,7 @@ export class Player extends GameObject{
                     }
                     this.sound_animation.animation=this.game.sounds.play(sound,{
                         position:this.position,
-                        max_distance:5,
+                        max_distance:10,
                         volume:0.7,
                         on_complete:()=>{
                             this.set_current_weapon(this.current_weapon,true)
@@ -376,7 +536,7 @@ export class Player extends GameObject{
                     this.anims.consumible_particle=def.frame.using_particle
                 }if(def.boost_type){
                     this.anims.consumible_particle=`boost_${Boosts[def.boost_type].name}_particle`
-                }else if(def.health){
+                }else{
                     this.anims.consumible_particle="healing_particle"
                 }
                 this.anims.consumible_particles!.enabled=true
@@ -388,18 +548,26 @@ export class Player extends GameObject{
                 }
                 break
             }
+            case PlayerAnimationType.Melee:{
+                const def=this.current_weapon as MeleeDef
+                if(def.animation){
+                    this.container.play_animation(def.animation,()=>{
+                        this.current_animation=undefined
+                    })
+                }
+                break
+            }
         }
     }
-    attacking=0
+    attacking=false
     attack(){
-        if(this.attacking>0)return
-        if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){
+        if(this.attacking)return
+        if(!this.current_weapon||(this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun){
             this.current_animation=undefined
             return
         }
         const d=this.current_weapon as GunDef
         const dur=Math.min(d.fireDelay*0.9,0.1)
-        this.attacking=d.fireDelay+0.2
         if(d.recoil&&!this.anims.fire){
             const w=0.05
             this.anims.fire={
@@ -428,6 +596,7 @@ export class Player extends GameObject{
                 })
             }
         }
+        this.attacking=true
         if(d.muzzleFlash&&!this.sprites.muzzle_flash.visible){
             this.sprites.muzzle_flash.frame=this.game.resources.get_sprite(d.muzzleFlash.sprite)
             if(this.anims.muzzle_flash_light)this.anims.muzzle_flash_light.destroyed=true
@@ -438,8 +607,11 @@ export class Player extends GameObject{
             this.game.addTimeout(()=>{
                 this.anims.muzzle_flash_light!.destroyed=true
                 this.sprites.muzzle_flash.visible=false
-            },dur)
+            },dur*0.9)
         }
+        this.game.addTimeout(()=>{
+            this.attacking=false
+        },d.fireDelay)
         if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(d.caseParticle&&!d.caseParticle.at_begin){
                 const p=new ABParticle2D({
@@ -481,7 +653,7 @@ export class Player extends GameObject{
                         scale:0.03,
                         tint:ColorM.hex("#fff5"),
                         to:{
-                        tint:ColorM.hex("#fff0"),
+                            tint:ColorM.hex("#fff0"),
                             scale:random.float(d.gasParticles.size.min,d.gasParticles.size.max)
                         }
                     })
@@ -494,14 +666,14 @@ export class Player extends GameObject{
             this.game.sounds.play(sound,{
                 volume:0.4,
                 position:this.position,
-                max_distance:7
+                max_distance:30
             },"players")
         }
     }
     set_helmet(helmet:number){
         if(this.helmet&&helmet-1===this.helmet.idNumber!)return
         if(helmet>0){
-            this.helmet=Armors.getFromNumber(helmet-1)
+            this.helmet=Helmets.getFromNumber(helmet-1)
             const h=this.helmet
 
             if(h.position){
@@ -512,6 +684,16 @@ export class Player extends GameObject{
             this.sprites!.helmet.frame=this.game.resources.get_sprite(h.idString+"_world")
         }else{
             this.sprites.helmet.frame=undefined
+        }
+    }
+    set_vest(vest:number){
+        if(this.vest&&vest-1===this.vest.idNumber!)return
+        if(vest>0){
+            this.sprites.vest.visible=true
+            this.vest=Vests.getFromNumber(vest-1)
+            this.sprites!.vest.tint=ColorM.number(this.vest.tint)
+        }else{
+            this.sprites.vest.visible=false
         }
     }
     set_backpack(backpack:number){
@@ -577,8 +759,12 @@ export class Player extends GameObject{
     dest_pos?:Vec2
     dest_rot?:number
     override updateData(data:PlayerData){
+        if(data.emote){
+            this.add_emote(data.emote)
+        }
         if(data.dead&&!this.dead){
             this.dead=data.dead
+            this.on_die()
             this.container.destroy()
         }
         if(data.attacking){
@@ -600,11 +786,9 @@ export class Player extends GameObject{
         if(data.full){
             this.position=data.position
             this.set_helmet(data.full.helmet)
+            this.set_vest(data.full.vest)
             this.set_backpack(data.full.backpack)
             this.set_skin(Skins.getFromNumber(data.full.skin))
-            if(data.full.vest>0){
-                this.vest=Armors.getFromNumber(data.full.vest-1)
-            }
 
             this.set_current_weapon(Weapons.valueNumber[data.full.current_weapon])
             if(data.full.animation){
@@ -633,11 +817,8 @@ export class Player extends GameObject{
             if(data.full){
                 this.game.guiManager.update_equipaments()
             }
-            this.game.flying_position=data.parachute?.value??0
-            this.game.guiManager.update_hint({
-                driving:this.driving,
-                gun:!this.driving&&((this.current_weapon&&(this.current_weapon as unknown as GameItem).item_type===InventoryItemType.gun)??false)
-            })
+            this.game.guiManager.state.driving=this.driving
+            this.game.guiManager.state.gun=!this.driving&&this.current_weapon!==undefined&&Guns.exist(this.current_weapon.idString)
         }
     }
 }

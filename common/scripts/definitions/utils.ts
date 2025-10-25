@@ -7,9 +7,13 @@ export interface BulletDef{
     range:number
     speed:number
     radius:number
+    effect?:{id:string,time:number}[]
     tracer:{
         width:number
         height:number
+        particles?:{
+            frame:number
+        }
         proj:{
             img:number
             width:number
@@ -20,26 +24,29 @@ export interface BulletDef{
     }
     obstacleMult?:number
     criticalMult?:number
+    on_hit_explosion?:string
 }
 export enum InventoryItemType{
     gun,
     ammo,
     consumible,
-    equipament,
-    other,
+    helmet,
+    vest,
+    projectile,
     melee,
     accessorie,
     backpack,
-    skin
+    skin,
+    scope
 }
-export interface GameItem extends Definition{
+export interface GameItemBase extends Definition{
     item_type:InventoryItemType
     quality:ItemQuality
 }
 export enum DamageReason{
     Player,
     Explosion,
-    SafeZone,
+    DeadZone,
     Abstinence,
     SideEffect,
     Disconnect,

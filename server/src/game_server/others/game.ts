@@ -1,5 +1,5 @@
-import { ID, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
-import { GameConstants, Layers, LayersL, PacketManager } from "common/scripts/others/constants.ts"
+import { ID, NetStream, Numeric, ReplayRecorder2D, ValidString, Vec2, random, v2 } from "common/scripts/engine/mod.ts"
+import { GameConstants, Layers, LayersL } from "common/scripts/others/constants.ts"
 import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts"
@@ -7,33 +7,45 @@ import { ActionPacket } from "common/scripts/packets/action_packet.ts"
 import { ObjectsE } from "common/scripts/others/objectsEncode.ts"
 import { Bullet } from "../gameObjects/bullet.ts"
 import { Obstacle } from "../gameObjects/obstacle.ts"
-import { GameMap, generation } from "./map.ts"
+import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
 import { DefaultGamemode, Gamemode } from "./gamemode.ts";
-import { BulletDef, GameItem } from "common/scripts/definitions/utils.ts";
-import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
-import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
+import { BulletDef } from "common/scripts/definitions/utils.ts";
+import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
+import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { Client, DefaultSignals, OfflineClientsManager, ServerGame2D } from "common/scripts/engine/server_offline/offline_server.ts";
 import { PlayerBody } from "../gameObjects/player_body.ts";
 import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
-import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
+import { DamageSourceDef, GameItem } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
+import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
-import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
-import { GamemodeManager, TeamsGamemodeManager } from "./modeManager.ts";
-import { PlaneData } from "common/scripts/packets/update_packet.ts";
+import { ConfigType, GameConfig, GameDebugOptions } from "common/scripts/config/config.ts";
+import { GamemodeManager, SoloGamemodeManager, TeamsGamemodeManager } from "./modeManager.ts";
+import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
+import { GeneralUpdatePacket, PlaneData } from "common/scripts/packets/general_update.ts"
+import {PacketManager} from "common/scripts/packets/packet_manager.ts"
+import { LootTablesManager } from "common/scripts/engine/inventory.ts";
+import { Aditional, loot_table_get_item } from "common/scripts/definitions/maps/base.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
     called:boolean
+}
+export interface GameData {
+    living_count: number
+    can_join: boolean
+    running: boolean
+    started_time: number
+    started:boolean
 }
 export interface GameStatus{
     players:{
@@ -42,14 +54,27 @@ export interface GameStatus{
         kills:number
     }[]
 }
+export type GameStatistic={
+    player:{
+        players:number
+        disconnection:number
+    }
+    items:{
+        kills:Record<string,number>
+        dropped:Record<string,number>
+    }
+    loadout:{
+        uses:Record<string,number>
+    }
+}
 export class Game extends ServerGame2D<ServerGameObject>{
-    config:GameConfig
     map:GameMap
     gamemode:Gamemode
     subscribe_db?:Record<string,{
         skins:number[],
     }>
 
+    debug!:GameDebugOptions
 
     players:Player[]=[]
     livingPlayers:Player[]=[]
@@ -80,8 +105,19 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
     replay?:ReplayRecorder2D
 
-    constructor(clients:OfflineClientsManager,id:ID,config:GameConfig,Config:ConfigType){
-        super(config.gameTps,id,clients,PacketManager,[
+    statistics?:GameStatistic
+
+    deadzone:DeadZoneManager
+    loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item)
+
+    living_count_dirty:boolean=false
+
+    general_update:GeneralUpdatePacket=new GeneralUpdatePacket()
+
+    started_time:number=0
+
+    constructor(config:GameConfig,clients:OfflineClientsManager,id:ID,Config:ConfigType){
+        super(Config.game.options.gameTps,id,clients,PacketManager,[
             Player,
             Loot,
             Bullet,
@@ -95,124 +131,42 @@ export class Game extends ServerGame2D<ServerGameObject>{
         for(const i of LayersL){
             this.scene.objects.add_layer(i)
         }
-        this.config=config
         this.Config=Config
-        this.clients
-        this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this)
-        this.gamemode=DefaultGamemode
-        this.modeManager=this.config.teamSize>1?new TeamsGamemodeManager(this):new GamemodeManager(this)
+        this.debug=Config.game.debug
         this.new_list=false
-        /*this.map.generate(generation.island({
-            generation:{
-                size:v2.new(800,800),
-                ground_loot:[{count:900,table:"ground_loot"}],
-                spawn:[
-                    [
-                        {id:"oak_tree",count:4000},
-                        {id:"stone",count:3300},
-                        {id:"bush",count:2500},
-                        {id:"wood_crate",count:1200},
-                        {id:"barrel",count:1000}
-                    ]
-                ],
-                terrain:{
-                    base:FloorType.Water,
-                    rivers:{
-                        divisions:100,
-                        spawn_floor:1,
-                        expansion:32,
-                        defs:[
-                            {
-                                rivers:[
-                                    {sub_river_width:2,width:10,width_variation:1,sub_river_chance:0.5},
-                                    {sub_river_width:1,width:15,width_variation:1,sub_river_chance:0.1},
-                                ],
-                                weight:10
-                            },
-                            {
-                                rivers:[
-                                    {sub_river_width:3,width:20,width_variation:1,sub_river_chance:0.9},
-                                ],
-                                weight:1
-                            }
-                        ]
-                    },
-                    floors:[
-                        {
-                            padding:25,
-                            type:FloorType.Sand,
-                            spacing:0.3,
-                            variation:1.3,
-                        },
-                        {
-                            padding:14,
-                            type:FloorType.Grass,
-                            spacing:0.3,
-                            variation:1.3,
-                        }
-                    ]
-                }
-            }
-        }))*/
-        this.map.generate(generation.island({
-            generation:{
-                size:v2.new(100,100),
-                ground_loot:[{count:20,table:"ground_loot"}],
-                spawn:[
-                    [
-                        {id:"oak_tree",count:40},
-                        {id:"stone",count:30},
-                        {id:"bush",count:20},
-                        {id:"wood_crate",count:10},
-                        {id:"barrel",count:8},
+        this.scene.objects.encoders=ObjectsE
 
-                        {id:"pig",count:10},
-                        {id:"chicken",count:10}
-                    ]
-                ],
-                terrain:{
-                    base:FloorType.Water,
-                    rivers:{
-                        divisions:30,
-                        spawn_floor:1,
-                        expansion:12,
-                        defs:[
-                            {
-                                rivers:[
-                                    {sub_river_width:2,width:2,width_variation:1,sub_river_chance:0.5},
-                                    {sub_river_width:1,width:3,width_variation:1,sub_river_chance:0.1},
-                                ],
-                                weight:10
-                            },
-                            {
-                                rivers:[
-                                    {sub_river_width:3,width:4,width_variation:1,sub_river_chance:0.9},
-                                ],
-                                weight:1
-                            }
-                        ]
-                    },
-                    floors:[
-                        {
-                            padding:15,
-                            type:FloorType.Sand,
-                            spacing:3,
-                            variation:1.3,
-                        },
-                        {
-                            padding:10,
-                            type:FloorType.Grass,
-                            spacing:3,
-                            variation:1.3,
-                        }
-                    ]
+        //Gamemode
+        this.gamemode=DefaultGamemode
+        this.map=new GameMap(this)
+        this.modeManager=config.team_size>1?new TeamsGamemodeManager(config.team_size,this):new SoloGamemodeManager(this)
+        this.modeManager.generate_map(false)
+
+        this.deadzone=new DeadZoneManager(this,{
+            mode:DeadZoneMode.Staged,
+            stages:DeadZoneDefinition,
+            timeSpeed:Config.game.debug?.dead_zone?.time_speed??1
+        })
+        if(Config.database.statistic){
+            this.statistics={
+                items:{
+                    dropped:{},
+                    kills:{}
+                },
+                player:{
+                    disconnection:0,
+                    players:0
+                },
+                loadout:{
+                    uses:{}
                 }
             }
-        }),3)
+        }
     }
+    ntt:number=0
     override on_update(): void {
         super.on_update()
+        this.deadzone.tick(this.dt)
         for(const p of this.planes){
             p.pos=v2.add(p.pos,v2.scale(p.velocity,this.dt))
             switch(p.type){
@@ -233,11 +187,26 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 this.running=false
             }
         }
+        this.ntt-=this.dt
+        if(this.ntt<=0){
+            this.netUpdate()
+            this.ntt=1/this.Config.game.options.netTps
+        }
+    }
+    update_data(){
+        const data:GameData={
+            living_count:this.livingPlayers.length,
+            can_join:this.modeManager.can_join()&&!this.fineshed,
+            running:this.running,
+            started_time:this.started_time,
+            started:this.started
+        }
+        this.signals.emit("update_data",data)
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
         const dir=v2.lookTo(v2.new(0,0),position)
-        
+
         this.planes.push({
             id:random.int(0,1000000),
             complete:false,
@@ -252,7 +221,6 @@ export class Game extends ServerGame2D<ServerGameObject>{
     override on_stop():void{
         super.on_stop()
         if(this.replay)this.replay.stop()
-        clearInterval(this.net_interval)
         for(const p of this.players){
             this.status.players.push({
                 kills:p.status.kills,
@@ -260,6 +228,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 username:p.name,
             })
         }
+        this.update_data()
         console.log(`Game ${this.id} Stopped`)
     }
     killing_game:boolean=false
@@ -270,11 +239,27 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.clients.emit(p)
     }
     netUpdate(){
-        for(const p of Object.values(this.connectedPlayers)){
-            p.update2()
+        for(const p of this.players){
+            if(p.connected){
+                p.update2()
+            }
         }
+        this.general_update.content.planes=this.planes
+        this.general_update.content.deadzone=undefined
+        this.general_update.content.dirty.living_count=this.living_count_dirty
+        if(this.living_count_dirty){
+            this.general_update.content.living_count=[this.livingPlayers.length]
+        }
+        this.living_count_dirty=false
+        if(this.deadzone.dirty){
+            this.general_update.content.deadzone=this.deadzone.state
+        }
+        const s=new NetStream(new ArrayBuffer(5*1024))
+        s.writeUint16(this.general_update.ID)
+        this.general_update.encode(s)
         this.scene.objects.update_to_net()
         this.scene.objects.apply_destroy_queue()
+        this.clients.sendStream(s)
     }
     add_player(id:number|undefined,username:string,packet:JoinPacket,layer:number=Layers.Normal,connected=true):Player{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player
@@ -287,7 +272,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.players.push(p)
         this.livingPlayers.push(p)
 
-        p.pvpEnabled=this._pvpEnabled||this.config.deenable_lobby
+        p.pvpEnabled=this._pvpEnabled||this.debug.deenable_lobby===true
         p.input.is_mobile=packet.is_mobile
 
         p.username=username
@@ -299,17 +284,26 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)
 
+        this.living_count_dirty=true
+
         if(connected){
             this.send_killfeed_message({
                 type:KillFeedMessageType.join,
                 playerId:p.id,
                 playerName:p.name,
+                playerBadge:Badges.getFromString(p.loadout.badge).idNumber
             })
             this.modeManager.on_player_join(p)
+            if(this.statistics){
+                this.statistics.player.players++
+            }
+            this.update_data()
         }
+        p.inventory.set_current_weapon_index(0)
         return p
     }
     override on_run(): void {
+        this.update_data()
     }
     async activate_player(username:string,packet:JoinPacket,client:Client){
         const p=this.add_player(client.ID,username,packet) as Player;
@@ -347,7 +341,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             if(lp.id===p.id)continue
             jp.players.push({
                 id:lp.id,
-                name:lp.name
+                name:lp.name,
+                badge:Badges.getFromString(lp.loadout.badge).idNumber
             })
         }
         if(this.modeManager.kill_leader){
@@ -359,11 +354,16 @@ export class Game extends ServerGame2D<ServerGameObject>{
         client.emit(jp)
         client.sendStream(this.map.map_packet_stream)
 
-        if(Math.random()<=0.5){
+        if(this.statistics){
+            this.statistics.player.players++
+            this.statistics.loadout.uses[p.loadout.skin]=(this.statistics.loadout.uses[p.loadout.skin]??0)+1
+        }
+
+        /*if(Math.random()<0.2){
             const vehicle=this.add_vehicle(p.position,Vehicles.getFromString(random.choose(["bike","jeep"])))
             vehicle.seats[0].set_player(p)
             p.dirty=true
-        }
+        }*/
         return p
     }
     add_npc(name?:string,layer?:number):Player{
@@ -380,20 +380,22 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return p
     }
     fineshed:boolean=false
-    net_interval=0
     start(){
-        if(this.started||!this.modeManager.startRules())return
+        if(this.started||!this.modeManager.start_rules())return
         this.started=true
         this.modeManager.on_start()
         this.add_airdrop(v2.random2(v2.new(0,0),this.map.size))
+        this.started_time=performance.now()
         if(this.replay)this.replay.start()
-        this.net_interval=setInterval(this.netUpdate.bind(this),1000/this.config.netTps)
+        this.deadzone.start()
+        this.update_data()
         console.log(`Game ${this.id} Started`)
     }
     finish(){
         if(this.fineshed)return
         this.fineshed=true
         this.modeManager.on_finish()
+        this.update_data()
         console.log(`Game ${this.id} Fineshed`)
     }
     add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Player,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal):Bullet{
@@ -413,7 +415,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
         return e
     }
     add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+        const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner_badge:owner.loadout.badge,owner,position:v2.duplicate(owner.position)}) as PlayerBody
         return b
     }
     add_player_gore(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
@@ -426,6 +428,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     add_loot(position:Vec2,def:GameItem,count:number,layer:number=Layers.Normal):Loot{
         const l=this.scene.objects.add_object(new Loot(),layer,undefined,{item:def,count:count,position:position}) as Loot
+        if(this.statistics){
+            this.statistics.items.dropped[def.idString]=(this.statistics.items.dropped[def.idString]??0)+count
+        }
         return l
     }
     add_vehicle(position:Vec2,def:VehicleDef,layer:number=Layers.Normal):Vehicle{
@@ -440,7 +445,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     handleConnections(client:Client,username:string){
         let player:Player|undefined
         client.on("join",async(packet:JoinPacket)=>{
-            if (this.allowJoin&&!this.scene.objects.exist_all(client.ID,1)){
+            if (this.modeManager.can_join()&&!this.fineshed&&!this.scene.objects.exist_all(client.ID,1)){
                 const p=await this.activate_player(username,packet,client)
                 player=p
                 console.log(`${p.name} Connected`)

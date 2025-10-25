@@ -1,23 +1,25 @@
 import { type Player } from "../gameObjects/player.ts";
 import { Angle, CircleHitbox2D, Definition, getPatterningShape, Numeric, random, v2 } from "common/scripts/engine/mod.ts";
 import { FireMode, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
-import { Inventory, Item, Slot, SlotCap } from "common/scripts/engine/inventory.ts";
-import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { Inventory, Item, Slot } from "common/scripts/engine/inventory.ts";
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { ConsumingAction, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 import { ConsumibleCondition, ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
-import { OtherDef } from "common/scripts/definitions/others.ts";
-import { CellphoneAction, CellphoneActionType } from "common/scripts/packets/action_packet.ts";
-import { GameItems } from "common/scripts/definitions/alldefs.ts";
+import { GameItem, GameItems, WeaponDef } from "common/scripts/definitions/alldefs.ts";
 import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
-import { Projectiles } from "common/scripts/definitions/projectiles.ts";
+import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
 import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { InventoryGift } from "../others/gamemode.ts";
+import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 export abstract class LItem extends Item{
     abstract on_use(user:Player,slot?:LItem):void
     abstract update(user:Player):void
@@ -28,9 +30,15 @@ export abstract class LItem extends Item{
 export class GunItem extends LItem{
     def:GunDef
     use_delay:number=0
+    burst?:{
+        t:number
+        c:number
+    }
     cap:number
+    firing:boolean=false
 
     ammo:number=0
+    liquid:boolean=false
 
     type="gun"
     constructor(def?:GunDef,droppable=true){
@@ -39,6 +47,7 @@ export class GunItem extends LItem{
         this.tags.push("gun")
         this.cap=this.def.size
         this.droppable=droppable
+        this.liquid=Ammos.getFromString(def!.ammoType).liquid??false
     }
     reloading=false
     itemType=InventoryItemType.gun
@@ -47,20 +56,39 @@ export class GunItem extends LItem{
     is(other: LItem): boolean {
         return (other instanceof GunItem)&&other.def.idNumber==this.def.idNumber
     }
-    on_use(user:Player,_slot?:LItem){
+    override on_use(_user: Player, _slot?: LItem): void {
+      
+    }
+    has_consumible(user:Player):boolean{
+        return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
+    }
+    attacking():boolean{
+        return this.use_delay>0&&this.firing&&!this.reloading&&this.ammo>0
+    }
+    on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
-        if(this.use_delay<=0&&(this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))){
-            this.shot(user)
-            this.use_delay=this.def.fireDelay
+        if(this.has_consumible(user)){
+            if(this.use_delay<=0){
+                this.firing=true
+                if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
+                    this.burst={
+                        c:this.def.burst.sequence,
+                        t:this.def.burst.delay
+                    }
+                    this.use_delay=0
+                }else{
+                    this.shot(user)
+                    this.use_delay=this.def.fireDelay
+                }
+            }
         }
     }
     has_mana(user:Player){
         return user.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.boost
     }
     reload(user:Player){
-        if(!this.def.reload||this.use_delay>0||user.downed)return
-        user.attacking=0
-        if(this.ammo>=this.def.reload.capacity||!user.inventory.ammos[this.def.ammoType]){
+        if(!this.def.reload||user.downed)return
+        if(this.ammo>=this.def.reload.capacity||!user.inventory.oitems[this.def.ammoType]||this.use_delay>0){
             this.reloading=false
             return
         }
@@ -72,12 +100,14 @@ export class GunItem extends LItem{
         user.dirty=true
         user.actions.play(new ReloadAction(this))
     }
-    shot(user:Player){
+    shot(user:Player,consume:boolean=true){
         user.actions.cancel()
         user.privateDirtys.action=true
         this.reloading=false
-        if(this.def.reload)this.ammo--
-        if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+        if(consume){
+            if(this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload!.ammo_consume??1))
+            if(this.def.mana_consume)user.boost=Math.max(user.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+        }
         const position=v2.add(
             user.position,
             v2.rotate_RadAngle(v2.new(
@@ -90,7 +120,7 @@ export class GunItem extends LItem{
         }
         if(this.def.bullet){
             const bc=this.def.bullet.count??1
-            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1);
+            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1)
             for(let i=0;i<bc;i++){
                 let ang=user.rotation
                 if(this.def.spread){
@@ -121,28 +151,40 @@ export class GunItem extends LItem{
             user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
         }
 
-        user.attacking=this.def.fireDelay
         user.dirty=true
         user.privateDirtys.current_weapon=true
     }
     update(user:Player){
-        if(user.inventory.currentWeapon===this&&(this.ammo<=0||this.reloading)&&this.def.reload&&!user.actions.current_action){
-            this.reloading=true
-            this.reload(user)
+        if(user.inventory.currentWeapon===this&&!user.actions.current_action){
+            if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
+                this.reloading=true
+                this.reload(user)
+            }
+            this.use_delay-=1/user.game.tps
+            if(this.use_delay<=0){
+                this.firing=false
+                if(this.burst){
+                    if(this.burst.c<=0||this.ammo<=0){
+                        this.burst=undefined
+                        this.use_delay=this.def.fireDelay
+                    }else{
+                        this.burst.c--
+                        this.use_delay=this.burst.t
+                        this.shot(user)
+                    }
+                }
+            }
         }
-        this.use_delay-=1/user.game.tps
     }
 }
 export class AmmoItem extends LItem{
     def:AmmoDef
-    cap: number
     itemType: InventoryItemType.ammo=InventoryItemType.ammo
 
     type="ammo"
     constructor(def:AmmoDef,droppable=true){
         super()
         this.def=def
-        this.cap=def.size
         this.droppable=droppable
         this.tags.push("ammo",`ammo_${this.def.ammoType}`)
     }
@@ -171,14 +213,16 @@ export class ConsumibleItem extends LItem{
       return (other instanceof ConsumibleItem)&&other.def.idNumber==this.def.idNumber
   }
   on_use(user: Player,_slot?:LItem): void {
+    if(this.def.side_effects[0].type!==SideEffectType.Heal)return
       if(this.def.condition){
         for(const c of this.def.condition){
           switch(c){
               case ConsumibleCondition.UnfullHealth:
-                if(user.health>=user.maxHealth*(this.def.max_heal??1))return
+                
+                if(user.health>=user.maxHealth*(this.def.side_effects[0].health?.max??1))return
                 break
               case ConsumibleCondition.UnfullExtra:
-                if(!(user.boost<user.maxBoost*(this.def.max_boost??1)||user.boost_def.type!==this.def.boost_type))return
+                if(!(user.boost<user.maxBoost*(this.def.side_effects[0].boost?.max??1)||user.boost_def.type!==this.def.boost_type))return
                 break
           }
         }
@@ -188,7 +232,6 @@ export class ConsumibleItem extends LItem{
           item:this.def.idNumber!
       }
       user.dirty=true
-      user.attacking=0
       user.privateDirtys.action=true
       user.actions.play(new ConsumingAction(this))
   }
@@ -196,32 +239,32 @@ export class ConsumibleItem extends LItem{
     
   }
 }
-export class OtherItem extends LItem{
-    def:OtherDef
-    cap: number
-    itemType: InventoryItemType.other=InventoryItemType.other
+export class ProjectileItem extends LItem{
+    def:ProjectileDef
+    itemType: InventoryItemType.projectile=InventoryItemType.projectile
+    inventory:GInventory
 
-    type="other"
-    constructor(def:OtherDef,droppable:boolean=true){
+    type="projectile"
+    constructor(def:ProjectileDef,droppable:boolean=true,inventory:GInventory){
         super()
         this.def=def
-        this.cap=def.size
         this.droppable=droppable
+        this.inventory=inventory
     }
     is(other: LItem): boolean {
-        return (other instanceof OtherItem)&&other.def.idNumber==this.def.idNumber
+        return (other instanceof ProjectileItem)&&other.def.idNumber==this.def.idNumber
     }
-    on_use(_user: Player,_slot:SlotCap): void {
-      
+    on_use(user: Player,_slot?:LItem): void {
+        user.inventory.set_hand_item(this)
     }
-    cellphone_action(user:Player,action:CellphoneAction){
-        if(this.def.idString!=="cellphone")return
-        switch(action!.type){
-          case CellphoneActionType.GiveItem:
-              user.give_item(GameItems.valueNumber[action!.item_id],action!.count)
-              break
-          case CellphoneActionType.SpawnObstacle:
+    on_fire(user: Player,_slot?:LItem): void {
+        user.projectile_holding={
+            def:this.def,
+            time:this.def.cook?.fuse_time??10000
         }
+    }
+    attacking():boolean{
+        return this.inventory.owner.projectile_holding!==undefined
     }
     update(_user: Player): void {
       
@@ -231,6 +274,7 @@ export class MeleeItem extends LItem{
     def:MeleeDef
     itemType: InventoryItemType.melee=InventoryItemType.melee
     use_delay:number=0
+    firing:boolean=false
 
     type="melee"
     constructor(def:MeleeDef,droppable=true){
@@ -242,6 +286,9 @@ export class MeleeItem extends LItem{
     is(other: LItem): boolean {
       return (other instanceof MeleeItem)&&other.def.idNumber==this.def.idNumber
     }
+    attacking():boolean{
+        return this.use_delay>0&&this.firing
+    }
     attack(user:Player):void{
         if(user.inventory.weaponIdx!==0)return
         const position=v2.add(
@@ -250,6 +297,7 @@ export class MeleeItem extends LItem{
         )
         const hb=new CircleHitbox2D(position,this.def.radius)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
+        user.current_animation=undefined
         for(const c of collidibles){
             if(!hb.collidingWith(c.hb))continue
               if(c instanceof Obstacle){
@@ -273,41 +321,55 @@ export class MeleeItem extends LItem{
             }
         }
     }
-    on_use(user: Player,_slot?:LItem): void {
+    override on_use(_user: Player, _slot?: LItem): void {
+      
+    }
+    on_fire(user: Player,_slot?:LItem): void {
         if(this.use_delay<=0){
+            user.current_animation={
+                type:PlayerAnimationType.Melee
+            }
+            user.dirty=true
             for(const t of this.def.damage_delays){
               user.game.addTimeout(this.attack.bind(this,user),t)
               this.use_delay=this.def.attack_delay
             }
+            this.firing=true
         }
     }
     update(user: Player): void {
-        if(this.use_delay>0)this.use_delay-=1/user.game.tps
+        if(this.use_delay>0){
+            this.use_delay-=1/user.game.tps
+        }else{
+            this.firing=false
+        }
     }
 }
 export class GInventory extends Inventory<LItem>{
     weapons:{
       0?:MeleeItem,
       1?:GunItem,
-      2?:GunItem
+      2?:GunItem,
+      3?:ProjectileItem
     }={0:undefined,1:undefined,2:undefined}
     owner:Player
 
     weaponIdx:number=-1
-    currentWeapon:GunItem|MeleeItem|undefined
-    currentWeaponDef:GunDef|MeleeDef|undefined
+    currentWeapon?:GunItem|MeleeItem|ProjectileItem
+    currentWeaponDef?:GunDef|MeleeDef|ProjectileDef
 
-    ammos:Record<string,number>={}
+    oitems:Record<string,number>={}
     backpack!:BackpackDef
-    default_melee:string="survival_knife"
+    default_melee:MeleeDef
+    default_backpack:BackpackDef
 
     set_backpack(backpack?:BackpackDef){
-        if(!backpack)backpack=Backpacks.getFromString("null_pack")
+        if(!backpack)backpack=this.default_backpack
         if(this.backpack&&this.backpack.idString===backpack.idString)return
         this.backpack=backpack
         for(const s of this.slots){
             if(s.item){
-              s.item.limit_per_slot=backpack.max[s.item.def.idString]??15
+                s.item.limit_per_slot=backpack.max[s.item.def.idString]??this.default_backpack.max[s.item.def.idString]??15
             }
         }
         if(this.slots.length>backpack.slots){
@@ -321,17 +383,38 @@ export class GInventory extends Inventory<LItem>{
         this.owner.privateDirtys.inventory=true
     }
 
-    constructor(owner:Player,default_melee:string="survival_knife"){
+    constructor(owner:Player,default_melee:MeleeDef=Melees.getFromString("survival_knife")){
         super(4)
         this.owner=owner
         this.default_melee=default_melee
+        this.default_backpack=Backpacks.getFromString("null_pack")
         this.set_weapon(0,default_melee)
         this.set_backpack()
     }
 
+    set_hand_item(val:GunItem|MeleeItem|ProjectileItem){
+        this.currentWeapon=val
+        this.currentWeaponDef=val?.def
+        this.owner.privateDirtys.weapons=true
+        this.owner.privateDirtys.current_weapon=true
+        if(this.currentWeapon&&(this.currentWeapon instanceof GunItem||this.currentWeapon instanceof MeleeItem)){
+            const id=((this.currentWeaponDef) as GunDef|MeleeDef)
+            if(id.switchDelay&&this.currentWeapon.use_delay<=id.switchDelay){
+                this.currentWeapon!.use_delay=id.switchDelay
+                this.currentWeapon!.firing=true
+            }
+        }
+
+        this.owner.current_animation=undefined
+        this.owner.dirty=true
+    }
+
     set_current_weapon_index(idx:number){
         if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
-      
+
+        const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
+        this.weaponIdx=idx
+
         if(this.currentWeapon){
             switch(this.currentWeapon.type){
               case "gun":
@@ -343,59 +426,44 @@ export class GInventory extends Inventory<LItem>{
             }
         }
 
-        const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
-        this.weaponIdx=idx
-
-        this.currentWeapon=val
-        this.currentWeaponDef=val?.def
-
-        this.owner.recoil=undefined
-        this.owner.privateDirtys.weapons=true
-        this.owner.privateDirtys.current_weapon=true
-        this.owner.privateDirtys.action=true
+        this.set_hand_item(val!)
         this.owner.actions.cancel()
-        if(this.currentWeapon){
-          if(this.currentWeaponDef!.switchDelay&&this.currentWeapon.use_delay<=this.currentWeaponDef!.switchDelay){
-            this.currentWeapon!.use_delay=this.currentWeaponDef!.switchDelay
-          }
-          this.owner.attacking=0
-        }
-
-        this.owner.current_animation=undefined
-        this.owner.dirty=true
+        this.owner.privateDirtys.action=true
+        this.owner.recoil=undefined
+        this.owner.throw_using_projectile()
     }
-    set_weapon(slot:keyof typeof this.weapons=0,id:string="",drop:boolean=true){
+    set_weapon(slot:keyof typeof this.weapons=0,wep:WeaponDef,drop:boolean=true){
         if(drop)this.drop_weapon(slot,false)
         if(slot===0){
-          this.weapons[slot]=new MeleeItem(Melees.getFromString(id),true)
+          this.weapons[slot]=new MeleeItem(wep as MeleeDef,true)
         }else if(slot==1||slot==2){
-          this.weapons[slot]=new GunItem(Guns.getFromString(id),true)
+          this.weapons[slot]=new GunItem(wep as GunDef,true)
         }
         this.owner.privateDirtys.weapons=true
         this.owner.privateDirtys.current_weapon=true
         if(slot===this.weaponIdx){this.weaponIdx=-1;this.set_current_weapon_index(slot)}
     }
-    give_gun(id:string=""):boolean{
-        const dd=Guns.getFromString(id)
-        if(!this.weapons[1]){
-            this.set_weapon(1,id)
-            return true
-        }
-        if(!this.weapons[2]){
-            this.set_weapon(2,id)
-            return true
-        }
+    give_gun(dd:GunDef):boolean{
+        const id=dd.idString
         if(dd.dual&&!dd.dual_from){
             if(this.weapons[1]?.def.idString===dd.idString){
-                this.set_weapon(1,id+"_dual",false)
+                this.set_weapon(1,Guns.getFromString(id+"_dual"),false)
                 return true
             }else if(this.weapons[2]?.def.idString===dd.idString){
-                this.set_weapon(2,id+"_dual",false)
+                this.set_weapon(2,Guns.getFromString(id+"_dual"),false)
                 return true
             }
         }
+        if(!this.weapons[1]){
+            this.set_weapon(1,dd)
+            return true
+        }
+        if(!this.weapons[2]){
+            this.set_weapon(2,dd)
+            return true
+        }
         if(this.weaponIdx>0){
-            this.set_weapon(this.weaponIdx as keyof typeof this.weapons,id)
+            this.set_weapon(this.weaponIdx as keyof typeof this.weapons,dd)
         }else if(this.weaponIdx===0){
             return false
         }
@@ -403,49 +471,67 @@ export class GInventory extends Inventory<LItem>{
     }
     drop_weapon(slot:keyof typeof this.weapons=0,normal:boolean=true){
         if(!this.weapons[slot])return
+        let l:Loot
         if(this.weapons[slot].itemType===InventoryItemType.gun){
             if(this.weapons[slot].ammo>0){
-                this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType) as unknown as GameItem,this.weapons[slot].ammo)
+                this.give_item(Ammos.getFromString((this.weapons[slot].def as GunDef).ammoType),this.weapons[slot].ammo)
             }
             if(this.weapons[slot].def.dual_from){
-                for(let i=0;i<2;i++)this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from) as unknown as GameItem,1)
+                for(let i=0;i<2;i++)l=this.owner.game.add_loot(this.owner.position,Guns.getFromString(this.weapons[slot].def.dual_from),1)
             }else{
-                this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+                l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def,1)
             }
+        }else if(this.weapons[slot].itemType===InventoryItemType.melee&&this.weapons[slot].def.idString!==this.default_melee.idString){
+            l=this.owner.game.add_loot(this.owner.position,this.weapons[slot].def,1)
+            this.set_weapon(0,this.default_melee,false)
+            return
         }else{
-            this.owner.game.add_loot(this.owner.position,this.weapons[slot].def as unknown as GameItem,1)
+            return
         }
-        //l.velocity.x=-3
         this.weapons[slot]=undefined
         this.owner.actions.cancel()
         this.owner.privateDirtys.weapons=true
         if(slot===this.weaponIdx&&normal)this.set_current_weapon_index(0)
-          if(slot===0){
+            l!.velocity.x=-1,5
+        if(slot===0){
             this.set_weapon(slot,this.default_melee)
-          }
+        }
+    }
+    swamp_guns(){
+        const gun1=this.weapons[1]
+        const gun2=this.weapons[2]
+        this.weapons[1]=gun2
+        this.weapons[2]=gun1
+        if(this.weaponIdx===1){
+            this.weaponIdx=2
+        }else if(this.weaponIdx===2){
+            this.weaponIdx=1
+        }
+        this.owner.privateDirtys.current_weapon=true
+        this.owner.privateDirtys.weapons=true
     }
     drop_ammo(idx:number=0){
       const a=Ammos.getFromNumber(idx)
-      const rc=Math.min(a.drop_count??60,this.ammos[a.idString])
+      const rc=Math.min(a.drop_count??60,this.oitems[a.idString])
       this.consume_ammo(a.idString,rc)
-      this.owner.game.add_loot(this.owner.position,a as unknown as GameItem,rc)
+      this.owner.game.add_loot(this.owner.position,a,rc)
     }
     give_item(def:GameItem,count:number,drop_n:boolean=true):number{
         switch(def.item_type){
             case InventoryItemType.ammo:{
-                this.owner.privateDirtys.ammos=true
+                this.owner.privateDirtys.oitems=true
                 const max=this.backpack.max[def.idString]??0
-                const ac=this.ammos[def.idString]??0
+                const ac=this.oitems[def.idString]??0
                 const dp=Math.max((ac+count)-max,0)
-                this.ammos[def.idString]=Numeric.max(ac+count,max)
+                this.oitems[def.idString]=Numeric.max(ac+count,max)
                 if(drop_n&&dp){
                   this.owner.game.add_loot(this.owner.position,def,dp)
                 }
                 return dp
-              }
+            }
             case InventoryItemType.consumible:{
                 const item=new ConsumibleItem(def as unknown as ConsumibleDef,undefined,this)
-                item.limit_per_slot=this.backpack.max[item.def.idString]??15
+                item.limit_per_slot=this.backpack.max[item.def.idString]??this.default_backpack.max[item.def.idString]??15
                 const ov=this.add(item,count)
                 if(ov){
                   this.owner.game.add_loot(this.owner.position,def,ov)
@@ -453,11 +539,75 @@ export class GInventory extends Inventory<LItem>{
                 this.owner.privateDirtys.inventory=true
                 break
             }
-            case InventoryItemType.equipament:
+            case InventoryItemType.projectile:{
+                const item=new ProjectileItem(def as unknown as ProjectileDef,undefined,this)
+                item.limit_per_slot=this.backpack.max[item.def.idString]??this.default_backpack.max[item.def.idString]??5
+                const ov=this.add(item,count)
+                if(ov){
+                  this.owner.game.add_loot(this.owner.position,def,ov)
+                }
+                this.owner.privateDirtys.inventory=true
                 break
-            /*case InventoryItemType.other:
-                this.add(new OtherItem(def as unknown as OtherDef,droppable),count)
-                break*/
+            }
+            case InventoryItemType.vest:{
+                const d=def as unknown as VestDef
+                if(!this.owner.vest){
+                    this.owner.vest=d
+                    this.owner.dirty=true
+                    return count-1
+                }else if(this.owner.vest.level<d.level){
+                    this.owner.game.add_loot(this.owner.position,this.owner.vest,1)
+                    this.owner.vest=d
+                    this.owner.dirty=true
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.helmet:{
+                const d=def as unknown as HelmetDef
+                if(!this.owner.helmet){
+                    this.owner.helmet=d
+                    this.owner.dirty=true
+                    return count-1
+                }else if(this.owner.helmet.level<d.level){
+                    this.owner.game.add_loot(this.owner.position,this.owner.helmet,1)
+                    this.owner.helmet=d
+                    this.owner.dirty=true
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.backpack:{
+                const d=def as unknown as BackpackDef
+                if(this.backpack.level<d.level){
+                    this.owner.dirty=true
+                    this.set_backpack(d)
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.gun:{
+                const d=def as unknown as GunDef
+                const g=this.give_gun(d)
+                return g?count-1:count
+            }
+            case InventoryItemType.melee:{
+                this.set_weapon(0,def as unknown as MeleeDef)
+                return count-1
+            }
+            case InventoryItemType.skin:{
+                if(this.owner.skin.idString!==def.idString){
+                    this.owner.game.add_loot(this.owner.position,this.owner.skin,1)
+                    this.owner.skin=def as unknown as SkinDef
+                    this.owner.dirty=true
+                    return count-1
+                }
+                break
+            }
+            case InventoryItemType.accessorie:
+                break
+            case InventoryItemType.scope:
+                break
         }
         this.owner.privateDirtys.inventory=true
         return count
@@ -466,7 +616,7 @@ export class GInventory extends Inventory<LItem>{
         const s=this.slots[si]
         if(s?.item&&s.quantity>0){
             const c=Math.min(count,s.quantity)
-            this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,c)
+            this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,c)
             s.remove(c)
             this.owner.privateDirtys.inventory=true
         }
@@ -480,19 +630,57 @@ export class GInventory extends Inventory<LItem>{
         }
     }
     consume_ammo(a:string,val:number):number{
-        this.owner.privateDirtys.ammos=true
-        if(this.ammos[a]){
-            const con=Numeric.max(val,this.ammos[a])
-            this.ammos[a]=Numeric.max(this.ammos[a],this.ammos[a]-val)
-            if(this.ammos[a]===0){
-                delete this.ammos[a]
+        this.owner.privateDirtys.oitems=true
+        if(this.oitems[a]){
+            const con=Numeric.max(val,this.oitems[a])
+            this.oitems[a]=Numeric.max(this.oitems[a],this.oitems[a]-val)
+            if(this.oitems[a]===0){
+                delete this.oitems[a]
             }
             return con
         }
         return 0
     }
+    gift(g:InventoryGift){
+        if(g.vest){
+            const v=g.vest(this.owner)
+            if(v)this.owner.vest=v
+        }
+        if(g.helmet){
+            const h=g.helmet(this.owner)
+            if(h)this.owner.helmet=h
+        }
+        if(g.backpack){
+            const b=g.backpack(this.owner)
+            this.set_backpack(b)
+        }
+        if(g.melee){
+            const mel=g.melee(this.owner)
+            if(mel)this.set_weapon(0,mel,false)
+        }
+        if(g.gun1){
+            const gun=g.gun1(this.owner)
+            if(gun){
+                this.set_weapon(1,gun,false)
+                this.weapons[1]!.ammo=gun.reload?.capacity??0
+            }
+        }
+        if(g.gun2){
+            const gun=g.gun2(this.owner)
+            if(gun){
+                this.set_weapon(1,gun,false)
+                this.weapons[2]!.ammo=gun.reload?.capacity??0
+            }
+        }
+        if(g.items){
+            const items=g.items(this.owner)
+            for(const i of items){
+                this.give_item(i.item,i.count,false)
+            }
+        }
+    }
     clear(){
-        this.ammos={}
+        this.oitems={}
         this.owner.vest=undefined
         this.owner.helmet=undefined
         this.set_backpack()
@@ -501,7 +689,7 @@ export class GInventory extends Inventory<LItem>{
         }
         this.owner.privateDirtys.inventory=true
         this.owner.privateDirtys.weapons=true
-        this.owner.privateDirtys.ammos=true
+        this.owner.privateDirtys.oitems=true
         this.weapons[1]=undefined
         this.weapons[2]=undefined
         this.set_weapon(0,this.default_melee)
@@ -512,42 +700,49 @@ export class GInventory extends Inventory<LItem>{
         this.drop_weapon(1)
         this.drop_weapon(2)
         const l:Loot[]=[]
-        for(const s of Object.keys(this.ammos)){
-            const def=Ammos.getFromString(s) as unknown as GameItem
+        for(const s of Object.keys(this.oitems)){
+            const def=Ammos.getFromString(s)
             //const pos=this.owner.hb.randomPoint()
             const dir=random.float(-3.141592,3.141592)
             const r=(this.owner.hb as CircleHitbox2D).radius
             const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
-            while(this.ammos[s]>0){
-                const rc=Math.min(this.ammos[s],60)
+            while(this.oitems[s]>0){
+                const rc=Math.min(this.oitems[s],60)
                 const ll=this.owner.game.add_loot(pos,def,rc)
                 l.push(ll);
                 ll.push(random.float(1,7),dir+random.float(-0.03,0.03));
                 //(ll.hb as CircleHitbox2D).radius=0
-                this.ammos[s]-=rc
+                this.oitems[s]-=rc
             }
+            delete this.oitems[s]
         }
         if(this.owner.vest){
-            this.owner.game.add_loot(this.owner.position,this.owner.vest as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.owner.vest,1)
+            this.owner.vest=undefined
         }
         if(this.owner.helmet){
-            this.owner.game.add_loot(this.owner.position,this.owner.helmet as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.owner.helmet,1)
+            this.owner.helmet=undefined
         }
         if(this.backpack&&this.backpack.level){
-            this.owner.game.add_loot(this.owner.position,this.backpack as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.backpack,1)
+            this.set_backpack()
         }
         if(this.owner.skin.idString!==this.owner.loadout.skin){
-            this.owner.game.add_loot(this.owner.position,this.owner.skin as unknown as GameItem,1)
+            this.owner.game.add_loot(this.owner.position,this.owner.skin,1)
         }
         for(const s of this.slots){
             if(s.item&&s.quantity>0){
-                this.owner.game.add_loot(this.owner.position,s.item.def as unknown as GameItem,s.quantity)
+                this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity)
                 s.remove(s.quantity)
             }
         }
         for(const loot of l){
             loot.is_new=true
         }
+        this.owner.privateDirtys.oitems=true
+        this.owner.privateDirtys.inventory=true
+        this.owner.privateDirtys.weapons=true
     }
     update(){
         this.weapons[0]?.update(this.owner)

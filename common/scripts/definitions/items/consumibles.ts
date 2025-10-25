@@ -4,7 +4,7 @@ import { Definitions,Definition } from "../../engine/mod.ts"
 import { DefaultFistRig, ItemQuality } from "../../others/item.ts";
 import { Boosts, BoostType } from "../player/boosts.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
-import { GameItem, InventoryItemType } from "../utils.ts";
+import { InventoryItemType } from "../utils.ts";
 
 export enum ConsumibleCondition{
     UnfullHealth,
@@ -74,15 +74,17 @@ export interface ConsumibleDef extends Definition{
     sounds?:{
         using?:string
     }
+    boost_type?:BoostType
     drink?:boolean
     animation?:AKeyFrame[]
+    item_type?:InventoryItemType.consumible
 }
-export const Consumibles=new Definitions<ConsumibleDef,GameItem>((i)=>{
+export const Consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
     i.item_type=InventoryItemType.consumible
 })
 Consumibles.insert(
     {
-        idString:"gauze",
+        idString:"bandage",
         side_effects:[
             {
                 type:SideEffectType.Heal,
@@ -130,7 +132,8 @@ Consumibles.insert(
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("soda",2.5),
-        drink:true
+        drink:true,
+        boost_type:BoostType.Adrenaline
     },
     {
         idString:"inhaler",
@@ -146,6 +149,7 @@ Consumibles.insert(
         use_delay:4.5,
         quality:ItemQuality.Uncommon,
         condition:[ConsumibleCondition.UnfullExtra],
+        boost_type:BoostType.Adrenaline
     },
     {
         idString:"yellow_pills",
@@ -161,6 +165,7 @@ Consumibles.insert(
         use_delay:6,
         quality:ItemQuality.Rare,
         condition:[ConsumibleCondition.UnfullExtra],
+        boost_type:BoostType.Adrenaline
     },
 
     //Shield
@@ -183,7 +188,8 @@ Consumibles.insert(
             using:"using_small_potion"
         },
         animation:ConsumiblesAnimations.drinking("small_blue_potion",2.65),
-        drink:true
+        drink:true,
+        boost_type:BoostType.Shield
     },
     {
         idString:"blue_potion",
@@ -203,7 +209,8 @@ Consumibles.insert(
             using:"using_potion"
         },
         animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2.new(0.5,0.35)),
-        drink:true
+        drink:true,
+        boost_type:BoostType.Shield
     },
     {
         idString:"blue_pills",
@@ -218,7 +225,8 @@ Consumibles.insert(
         ],
         use_delay:6,
         quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        boost_type:BoostType.Shield
     },
     //Mana
     {
@@ -239,7 +247,8 @@ Consumibles.insert(
             using:"using_small_potion"
         },
         animation:ConsumiblesAnimations.drinking("small_purple_potion",2.6),
-        drink:true
+        drink:true,
+        boost_type:BoostType.Mana
     },
     {
         idString:"purple_potion",
@@ -259,7 +268,8 @@ Consumibles.insert(
             using:"using_potion"
         },
         animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2.new(0.5,0.35)),
-        drink:true
+        drink:true,
+        boost_type:BoostType.Mana
     },
     {
         idString:"purple_pills",
@@ -274,7 +284,8 @@ Consumibles.insert(
         ],
         use_delay:4.5,
         quality:ItemQuality.Legendary,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        boost_type:BoostType.Mana
     },
     //Addiction
     {
@@ -292,6 +303,7 @@ Consumibles.insert(
         quality:ItemQuality.Epic,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("small_red_crystal",1.4),
+        boost_type:BoostType.Addiction
     },
     {
         idString:"red_crystal",
@@ -308,6 +320,7 @@ Consumibles.insert(
         quality:ItemQuality.Epic,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking("red_crystal",2.9),
+        boost_type:BoostType.Addiction
     },
     {
         idString:"red_pills",
@@ -322,7 +335,8 @@ Consumibles.insert(
         ],
         use_delay:4.5,
         quality:ItemQuality.Legendary,
-        condition:[ConsumibleCondition.UnfullExtra]
+        condition:[ConsumibleCondition.UnfullExtra],
+        boost_type:BoostType.Addiction
     },
     //Misc
     {
@@ -333,6 +347,7 @@ Consumibles.insert(
                 type:SideEffectType.Parachute
             }
         ],
-        quality:ItemQuality.Mythic
+        quality:ItemQuality.Mythic,
+        boost_type:BoostType.Mana
     },
 )

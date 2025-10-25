@@ -2,13 +2,12 @@ import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { CreatureData } from "common/scripts/others/objectsEncode.ts";
-import { type CreatureDef } from "../../../../common/scripts/definitions/objects/creatures.ts";
+import { type CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { CreaturesUpdates, CreatureUFunc } from "../defs/creatures_extra.ts";
 import { DamageParams } from "../others/utils.ts";
 import { LootTableItemRet } from "common/scripts/engine/inventory.ts";
-import { GameItem } from "common/scripts/definitions/utils.ts";
-import { LootTables } from "common/scripts/definitions/maps/base.ts";
 import { Obstacle } from "./obstacle.ts";
+import { GameItem } from "common/scripts/definitions/alldefs.ts";
 
 export class Creature extends ServerGameObject{
     stringType:string="creature"
@@ -86,7 +85,7 @@ export class Creature extends ServerGameObject{
         this.update_func=this.def.server_side.update?CreaturesUpdates[this.def.server_side.update](this.def.server_side.update_parameters,this):undefined
         this.health=this.def.health
         if(this.def.lootTable){
-            this.loot=LootTables.get_loot(this.def.lootTable,{withammo:true})
+            this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true})
         }
     }
     override getData(): CreatureData {

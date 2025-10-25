@@ -1,5 +1,5 @@
 import { SignalManager, Vec2, v2 } from "common/scripts/engine/mod.ts";
-import { type Camera2D } from "./container.ts";
+import { type Camera2D } from "./container_2d.ts";
 
 export enum Key{
     A=0,
@@ -206,6 +206,8 @@ export class KeyListener{
     mouse_b_down:number[]
     mouse_b_up:number[]
 
+    focus:boolean=true
+
     public listener:SignalManager
     constructor(){
         this.keys=[]
@@ -219,6 +221,7 @@ export class KeyListener{
     }
     bind(elem:HTMLElement){
         elem.addEventListener("keydown",(e:KeyboardEvent)=>{
+            if(!this.focus)return
             const k=KeyNames[e.keyCode]
             this.keys.push(k)
             this.listener.emit(KeyEvents.KeyDown,k)
@@ -229,6 +232,7 @@ export class KeyListener{
             this.listener.emit(KeyEvents.KeyUp,k)
         })
         elem.addEventListener("mousedown",(e:MouseEvent)=>{
+            if(!this.focus)return
             const b=KeyNames[e.button+1000]
             this.mouse_b[b]=true
             if (!this.mouse_b_down.includes(b)) {
@@ -271,13 +275,17 @@ export class KeyListener{
 
 export class MousePosListener{
     private _position:Vec2
+    private position_old:Vec2
     private readonly meter_size:number
     public listener:SignalManager
     get position():Vec2{
         return v2.dscale(this._position,this.meter_size)
     }
+    mouse_speed:Vec2=v2.new(0,0)
+    focus:boolean=true
     constructor(meter_size:number){
         this._position=v2.new(0,0)
+        this.position_old=v2.new(0,0)
         this.meter_size=meter_size
         this.listener=new SignalManager()
     }
@@ -286,8 +294,11 @@ export class MousePosListener{
     }
     bind(elem:HTMLElement,canvas:HTMLCanvasElement){
         elem.addEventListener("pointermove",(e:MouseEvent)=>{
+            if(!this.focus)return
             const rect=canvas.getBoundingClientRect()
+            this.position_old=this._position
             this._position=v2.new(e.x-rect.left,e.y-rect.top)
+            this.mouse_speed=v2.dscale(v2.sub(this.position_old,this._position),this.meter_size)
             this.listener.emit(MouseEvents.MouseMove,this.position)
         })
     }
@@ -443,6 +454,14 @@ export class InputManager {
         this.axis.set(id,{up,down,left,right,old_mov:v2.new(0,0),name:id})
     }
 
+    get focus():boolean{
+        return this.keys.focus
+    }
+    set focus(val:boolean){
+        this.keys.focus=val
+        this.mouse.focus=val
+    }
+
     constructor(meterSize: number) {
         this.gamepad = new GamepadManager();
         this.mouse = new MousePosListener(meterSize);
@@ -457,9 +476,9 @@ export class InputManager {
         });
     }
 
-    bind(element: HTMLElement, canvas: HTMLCanvasElement) {
-        this.keys.bind(element);
-        this.mouse.bind(element, canvas);
+    bind(canvas: HTMLCanvasElement) {
+        this.keys.bind(document as unknown as HTMLElement);
+        this.mouse.bind(document as unknown as HTMLElement, canvas);
     }
 
     on(event: "actiondown" | "actionup" | "axis", callback: ((event: ActionEvent) => void)|((event:AxisActionEvent)=>void)) {

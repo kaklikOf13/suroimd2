@@ -1,12 +1,14 @@
 import { CircleHitbox2D, random, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { Player } from "./player.ts";
 import { ExplosionData } from "common/scripts/others/objectsEncode.ts";
-import { ExplosionDef } from "common/scripts/definitions/explosions.ts";
+import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { Obstacle } from "./obstacle.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";
+import { Loot } from "./loot.ts";
+import { Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
 
 export class Explosion extends ServerGameObject{
     stringType:string="explosion"
@@ -33,13 +35,13 @@ export class Explosion extends ServerGameObject{
                     this.game.add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner,undefined,this.defs)
                 }
             }
-            /*if(this.defs.projectiles){
+            if(this.defs.projectiles){
                 for(let i=0;i<this.defs.projectiles.count;i++){
-                    const p=this.game.add_projectile(this.position,Projectiles.getFromString(this.defs.projectiles.def),this.owner)
+                    const p=this.game.add_projectile(v2.duplicate(this.position),Projectiles.getFromString(this.defs.projectiles.def),this.owner,this.layer)
                     p.velocity=v2.random(-this.defs.projectiles.speed,this.defs.projectiles.speed)
                     p.angularVelocity=this.defs.projectiles.angSpeed+(Math.random()*this.defs.projectiles.randomAng)
                 }
-            }*/
+            }
 
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
             const damageCollisions:ServerGameObject[]=[]
@@ -48,19 +50,21 @@ export class Explosion extends ServerGameObject{
                     case "player":
                         if(obj.hb&&this.hb.collidingWith(obj.hb)){
                             damageCollisions.push(obj)
-                            break
                         }
                         break
                     case "creature":
                         if(obj.hb&&this.hb.collidingWith(obj.hb)){
                             damageCollisions.push(obj)
-                            this.destroy()
+                        }
+                        break
+                    case "loot":
+                        if(obj.hb.collidingWith(this.hb)){
+                            damageCollisions.push(obj)
                         }
                         break
                     case "obstacle":
                         if(obj.hb&&this.hb.collidingWith(obj.hb)){
                             damageCollisions.push(obj)
-                            this.destroy()
                         }
                         break
                 }
@@ -76,6 +80,9 @@ export class Explosion extends ServerGameObject{
                         break
                     case "obstacle":
                         (obj as Obstacle).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.duplicate(obj.position),critical:false})
+                        break
+                    case "loot":
+                        (obj as Loot).push(Math.min(0,v2.distance(obj.position,this.position)-this.radius)*-6,v2.lookTo(this.position,obj.position))
                         break
                 }
             }

@@ -1,13 +1,13 @@
-import { Angle, Hitbox2D, LootTableItemRet, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
-import { ObstacleDef } from "../../../../common/scripts/definitions/objects/obstacles.ts";
+import { Angle, Hitbox2D, LootTableItemRet, Numeric, Orientation, RotationMode, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { ObstacleDef, ObstacleDoorStatus } from "../../../../common/scripts/definitions/objects/obstacles.ts";
 import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { GameItem } from "common/scripts/definitions/utils.ts";
-import { LootTables } from "common/scripts/definitions/maps/base.ts";
-import { Explosions } from "common/scripts/definitions/explosions.ts";
+import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
+import { GameItem } from "common/scripts/definitions/alldefs.ts";
 
 export class Obstacle extends ServerGameObject{
     stringType:string="obstacle"
@@ -26,19 +26,49 @@ export class Obstacle extends ServerGameObject{
 
     variation:number=1
     rotation:number=0
+    side:Orientation=0
+    actived:boolean=false
 
     dead:boolean=false
 
     loot:LootTableItemRet<GameItem>[]=[]
 
-    update(_dt:number): void {
+    door?:ObstacleDoorStatus
 
+    update(_dt:number): void {
     }
-    interact(_user: Player): void {
-        return
+    interact(user: Player): void {
+        if(this.actived)return
+        if(this.def.interactDestroy){
+            this.kill({
+                amount:this.health,
+                position:this.position,
+                reason:DamageReason.Player,
+                owner:user,
+                critical:false
+            })
+        }
+        if(this.door!==undefined){
+            this.door!.open=this.door!.open===0?1:0
+            const dd=this.def.expanded_behavior!
+            if(dd.open_delay!==undefined&&dd.open_delay>0){
+                this.actived=true
+                this.game.addTimeout(()=>{
+                    this.actived=false
+                    this.door_change_hb()
+                },dd.open_delay!)
+            }else{
+                this.door_change_hb()
+            }
+            this.dirtyPart=true
+        }
+    }
+
+    door_change_hb(){
+        
     }
     
-    create(args: {def:ObstacleDef,rotation:number,variation?:number}): void {
+    create(args: {def:ObstacleDef,rotation?:number,variation?:number}): void {
         this.def=args.def
         
         if(args.variation){
@@ -46,47 +76,75 @@ export class Obstacle extends ServerGameObject{
         }else if(this.def.variations){
             this.variation=Numeric.clamp(random.int(1,this.def.variations+1),1,this.def.variations)
         }
-        if(args.rotation){
-            this.rotation=args.rotation
+        if(args.rotation===undefined){
+            if(this.def.rotationMode===RotationMode.limited){
+                this.side=random.int(0,3) as Orientation
+                this.rotation=Angle.side_rad(this.side)
+            }else{
+                this.rotation=Angle.random_rotation_modded(this.def.rotationMode??RotationMode.full)
+            }
         }else if(this.def.rotationMode){
-            this.rotation=Angle.random_rotation_modded(this.def.rotationMode)
+            if(this.def.rotationMode===RotationMode.limited){
+                this.side=args.rotation as Orientation
+                this.rotation=Angle.side_rad(this.side)
+            }else{
+                this.rotation=args.rotation!
+            }
         }
         this.health=this.def.health
 
         if(this.def.lootTable){
-            this.loot=LootTables.get_loot(this.def.lootTable,{withammo:true})
+            this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true})
         }
 
         if(this.def.scale?.min&&this.def.scale.max){
             this.maxScale=random.float(this.def.scale.min,this.def.scale.max)
             this.scale=this.maxScale
         }
+
+        switch(this.def.expanded_behavior?.type??-1){
+            case 0:{
+                this.updatable=true
+                this.door={
+                    locked:false,
+                    open:0,
+                }
+                break
+            }
+            default:
+                this.updatable=false
+        }
     }
     set_position(position:Vec2){
         if(this.def.hitbox){
-            this.hb=this.def.hitbox.transform(position)
+            this.hb=this.def.hitbox.transform(position,undefined,this.side)
         }else{
             this.position=position
         }
 
         if(this.def.spawnHitbox){
-            this.spawnHitbox=this.def.spawnHitbox.transform(position)
+            this.spawnHitbox=this.def.spawnHitbox.transform(position,undefined,this.side)
         }else{
             this.spawnHitbox=this.hb.clone()
         }
         this.reset_scale()
+        this.manager.cells.updateObject(this)
     }
     override getData(): ObstacleData {
         return {
             full:{
-                definition:this.def.idNumber!,
+                definition:this.def,
                 position:this.position,
                 variation:this.variation,
-                rotation:this.rotation
+                rotation:{
+                    side:this.side,
+                    rotation:this.rotation
+                }
             },
             health:this.health/this.def.health,
             dead:this.dead,
-            scale:this.scale
+            scale:this.scale,
+            door:this.door
         }
     }
     reset_scale(){
@@ -94,7 +152,7 @@ export class Obstacle extends ServerGameObject{
             const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0)
             const pos=v2.duplicate(this.position)
-            this.hb=this.def.hitbox.transform(pos,this.scale)
+            this.hb=this.def.hitbox.transform(pos,this.scale,this.side)
             this.dirty=true
         }
     }

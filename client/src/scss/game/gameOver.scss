@@ -1,35 +1,71 @@
+@use "../palette.scss";
 #gameover-container{
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
-    margin: auto;
     position: absolute;
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    font-family: "Russo-One";
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    font-size: 24px;
-    pointer-events: none;
-    transition: opacity 2s linear;
-    opacity: 0%;
-    *{
-        padding: 5px;
-        pointer-events: auto;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+    z-index: 100;
+    #gameover-main-message{
+        font-family: "Russo-One";
+        font-size: 70px;
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        margin-top: 100px;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        #gameover-eliminator{
+            font-size: 50px;
+        }
+        #gameover-eliminated{
+            color: #e05;
+        }
+        #gameover-you-win{
+            color: #fe3;
+        }
     }
-    #gameover-status{
-        color:#eee;
+    #gameover-buttons{
+        bottom: 0px;
+        width: 100%;
+        height: fit-content;
+        background:linear-gradient(90deg, rgb(3, 21, 71),rgb(1, 4, 43));
+        position: absolute;
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 0px;
+        .btn-blue{
+            border-radius: 0px;
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
+            
+            &:hover {
+                transform: none;
+            }
+        }
     }
-    #gameover-menu-btn{
-        font-size: 15px;
-        width: 180px;
-        margin-top: 150px;
-        margin-bottom: 20px;
-        margin-left: auto;
-        margin-right: auto;
+    
+    @media screen and (max-width: palette.$screen_medium) {
+        #gameover-main-message{
+            font-size: 40px;
+            margin-top: 40px;
+            .badge-icon {
+                width: 18px;
+                margin-bottom: -3px;
+                margin-left: 3px;
+            }
+            #gameover-eliminator{
+                font-size: 20px;
+            }
+        }
+        #gameover-buttons{
+            .btn-blue{
+                font-size: 17px;
+            }
+        }
     }
 }
 #gameover-you-dead {

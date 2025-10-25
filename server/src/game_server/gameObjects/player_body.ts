@@ -4,6 +4,7 @@ import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { type Player } from "./player.ts";
 import { type PlayerBodyData } from "common/scripts/others/objectsEncode.ts";
 import { random } from "common/scripts/engine/random.ts";
+import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 
 
 export class PlayerBody extends ServerGameObject{
@@ -11,6 +12,7 @@ export class PlayerBody extends ServerGameObject{
     numberType: number=8
 
     player_name:string=""
+    player_badge:string=""
 
     velocity:Vec2
     old_pos:Vec2=v2.new(-1,-1)
@@ -36,9 +38,10 @@ export class PlayerBody extends ServerGameObject{
     }
     override interact(_user: Player): void {
     }
-    create(args: {position:Vec2,owner_name:string,gore_type?:number,gore_id?:number}): void {
+    create(args: {position:Vec2,owner_name:string,owner_badge:string,gore_type?:number,gore_id?:number}): void {
         this.hb=new CircleHitbox2D(args.position,0.4)
         this.player_name=args.owner_name
+        this.player_badge=args.owner_badge
         this.gore_type=args.gore_type??0
         this.gore_id=args.gore_id??0
         this.dirty=true
@@ -50,6 +53,7 @@ export class PlayerBody extends ServerGameObject{
             moving:this.velocity.x!=0||this.velocity.y!=0,
             full:{
                 name:this.player_name,
+                badge:this.player_badge?Badges.getFromString(this.player_badge).idNumber:undefined,
                 gore_type:this.gore_type,
                 gore_id:this.gore_id
             }

@@ -2,10 +2,11 @@ import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Definitions,Definition, DeepPartial } from "../../engine/mod.ts";
 import { mergeDeep } from "../../engine/utils.ts";
 import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../../others/item.ts";
-import { type BulletDef, GameItem, InventoryItemType } from "../utils.ts";
+import { type BulletDef, InventoryItemType } from "../utils.ts";
 export enum FireMode{
     Auto,
-    Single
+    Single,
+    Burst
 }
 export interface DualAdditional{dual_offset:number}
 export interface GasParticle{
@@ -25,8 +26,11 @@ export enum GunClasses{
     Pistol,
     Shotgun,
     Sniper,
-    Automatic,
+    Assault,
     SMG,
+    DMR,
+    LMG,
+    Miscellaneous,
     Magic,
 }
 export interface MuzzleFlash{
@@ -57,6 +61,10 @@ export type GunDef={
     lenght:number
     jitterRadius?:number
     fireMode?:FireMode
+    burst?:{
+        delay:number
+        sequence:number
+    }
     speed_mod?:number
     size:number
     ammoType:string
@@ -71,6 +79,7 @@ export type GunDef={
             delay:number
             shotsPerReload?:number
         }
+        ammo_consume?:number
     }
     recoil?:{
         duration:number
@@ -85,6 +94,7 @@ export type GunDef={
     }
     gasParticles?:GasParticle
     dual?:DeepPartial<GunDef>&DualAdditional
+    item_type?:InventoryItemType.gun
 }&({
     dual_from?:undefined
 }|{
@@ -92,7 +102,7 @@ export type GunDef={
     dual_offset:number
 })&Definition
 
-export const Guns=new Definitions<GunDef,GameItem>((g)=>{
+export const Guns=new Definitions<GunDef,{}>((g)=>{
     g.item_type=InventoryItemType.gun
     if(g.dual&&!g.dual_from){
         const dd=mergeDeep({},g,g.dual,{dual_from:g.idString}) as GunDef
@@ -129,7 +139,7 @@ export const GasParticles={
         direction_variation:0.43
     } satisfies GasParticle,
     automatic:{
-        count:1,
+        count:1, 
         size:{
             min:0.8,
             max:1
@@ -142,7 +152,7 @@ export const GasParticles={
         direction_variation:0.2
     } satisfies GasParticle,
     pistols:{
-        count:1,
+        count:2,
         size:{
             min:0.7,
             max:0.8
@@ -170,7 +180,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:9,
+                damage:11,
                 radius:0.02,
                 range:100,
                 falloff:0.8,
@@ -189,6 +199,7 @@ Guns.insert(
         },
         speed_mod:0.98,
         arms:WeaponsArmRig[3],
+        gasParticles:GasParticles.pistols,
         muzzleFlash:MuzzleFlash.normal,
         image:WeaponsRig[0],
         dual:{
@@ -213,7 +224,7 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:55,
+                damage:60,
                 radius:0.02,
                 range:230,
                 falloff:0.7,
@@ -245,14 +256,14 @@ Guns.insert(
     },
     {
         idString:"ak47",
-        fireDelay:0.1,
+        fireDelay:0.15,
         switchDelay:0.6,
         spread:5,
         lenght:1.2,
         size:4,
         ammoType:"762mm",
         ammoSpawnAmount:90,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Rare,
         bullet:{
             def:{
@@ -279,18 +290,18 @@ Guns.insert(
     },
     {
         idString:"ar15",
-        fireDelay:0.12,
+        fireDelay:0.1,
         switchDelay:0.7,
-        spread:2,
+        spread:8,
         lenght:0.7,
         size:4,
         ammoType:"556mm",
         ammoSpawnAmount:90,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:9.8,
+                damage:10,
                 radius:0.014,
                 range:190,
                 falloff:0.7,
@@ -306,23 +317,61 @@ Guns.insert(
             duration:0.14,
             speed:0.75
         },
+        muzzleFlash:MuzzleFlash.normal,
+        speed_mod:0.95,
+        gasParticles:GasParticles.automatic
+    },
+    {
+        idString:"famas",
+        fireDelay:0.4,
+        switchDelay:0.7,
+        fireMode:FireMode.Burst,
+        burst:{
+            delay:0.1,
+            sequence:3
+        },
+        spread:1.5,
+        lenght:0.7,
+        size:4,
+        ammoType:"556mm",
+        ammoSpawnAmount:90,
+        class:GunClasses.Assault,
+        quality:ItemQuality.Epic,
+        bullet:{
+            def:{
+                damage:11,
+                radius:0.014,
+                range:190,
+                falloff:0.7,
+                speed:42,
+                tracer:tracers.medium
+            }
+        },
+        reload:{
+            delay:2.5,
+            capacity:25
+        },
+        recoil:{
+            duration:0.4,
+            speed:0.5
+        },
         speed_mod:0.95,
         gasParticles:GasParticles.automatic
     },
     {
         idString:"mp5",
-        fireDelay:0.09,
+        fireDelay:0.14,
         switchDelay:0.7,
-        spread:3,
+        spread:2,
         lenght:0.87,
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:96,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Uncommon,
         bullet:{
             def:{
-                damage:8,
+                damage:9,
                 radius:0.014,
                 range:160,
                 falloff:0.9,
@@ -349,21 +398,22 @@ Guns.insert(
     },
     {
         idString:"vector",
-        fireDelay:0.04,
+        fireDelay:0.05,
         switchDelay:0.7,
-        spread:1,
-        lenght:0.68,
+        spread:2,
+        lenght:0.6,
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:99,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
-                damage:5,
+                damage:7,
                 radius:0.014,
                 range:60,
-                speed:34,
+                criticalMult:1.5,
+                speed:40,
                 tracer:tracers.medium
             }
         },
@@ -376,23 +426,28 @@ Guns.insert(
             speed:0.77
         },
         speed_mod:1,
-        gasParticles:GasParticles.automatic
+        gasParticles:GasParticles.pistols,
+        muzzleFlash:MuzzleFlash.normal,
+        arms:WeaponsArmRig[2],
+        image:{
+            position:v2.new(0.3,0.0),
+            rotation:0
+        },
     },
-    
     {
         idString:"uzi",
-        fireDelay:0.04,
+        fireDelay:0.06,
         switchDelay:0.7,
         spread:9,
         lenght:0.68,
         size:4,
         ammoType:"9mm",
         ammoSpawnAmount:96,
-        class:GunClasses.Automatic,
+        class:GunClasses.Assault,
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:5,
+                damage:6,
                 radius:0.014,
                 range:35,
                 speed:34,
@@ -423,7 +478,7 @@ Guns.insert(
         quality:ItemQuality.Mythic,
         bullet:{
             def:{
-                damage:44,
+                damage:45,
                 radius:0.02,
                 range:210,
                 falloff:0.8,
@@ -469,11 +524,12 @@ Guns.insert(
         ammoSpawnAmount:30,
         bullet:{
             def:{
-                damage:50,
+                damage:52,
                 radius:0.025,
                 range:220,
                 falloff:0.7,
                 speed:55,
+                criticalMult:1.1,
                 tracer:tracers.xl,
                 obstacleMult:1.5,
             }
@@ -488,6 +544,16 @@ Guns.insert(
             speed:0.65
         },
         speed_mod:0.9,
+        arms:WeaponsArmRig[1],
+        image:{
+            position:v2.new(0.6,0.04),
+            rotation:0
+        },
+        gasParticles:GasParticles.sniper,
+        muzzleFlash:MuzzleFlash.normal,
+        caseParticle:{
+            position:v2.new(0.6,0.3)
+        }
     },
     {
         idString:"awms",
@@ -502,17 +568,18 @@ Guns.insert(
         ammoSpawnAmount:25,
         bullet:{
             def:{
-                damage:70,
+                damage:90,
                 radius:0.02,
                 range:230,
                 falloff:0.7,
                 speed:38,
+                criticalMult:1.2,
                 obstacleMult:1.7,
                 tracer:tracers.large
             }
         },
         reload:{
-            delay:4.5,
+            delay:3.9,
             capacity:5,
         },
         recoil:{
@@ -520,6 +587,16 @@ Guns.insert(
             speed:0.25
         },
         speed_mod:0.9,
+        arms:WeaponsArmRig[1],
+        image:{
+            position:v2.new(0.6,0.04),
+            rotation:0
+        },
+        gasParticles:GasParticles.sniper,
+        muzzleFlash:MuzzleFlash.normal,
+        caseParticle:{
+            position:v2.new(0.6,0.3)
+        }
     },
     {
         idString:"m870",
@@ -535,7 +612,7 @@ Guns.insert(
         quality:ItemQuality.Rare,
         bullet:{
             def:{
-                damage:7,
+                damage:9,
                 radius:0.014,
                 speed:24,
                 range:25,
@@ -573,7 +650,7 @@ Guns.insert(
         lenght:1,
         ammoType:"12g",
         ammoSpawnAmount:18,
-        jitterRadius:0.13,
+        jitterRadius:0.14,
         class:GunClasses.Shotgun,
         quality:ItemQuality.Epic,
         size:4.5,
@@ -581,12 +658,12 @@ Guns.insert(
         muzzleFlash:MuzzleFlash.normal,
         bullet:{
             def:{
-                damage:5,
+                damage:7,
                 radius:0.012,
                 speed:32,
                 range:54,
-                criticalMult:1.15,
-                falloff:0.7,
+                criticalMult:1.1,
+                falloff:0.65,
                 tracer:tracers.small
             },
             count:9
@@ -613,7 +690,7 @@ Guns.insert(
     },
     {
         idString:"hp18",
-        fireDelay:0.2,
+        fireDelay:0.6,
         switchDelay:0.7,
         spread:11,
         lenght:0.65,
@@ -626,7 +703,7 @@ Guns.insert(
         fireMode:FireMode.Auto,
         bullet:{
             def:{
-                damage:2,
+                damage:5,
                 radius:0.01,
                 speed:25,
                 falloff:0.7,
@@ -637,8 +714,8 @@ Guns.insert(
             count:14
         },
         reload:{
-            delay:0.7,
-            capacity:5,
+            delay:0.8,
+            capacity:7,
             shotsPerReload:1,
         },
         recoil:{
@@ -647,6 +724,111 @@ Guns.insert(
         },
         speed_mod:1,
         gasParticles:GasParticles.shotgun
+    },
+    {
+        idString:"rpg7",
+        fireDelay:1,
+        spread:0.2,
+        lenght:1,
+        size:6,
+        ammoType:"explosive_ammo",
+        fireMode:FireMode.Auto,
+        class:GunClasses.Miscellaneous,
+        quality:ItemQuality.Legendary,
+        ammoSpawnAmount:11,
+        gasParticles:{
+            count:10,
+            life_time:1.2,
+            speed:{
+                min:1,
+                max:2
+            },
+            direction_variation:0.4,
+            size:{
+                min:0.6,
+                max:2,
+            }
+        },
+        bullet:{
+            def:{
+                damage:20,
+                radius:0.2,
+                range:220,
+                falloff:0.5,
+                on_hit_explosion:"rocket_explosion",
+                speed:22,
+                criticalMult:1.2,
+                obstacleMult:3,
+                tracer:{
+                    height:2,
+                    width:2,
+                    particles:{
+                        frame:1
+                    },
+                    proj:{
+                        img:2,
+                        width:4,
+                        height:4,
+                    },
+                }
+            }
+        },
+        reload:{
+            delay:2,
+            capacity:1,
+        },
+        recoil:{
+            duration:1.45,
+            speed:0.25
+        },
+        speed_mod:0.5,
+    },
+    {
+        idString:"m2_2",
+        fireDelay:0.07,
+        spread:3,
+        lenght:1,
+        size:6,
+        ammoType:"gasoline",
+        fireMode:FireMode.Auto,
+        class:GunClasses.Miscellaneous,
+        quality:ItemQuality.Mythic,
+        ammoSpawnAmount:15.2,
+        bullet:{
+            def:{
+                damage:1,
+                effect:[{
+                    id:"fire",
+                    time:5
+                }],
+                radius:0.2,
+                range:28,
+                falloff:0.4,
+                speed:30,
+                criticalMult:4,
+                obstacleMult:5,
+                tracer:{
+                    height:6,
+                    width:6,
+                    proj:{
+                        img:0,
+                        height:1,
+                        width:1
+                    },
+                },
+            },
+            count:3
+        },
+        reload:{
+            delay:5,
+            capacity:7.6,
+            ammo_consume:0.03,
+        },
+        recoil:{
+            duration:1.45,
+            speed:0.46
+        },
+        speed_mod:0.6,
     },
     /*{
         idString:"bomb_staff",

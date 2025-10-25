@@ -2,7 +2,7 @@ import { type NetStream, Packet } from "../engine/mod.ts"
 export class JoinedPacket extends Packet{
     ID=5
     Name="joined"
-    players:{id:number,name:string}[]=[]
+    players:{id:number,name:string,badge?:number}[]=[]
     kill_leader?:{id:number,kills:number}
     constructor(){
         super()
@@ -14,6 +14,7 @@ export class JoinedPacket extends Packet{
         stream.writeUint8(this.kill_leader.kills)
       }
       stream.writeArray(this.players,(e)=>{
+        stream.writeUint16((e.badge??-1)+1)
         stream.writeStringSized(28,e.name)
         stream.writeID(e.id)
       },1)
@@ -27,9 +28,11 @@ export class JoinedPacket extends Packet{
         }
       }
       this.players=stream.readArray((e)=>{
+        const b=stream.readUint16()
         return {
           name:stream.readStringSized(28),
-          id:stream.readID()
+          id:stream.readID(),
+          badge:b===0?undefined:b-1
         }
       },1)
     }

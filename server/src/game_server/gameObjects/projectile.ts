@@ -1,8 +1,9 @@
-import { CircleHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, NullVec2, Numeric, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { type Player } from "./player.ts";
-import { ProjectileDef } from "common/scripts/definitions/projectiles.ts";
+import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts";
 import { ProjectileData } from "common/scripts/others/objectsEncode.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
+import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
 
 export class Projectile extends ServerGameObject{
     stringType:string="projectile"
@@ -33,7 +34,7 @@ export class Projectile extends ServerGameObject{
 
     fuse_delay:number=0
     update(dt:number): void {
-        /*if(!v2.is(this.velocity,NullVec2)){
+        if(!v2.is(this.velocity,NullVec2)){
             this.position=v2.clamp2(v2.add(this.position,v2.scale(this.velocity,dt)),NullVec2,this.game.map.size)
             this.manager.cells.updateObject(this)
             this.dirtyPart=true
@@ -51,35 +52,10 @@ export class Projectile extends ServerGameObject{
         if(this.defs.cook){
             this.fuse_delay-=dt
             if(this.fuse_delay<=0){
-                this.destroy();
-                if(this.defs.explosion)this.game.add_explosion(this.position,Explosions.getFromString(this.defs.explosion),this.owner)
+                this.destroy()
+                if(this.defs.explosion)this.game.add_explosion(this.position,Explosions.getFromString(this.defs.explosion),this.owner,this.defs,this.layer)
             }
         }
-        if(this.fuse_delay>0){
-            const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hb,[CATEGORYS.OBSTACLES,CATEGORYS.PLAYERS])
-            for(const obj of objs){
-                switch(obj.stringType){
-                    case "player":
-                        if((obj as Player).hb&&obj.hb.collidingWith(this.hb)&&this.defs.destroy_on_collide){
-                            if(this.defs.collision_damage)(obj as Player).damage({amount:this.defs.collision_damage,critical:false,position:this.position,reason:DamageReason.Player,owner:this.owner})
-                            this.fuse_delay=0
-                            break
-                        }
-                        break
-                    case "obstacle":
-                        if((obj as Obstacle).def.noCollision)break
-                        if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
-                            const col=this.hb.overlapCollision((obj as Obstacle).hb)
-                            if(!col)continue
-                            if(this.defs.destroy_on_collide){
-                                if(this.defs.collision_damage)(obj as Obstacle).damage({amount:this.defs.collision_damage,critical:false,position:this.position,reason:DamageReason.Player,owner:this.owner})
-                                this.fuse_delay=0
-                            }
-                        }
-                        break
-                }
-            }
-        }*/
     }
     create(args: {defs:ProjectileDef,position:Vec2,owner?:Player}): void {
         this.defs=args.defs
@@ -89,7 +65,7 @@ export class Projectile extends ServerGameObject{
         }
         this.owner=args.owner
     }
-    getData(): ProjectileData {
+    override getData(): ProjectileData {
         return {
             position:this.position,
             rotation:this.rotation,

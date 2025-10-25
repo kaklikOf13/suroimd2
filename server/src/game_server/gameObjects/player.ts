@@ -1,30 +1,33 @@
-import { CircleHitbox2D, Client, NullVec2, Numeric, random, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
-import { ActionPacket } from "common/scripts/packets/action_packet.ts"
-import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { ActionsType, GameConstants, GameOverPacket } from "common/scripts/others/constants.ts";
-import { GInventory,GunItem,LItem} from "../player/inventory.ts";
-import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
-import { DamageParams } from "../others/utils.ts";
-import { type Obstacle } from "./obstacle.ts";
-import { ActionsManager } from "common/scripts/engine/inventory.ts";
-import { DamageReason, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Armors, type EquipamentDef } from "common/scripts/definitions/items/equipaments.ts";
-import { DamageSourceDef, DamageSources, GameItems, Weapons } from "common/scripts/definitions/alldefs.ts";
-import { type PlayerModifiers } from "common/scripts/others/constants.ts";
-import { AccessoriesManager } from "../player/accesories.ts";
-import { ServerGameObject } from "../others/gameObject.ts";
-import { type Loot } from "./loot.ts";
-import { Ammos } from "common/scripts/definitions/items/ammo.ts";
-import { type Group, type Team } from "../others/teams.ts";
-import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
-import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
+import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { ActionPacket, InputAction, InputActionType } from "common/scripts/packets/action_packet.ts"
+import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts"
+import { ActionsType, GameConstants } from "common/scripts/others/constants.ts"
+import { GInventory,GunItem,LItem} from "../player/inventory.ts"
+import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts"
+import { DamageParams } from "../others/utils.ts"
+import { type Obstacle } from "./obstacle.ts"
+import { ActionsManager } from "common/scripts/engine/inventory.ts"
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { DamageSourceDef, DamageSources, GameItems, GameObjectDef, Weapons } from "common/scripts/definitions/alldefs.ts"
+import { type PlayerModifiers } from "common/scripts/others/constants.ts"
+import { AccessoriesManager } from "../player/accesories.ts"
+import { ServerGameObject } from "../others/gameObject.ts"
+import { type Loot } from "./loot.ts"
+import { Ammos } from "common/scripts/definitions/items/ammo.ts"
+import { type Group, type Team } from "../others/teams.ts"
+import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts"
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
-import { type VehicleSeat } from "./vehicle.ts";
-import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
-import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
-import { EffectDef, EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { BotAi } from "../player/simple_bot_ai.ts";
+import { type VehicleSeat } from "./vehicle.ts"
+import { Floors, FloorType } from "common/scripts/others/terrain.ts"
+import { BoostDef, Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
+import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
+import { BotAi } from "../player/simple_bot_ai.ts"
+import { Emotes } from "common/scripts/definitions/loadout/emotes.ts"
+import { GunDef } from "common/scripts/definitions/items/guns.ts"
+import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts"
+import { Explosions } from "common/scripts/definitions/objects/explosions.ts"
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -36,7 +39,11 @@ export class Player extends ServerGameObject{
 
     skin:SkinDef=Skins.getFromString("default_skin")
     loadout={
-        skin:"default_skin"
+        skin:"default_skin",
+        badge:"stone_1_badge",
+        emotes:{
+            die:"emote_sad",
+        }
     }
     parachute?:{
         value:number
@@ -60,8 +67,8 @@ export class Player extends ServerGameObject{
 
     using_healing_speed:number=0.4
 
-    vest?:EquipamentDef
-    helmet?:EquipamentDef
+    vest?:VestDef
+    helmet?:HelmetDef
     accessories:AccessoriesManager
 
     status={
@@ -95,6 +102,7 @@ export class Player extends ServerGameObject{
     boost_t:number=0
 
     friendly_fire:boolean=true
+    alternative_vehicle_control:boolean=true
 
     input={
         movement:v2.new(0,0),
@@ -103,14 +111,20 @@ export class Player extends ServerGameObject{
         using_item_down:false,
         interaction:false,
         reload:false,
+        swamp_guns:false,
+        attacking:false,
 
-        hand:0,
-        use_slot:-1,
+        aim_speed:0,
 
-        drop:0,
-        drop_kind:0,
+        actions:[] as InputAction[],
 
+        emote:undefined as GameObjectDef|undefined,
         is_mobile:false
+    }
+
+    projectile_holding?:{
+        def:ProjectileDef
+        time:number
     }
 
     ai?:BotAi
@@ -121,15 +135,9 @@ export class Player extends ServerGameObject{
 
         this.actions=new ActionsManager(this)
 
-        this.left_handed=Math.random()<=.1
+        this.left_handed=false
 
         this.accessories=new AccessoriesManager(this,3)
-
-        this.side_effect({
-            type:SideEffectType.AddEffect,
-            duration:30,
-            effect:"blue_effect"
-        })
     }
     interact(user: Player): void {
         if(!this.downed||user.teamId===undefined||(user.teamId!==this.teamId&&(user.groupId===undefined||user.groupId!==this.groupId)))return
@@ -165,7 +173,7 @@ export class Player extends ServerGameObject{
         weapons:true,
         current_weapon:true,
         action:true,
-        ammos:true,
+        oitems:true,
     }
 
     apply_modifiers(mods:Partial<PlayerModifiers>){
@@ -231,12 +239,11 @@ export class Player extends ServerGameObject{
                     this.health=Math.min(this.health+sf.health.amount,this.maxHealth*(sf.health.max??1))
                 }
                 if(sf.boost){
-                    this.boost=Math.max(this.boost-sf.boost.amount,0)
-                    if(sf.boost!==undefined&&this.boost_def.type!==sf.boost.def.type){
+                    if(this.boost_def.type===sf.boost.def.type){
+                        this.boost=Math.min(this.boost+sf.boost.amount,this.maxBoost*(sf.boost.max??1))
+                    }else{
                         this.boost_def=sf.boost.def
                         this.boost=sf.boost.amount
-                    }else{
-                        this.boost=Math.min(this.boost+sf.boost.amount,this.maxBoost*(sf.boost.max??1))
                     }
                 }
                 if(sf.global){
@@ -261,6 +268,14 @@ export class Player extends ServerGameObject{
         }
     }
 
+    throw_using_projectile(){
+        if(!this.projectile_holding)return
+        const proj=this.game.add_projectile(this.position,this.projectile_holding!.def,this,this.layer)
+        proj.throw_projectile(this.rotation,(this.projectile_holding!.def.throw_max_speed??5)*this.input.aim_speed)
+        proj.fuse_delay=this.projectile_holding.time
+        this.projectile_holding=undefined
+    }
+
     update(dt:number): void {
         if(this.dead)return
         //Movement
@@ -271,6 +286,7 @@ export class Player extends ServerGameObject{
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
                   * (this.parachute?1:((Floors[this.current_floor].speed_mult??1)))
+                  * (this.projectile_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
             this.current_animation=undefined
@@ -295,7 +311,7 @@ export class Player extends ServerGameObject{
                     this.piercingDamage({
                         amount:((this.maxBoost/this.boost)*gamemode.player.boosts.addiction.abstinence)*100,
                         reason:DamageReason.Abstinence,
-                        position:v2.duplicate(this.position),
+                        position:this.position,
                         critical:false,
                     })
                 }else{
@@ -319,7 +335,7 @@ export class Player extends ServerGameObject{
         }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
-            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt)
+            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt,this.alternative_vehicle_control)
         }else{
             this.position=v2.add(this.position,v2.add(v2.scale(this.input.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
             this.rotation=this.input.rotation
@@ -352,9 +368,21 @@ export class Player extends ServerGameObject{
                 source:this.downedBySource
             })
         }else if(!this.parachute&&!this.seat){
-            this.attacking-=dt
-            if(this.input.using_item&&this.inventory.currentWeapon&&(this.pvpEnabled||this.game.config.deenable_lobby)){
-                this.inventory.currentWeapon.on_use(this,this.inventory.currentWeapon as LItem)
+            this.input.attacking=false
+            if(this.input.using_item&&this.inventory.currentWeapon&&!this.projectile_holding&&(this.pvpEnabled||this.game.debug.deenable_lobby)){
+                this.inventory.currentWeapon.on_fire(this,this.inventory.currentWeapon as LItem)
+                this.input.attacking=this.inventory.currentWeapon.attacking()
+            }
+
+            if(this.projectile_holding){
+                this.projectile_holding.time-=dt
+                if(this.projectile_holding.time<=0){
+                    if(this.projectile_holding.def.explosion)this.game.add_explosion(this.position,Explosions.getFromString(this.projectile_holding.def.explosion!),this,this.projectile_holding.def,this.layer)
+                    this.projectile_holding=undefined
+                }
+                if(!this.input.using_item){
+                    this.throw_using_projectile()
+                }
             }
             
             //Update Inventory
@@ -364,21 +392,16 @@ export class Player extends ServerGameObject{
             }
             //Collision
             const objs=this.manager.cells.get_objects(this.hb,this.layer)
-            let can_interact=this.game.config.deenable_lobby||this.game.pvpEnabled
+            let can_interact=this.game.debug.deenable_lobby||this.game.pvpEnabled
             for(const obj of objs){
                 if(obj.id===this.id)continue
                 switch(obj.stringType){
                     case "obstacle":
                         if((obj as Obstacle).def.noCollision)break
                         if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
-                            if(can_interact&&this.input.interaction&&(obj as Obstacle).def.interactDestroy&&(obj as Obstacle).hb.collidingWith(this.hb)){
-                                (obj as Obstacle).kill({
-                                    amount:(obj as Obstacle).health,
-                                    position:this.position,
-                                    reason:DamageReason.Player,
-                                    owner:this,
-                                    critical:false
-                                })
+                            if(can_interact&&this.input.interaction&&(obj as Obstacle).hb.collidingWith(this.hb)){
+                                (obj as Loot).interact(this)
+                                can_interact=false
                             }
                             const ov=this.hb.overlapCollision((obj as Obstacle).hb)
                             if(ov){
@@ -402,13 +425,23 @@ export class Player extends ServerGameObject{
         this.actions.update(dt)
         this.inventory.update()
         this.dirtyPart=true
+
+        if(this.game.deadzone.do_damage&&!this.game.deadzone.hitbox.pointInside(this.position)){
+            this.piercingDamage({
+                amount:this.game.deadzone.damageAt(this.position),
+                critical:false,
+                position:this.position,
+                owner:undefined,
+                reason:DamageReason.DeadZone,
+            })
+        }
         
         if(this.ai)this.ai.AI(this,dt)
     }
+    override net_update(): void {
+        this.input.emote=undefined
+    }
     update_input(){
-        if(this.input.hand>=0&&this.input.hand<3){
-            this.inventory.set_current_weapon_index(this.input.hand)
-        }
         if(this.input.reload&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
             this.input.reload=false
@@ -418,31 +451,66 @@ export class Player extends ServerGameObject{
             this.seat.clear_player()
             this.input.interaction=false
         }
+        if(this.input.swamp_guns){
+            this.inventory.swamp_guns()
+            this.input.swamp_guns=false
+        }
         if(!this.downed&&!this.parachute){
-            if(this.input.use_slot!==-1){
-                const item=this.inventory.slots[this.input.use_slot]?.item
-                if(item){
-                    item.on_use(this,item)
+            for(const a of this.input.actions){
+                switch(a.type){
+                    case InputActionType.drop:
+                        if(a.drop>=0){
+                            const drop=a.drop
+                            switch(a.drop_kind){
+                                case 1:
+                                    this.inventory.drop_weapon(Numeric.clamp(drop,0,2) as (0|1|2))
+                                    break
+                                case 2:
+                                    this.inventory.drop_ammo(drop)
+                                    break
+                                case 3:
+                                    this.inventory.drop_slot(drop)
+                                    break
+                                case 4:
+                                    this.inventory.drop_item(drop)
+                                    break
+                            }
+                        }
+                        break
+                    case InputActionType.use_item:{
+                        const item=this.inventory.slots[a.slot]?.item
+                        if(item){
+                            item.on_use(this,item)
+                        }
+                        break
+                    }
+                    case InputActionType.set_hand:
+                        if(!(a.hand>=0&&a.hand<3))break
+                        this.inventory.set_current_weapon_index(a.hand)
+                        break
+                    case InputActionType.emote:
+                        this.input.emote=a.emote
+                        break
+                    case InputActionType.debug_give:
+                        if(this.game.debug.debug_menu){
+                            const l=GameItems.valueString[a.item]
+                            if(!l)break
+                            this.inventory.give_item(l,a.count,true)
+                        }
+                        break
+                    case InputActionType.debug_spawn:
+                        if(this.game.debug.debug_menu){
+                            const l=GameItems.valueString[a.item]
+                            if(!l)break
+                            this.game.add_loot(this.position,l,a.count,this.layer)
+                            if(l.item_type===InventoryItemType.gun){
+                                this.game.add_loot(this.position,Ammos.getFromString((l as unknown as GunDef).ammoType),((l as unknown as GunDef).ammoSpawnAmount??0)*a.count)
+                            }
+                        }
+                        break
                 }
             }
-        }
-        if(this.input.drop>=0){
-            const drop=this.input.drop
-            switch(this.input.drop_kind){
-                case 1:
-                    this.inventory.drop_weapon(Numeric.clamp(drop,0,2) as (0|1|2))
-                    break
-                case 2:
-                    this.inventory.drop_ammo(drop)
-                    break
-                case 3:
-                    this.inventory.drop_slot(drop)
-                    break
-                case 4:
-                    this.inventory.drop_item(drop)
-                    break
-            }
-            this.input.drop=-1
+            this.input.actions.length=0
         }
     }
     clear(){
@@ -452,54 +520,25 @@ export class Player extends ServerGameObject{
         this.dirty=true
     }
     process_action(action:ActionPacket){
-        this.input.movement=v2.normalizeSafe(v2.clamp1(action.Movement,-1,1),NullVec2)
+        this.input.movement=v2.normalizeSafe(v2.clamp1(action.movement,-1,1),NullVec2)
         if(this.input.is_mobile){
-            this.input.using_item_down=action.UsingItem
-        }else if(!this.input.using_item&&action.UsingItem){
+            this.input.using_item_down=action.use_weapon
+        }else if(!this.input.using_item&&action.use_weapon){
             this.input.using_item_down=true
         }
-        this.input.using_item=action.UsingItem
         this.input.rotation=action.angle
         this.input.interaction=action.interact
-        this.input.reload=action.Reloading
-        this.input.hand=action.hand
-        this.input.use_slot=action.use_slot
-        this.input.drop_kind=action.drop_kind
-        this.input.drop=action.drop
-        /*
-        if(action.cellphoneAction){
-            if(this.handItem&&this.handItem instanceof OtherItem){
-                this.handItem.cellphone_action(this,action.cellphoneAction)
-            }
-        }*/
+        this.input.using_item=action.use_weapon
+        this.input.reload=action.reload
+        this.input.actions=action.actions
+        this.input.swamp_guns=action.swamp_guns
+        this.input.aim_speed=action.aim_speed
     }
     create(_args: Record<string, void>): void {
         this.hb=new CircleHitbox2D(v2.random(0,this.game.map.size.x),GameConstants.player.playerRadius)
-
-        this.inventory.set_weapon(1,random.choose(["hp18","m870","spas12","uzi","vector"]))
-        this.inventory.set_weapon(2,random.choose(["pfeifer_zeliska","m9","pfeifer_zeliska_dual","m9_dual","awp","awms","kar98k","mp5","ak47","ar15"]))
-        this.inventory.set_current_weapon_index(1)
-        this.inventory.weapons[1]!.ammo=this.inventory.weapons[1]!.def.reload?this.inventory.weapons[1]!.def.reload.capacity:Infinity
-        this.inventory.weapons[2]!.ammo=this.inventory.weapons[2]!.def.reload?this.inventory.weapons[2]!.def.reload.capacity:Infinity
-
-        if(Math.random()<=0.75)this.inventory.set_backpack(Backpacks.getFromString(random.choose(["tactical_pack"/*,"regular_pack","basic_pack"*/])))
-        if(Math.random()<=0.75)this.helmet=Armors.getFromString(random.choose(["tactical_helmet","basic_helmet","regular_helmet"]))
-        if(Math.random()<=0.75)this.vest=Armors.getFromString(random.choose(["tactical_vest","basic_vest","regular_vest"]))
-
-        this.inventory.give_item(Ammos.getFromString("762mm") as unknown as GameItem,random.choose([100,200,300]))
-        this.inventory.give_item(Ammos.getFromString("556mm") as unknown as GameItem,random.choose([100,200,300]))
-        this.inventory.give_item(Ammos.getFromString("9mm") as unknown as GameItem,random.choose([120,240,400]))
-        this.inventory.give_item(Ammos.getFromString("12g") as unknown as GameItem,random.choose([15,30,60,90]))
-        this.inventory.give_item(Ammos.getFromString("308sub") as unknown as GameItem,random.choose([10,20,30]))
-
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["gauze","medikit"])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["soda",/*"inhaler","yellow_pills"*/])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose([/*"small_blue_potion",*/"blue_potion"/*,"blue_pills"*/])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose([/*"small_purple_potion",*/"purple_potion"/*,"purple_pills"*/])) as unknown as GameItem,4)
-        this.inventory.give_item(Consumibles.getFromString(random.choose(["small_red_crystal","red_crystal","red_pills"])) as unknown as GameItem,4)
-
-        this.boost=100
-        this.boost_def=Boosts[random.choose([BoostType.Shield,BoostType.Adrenaline])]
+        if(this.game.gamemode.player.respawn?.max_respawn){
+            this.respawn_count=this.game.gamemode.player.respawn.max_respawn
+        }
     }
     damagesSplash:DamageSplash[]=[]
 
@@ -518,7 +557,6 @@ export class Player extends ServerGameObject{
             up.priv.max_boost=this.maxBoost
             up.priv.boost_type=this.boost_def.type
             up.priv.inventory=[]
-            up.priv.planes=this.game.planes
             if(this.splashDelay<=0){
                 up.priv.damages=this.damagesSplash
                 this.damagesSplash=[]
@@ -541,13 +579,22 @@ export class Player extends ServerGameObject{
                 gun1:this.inventory.weapons[1]?.def,
                 gun2:this.inventory.weapons[2]?.def,
             }
-            up.priv.current_weapon={
-                slot:this.inventory.weaponIdx,
-                ammo:(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun")?(this.inventory.currentWeapon as GunItem).ammo:0
+            if(this.inventory.currentWeapon&&this.inventory.currentWeapon.type==="gun"){
+                up.priv.current_weapon={
+                    slot:this.inventory.weaponIdx,
+                    liquid:(this.inventory.currentWeapon as GunItem).liquid,
+                    ammo:(this.inventory.currentWeapon as GunItem).ammo
+                }
+            }else{
+                up.priv.current_weapon={
+                    slot:this.inventory.weaponIdx,
+                    liquid:false,
+                    ammo:0
+                }
             }
-            if(this.privateDirtys.ammos){
-                for(const a of Object.keys(this.inventory.ammos)){
-                    up.priv.ammos[Ammos.getFromString(a).idNumber!]=this.inventory.ammos[a]
+            if(this.privateDirtys.oitems){
+                for(const a of Object.keys(this.inventory.oitems)){
+                    up.priv.oitems[Ammos.getFromString(a).idNumber!]=this.inventory.oitems[a]
                 }
             }
             this.privateDirtys={
@@ -555,7 +602,7 @@ export class Player extends ServerGameObject{
                 weapons:false,
                 current_weapon:false,
                 action:false,
-                ammos:false
+                oitems:false,
             }
 
             if(this.actions.current_action){
@@ -569,10 +616,11 @@ export class Player extends ServerGameObject{
         }
     }
     get_objects(){
-        this.camera_hb.min.x=this.position.x-(37/2)
-        this.camera_hb.min.y=this.position.y-(37/2)
-        this.camera_hb.max.x=this.position.x+(37/2)
-        this.camera_hb.max.y=this.position.y+(37/2)
+        this.camera_hb.min.x=this.position.x-20
+        this.camera_hb.min.y=this.position.y-20
+
+        this.camera_hb.max.x=this.position.x+20
+        this.camera_hb.max.y=this.position.y+20
         /*const objs=[
             ...Object.values(this.manager.objects[this.layer].objects),
         ]*/
@@ -587,7 +635,7 @@ export class Player extends ServerGameObject{
             const is_ally=this.game.modeManager.is_ally(this,params.owner)
             if(
                 params.owner.id!==this.id&&
-                (this.game.modeManager.team_size>1&&is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
+                (is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
             )return
             mod*=params.owner.modifiers.damage
         }
@@ -602,68 +650,97 @@ export class Player extends ServerGameObject{
         if(params.critical){
             mod+=this.modifiers.critical_mult-1
         }
-        damage=Numeric.clamp(damage*mod,0,this.health)
+        damage*=mod
         params.amount=damage
         this.piercingDamage(params)
     }
-    piercingDamage(params:DamageParams){
-        if(this.boost_def.type===BoostType.Shield&&this.boost>0){
-            params.amount=Math.min(this.boost,params.amount)
-        }else{
-            params.amount=Math.min(this.health,params.amount)
+    piercingDamage(params: DamageParams) {
+        const totalDamage = params.amount
+        let shieldDamage = 0
+        let healthDamage = 0
+
+        const baseSplash: Omit<DamageSplash, "shield" | "shield_break" | "count"> = {
+            critical: params.critical,
+            position: params.position,
+            taker: this.id,
+            taker_layer: this.layer
         }
-        let d:DamageSplash={
-            count:Math.ceil(params.amount),
-            shield:false,
-            critical:params.critical,
-            shield_break:false,
-            position:params.position,
-            taker:this.id,
-            taker_layer:this.layer
+
+        const splashes: DamageSplash[] = []
+
+        if (this.boost_def.type === BoostType.Shield && this.boost > 0) {
+            shieldDamage = Math.min(this.boost, totalDamage)
+
+            if (totalDamage >= this.boost * 2) {
+                shieldDamage = this.boost
+                healthDamage = totalDamage - shieldDamage
+                this.boost = 0
+            } else {
+                this.boost -= shieldDamage
+            }
+            splashes.push({
+                ...baseSplash,
+                count: Math.ceil(totalDamage),
+                shield: true,
+                shield_break: this.boost === 0
+            })
+
+            if (this.boost === 0) {
+                this.invensibility_time = 0.35
+                this.boost_def=Boosts[BoostType.Null]
+            }
+        } else {
+            healthDamage = Math.min(this.health, totalDamage)
+
+            splashes.push({
+                ...baseSplash,
+                count: Math.ceil(totalDamage),
+                shield: false,
+                shield_break: false
+            })
         }
-        
-        if(this.boost_def.type===BoostType.Shield&&this.boost>0){
-            this.boost=Math.max(this.boost-params.amount,0)
-            if(params.owner&&params.owner instanceof Player){
-                d.shield=true
-                d.shield_break=this.boost===0
-                if(this.boost===0){
-                    this.invensibility_time=0.35
+
+        if (healthDamage > 0) {
+            this.health = Math.max(this.health - healthDamage, 0)
+        }
+
+        if (params.owner && params.owner instanceof Player && params.owner.id !== this.id && params.reason !== DamageReason.Bleend) {
+            params.owner.status.damage += (shieldDamage + healthDamage)
+
+            for (const splash of splashes) {
+                let ok = true
+                for (const ds of params.owner.damagesSplash) {
+                    if (ds.shield === splash.shield && ds.taker === splash.taker) {
+                        ds.critical = ds.critical || splash.critical
+                        if (ds.shield) {
+                            ds.shield_break = ds.shield_break || splash.shield_break
+                        }
+                        ds.count += splash.count
+                        ok = false
+                        break
+                    }
+                }
+                if (ok) {
+                    params.owner.damagesSplash.push(splash)
+                } else {
+                    params.owner.splashDelay = 2
                 }
             }
-        }else{
-            this.health=Math.max(this.health-params.amount,0)
         }
-        if(params.owner&&params.owner instanceof Player&&params.owner.id!==this.id&&params.reason!==DamageReason.Bleend){
-            params.owner.status.damage+=params.amount
-            let ok=true
-            for(const ds of params.owner.damagesSplash){
-                if(ds.shield===d.shield&&ds.taker===d.taker){
-                    ds.critical===d.critical||ds.critical
-                    if(ds.shield){
-                        ds.shield_break=ds.shield_break||this.boost===0
-                    }
-                    d=ds
-                    ok=false
-                    ds.count+=params.amount
-                    break
-               }
-            }
-            if(ok){
-                params.owner.damagesSplash.push(d)
-            }else{
-                params.owner.splashDelay=2
-            }
+
+        for (const s of splashes) {
+            this.damagesSplash.push(s)
         }
-        this.damagesSplash.push(d)
-        if(this.health===0){
-            if(!this.downed&&this.game.modeManager.can_down(this)){
+
+        if (this.health === 0) {
+            if (!this.downed && this.game.modeManager.can_down(this)) {
                 this.down(params)
-            }else{
+            } else {
                 this.kill(params)
             }
         }
     }
+
     down(params:DamageParams){
         if(this.downed)return
         this.downed=true
@@ -674,13 +751,21 @@ export class Player extends ServerGameObject{
 
         if(params.owner&&params.owner instanceof Player){
             this.game.send_killfeed_message({
-                killer:{
+                killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Player)?{
                     id:params.owner.id,
-                    kills:params.owner.status.kills
-                },
+                    kills:params.owner.status.kills,
+                    used:DamageSources.keysString[params.source!.idString]
+                }:undefined,
                 victimId:this.id,
+                damage_reason:params.reason,
                 type:KillFeedMessageType.down,
-                used:DamageSources.keysString[params.source!.idString]
+            })
+        }else{
+            this.game.send_killfeed_message({
+                killer:undefined,
+                victimId:this.id,
+                damage_reason:params.reason,
+                type:KillFeedMessageType.down,
             })
         }
 
@@ -694,23 +779,33 @@ export class Player extends ServerGameObject{
         this.health=this.maxHealth*0.3
         this.boost=0
     }
+    respawn_count:number=0
+    respawn():boolean{
+        if(this.respawn_count<=0)return false
+        if(this.game.gamemode.player.respawn?.max_respawn){
+            this.respawn_count--
+        }
+        this.game.addTimeout(()=>{
+            this.dead=false
+            this.health=this.maxHealth
+            this.boost=0
+            this.manager.cells.registry(this)
+            this.dirty=true
+            if(this.game.gamemode.player.respawn?.insert_inventory){
+                this.inventory.gift(this.game.gamemode.player.respawn.insert_inventory)
+            }
+        },2)
+        return true
+    }
     kill(params:DamageParams){
         if(this.dead)return
         this.dead=true
+        if(this.loadout.emotes.die!==""){
+            this.game.addTimeout(()=>this.input.emote=Emotes.getFromString(this.loadout.emotes.die),0.5)
+        }
         this.update2()
-        this.inventory.drop_all();
         if(!this.is_npc){
-            this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
-            this.game.modeManager.on_player_die(this);
-            if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
-                this.game.send_killfeed_message({
-                    type:KillFeedMessageType.killleader_dead,
-                    player:{
-                        id:this.id,
-                        kills:this.status.kills
-                    }
-                })
-            }
+            let killed_by:number=this.id
 
             if(params.owner&&params.owner instanceof Player){
                 if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username||this.is_bot)&&!this.game.modeManager.is_ally(this,params.owner)){
@@ -719,14 +814,16 @@ export class Player extends ServerGameObject{
                     params.owner.earned.xp+=1
                     params.owner.earned.score+=5
                 }
+                killed_by=params.owner.id
                 this.game.send_killfeed_message({
-                    killer:{
+                    killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Player)?{
                         id:params.owner.id,
-                        kills:params.owner.status.kills
-                    },
+                        kills:params.owner.status.kills,
+                        used:DamageSources.keysString[params.source!.idString]
+                    }:undefined,
                     victimId:this.id,
                     type:KillFeedMessageType.kill,
-                    used:DamageSources.keysString[params.source!.idString]
+                    damage_reason:params.reason,
                 })
                 if((!this.game.modeManager.kill_leader&&params.owner.status.kills>=3)||(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader.status.kills<params.owner.status.kills)){
                     this.game.modeManager.kill_leader=params.owner
@@ -738,45 +835,81 @@ export class Player extends ServerGameObject{
                         }
                     })
                 }
+                
+                if(this.game.statistics){
+                    this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
+                }
+            }else{
+                this.game.send_killfeed_message({
+                    killer:undefined,
+                    victimId:this.id,
+                    type:KillFeedMessageType.kill,
+                    damage_reason:params.reason,
+                })
             }
+
+            if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
+                this.game.send_killfeed_message({
+                    type:KillFeedMessageType.killleader_dead,
+                    player:{
+                        id:this.id,
+                        kills:this.status.kills
+                    }
+                })
+            }
+
+            //Respawn
+            if(!this.game.gamemode.player.respawn?.keep_inventory){
+                this.inventory.drop_all()
+            }
+            let sg=true
+            if(this.game.gamemode.player.respawn){
+                sg=!this.respawn()
+            }
+            if(sg){
+                this.game.livingPlayers.splice(this.game.livingPlayers.indexOf(this),1);
+                this.send_game_over(false,killed_by)
+            }
+
+            this.game.modeManager.on_player_die(this)
+
+            this.game.living_count_dirty=true
+            this.game.update_data()
+        }else{
+            this.inventory.drop_all()
         }
 
         this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
-        for(let i=0;i<3;i++){
-            this.game.add_player_gore(this,undefined,this.layer)
-        }
-        this.game.addTimeout(()=>{
-            this.send_game_over(false)
-        },2)
         this.dirty=true
-        this.game.scene.cells.unregistry(this)
         this.status.rank=this.game.livingPlayers.length+1
     }
-    send_game_over(win:boolean=false){
+    send_game_over(win:boolean=false,eliminated_by:number=0){
         if(this.is_npc||!this.client||!this.client.opened||this.is_bot)return
         const p=new GameOverPacket()
         p.Kills=this.status.kills
         p.DamageDealth=this.status.damage
         p.Win=win
         p.Score=0
+        p.Eliminator=eliminated_by
         this.client!.emit(p)
     }
-    override onDestroy(): void {
+    override on_destroy(): void {
         const idx=this.game.livingPlayers.indexOf(this)
         if(idx!==-1){
             this.game.livingPlayers.splice(idx,1);
         }
     }
-    attacking=0
     override getData(): PlayerData {
         return {
             position:this.position,
             rotation:this.rotation,
             dead:this.dead,
+            shield:this.boost_def===Boosts[BoostType.Shield]&&this.boost>0,
             left_handed:this.left_handed,
             parachute:this.parachute,
             driving:this.seat!==undefined,
-            attacking:this.attacking>0,
+            attacking:this.input.attacking,
+            emote:this.input.emote,
             full:{
                 vest:this.vest?this.vest.idNumber!+1:0,
                 helmet:this.helmet?this.helmet.idNumber!+1:0,

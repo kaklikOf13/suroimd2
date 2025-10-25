@@ -1,7 +1,7 @@
-import { NullVec2, RectHitbox2D, Vec2, v2 } from "common/scripts/engine/mod.ts"
+import { Vec2, Vec3 } from "common/scripts/engine/mod.ts"
 import { type Frame } from "./resources.ts";
 import { Numeric } from "common/scripts/engine/utils.ts";
-import { Matrix, Model2D } from "common/scripts/engine/models.ts";
+import { Matrix, Model2D, Model3D } from "common/scripts/engine/models.ts";
 export interface Color {
     r: number; // Red
     g: number; // Green
@@ -20,56 +20,18 @@ export const ColorM={
     rgba(r: number, g: number, b: number, a: number = 255): Color {
         return { r: r / 255, g: g / 255, b: b / 255, a: a / 255 };
     },
-    hex(hex:string):Color{
-        let result:RegExpExecArray|null
-        switch(hex.length){
-            case 4:
-                result = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(result[1], 16)/15,
-                    g:parseInt(result[2], 16)/15,
-                    b:parseInt(result[3], 16)/15,
-                    a:1
-                }
-            case 5:
-                result = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(hex[1], 16)/15,
-                    g:parseInt(hex[2], 16)/15,
-                    b:parseInt(hex[3], 16)/15,
-                    a:parseInt(hex[4], 16)/15
-                }
-            case 7:
-                result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(result[1], 16)/255,
-                    g:parseInt(result[2], 16)/255,
-                    b:parseInt(result[3], 16)/255,
-                    a:1
-                }
-            case 9:
-                result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-                if(!result){
-                    throw new Error("Invalid Hex")
-                }
-                return {
-                    r:parseInt(result[1], 16)/255,
-                    g:parseInt(result[2], 16)/255,
-                    b:parseInt(result[3], 16)/255,
-                    a:parseInt(result[4], 16)/255
-                }
-            default:
-                throw new Error("Invalid Hex")
-        }
+    hex(hex: string): Color {
+        hex = hex.replace("#", "");
+        if ([3, 4, 6, 8].indexOf(hex.length) === -1) throw new Error("Invalid Hex")
+
+        const toFloat = (v: string) => parseInt(v.repeat(2 / v.length), 16) / 255
+
+        const r = toFloat(hex[0])
+        const g = toFloat(hex[1])
+        const b = toFloat(hex[2])
+        const a = hex.length > 3 ? toFloat(hex[3]) : 1
+
+        return { r, g, b, a };
     },
     number(color:number):Color{
         const r = (color >> 16) & 0xFF
@@ -95,6 +57,18 @@ export const ColorM={
     },
     hex2number(color: string): number {
         return parseInt(color.replace(/^0x/, ''), 16)
+    },
+    mult(dst:Color,x:Color,y:Color){
+        dst.r=x.r*y.r
+        dst.g=x.g*y.g
+        dst.b=x.b*y.b
+        dst.a=x.a*y.a
+    },
+    set1(dst:Color,val:Color){
+        dst.r=val.r
+        dst.g=val.g
+        dst.b=val.b
+        dst.a=val.a
     },
     default:{
         black:{
@@ -149,6 +123,7 @@ export const ColorM={
 }
 export type RGBAT={r: number, g: number, b: number, a?: number}
 export type Material2D=GLMaterial2D
+export type Material3D=GLMaterial3D
 export abstract class Renderer {
     canvas: HTMLCanvasElement
     background: Color = ColorM.default.white;
@@ -157,6 +132,7 @@ export abstract class Renderer {
     }
     abstract draw_image2D(image: Frame,position: Vec2,model:Float32Array,matrix:Matrix,tint?:Color): void
     abstract draw(model:Model2D,material:Material2D,matrix:Matrix,position:Vec2,scale:Vec2):void
+    abstract draw_3d(model:Model3D,material:Material3D,matrix:Matrix,position:Vec3,scale:Vec3):void
 
     abstract clear(): void
 
@@ -201,6 +177,16 @@ export interface GLMaterial2DFactory<MaterialArgs>{
 }
 export type GLMaterial2DFactoryCall<MaterialArgs>={vertex:string,frag:string,create:(gl:WebglRenderer,fac:GLMaterial2DFactory<MaterialArgs>)=>(arg:MaterialArgs)=>GLMaterial2D<Material2D>}
 
+export type GLMaterial3D<MaterialArgs=any>={
+    factory:GLMaterial3DFactory<MaterialArgs>
+    draw:(mat:GLMaterial3D<MaterialArgs>,matrix:Matrix,model:Model3D,position:Vec3,scale:Vec3)=>void
+}&MaterialArgs
+export interface GLMaterial3DFactory<MaterialArgs>{
+    create:(arg:MaterialArgs)=>GLMaterial3D<Material3D>
+    program:WebGLProgram
+}
+export type GLMaterial3DFactoryCall<MaterialArgs>={vertex:string,frag:string,create:(gl:WebglRenderer,fac:GLMaterial3DFactory<MaterialArgs>)=>(arg:MaterialArgs)=>GLMaterial3D<Material3D>}
+
 export type GL2D_SimpleMatArgs={
     color:Color
 }
@@ -222,7 +208,6 @@ uniform vec4 u_Color;
 
 void main() {
     gl_FragColor = u_Color;
-    //gl_FragColor = vec4(u_Color.rgb*u_Color.a,u_Color.a);
 }`,
 create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
     const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
@@ -235,7 +220,7 @@ create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
     const draw=(mat:GLMaterial2D<GL2D_SimpleMatArgs>,matrix:Matrix,model:Model2D,position:Vec2,scale:Vec2)=>{
         gl.gl.useProgram(fac.program)
 
-        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer)
         gl.gl.bufferData(gl.gl.ARRAY_BUFFER, model.vertices, gl.gl.STATIC_DRAW)
 
         gl.gl.enableVertexAttribArray(aPositionLoc)
@@ -257,6 +242,131 @@ create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_SimpleMatArgs>){
 }
 }
 
+export type GL3D_SimpleMatArgs={
+    color:Color
+}
+export const GLF_Simple3:GLMaterial3DFactoryCall<GL3D_SimpleMatArgs>={
+    vertex:`
+attribute vec3 a_Position;
+uniform mat4 u_ProjectionMatrix;
+uniform vec3 u_Translation;
+uniform vec3 u_Scale;
+void main() {
+    gl_Position = u_ProjectionMatrix * vec4((a_Position*u_Scale)+u_Translation, 1.0);
+}`,
+    frag:`
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec4 u_Color;
+
+void main() {
+    gl_FragColor = u_Color;
+}`,
+create(gl:WebglRenderer,fac:GLMaterial3DFactory<GL3D_SimpleMatArgs>){
+    const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
+    const uColorLoc=gl.gl.getUniformLocation(fac.program, "u_Color")!
+    const uTranslationLoc=gl.gl.getUniformLocation(fac.program, "u_Translation")!
+    const uScaleLoc=gl.gl.getUniformLocation(fac.program, "u_Scale")!
+    const uProjectionMatrixLoc=gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+
+    const vertexBuffer = gl.gl.createBuffer();
+    
+    const indexBuffer = gl.gl.createBuffer();
+    const draw=(mat:GLMaterial3D<GL3D_SimpleMatArgs>,matrix:Matrix,model:Model3D,position:Vec3,scale:Vec3)=>{
+        gl.gl.useProgram(fac.program)
+
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bufferData(gl.gl.ARRAY_BUFFER, new Float32Array(model._vertices), gl.gl.STATIC_DRAW)
+
+        gl.gl.bindBuffer(gl.gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+        gl.gl.bufferData(gl.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model._indices), gl.gl.STATIC_DRAW)
+
+        gl.gl.enableVertexAttribArray(aPositionLoc)
+        gl.gl.vertexAttribPointer(aPositionLoc, 3, gl.gl.FLOAT, false, 0, 0)
+
+        gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
+        gl.gl.uniform3f(uTranslationLoc, position.x, position.y, position.z)
+        gl.gl.uniform3f(uScaleLoc, scale.x, scale.y, scale.z)
+        gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
+
+        gl.gl.drawElements(gl.gl.TRIANGLES, model._indices.length, gl.gl.UNSIGNED_SHORT, 0)
+    }
+    return (arg:GL3D_SimpleMatArgs)=>{
+        return {
+            ...arg,
+            factory:fac,
+            draw:draw
+        }
+    }
+}
+}
+
+export type GL2D_GridMatArgs={
+    color:Color
+    width:number
+    gridSize:number
+}
+export const GLF_Grid:GLMaterial2DFactoryCall<GL2D_GridMatArgs>={
+    vertex:`
+attribute vec2 a_Position;
+uniform mat4 u_ProjectionMatrix;
+uniform vec3 u_Translation;
+varying vec2 v_WorldPosition;
+
+void main() {
+    v_WorldPosition = a_Position+u_Translation.xy;
+    gl_Position = u_ProjectionMatrix * vec4(a_Position,u_Translation.z, 1.0);
+}`,
+    frag:`
+precision mediump float;
+varying vec2 v_WorldPosition;
+
+uniform float u_GridSize;
+uniform vec4 u_Color;
+uniform float u_LineWidth;
+
+void main() {
+    vec2 grid = abs(mod(v_WorldPosition, u_GridSize) - (u_GridSize * 0.5));
+
+    float line = 1.0-step(u_LineWidth, min(grid.x, grid.y));
+    gl_FragColor = vec4(u_Color.rgb, line * u_Color.a);
+}`,
+create(gl:WebglRenderer,fac:GLMaterial2DFactory<GL2D_GridMatArgs>){
+    const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
+    const uColorLoc=gl.gl.getUniformLocation(fac.program, "u_Color")!
+    const uGridSize=gl.gl.getUniformLocation(fac.program, "u_GridSize")!
+    const uLineWidth=gl.gl.getUniformLocation(fac.program, "u_LineWidth")!
+    const uTranslationLoc=gl.gl.getUniformLocation(fac.program, "u_Translation")!
+    const uProjectionMatrixLoc=gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+
+    const vertexBuffer = gl.gl.createBuffer();
+    const draw=(mat:GLMaterial2D<GL2D_GridMatArgs>,matrix:Matrix,model:Model2D,position:Vec2,scale:Vec2)=>{
+        gl.gl.useProgram(fac.program)
+
+        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer);
+        gl.gl.bufferData(gl.gl.ARRAY_BUFFER, model.vertices, gl.gl.STATIC_DRAW)
+
+        gl.gl.enableVertexAttribArray(aPositionLoc)
+        gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
+
+        gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
+        gl.gl.uniform2f(uTranslationLoc, position.x, position.y)
+        gl.gl.uniform1f(uLineWidth, mat.width)
+        gl.gl.uniform1f(uGridSize, mat.gridSize)
+        gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
+        gl.gl.drawArrays(gl.gl.TRIANGLES, 0, model.vertices.length / 2)
+    }
+    return (arg:GL2D_SimpleMatArgs)=>{
+        return {
+            ...arg,
+            factory:fac,
+            draw:draw
+        }
+    }
+}
+}
 export type GL2D_TexMatArgs={
     texture:WebGLTexture
     tint:Color
@@ -408,10 +518,26 @@ export class WebglRenderer extends Renderer {
     readonly tex_program:WebGLProgram
     readonly factorys2D:{
         simple:GLMaterial2DFactory<GL2D_SimpleMatArgs>,
+        grid:GLMaterial2DFactory<GL2D_GridMatArgs>,
         texture:GLMaterial2DFactory<GL2D_TexMatArgs>,
         light:GLMaterial2DFactory<GL2D_LightMatArgs>
     }
+    readonly factorys3D:{
+        simple:GLMaterial3DFactory<GL3D_SimpleMatArgs>,
+    }
     proccess_factory<T>(fac_def:GLMaterial2DFactoryCall<T>):GLMaterial2DFactory<T>{
+        const prog=this.createProgram(fac_def.vertex,fac_def.frag)
+        const fac={
+            program:prog
+        }
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        fac.create=fac_def.create(this,fac)
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        return fac
+    }
+    proccess_factory3<T>(fac_def:GLMaterial3DFactoryCall<T>):GLMaterial3DFactory<T>{
         const prog=this.createProgram(fac_def.vertex,fac_def.frag)
         const fac={
             program:prog
@@ -438,8 +564,13 @@ export class WebglRenderer extends Renderer {
 
         this.factorys2D={
             simple:this.proccess_factory(GLF_Simple),
+            grid:this.proccess_factory(GLF_Grid),
             texture:this.proccess_factory(GLF_Texture),
             light:this.proccess_factory(GLF_Light)
+        }
+
+        this.factorys3D={
+            simple:this.proccess_factory3(GLF_Simple3)
         }
         
         this.factorys2D_consts["texture_ADV"]={
@@ -470,8 +601,10 @@ export class WebglRenderer extends Renderer {
                 clientY: e.clientY,
                 screenY: e.screenY,
                 screenX: e.screenX
-            }));
-        });
+            }))
+        })
+
+        canvas.tabIndex = 0
     }
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
@@ -495,20 +628,9 @@ export class WebglRenderer extends Renderer {
     override draw(model:Model2D,material:Material2D,matrix:Matrix,position:Vec2,scale:Vec2):void{
         material.draw(material,matrix,model,position,scale)
     }
-    draw_rect2D(rect: RectHitbox2D, material: GLMaterial2D<{}>,matrix:Matrix,offset:Vec2=NullVec2) {
-        const x1 = 0
-        const y1 = 0
-        const x2 = rect.max.x-rect.min.x
-        const y2 = rect.max.x-rect.min.x
-
-        material.draw(material,matrix,{vertices:new Float32Array([
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2
-        ]),tex_coords:new Float32Array([])},v2.sub(rect.position,offset),v2.new(1,1))
+    override draw_3d(model:Model3D,material:Material3D,matrix:Matrix,position:Vec3,scale:Vec3):void{
+        if(!matrix)return
+        material.draw(material,matrix,model,position,scale)
     }
 
     draw_image2D(image: Frame,position: Vec2,model:Float32Array,matrix:Matrix,tint:Color=ColorM.default.white): void {
@@ -516,7 +638,7 @@ export class WebglRenderer extends Renderer {
 
         const vertexBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer)
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(model), this.gl.STATIC_DRAW)
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, model, this.gl.STATIC_DRAW)
 
         const textureCoordBuffer = this.gl.createBuffer()
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer)
@@ -543,11 +665,14 @@ export class WebglRenderer extends Renderer {
         this.gl.uniform4f(this.factorys2D_consts["texture_ADV"]["tint"],tint.r,tint.g,tint.b,tint.a)
 
         this.gl.drawArrays(this.gl.TRIANGLES, 0, model.length / 2)
+
+        /*this.gl.deleteBuffer(textureCoordBuffer)
+        this.gl.deleteBuffer(vertexBuffer)*/
     }
 
     clear() {
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.gl.clearColor(0, 0, 0, 1);
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+        this.gl.clearColor(this.background.r, this.background.g, this.background.b, 1)
         this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
         
@@ -561,6 +686,9 @@ export function createCanvas(size: Vec2, pixelated: boolean = true, center: bool
     const canvas = document.createElement("canvas");
     canvas.width = size.x;
     canvas.height = size.y;
+
+    canvas.tabIndex = 0
+    canvas.focus()
     if (pixelated) {
         canvas.style.imageRendering = "pixelated"
         canvas.style.imageRendering = "crisp-edges"
