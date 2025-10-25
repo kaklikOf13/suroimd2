@@ -91,6 +91,8 @@ export class Game extends ClientGame2D<GameObject>{
   fps:number=60
   frame_calc:number=0
 
+  offline:boolean=false
+
   date:KDate={
     second:0,
     minute:0,
@@ -189,7 +191,7 @@ export class Game extends ClientGame2D<GameObject>{
           this.action.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)})
           break
         case "debug_menu":
-          if(!this.menuManager.api_settings.debug.debug_menu)break
+          if((!this.menuManager.api_settings.debug.debug_menu)&&!this.offline)break
           ToggleElement(this.guiManager.content.debug_menu)
           break
       }

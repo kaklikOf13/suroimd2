@@ -25,6 +25,7 @@ export class Obstacle extends GameObject{
     def!:ObstacleDef
 
     container:Container2D=new Container2D()
+    m_position:Vec2=v2.new(0,0)
     rotation:number=0
     side:Orientation=0
     sprite=new Sprite2D
@@ -239,16 +240,14 @@ export class Obstacle extends GameObject{
     }
     scale=0
     override updateData(data:ObstacleData){
-        let position=this.container.position
         this.scale=data.scale
         this.container.scale=v2.new(this.scale,this.scale)
         this.health=data.health
         if(data.full){
-            position=v2.duplicate(data.full.position)
             this.rotation=data.full.rotation.rotation
             this.side=data.full.rotation.side
             this.container.rotation=this.rotation
-            this.container.position=position
+            this.m_position=v2.duplicate(data.full.position)
             this.variation=data.full.variation
             this.set_definition(data.full.definition)
         }
@@ -269,7 +268,8 @@ export class Obstacle extends GameObject{
             this.update_frame()
         }
         if(this.def.hitbox){
-            this.hb=this.def.hitbox.transform(position,data.scale,this.side)
+            this.hb=this.def.hitbox.transform(this.m_position,data.scale,this.side)
+            this.container.position=this.position
             this.manager.cells.updateObject(this)
         }
     }

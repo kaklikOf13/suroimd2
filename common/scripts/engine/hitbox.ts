@@ -426,29 +426,14 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override transform(
         position: Vec2 = v2.new(0, 0),
-        scale?: number,
+        scale: number=1,
         orientation: Orientation = 0
     ): RectHitbox2D {
-        const size = v2.sub(this.max, this.min)
-        const scaledSize = v2.scale(size, scale??1)
+        const min = v2.scale(this.min, scale)
+        const max = v2.scale(this.max, scale);
 
-        let finalSize: Vec2
-        switch (orientation) {
-            case 0:
-            case 2:
-                finalSize = scaledSize;
-                break;
-            case 1:
-            case 3:
-                finalSize = v2.new(scaledSize.y, scaledSize.x);
-                break;
-            default:
-                finalSize = scaledSize;
-                break;
-        }
-
-        const min = position
-        const max = v2.add(position, finalSize);
+        v2m.add(min,position,min)
+        v2m.add(max,position,max)
 
         return new RectHitbox2D(min, max);
     }

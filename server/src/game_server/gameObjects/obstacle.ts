@@ -28,6 +28,7 @@ export class Obstacle extends ServerGameObject{
     rotation:number=0
     side:Orientation=0
     actived:boolean=false
+    m_position:Vec2=v2.new(0,0)
 
     dead:boolean=false
 
@@ -127,6 +128,7 @@ export class Obstacle extends ServerGameObject{
         }else{
             this.spawnHitbox=this.hb.clone()
         }
+        this.m_position=v2.duplicate(position)
         this.reset_scale()
         this.manager.cells.updateObject(this)
     }
@@ -134,7 +136,7 @@ export class Obstacle extends ServerGameObject{
         return {
             full:{
                 definition:this.def,
-                position:this.position,
+                position:this.m_position,
                 variation:this.variation,
                 rotation:{
                     side:this.side,
@@ -151,8 +153,7 @@ export class Obstacle extends ServerGameObject{
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0)
-            const pos=v2.duplicate(this.position)
-            this.hb=this.def.hitbox.transform(pos,this.scale,this.side)
+            this.hb=this.def.hitbox.transform(this.m_position,this.scale,this.side)
             this.dirty=true
         }
     }
