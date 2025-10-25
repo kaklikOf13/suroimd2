@@ -1,4 +1,4 @@
-import { type ConfigType } from "common/scripts/config/config.ts";
+import { GameConfig, type ConfigType } from "common/scripts/config/config.ts";
 import { Game, GameData } from "./game.ts";
 import { ClientsManager } from "../../engine/mod.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
@@ -21,7 +21,7 @@ export type WorkerMessage =
         key_file?:string
     } | {
         type: WorkerMessages.NewGame
-        team_size:number
+        config?:GameConfig
     } | {
         type: WorkerMessages.SetData
         data:GameData
@@ -59,15 +59,13 @@ self.addEventListener("message",(e)=>{
             console.log(`Game ${begin.id} Initialized`)
             break
         case WorkerMessages.NewGame:
-            if(game){
+            if (game){
                 game.clock.stop()
                 game.running=false
-                for(const c of game.clients.clients.values()){
-                    c.disconnect()
-                }
+                game.clients.clear()
             }
-            game=new Game(begin.clients,begin.id,begin.config)
-            game.on_update_data.push(DataUpdated)
+            game=new Game(msg.config??{team_size:1,mode:"normal"},begin.clients,begin.id,begin.config)
+            game.signals.on("update_data",DataUpdated)
             console.log(`Game ${begin.id} Created`)
             game.mainloop(false)
     }

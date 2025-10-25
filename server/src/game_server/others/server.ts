@@ -26,6 +26,8 @@ export class GameContainer {
 
     address:string=""
 
+    initialized:boolean=false
+
     constructor(server:GameServer,id: number) {
         this.id = id;
         this.server=server
@@ -40,9 +42,13 @@ export class GameContainer {
         this.worker.addEventListener("message", (e) => {
             const msg=e.data as WorkerMessage
             switch(msg.type){
-                case WorkerMessages.SetData:
+                case WorkerMessages.SetData:{
                     this.data=msg.data
                     break
+                }
+                case WorkerMessages.NewGame:{
+                    this.server.addGame()
+                }
             }
         })
         
@@ -56,11 +62,12 @@ export class GameContainer {
         this.address=`${this.server.self_region.ssh?"s":""}://${this.server.self_region.host}:${this.server.self_region.port+this.id+1}`
     }
 
-    create(team_size:number) {
+    create(config?:GameConfig) {
         this.worker.postMessage({
             type:WorkerMessages.NewGame,
-            team_size:team_size
+            config
         } as WorkerMessage)
+        this.initialized=true
     }
 }
 
@@ -101,11 +108,15 @@ export class GameServer{
             if(g.data.running&&g.data.can_join){
                 return g
             }
+            if(!g.data.running&&g.initialized){
+                g.create(config)
+                return g
+            }
         }
-        return this.addGame()
+        return this.addGame(undefined,config)
         
     }
-    addGame(id?:number):GameContainer|undefined{
+    addGame(id?:number,config?:GameConfig):GameContainer|undefined{
         if(!id)id=this.games.size
         if(!this.games.get(id)){
             if(this.games.size<this.config.game.max_games){
@@ -114,7 +125,7 @@ export class GameServer{
                 return undefined
             }
         }
-        this.games.get(id)?.create(1)
+        this.games.get(id)?.create(config)
         /*this.games[id].replay=new ServerReplayRecorder2D(this.games[id] as unknown as Game2D,ObjectsE)
         this.games[id].string_id=uuid.generate() as string
         this.games[id].mainloop()*/

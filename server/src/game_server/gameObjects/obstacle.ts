@@ -6,7 +6,6 @@ import { random } from "common/scripts/engine/random.ts";
 import { type Player } from "./player.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { LootTables } from "common/scripts/definitions/maps/base.ts";
 import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
 import { GameItem } from "common/scripts/definitions/alldefs.ts";
 
@@ -95,7 +94,7 @@ export class Obstacle extends ServerGameObject{
         this.health=this.def.health
 
         if(this.def.lootTable){
-            this.loot=LootTables.get_loot(this.def.lootTable,{withammo:true})
+            this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true})
         }
 
         if(this.def.scale?.min&&this.def.scale.max){

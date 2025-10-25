@@ -393,23 +393,10 @@ export class GInventory extends Inventory<LItem>{
     }
 
     set_hand_item(val:GunItem|MeleeItem|ProjectileItem){
-        if(this.currentWeapon){
-            switch(this.currentWeapon.type){
-              case "gun":
-                (this.currentWeapon as GunItem).reloading=false
-                break
-              case "melee":
-                (this.currentWeapon as MeleeItem).use_delay=(this.currentWeaponDef as MeleeDef).attack_delay
-                break
-            }
-        }
         this.currentWeapon=val
         this.currentWeaponDef=val?.def
-        this.owner.recoil=undefined
         this.owner.privateDirtys.weapons=true
         this.owner.privateDirtys.current_weapon=true
-        this.owner.privateDirtys.action=true
-        this.owner.actions.cancel()
         if(this.currentWeapon&&(this.currentWeapon instanceof GunItem||this.currentWeapon instanceof MeleeItem)){
             const id=((this.currentWeaponDef) as GunDef|MeleeDef)
             if(id.switchDelay&&this.currentWeapon.use_delay<=id.switchDelay){
@@ -424,10 +411,25 @@ export class GInventory extends Inventory<LItem>{
 
     set_current_weapon_index(idx:number){
         if(this.weaponIdx===idx||!this.weapons[idx as keyof typeof this.weapons])return
-      
+
         const val=this.weapons[idx as keyof typeof this.weapons] as GunItem|MeleeItem|undefined
         this.weaponIdx=idx
+
+        if(this.currentWeapon){
+            switch(this.currentWeapon.type){
+              case "gun":
+                (this.currentWeapon as GunItem).reloading=false
+                break
+              case "melee":
+                (this.currentWeapon as MeleeItem).use_delay=(this.currentWeaponDef as MeleeDef).attack_delay
+                break
+            }
+        }
+
         this.set_hand_item(val!)
+        this.owner.actions.cancel()
+        this.owner.privateDirtys.action=true
+        this.owner.recoil=undefined
         this.owner.throw_using_projectile()
     }
     set_weapon(slot:keyof typeof this.weapons=0,wep:WeaponDef,drop:boolean=true){
@@ -501,10 +503,11 @@ export class GInventory extends Inventory<LItem>{
         this.weapons[1]=gun2
         this.weapons[2]=gun1
         if(this.weaponIdx===1){
-            this.set_current_weapon_index(2)
+            this.weaponIdx=2
         }else if(this.weaponIdx===2){
-            this.set_current_weapon_index(1)
+            this.weaponIdx=1
         }
+        this.owner.privateDirtys.current_weapon=true
         this.owner.privateDirtys.weapons=true
     }
     drop_ammo(idx:number=0){

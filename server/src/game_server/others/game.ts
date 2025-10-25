@@ -21,18 +21,20 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef, GameItem } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
+import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 import { Creature } from "../gameObjects/creature.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { Obstacles, SpawnModeType } from "common/scripts/definitions/objects/obstacles.ts";
-import { ConfigType, GameDebugOptions } from "common/scripts/config/config.ts";
-import { GamemodeManager, SoloGamemodeManager } from "./modeManager.ts";
+import { ConfigType, GameConfig, GameDebugOptions } from "common/scripts/config/config.ts";
+import { GamemodeManager, SoloGamemodeManager, TeamsGamemodeManager } from "./modeManager.ts";
 import { DeadZoneDefinition, DeadZoneManager, DeadZoneMode } from "../gameObjects/deadzone.ts";
 import { GeneralUpdatePacket, PlaneData } from "common/scripts/packets/general_update.ts"
 import {PacketManager} from "common/scripts/packets/packet_manager.ts"
+import { LootTablesManager } from "common/scripts/engine/inventory.ts";
+import { Aditional, loot_table_get_item } from "common/scripts/definitions/maps/base.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -106,15 +108,16 @@ export class Game extends ServerGame2D<ServerGameObject>{
     statistics?:GameStatistic
 
     deadzone:DeadZoneManager
+    loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item)
+
     living_count_dirty:boolean=false
 
     general_update:GeneralUpdatePacket=new GeneralUpdatePacket()
 
-    on_update_data:((data:GameData)=>void)[]=[]
     started_time:number=0
 
-    constructor(clients:OfflineClientsManager,id:ID,Config:ConfigType){
-        super(Config.game.config.gameTps,id,clients,PacketManager,[
+    constructor(config:GameConfig,clients:OfflineClientsManager,id:ID,Config:ConfigType){
+        super(Config.game.options.gameTps,id,clients,PacketManager,[
             Player,
             Loot,
             Bullet,
@@ -130,13 +133,15 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }
         this.Config=Config
         this.debug=Config.game.debug
-        this.scene.objects.encoders=ObjectsE
-        this.map=new GameMap(this)
-        this.gamemode=DefaultGamemode
-        this.modeManager=/*this.config.teamSize>1?new TeamsGamemodeManager(this):*/new SoloGamemodeManager(this)
         this.new_list=false
-        this.modeManager.generate_map()
-        //this.modeManager.generate_lobby()
+        this.scene.objects.encoders=ObjectsE
+
+        //Gamemode
+        this.gamemode=DefaultGamemode
+        this.map=new GameMap(this)
+        this.modeManager=config.team_size>1?new TeamsGamemodeManager(config.team_size,this):new SoloGamemodeManager(this)
+        this.modeManager.generate_map(false)
+
         this.deadzone=new DeadZoneManager(this,{
             mode:DeadZoneMode.Staged,
             stages:DeadZoneDefinition,
@@ -185,25 +190,23 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.ntt-=this.dt
         if(this.ntt<=0){
             this.netUpdate()
-            this.ntt=1/this.Config.game.config.netTps
+            this.ntt=1/this.Config.game.options.netTps
         }
     }
     update_data(){
         const data:GameData={
             living_count:this.livingPlayers.length,
-            can_join:this.modeManager.can_join(),
+            can_join:this.modeManager.can_join()&&!this.fineshed,
             running:this.running,
             started_time:this.started_time,
             started:this.started
         }
-        for(const c of this.on_update_data){
-            c(data)
-        }
+        this.signals.emit("update_data",data)
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
         const dir=v2.lookTo(v2.new(0,0),position)
-        
+
         this.planes.push({
             id:random.int(0,1000000),
             complete:false,
@@ -294,9 +297,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
             if(this.statistics){
                 this.statistics.player.players++
             }
+            this.update_data()
         }
         p.inventory.set_current_weapon_index(0)
-        this.update_data()
         return p
     }
     override on_run(): void {
@@ -442,7 +445,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     handleConnections(client:Client,username:string){
         let player:Player|undefined
         client.on("join",async(packet:JoinPacket)=>{
-            if (this.allowJoin&&!this.scene.objects.exist_all(client.ID,1)){
+            if (this.modeManager.can_join()&&!this.fineshed&&!this.scene.objects.exist_all(client.ID,1)){
                 const p=await this.activate_player(username,packet,client)
                 player=p
                 console.log(`${p.name} Connected`)

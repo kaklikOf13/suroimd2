@@ -49,6 +49,8 @@ export interface Gamemode{
     }
     game:{
         no_battle_plane?:boolean
+        map:string
+        lobby:string
     }
 }
 export const DefaultGamemode:Gamemode={
@@ -78,9 +80,11 @@ export const DefaultGamemode:Gamemode={
                 },
             }
         }*/
-       max:100
+        max:100
     },
     game:{
-        no_battle_plane:false
+        no_battle_plane:false,
+        map:"normal",
+        lobby:"lobby"
     }
 }
