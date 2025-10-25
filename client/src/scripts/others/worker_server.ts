@@ -7,7 +7,6 @@ import { Backpacks } from "common/scripts/definitions/items/backpacks.ts";
 import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
 import { Melees } from "common/scripts/definitions/items/melees.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
-import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Helmets, Vests } from "common/scripts/definitions/items/equipaments.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 self.onerror = (e) => {
@@ -17,6 +16,10 @@ self.onmessage = (ev) => {
     const msg = ev.data;
     if (msg.type === "start") {
         const server = new OfflineGameServer(
+            {
+                mode:"normal",
+                team_size:1
+            },
             new OfflineClientsManager(PacketManager),
             0,
             msg.config as ConfigType

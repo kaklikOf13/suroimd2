@@ -1,8 +1,12 @@
 import { HostConfig } from "../engine/server_offline/offline_server.ts";
 
-export interface GameConfig{
+export interface GameOptions{
     gameTps:number
     netTps:number
+}
+export interface GameConfig{
+    team_size:number
+    mode:string
 }
 export interface GamemodeConfig{
     team_size:number[]
@@ -39,7 +43,7 @@ export interface ConfigType {
     };
     game: {
         max_games: number
-        config: GameConfig
+        options: GameOptions
         debug:GameDebugOptions
         host: HostConfig
         modes:GamemodeConfig[]

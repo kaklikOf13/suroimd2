@@ -235,7 +235,7 @@ export class Game extends ClientGame2D<GameObject>{
       }
     }
     this.action.angle=angle
-    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving&&this.running){
+    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving&&this.running&&!this.gameOver){
       (this.activePlayer as Player).rotation=this.action.angle
     }
   }

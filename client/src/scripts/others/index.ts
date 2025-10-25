@@ -82,7 +82,7 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
                     type: "start",
                     config: {
                         game: {
-                            config: {
+                            options: {
                                 gameTps: 60,
                                 netTps: 30
                             },

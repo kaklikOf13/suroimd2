@@ -852,7 +852,7 @@ export class GuiManager{
                         elem.innerHTML=this.game.language.get("killfeed-kill-player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get(dsd.idString+"_name"),
+                            source:this.game.language.get(dsd.idString),
                         })
                         if(msg.killer.id===this.game.activePlayer!.id){
                             this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
@@ -890,7 +890,7 @@ export class GuiManager{
                         elem.innerHTML=this.game.language.get("killfeed-down-player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get(dsd.idString+"_name")
+                            source:this.game.language.get(dsd.idString)
                         })
                         break
                     }
@@ -1163,7 +1163,7 @@ export class GuiManager{
                             if(old_inter===o)return
                             if(!(o as Loot).item)continue
                             this.state.information_box_message=this.game.language.get("interact-loot",{
-                                source:this.game.language.get((o as Loot).item.idString+"_name"),
+                                source:this.game.language.get((o as Loot).item.idString),
                                 count:(o as Loot).count>1?`(${(o as Loot).count})`:""
                             })
                             this.current_interaction=o as Loot

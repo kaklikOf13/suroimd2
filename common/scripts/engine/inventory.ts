@@ -466,23 +466,23 @@ export type LootTableItemRet<Item>={
     count:number
     item:Item
 }
-export class LootTablesDefs<TP,Aditional>{
-    tables:Record<string,LootTable>={}
+export class LootTablesManager<TP,Aditional>{
+    tables:Map<string,LootTable>=new Map()
     get_item:(id:string,count:number,aditional:Aditional)=>LootTableItemRet<TP>[]
     constructor(get_item:(id:string,count:number,aditional:Aditional)=>LootTableItemRet<TP>[]){
         this.get_item=get_item
     }
     add_loot_table(name:string,table:LootTable){
-        this.tables[name]=table
+        this.tables.set(name,table)
     }
     add_tables(tables:Record<string,LootTable>){
         for(const t of Object.keys(tables)){
-            this.tables[t]=tables[t]
+            this.tables.set(t,tables[t])
         }
     }
     get_loot(table:string,aditional:Aditional):LootTableItemRet<TP>[]{
         const ret:LootTableItemRet<TP>[]=[]
-        const lt=this.tables[table]
+        const lt=this.tables.get(table)
         if(!lt){
             return []
         }
@@ -533,5 +533,8 @@ export class LootTablesDefs<TP,Aditional>{
             }
         }
         return ret
+    }
+    clear(){
+        this.tables.clear()
     }
 }

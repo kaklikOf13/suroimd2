@@ -139,7 +139,7 @@ export const GasParticles={
         direction_variation:0.43
     } satisfies GasParticle,
     automatic:{
-        count:1,
+        count:1, 
         size:{
             min:0.8,
             max:1
@@ -152,7 +152,7 @@ export const GasParticles={
         direction_variation:0.2
     } satisfies GasParticle,
     pistols:{
-        count:1,
+        count:2,
         size:{
             min:0.7,
             max:0.8
@@ -199,6 +199,7 @@ Guns.insert(
         },
         speed_mod:0.98,
         arms:WeaponsArmRig[3],
+        gasParticles:GasParticles.pistols,
         muzzleFlash:MuzzleFlash.normal,
         image:WeaponsRig[0],
         dual:{

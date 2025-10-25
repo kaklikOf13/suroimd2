@@ -15,7 +15,7 @@
             "deenable_lobby":true,
             "debug_menu":true
         },
-        "config": {
+        "options": {
             "gameTps": 60,
             "netTps": 30
         },

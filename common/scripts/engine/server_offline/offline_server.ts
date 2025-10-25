@@ -173,6 +173,12 @@ export class OfflineClientsManager{
         this.packets_manager=packets
         this.onconnection=onconnection
     }
+    clear(){
+        for(const c of this.clients.values()){
+            c.disconnect()
+        }
+        this.clients.clear()
+    }
     activate_ws(ws:BasicSocket,id:number,ip:string,username:string):ID{
         const client=new Client(ws,this.packets_manager,ip)
         client.ID=id

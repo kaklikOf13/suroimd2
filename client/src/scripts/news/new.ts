@@ -2,6 +2,81 @@ const newsS=document.querySelector("#about-sm-news") as HTMLDivElement
 
 const news=[
     {
+      title: "Pre-Beta",
+      content:`
+<h2>News</h2>
+<hr>
+<h3>Mains</h3>
+<ul>
+<li><strong>DeadZone!!!!!</strong></li>
+<li><strong>Emotes!!</strong></li>
+<li><strong>Gameplay Musics!</strong></li>
+<li><strong>ThunderStorm!</strong></li>
+<li>Kill Leader Sounds</li>
+<li>Tab. Why Have A Tab In 2000?</li>
+<li>Badges</li>
+<li>Loot Sounds And Gui</li>
+<li>Alternative Vehicles Control</li>
+<li>Translations</li> 
+</ul>
+<hr>
+<h3>Menu</h3>
+<ul>
+<li>Debug Menu (Press Delete Or R3 To Access)</li>
+<li>Fps Analizer</li>
+<li>Crosshair</li>
+<li>Alice Winner Skin</li>
+<li>A New Background Art</li>
+</ul>
+<hr>
+<h3>Items</h3>
+<ul>
+<li>Explosive Ammo - A New Ammo</li>
+<li>Gasoline - A New Ammo And Liquid</li>
+<li>RPG-7 - A Rocket Launcher When use Explosive Ammo</li>
+<li>M2-2 - A Flamethrower</li>
+<li>Projectiles Return</li>
+<li>Projectiles Throw And Hold</li>
+<li>Vests Icon</li>
+<li>Vests Visual In Game</li>
+</ul>
+<hr>
+<h3>Keys And Controls</h3>
+<ul>
+<li>Swamp Guns Slot (Use F)</li>
+</ul>
+<hr>
+<h2>Changes</h2>
+<hr>
+<h3>Items</h3>
+<ul>
+<li>Survival Knife Animation</li>
+<li>Survival Knife Redesign</li>
+<li>Famas - 556mm Epic Gun. The First Burst Gun</li>
+<li>Hammer Redesign</li>
+<li>Axe Redesign</li>
+<li>Swing Melee Animation</li>
+<li>Melee Loot View</li>
+<li>Melees On Loot Table</li>
+</ul>
+<hr>
+<h3>Others<h3>
+<ul>
+<li><strong>Web Workers!!</strong> Now The Game Run 2 times faster in campaing mode</li>
+<li>Bots Now Start With Items</li>
+<li>Remove Expanded Inventory</li>
+<li>A Redesign In Almost Everthing</li>
+</ul>
+<hr>
+<h3>Fixes</h3>
+<ul>
+<li><strong>GIANT OPTIMISATION!!!</strong> No More Lag</li>
+<li><strong>REQUEST ANIMATION FRAME!</strong></li>
+<li>Triangulation On Terrain</li>
+</ul>
+`
+    },
+    {
       title:"Alpha 1.4",
       content:`
 <h2>News</h2>
@@ -49,7 +124,6 @@ const news=[
 <h3>Controls</h3>
 <ul>
 <li>Mouse And Keyboard Keys<h1>Play The Game</h1>
-The Is Just Playable In Offline Mode.
 </ul>      
 `
     },
