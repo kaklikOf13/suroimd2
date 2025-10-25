@@ -16,9 +16,6 @@ export type WorkerMessage =
         id:number
         config:ConfigType
         port:number
-        https?:boolean
-        cert_file?:string
-        key_file?:string
     } | {
         type: WorkerMessages.NewGame
         config?:GameConfig
@@ -52,7 +49,7 @@ self.addEventListener("message",(e)=>{
                 id:msg.id,
                 config:msg.config,
                 clients:new ClientsManager(PacketManager),
-                server:new Server(msg.port,msg.https,msg.cert_file,msg.key_file)
+                server:new Server(msg.port,msg.config.game.host.https,msg.config.game.host.cert,msg.config.game.host.key)
             }
             begin.server.route("api/ws",begin.clients.handler())
             begin.server.run()
