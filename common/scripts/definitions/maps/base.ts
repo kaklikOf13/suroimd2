@@ -63,6 +63,7 @@ export interface IslandDef{
 }
 export interface MapDef{
     loot_tables:Record<string,LootTable>
+    default_floor?:FloorType
     generation:{
         island?:IslandDef
     }

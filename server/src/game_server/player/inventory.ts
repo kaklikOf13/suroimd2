@@ -155,12 +155,12 @@ export class GunItem extends LItem{
         user.privateDirtys.current_weapon=true
     }
     update(user:Player){
+        if(this.use_delay>0)this.use_delay-=1/user.game.tps
         if(user.inventory.currentWeapon===this&&!user.actions.current_action){
             if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
                 this.reloading=true
                 this.reload(user)
             }
-            this.use_delay-=1/user.game.tps
             if(this.use_delay<=0){
                 this.firing=false
                 if(this.burst){
@@ -431,6 +431,8 @@ export class GInventory extends Inventory<LItem>{
         this.owner.privateDirtys.action=true
         this.owner.recoil=undefined
         this.owner.throw_using_projectile()
+
+        this.owner.input.swicthed=true
     }
     set_weapon(slot:keyof typeof this.weapons=0,wep:WeaponDef,drop:boolean=true){
         if(drop)this.drop_weapon(slot,false)

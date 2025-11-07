@@ -1,5 +1,4 @@
-import {CircleHitbox2D, Numeric, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
-import { BulletData } from "common/scripts/others/objectsEncode.ts";
+import {CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletDef, DamageReason } from "common/scripts/definitions/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";
@@ -155,26 +154,26 @@ export class Bullet extends ServerGameObject{
     }
     tracerColor:number=0
     projColor:number=0
-    override getData(): BulletData {
-        return {
-            position:this.position,
-            tticks:this.tticks,
-            full:{
-                critical:this.critical,
-                initialPos:this.initialPosition,
-                maxDistance:this.maxDistance,
-                radius:(this.hb as CircleHitbox2D).radius,
-                speed:this.defs.speed*this.modifiers.speed,
-                angle:this.angle,
-                tracerWidth:this.defs.tracer.width,
-                tracerHeight:this.defs.tracer.height*this.modifiers.size,
-                tracerColor:this.tracerColor,
-                projWidth:this.defs.tracer.proj.width,
-                projHeight:this.defs.tracer.proj.height*this.modifiers.size,
-                projColor:this.projColor,
-                projIMG:this.defs.tracer.proj.img,
-                projParticle:this.defs.tracer.particles?.frame??0
+    override encode(stream: NetStream, full: boolean): void {
+        stream.writePosition(this.position)
+        .writeFloat(this.tticks,0,100,2)
+        if(full){
+            stream.writePosition(this.initialPosition)
+            .writeFloat32(this.maxDistance)
+            .writeFloat((this.hb as CircleHitbox2D).radius,0,2,2)
+            .writeFloat32(this.defs.speed*this.modifiers.speed)
+            .writeRad(this.angle)
+            .writeFloat(this.defs.tracer.width,0,100,3)
+            .writeFloat(this.defs.tracer.height*this.modifiers.size,0,6,2)
+            .writeUint32(this.tracerColor)
+            .writeUint8(this.defs.tracer.proj.img)
+            if(this.defs.tracer.proj.img>0){
+                stream.writeFloat(this.defs.tracer.proj.width,0,6,2)
+                .writeFloat(this.defs.tracer.proj.height,0,6,2)
+                .writeUint32(this.projColor)
             }
+            stream.writeUint8(this.defs.tracer.particles?.frame??0)
+            .writeBooleanGroup(this.critical)
         }
     }
 }

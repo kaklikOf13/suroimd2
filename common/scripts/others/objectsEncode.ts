@@ -1,7 +1,7 @@
 import { GameObjectsDefs, type GameObjectDef } from "../definitions/alldefs.ts";
 import { ObstacleDef, ObstacleDoorStatus, Obstacles } from "../definitions/objects/obstacles.ts";
 import { Orientation } from "../engine/geometry.ts";
-import { ObjectEncoder,EncodedData,Vec2, type NetStream } from "../engine/mod.ts";
+import { Vec2, type NetStream } from "../engine/mod.ts";
 export enum PlayerAnimationType{
     Reloading,
     Consuming,

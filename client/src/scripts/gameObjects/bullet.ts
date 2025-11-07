@@ -1,6 +1,5 @@
-import { BulletData } from "common/scripts/others/objectsEncode.ts";
 import { ABParticle2D, Camera2D, Container2D, Sprite2D } from "../engine/mod.ts";
-import { BaseGameObject2D, CircleHitbox2D, Vec2, random, v2, v2m } from "common/scripts/engine/mod.ts";
+import { BaseGameObject2D, CircleHitbox2D, NetStream, Vec2, random, v2, v2m } from "common/scripts/engine/mod.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { Obstacle } from "./obstacle.ts";
 import { type Player } from "./player.ts";
@@ -141,45 +140,46 @@ export class Bullet extends GameObject{
         this.container.updateZIndex()
         this.container.zIndex=zIndexes.Bullets
     }
-    override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
+    override render(_camera: Camera2D, _renderer: Renderer, _dt: number): void {
       /*if(Debug.hitbox){
             renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.visual_position)
         }*/
     }
-    override updateData(data:BulletData){
-        this.position=data.position
-        this.tticks=data.tticks
-        if(data.full){
-            this.initialPosition=data.full.initialPos
-            this.maxDistance=data.full.maxDistance
-            this.hb=new CircleHitbox2D(data.position,data.full.radius)
-            this.speed=data.full.speed
-            this.container.rotation=data.full.angle
-            this.velocity=v2.from_RadAngle(data.full.angle)
+    override decode(stream: NetStream, full: boolean): void {
+        this.position=stream.readPosition()
+        this.tticks=stream.readFloat(0,60,2)
+        if(full){
+            this.initialPosition=stream.readPosition()
+            this.maxDistance=stream.readFloat32()
+            this.hb=new CircleHitbox2D(this.position,stream.readFloat(0,2,2))
+            this.speed=stream.readFloat32()
+            this.container.rotation=stream.readRad()
+
+            this.velocity=v2.from_RadAngle(this.container.rotation)
             v2m.scale(this.velocity,this.velocity,this.speed)
-            this.sprite_trail.scale!.y=data.full.tracerHeight
-            this.maxLength=data.full.tracerWidth
-            this.sprite_trail.tint=ColorM.number(data.full.tracerColor)
 
-            this.sprite_trail.scale.x=0
+            this.maxLength=stream.readFloat(0,100,3)
+            this.sprite_trail.scale!.y=stream.readFloat(0,6,2)
+            this.sprite_trail.tint=ColorM.number(stream.readUint32())
 
-            if(data.full.projIMG){
+            const proj=stream.readUint8()
+            if(proj>0){
                 this.sprite_projectile=new Sprite2D()
                 this.sprite_projectile.hotspot=v2.new(.5,.5)
                 this.sprite_projectile.zIndex=2
                 this.sprite_projectile.position.x=0
                 this.sprite_projectile.position.y=0
-                this.sprite_projectile.scale.x=data.full.projWidth
-                this.sprite_projectile.scale.y=data.full.projHeight
+                this.sprite_projectile.scale.x=stream.readFloat(0,6,2)
+                this.sprite_projectile.scale.y=stream.readFloat(0,6,2)
 
-                this.sprite_projectile.tint=ColorM.number(data.full.projColor)
-                this.sprite_projectile.frame=this.game.resources.get_sprite(images[data.full.projIMG-1])
+                this.sprite_projectile.tint=ColorM.number(stream.readUint32())
+                this.sprite_projectile.frame=this.game.resources.get_sprite(images[proj-1])
 
                 this.container.add_child(this.sprite_projectile)
             }
-            this.particles=data.full.projParticle
+            this.particles=stream.readUint8()
             this.container.visible=true
-            this.critical=data.full.critical
+            this.critical=stream.readBooleanGroup()[0]
         }
     }
 }

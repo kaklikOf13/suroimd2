@@ -11,12 +11,11 @@ __                                                                              
 
 __                                                                                                      __
 ### Keys And Controls
-
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
 ### Items
-
+* Quickswitch Improvement
 __                                                                                                      __
 ### Others
 

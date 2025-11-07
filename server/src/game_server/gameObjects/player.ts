@@ -1,6 +1,6 @@
-import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, Client, NetStream, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket, InputAction, InputActionType } from "common/scripts/packets/action_packet.ts"
-import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts"
+import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts"
 import { ActionsType, GameConstants } from "common/scripts/others/constants.ts"
 import { GInventory,GunItem,LItem} from "../player/inventory.ts"
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts"
@@ -8,7 +8,7 @@ import { DamageParams } from "../others/utils.ts"
 import { type Obstacle } from "./obstacle.ts"
 import { ActionsManager } from "common/scripts/engine/inventory.ts"
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
-import { DamageSourceDef, DamageSources, GameItems, GameObjectDef, Weapons } from "common/scripts/definitions/alldefs.ts"
+import { DamageSourceDef, DamageSources, GameItems, GameObjectDef, GameObjectsDefs, Weapons } from "common/scripts/definitions/alldefs.ts"
 import { type PlayerModifiers } from "common/scripts/others/constants.ts"
 import { AccessoriesManager } from "../player/accesories.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -95,8 +95,6 @@ export class Player extends ServerGameObject{
 
     push_vorce:Vec2=v2.new(0,0)
 
-    left_handed:boolean
-
     current_floor:FloorType=0
 
     boost_t:number=0
@@ -113,6 +111,7 @@ export class Player extends ServerGameObject{
         reload:false,
         swamp_guns:false,
         attacking:false,
+        swicthed:false,
 
         aim_speed:0,
 
@@ -134,8 +133,6 @@ export class Player extends ServerGameObject{
         this.inventory=new GInventory(this)
 
         this.actions=new ActionsManager(this)
-
-        this.left_handed=false
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -442,6 +439,7 @@ export class Player extends ServerGameObject{
         this.input.emote=undefined
     }
     update_input(){
+        this.input.swicthed=false
         if(this.input.reload&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
             this.input.reload=false
@@ -899,24 +897,44 @@ export class Player extends ServerGameObject{
             this.game.livingPlayers.splice(idx,1);
         }
     }
-    override getData(): PlayerData {
-        return {
-            position:this.position,
-            rotation:this.rotation,
-            dead:this.dead,
-            shield:this.boost_def===Boosts[BoostType.Shield]&&this.boost>0,
-            left_handed:this.left_handed,
-            parachute:this.parachute,
-            driving:this.seat!==undefined,
-            attacking:this.input.attacking,
-            emote:this.input.emote,
-            full:{
-                vest:this.vest?this.vest.idNumber!+1:0,
-                helmet:this.helmet?this.helmet.idNumber!+1:0,
-                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
-                animation:this.current_animation,
-                backpack:this.inventory.backpack.idNumber!,
-                skin:this.skin.idNumber!
+    override encode(stream: NetStream, full: boolean): void {
+        stream.writePosition(this.position)
+        .writeRad(this.rotation)
+        .writeBooleanGroup(
+            this.dead,
+            this.boost_def===Boosts[BoostType.Shield]&&this.boost>0,
+            this.seat!==undefined,
+            this.parachute!==undefined,
+            this.input.emote!==undefined,
+            this.input.attacking,
+            this.input.swicthed
+        )
+        if(this.parachute){
+            stream.writeFloat(this.parachute.value,0,1,1)
+        }
+        if(this.input.emote){
+            stream.writeUint16(GameObjectsDefs.keysString[this.input.emote.idString])
+        }
+        if(full){
+            stream.writeBooleanGroup(this.current_animation!==undefined)
+            .writeUint8(this.vest?this.vest.idNumber!+1:0)
+            .writeUint8(this.helmet?this.helmet.idNumber!+1:0)
+            .writeUint8(this.inventory.backpack.idNumber!)
+            .writeUint16(this.skin.idNumber!)
+            .writeInt16(Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1)
+            
+            if(this.current_animation!==undefined){
+                stream.writeUint8(this.current_animation.type)
+                switch(this.current_animation.type){
+                    case PlayerAnimationType.Reloading:
+                        stream.writeUint8(this.current_animation.alt_reload?1:0)
+                        break
+                    case PlayerAnimationType.Consuming:
+                        stream.writeUint16(this.current_animation.item)
+                        break
+                    default:
+                        break
+                }
             }
         }
     }

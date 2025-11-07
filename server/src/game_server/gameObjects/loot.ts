@@ -1,5 +1,4 @@
-import { CircleHitbox2D, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
-import { LootData } from "common/scripts/others/objectsEncode.ts";
+import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
@@ -173,13 +172,11 @@ export class Loot extends ServerGameObject{
         }
         this.real_radius=this.hb.radius
     }
-    override getData(): LootData {
-        return {
-            position:this.position,
-            full:{
-                item:GameItems.keysString[this.item.idString],
-                count:this.count
-            }
+    override encode(stream: NetStream, full: boolean): void {
+        stream.writePosition(this.position)
+        if(full){
+            stream.writeUint16(GameItems.keysString[this.item.idString])
+            .writeUint8(this.count)
         }
     }
 }

@@ -1,8 +1,7 @@
-import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
 import { type Camera2D, ColorM, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
-import { Materials, ObstacleBehaviorDoor, ObstacleDef, ObstacleDoorStatus } from "common/scripts/definitions/objects/obstacles.ts";
+import { Materials, ObstacleBehaviorDoor, ObstacleDef, ObstacleDoorStatus, Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
 import { random } from "common/scripts/engine/random.ts";
-import { ParticlesEmitter2D, RectHitbox2D, Vec2 } from "common/scripts/engine/mod.ts";
+import { NetStream, ParticlesEmitter2D, RectHitbox2D, Vec2 } from "common/scripts/engine/mod.ts";
 import { Sound } from "../engine/resources.ts";
 import { Orientation, v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -45,6 +44,7 @@ export class Obstacle extends GameObject{
     doors_hitboxes?:Record<-1|0|1,RectHitbox2D>
 
     emitter_1?:ParticlesEmitter2D<ClientParticle2D>
+    // deno-lint-ignore no-explicit-any
     create(_args: Record<string,any>): void {
         this.game.camera.addObject(this.container)
         this.updatable=false
@@ -239,36 +239,43 @@ export class Obstacle extends GameObject{
         }
     }
     scale=0
-    override updateData(data:ObstacleData){
-        this.scale=data.scale
-        this.container.scale=v2.new(this.scale,this.scale)
-        this.health=data.health
-        if(data.full){
-            this.rotation=data.full.rotation.rotation
-            this.side=data.full.rotation.side
-            this.container.rotation=this.rotation
-            this.m_position=v2.duplicate(data.full.position)
-            this.variation=data.full.variation
-            this.set_definition(data.full.definition)
+    override decode(stream: NetStream, full: boolean): void {
+        const [dead,door]=stream.readBooleanGroup()
+        this.scale=stream.readFloat(0,3,3)
+        this.container.scale.x=this.scale
+        this.container.scale.y=this.scale
+        this.health=stream.readFloat(0,1,1)
+        if(door){
+            this.door_status={
+                locked:stream.readBooleanGroup()[0],
+                open:stream.readInt8() as -1|0|1
+            }
         }
-        if(data.dead){
+        if(full){
+            this.rotation=stream.readRad()
+            this.side=stream.readUint8() as Orientation
+            this.variation=stream.readUint8()
+            this.m_position=stream.readPosition()
+            this.set_definition(Obstacles.getFromNumber(stream.readUint16()))
+        }
+        if(dead){
             if(this.emitter_1)this.emitter_1.enabled=false
             this.die()
         }else if(this.dead){
             this.dead=false
         }else{
-            if(this.emitter_1&&data.health<=0.35){
+            if(this.emitter_1&&this.health<=0.4){
                 this.emitter_1.enabled=true
             }
-            if(data.door){
-                this.update_door(data.door)
+            if(door){
+                this.update_door(this.door_status!)
             }
         }
         if(!this.container.visible){
             this.update_frame()
         }
         if(this.def.hitbox){
-            this.hb=this.def.hitbox.transform(this.m_position,data.scale,this.side)
+            this.hb=this.def.hitbox.transform(this.m_position,this.scale,0)
             this.container.position=this.position
             this.manager.cells.updateObject(this)
         }

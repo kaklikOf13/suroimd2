@@ -1,6 +1,5 @@
-import { Angle, Hitbox2D, LootTableItemRet, Numeric, Orientation, RotationMode, v2, Vec2 } from "common/scripts/engine/mod.ts"
-import { ObstacleDef, ObstacleDoorStatus } from "../../../../common/scripts/definitions/objects/obstacles.ts";
-import { ObstacleData } from "common/scripts/others/objectsEncode.ts";
+import { Angle, Hitbox2D, LootTableItemRet, NetStream, Numeric, Orientation, RotationMode, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { ObstacleDef, ObstacleDoorStatus } from "common/scripts/definitions/objects/obstacles.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
 import { type Player } from "./player.ts";
@@ -132,21 +131,20 @@ export class Obstacle extends ServerGameObject{
         this.reset_scale()
         this.manager.cells.updateObject(this)
     }
-    override getData(): ObstacleData {
-        return {
-            full:{
-                definition:this.def,
-                position:this.m_position,
-                variation:this.variation,
-                rotation:{
-                    side:this.side,
-                    rotation:this.rotation
-                }
-            },
-            health:this.health/this.def.health,
-            dead:this.dead,
-            scale:this.scale,
-            door:this.door
+    override encode(stream: NetStream, full: boolean): void {
+        stream.writeBooleanGroup(this.dead,this.door!==undefined)
+        .writeFloat(this.scale,0,3,3)
+        .writeFloat(this.health,0,1,1)
+        if(this.door){
+            stream.writeBooleanGroup(this.door.locked)
+            .writeInt8(this.door.open)
+        }
+        if(full){
+            stream.writeRad(this.rotation)
+            .writeUint8(this.side)
+            .writeUint8(this.variation)
+            .writePosition(this.m_position)
+            .writeUint16(this.def.idNumber!)
         }
     }
     reset_scale(){

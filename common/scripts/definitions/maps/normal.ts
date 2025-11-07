@@ -201,13 +201,13 @@ export const NormalMap:MapDef={
     generation:{
         island:{
             size:v2.new(500,500),
-            ground_loot:[{count:900,table:"ground_loot"}],
+            ground_loot:[{count:80,table:"ground_loot"}],
             spawn:[
                 [
                     {id:"oak_tree",count:2900},
                     {id:"stone",count:2000},
                     {id:"bush",count:1500},
-                    {id:"wood_crate",count:700},
+                    {id:"wood_crate",count:650},
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
@@ -216,7 +216,7 @@ export const NormalMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Water,
-                /*rivers:{
+                rivers:{
                     divisions:100,
                     spawn_floor:1,
                     expansion:32,
@@ -235,7 +235,7 @@ export const NormalMap:MapDef={
                             weight:1
                         }
                     ]
-                },*/
+                },
                 floors:[
                     {
                         padding:30,
