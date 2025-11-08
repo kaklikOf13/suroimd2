@@ -132,7 +132,7 @@ export class Client{
             })
         }
     }
-    private stream_cache:NetStream=new NetStream(new ArrayBuffer(1024 * 30))
+    private stream_cache:NetStream=new NetStream(new ArrayBuffer(1024 * 40))
     /**
      * Send A `Packet` To `Server/Client`
      * @param packet To Send

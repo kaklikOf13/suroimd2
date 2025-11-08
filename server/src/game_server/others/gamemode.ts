@@ -68,7 +68,7 @@ export const DefaultGamemode:Gamemode={
             addiction:{
                 decay:0.25,
                 damage:0.8,
-                speed:0.8,
+                speed:0.5,
                 abstinence:0.009
             },
             default_boost:BoostType.Adrenaline

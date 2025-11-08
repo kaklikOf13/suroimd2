@@ -777,7 +777,7 @@ Guns.insert(
         lenght:1,
         size:6,
         ammoType:"explosive_ammo",
-        fireMode:FireMode.Auto,
+        fireMode:FireMode.Single,
         class:GunClasses.Miscellaneous,
         quality:ItemQuality.Legendary,
         ammoSpawnAmount:11,
@@ -852,6 +852,7 @@ Guns.insert(
                 speed:30,
                 criticalMult:4,
                 obstacleMult:5,
+                reflection:BulletReflection.None,
                 tracer:{
                     height:6,
                     width:6,

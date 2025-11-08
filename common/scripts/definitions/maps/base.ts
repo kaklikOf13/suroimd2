@@ -48,6 +48,12 @@ export interface BiomeDef{
     biome_skin?:string
     floors:Partial<Record<FloorType,BiomeFloor>>
     assets:string[]
+    ambient:{
+        snow?:boolean
+        rain?:boolean
+        particles:string[]
+        sound?:string
+    }
 }
 export interface IslandDef{
     size:Vec2

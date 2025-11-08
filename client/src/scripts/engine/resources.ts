@@ -268,7 +268,7 @@ export class ResourcesManager{
                 resolve(this.sources[id] as Sound)
             }
     
-            const xhr = new XMLHttpRequest();
+            const xhr = new XMLHttpRequest()
             xhr.open("GET", def.src);
             xhr.responseType = "arraybuffer";
             const onfailure = function onfailure(_event:ProgressEvent<XMLHttpRequestEventTarget>) {
@@ -283,6 +283,7 @@ export class ResourcesManager{
                 this.audioCtx.decodeAudioData(arrayBuffer, (audioBuffer) => {
                     (this.sources[id] as Sound)={buffer:audioBuffer,src:def.src,volume:def.volume??1,resourceType:SourceType.Sound}
                     resolve(this.sources[id] as Sound)
+                    
                 }, () => {
                     reject(`Failed decoding sound: ${id}`);
                     resolve(undefined)
@@ -292,7 +293,6 @@ export class ResourcesManager{
             xhr.addEventListener("error", onfailure);
             xhr.addEventListener("timeout", onfailure);
             xhr.send();
-            resolve(this.sources[id] as Sound)
         })
     }
     get_animation(id:string):Animation{

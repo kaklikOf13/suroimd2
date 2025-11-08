@@ -469,14 +469,12 @@ export class GuiManager{
             }
         }
     }
-    end_game=false
     clear(){
         this.content.killfeed.innerHTML=""
         this.content.killeader_span.innerText=""
         this.killleader=undefined
         this.content.help_gui.innerText=""
 
-        this.end_game=false
         this.information_killbox_messages=[]
         this.information_killbox_time=0
 
@@ -492,19 +490,6 @@ export class GuiManager{
     }
     information_killbox_messages:string[]=[]
     information_killbox_time:number=0
-    grand_finale(){
-        if(this.end_game)return
-        this.end_game=true
-        this.game.music.set(null)
-        this.game.addTimeout(()=>{
-            if(this.game.living_count[0]>2){
-                this.end_game=false
-                return
-            }
-            this.game.music.set(this.game.resources.get_audio(random.choose(this.game.ending_music)))
-            this.information_killbox_messages.push(`Grand Finale`)
-        },3)
-    }
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={
             id:msg.player.id,
@@ -783,7 +768,7 @@ export class GuiManager{
         if(g.Win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover-you-win",{})
         }else{
-            this.game.music.set(null)
+            this.game.ambient.music.set(null)
             if(!this.players_name[g.Eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover-eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.Eliminator].full}</span>`

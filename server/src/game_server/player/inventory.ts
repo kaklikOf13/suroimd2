@@ -62,13 +62,15 @@ export class GunItem extends LItem{
     has_consumible(user:Player):boolean{
         return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
     }
+    switching:boolean=false
     attacking():boolean{
-        return this.use_delay>0&&this.firing&&!this.reloading
+        return this.use_delay>0&&this.firing&&!this.reloading&&!this.switching
     }
     on_fire(user:Player,_slot?:LItem){
         if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
         if(this.has_consumible(user)){
             if(this.use_delay<=0){
+                this.switching=false
                 this.firing=true
                 if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
                     this.burst={
@@ -275,6 +277,7 @@ export class MeleeItem extends LItem{
     itemType: InventoryItemType.melee=InventoryItemType.melee
     use_delay:number=0
     firing:boolean=false
+    switching:boolean=false
 
     type="melee"
     constructor(def:MeleeDef,droppable=true){
@@ -401,8 +404,9 @@ export class GInventory extends Inventory<LItem>{
             const id=((this.currentWeaponDef) as GunDef|MeleeDef)
             if(id.switchDelay&&this.currentWeapon.use_delay<=id.switchDelay){
                 this.currentWeapon!.use_delay=id.switchDelay
-                this.currentWeapon!.firing=true
+                this.currentWeapon!.firing=false
             }
+            this.currentWeapon.switching=true
         }
 
         this.owner.current_animation=undefined

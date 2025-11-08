@@ -7,7 +7,12 @@ export const NormalBiome:BiomeDef={
     },
     assets:[
         "normal"
-    ]
+    ],
+    ambient:{
+        particles:["leaf_01_particle_1"],
+        rain:true,
+        sound:"storm_ambience"
+    }
 }
 export const NormalMap:MapDef={
     loot_tables:{
@@ -329,7 +334,13 @@ export const SnowBiome:BiomeDef={
         }
     },
     biome_skin:"snow",
-    assets:["normal","christmas"]
+    assets:["normal","christmas"],
+    ambient:{
+        particles:[],
+        rain:false,
+        snow:true,
+        sound:"snowstorm_ambience"
+    }
 }
 export const SnowMap:MapDef={
     loot_tables:{...NormalMap.loot_tables,

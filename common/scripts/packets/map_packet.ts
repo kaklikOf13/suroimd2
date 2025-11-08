@@ -52,6 +52,11 @@ export class MapPacket extends Packet{
         .writeArray(this.map.biome.assets,(i,_s)=>{
             stream.writeString(i)
         })
+        .writeArray(this.map.biome.ambient.particles,(i,_s)=>{
+            stream.writeString(i)
+        })
+        .writeBooleanGroup(this.map.biome.ambient.rain===true,this.map.biome.ambient.snow===true)
+        .writeString(this.map.biome.ambient.sound??"")
         .writeNumberDict(this.map.biome.floors as Record<number,BiomeFloor>,(i,_s)=>{
             stream.writeBooleanGroup(i.color!==undefined)
             if(i.color!==undefined)stream.writeUint32(i.color??0)
@@ -88,12 +93,23 @@ export class MapPacket extends Packet{
         this.map.size=v2.new(stream.readUint16(),stream.readUint16())
         this.map.biome={
             floors:{},
+            ambient:{
+                particles:[],
+            },
+            assets:[],
             biome_skin:stream.readStringSized(30)??undefined
         }
         this.map.biome.assets=stream.readArray((s)=>{
             return s.readString()
         },1)
-        this.map.biome.floors=stream.readNumberDict((s)=>{
+        this.map.biome.ambient.particles=stream.readArray((s)=>{
+            return s.readString()
+        },1)
+        const bg1=stream.readBooleanGroup()
+        this.map.biome.ambient.rain=bg1[0]
+        this.map.biome.ambient.snow=bg1[1]
+        this.map.biome.ambient.sound=stream.readString()
+        this.map.biome.floors=stream.readNumberDict((_s)=>{
             const [has_color]=stream.readBooleanGroup()
             const floor:BiomeFloor={}
             if(has_color){

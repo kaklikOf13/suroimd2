@@ -363,6 +363,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             vehicle.seats[0].set_player(p)
             p.dirty=true
         }*/
+
+        p.update2()
         return p
     }
     add_npc(name?:string,layer?:number):Player{

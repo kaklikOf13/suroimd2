@@ -1,6 +1,6 @@
 import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
 import { LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Angle, Client, DefaultSignals, KDate, Numeric, ParticlesEmitter2D, Vec2, model2d, random, v2 } from "common/scripts/engine/mod.ts";
+import { Client, DefaultSignals, KDate, Numeric, Vec2, model2d, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Player } from "../gameObjects/player.ts";
 import { Loot } from "../gameObjects/loot.ts";
@@ -8,7 +8,7 @@ import { Bullet } from "../gameObjects/bullet.ts";
 import { Obstacle } from "../gameObjects/obstacle.ts";
 import { GuiManager } from "../managers/guiManager.ts";
 import { Explosion } from "../gameObjects/explosion.ts";
-import { ManipulativeSoundInstance, SoundManager } from "../engine/sounds.ts";
+import { SoundManager } from "../engine/sounds.ts";
 import { Projectile } from "../gameObjects/projectile.ts";
 import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
 import { GameObject } from "./gameObject.ts";
@@ -30,14 +30,14 @@ import {  Material2D, WebglRenderer } from "../engine/renderer.ts";
 import { Plane } from "./planes.ts";
 import { isMobile } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
-import { ToggleElement, Tween } from "../engine/utils.ts";
+import { ToggleElement } from "../engine/utils.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { ActionPacket, InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
 import { Camera3D } from "../engine/container_3d.ts";
-import { ABParticle2D, ClientParticle2D, RainParticle2D } from "../engine/particles.ts";
 import { TranslationManager } from "common/scripts/engine/definitions.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { AmbientManager } from "../managers/ambientManager.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -59,8 +59,6 @@ export class Game extends ClientGame2D<GameObject>{
   grid_mat:Material2D
   scope_zoom:number=0.53
 
-  music:ManipulativeSoundInstance
-  ambience:ManipulativeSoundInstance
   //0.14=l6 32x
   //0.27=l5 16x
   //0.35=l4 8x
@@ -84,6 +82,7 @@ export class Game extends ClientGame2D<GameObject>{
   //minimap:MinimapManager=new MinimapManager(this)
 
   dead_zone:DeadZoneManager=new DeadZoneManager(this)
+  ambient:AmbientManager
 
   language:TranslationManager
 
@@ -244,8 +243,6 @@ export class Game extends ClientGame2D<GameObject>{
       (this.activePlayer as Player).rotation=this.action.angle
     }
   }
-  rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
-  ambient_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
   constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,translation:TranslationManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
     super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
     for(const i of LayersL){
@@ -258,7 +255,6 @@ export class Game extends ClientGame2D<GameObject>{
     this.menuManager=menu
 
     this.cam3=new Camera3D(this.renderer)
-
 
     document.body.style.cursor=this.cursors.default
 
@@ -282,67 +278,16 @@ export class Game extends ClientGame2D<GameObject>{
     this.fake_crosshair.zIndex=zIndexes.DamageSplashs
     this.fake_crosshair.hotspot=v2.new(.5,.5)
 
-    this.light_map.ambient=0.6
     this.light_map.zIndex=zIndexes.Lights
     this.grid_gfx.zIndex=zIndexes.Grid
-    this.rain_particles_emitter=this.particles.add_emiter({
-      delay:0.005,
-      particle:()=>new RainParticle2D({
-        frame:{
-          main:{
-            image:"raindrop_1",
-          },
-          wave:{
-            image:"raindrop_2",
-          }
-        },
-        zindex:{
-          main:zIndexes.Rain1,
-          wave:zIndexes.Rain2,
-        },
-        speed:25,
-        lifetime:random.float(0.5,1.2),
-        scale:{
-          main:random.float(0.7,1.5)
-        },
-        position:v2.random2(v2.sub(this.camera.visual_position,v2.new(7,7)),v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
-        rotation:Angle.deg2rad(45),
-      }),
-      enabled:this.save.get_variable("cv_graphics_climate")
-    })
-    this.ambient_particles_emitter=this.particles.add_emiter({
-      delay:2.5,
-      particle:()=>{
-        const ang=random.rad()
-        const dir=random.rad()
-        const ret=new ABParticle2D({
-          frame:{
-            image:"leaf_01_particle_1"
-          },
-          life_time:10,
-          direction:dir,
-          position:v2.random2(this.camera.visual_position,v2.add(this.camera.visual_position,v2.new(this.camera.width,this.camera.height))),
-          speed:random.float(0.4,1),
-          angle:ang,
-          scale:random.float(0.5,1),
-          to:{
-            angle:ang+random.float(-6,6),
-            direction:dir+random.float(-3,3),
-          }
-        })
-      return ret
-    },
-      enabled:this.save.get_variable("cv_graphics_climate")
-    })
     this.dead_zone.append()
-
-    this.music=this.sounds.add_manipulative_si("music")
-    this.ambience=this.sounds.add_manipulative_si("ambience")
 
     setInterval(()=>{
       this.fps=this.frame_calc
       this.frame_calc=0
     },1000)
+
+    this.ambient=new AmbientManager(this)
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)
@@ -369,10 +314,6 @@ export class Game extends ClientGame2D<GameObject>{
   override on_run(): void {
     
   }
-  ending_music:string[]=[
-    "game_campaing_ending_1",
-    "game_campaing_ending_2"
-  ]
   override on_update(dt:number): void {
     super.on_update(dt)
     this.dead_zone.tick(dt)
@@ -398,31 +339,11 @@ export class Game extends ClientGame2D<GameObject>{
     }
     this.renderer.fullCanvas()
     this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
-    if(!this.music.running&&!this.guiManager.end_game){
-      if(Math.random()<=0.0002){
-        this.music.set(this.resources.get_audio(
-          random.choose([
-            "game_normal_music_1",
-            "game_normal_music_2",
-            "game_normal_music_3",
-            "game_normal_music_4",
-            "game_normal_music_5",
-          ])
-        ))
-      }
-    }
-    if(this.living_count&&this.living_count[0]<=2){
-      this.guiManager.grand_finale()
-    }
 
-    /*
-    Ambient
-    */
-   if(Math.random()<=0.005){
-    this.bolt()
-   }
-   //FPS Show
-   this.frame_calc++
+    this.ambient.update()
+
+    //FPS Show
+    this.frame_calc++
   }
   update_camera(){
     if(this.activePlayer){
@@ -449,25 +370,6 @@ export class Game extends ClientGame2D<GameObject>{
     }
     if(up.deadzone!==undefined)this.dead_zone.update_from_data(up.deadzone)
   }
-  bolt_tween?:Tween<Lights2D>
-  bolt(){
-    if(this.bolt_tween){
-      //
-    }else{
-      this.sounds.play(this.resources.get_audio(`thunder_${random.int(1,3)}`),{
-
-      },"ambience")
-      this.bolt_tween=this.addTween({
-        target: this.light_map,
-        to: { ambient: 0 },
-        duration: 0.1,
-        yoyo: true,
-        onComplete: () => {
-          this.bolt_tween = undefined;
-        },
-      }) as unknown as Tween<Lights2D>
-    }
-  }
   wait_load(callback:()=>void){
     if(!this.menuManager.loaded){
       this.addTimeout(this.wait_load.bind(this,callback),100)
@@ -477,7 +379,6 @@ export class Game extends ClientGame2D<GameObject>{
   }
   async start(assets:string[]){
       await this.menuManager.game_start(assets)
-      this.ambience.set(this.resources.get_audio("storm_ambience"),true)
       this.happening=true
       this.mainloop(true)
   }
@@ -487,6 +388,7 @@ export class Game extends ClientGame2D<GameObject>{
     p.is_mobile=isMobile
     p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
     this.client.emit(p)
+    this.ambient.reset()
   }
   connected(client:Client,playerName:string){
     this.client=client

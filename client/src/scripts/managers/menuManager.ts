@@ -192,6 +192,7 @@ export class MenuManager{
 
         await this.resources.load_audio("rain_ambience",{src:"sounds/ambience/rain_ambience.mp3",volume:1})
         await this.resources.load_audio("storm_ambience",{src:"sounds/ambience/storm_ambience.mp3",volume:1})
+        await this.resources.load_audio("snowstorm_ambience",{src:"sounds/ambience/snowstorm_ambience.mp3",volume:1})
 
         await this.resources.load_audio("thunder_1",{src:"sounds/ambience/thunder_1.mp3",volume:1})
         await this.resources.load_audio("thunder_2",{src:"sounds/ambience/thunder_2.mp3",volume:1})
