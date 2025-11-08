@@ -127,8 +127,12 @@ export class ResourcesManager{
         }else if(src.endsWith(".mp3")){
             return await this.load_audio(id,{src:src,volume:volume})
         }
-
         return undefined
+    }
+    clear(){
+        for(const r of Object.keys(this.sources)){
+            this.unload(r)
+        }
     }
     render_text(text:string, fontSize = 32,color="white",font:string="Arial"):Promise<Frame>{
         return new Promise<Frame>((resolve, _reject) => {

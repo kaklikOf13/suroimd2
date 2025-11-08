@@ -15,12 +15,15 @@ export class TerrainM extends TerrainManager{
         super()
         this.game=game
     }
-    process_map(mp:MapConfig){
-        this.map=mp
-        for(const f of mp.terrain){
-            this.add_floor(f.type,f.hb,f.layer,f.smooth)
-        }
-        this.biome=mp.biome
+    process_map(mp:MapConfig):Promise<void>{
+        return new Promise<void>((resolve, _reject) => {
+            this.map=mp
+            for(const f of mp.terrain){
+                this.add_floor(f.type,f.hb,f.layer,f.smooth)
+            }
+            this.biome=mp.biome
+            resolve()
+        })
     }
     biome?:BiomeDef
 

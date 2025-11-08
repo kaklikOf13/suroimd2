@@ -49,6 +49,9 @@ export class MapPacket extends Packet{
         .writeUint16(this.map.size.y)
         //Biome
         .writeStringSized(30,this.map.biome.biome_skin??"")
+        .writeArray(this.map.biome.assets,(i,_s)=>{
+            stream.writeString(i)
+        })
         .writeNumberDict(this.map.biome.floors as Record<number,BiomeFloor>,(i,_s)=>{
             stream.writeBooleanGroup(i.color!==undefined)
             if(i.color!==undefined)stream.writeUint32(i.color??0)
@@ -87,6 +90,9 @@ export class MapPacket extends Packet{
             floors:{},
             biome_skin:stream.readStringSized(30)??undefined
         }
+        this.map.biome.assets=stream.readArray((s)=>{
+            return s.readString()
+        },1)
         this.map.biome.floors=stream.readNumberDict((s)=>{
             const [has_color]=stream.readBooleanGroup()
             const floor:BiomeFloor={}

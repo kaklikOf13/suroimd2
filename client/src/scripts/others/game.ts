@@ -468,7 +468,27 @@ export class Game extends ClientGame2D<GameObject>{
       }) as unknown as Tween<Lights2D>
     }
   }
-  connect(client:Client,playerName:string){
+  wait_load(callback:()=>void){
+    if(!this.menuManager.loaded){
+      this.addTimeout(this.wait_load.bind(this,callback),100)
+      return
+    }
+    callback()
+  }
+  async start(assets:string[]){
+      await this.menuManager.game_start(assets)
+      this.ambience.set(this.resources.get_audio("storm_ambience"),true)
+      this.happening=true
+      this.mainloop(true)
+  }
+  connect(playerName:string){
+    if(!this.client)return
+    const p=new JoinPacket(playerName)
+    p.is_mobile=isMobile
+    p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
+    this.client.emit(p)
+  }
+  connected(client:Client,playerName:string){
     this.client=client
     this.light_map.quality=this.save.get_variable("cv_graphics_lights")
     this.client.on("update",(up:UpdatePacket)=>{
@@ -483,14 +503,13 @@ export class Game extends ClientGame2D<GameObject>{
     })
     this.client.on("joined",(jp:JoinedPacket)=>{
       this.guiManager.start()
-      this.ambience.set(this.resources.get_audio("storm_ambience"),true)
       this.guiManager.process_joined_packet(jp)
-      this.happening=true
-      this.mainloop(true)
     })
-    this.client.on("map",(mp:MapPacket)=>{
-      this.terrain.process_map(mp.map)
+    this.client.on("map",async(mp:MapPacket)=>{
+      await this.terrain.process_map(mp.map)
       this.terrain.draw(this.terrain_gfx,1)
+      await this.start(this.terrain.biome!.assets)
+      this.wait_load(this.connect.bind(this,playerName))
       /*this.terrain.draw(this.minimap.terrain_gfx,1)
       this.minimap.init(mp.map)*/
     })
@@ -503,10 +522,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
     this.activePlayer?.destroy()
     this.activePlayer=undefined
-    const p=new JoinPacket(playerName)
-    p.is_mobile=isMobile
-    p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
-    this.client.emit(p)
+    
     this.activePlayerId=this.client.ID
     console.log("Joined As:",this.activePlayerId)
 

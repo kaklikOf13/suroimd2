@@ -6,6 +6,7 @@ import { accounts, api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { ShowTab } from "../engine/mod.ts";
 import { SoundManager } from "../engine/sounds.ts";
+import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 
 export class MenuManager{
     save:GameConsole
@@ -126,6 +127,9 @@ export class MenuManager{
                 }
             }
         }
+        
+        HideElement(this.content.gameD)
+        ShowElement(this.content.menuD)
     }
     menu_tabs:Record<string,Record<string,HTMLElement>>={}
     load_menu(submenu:string|null){
@@ -139,12 +143,11 @@ export class MenuManager{
             HideElement(this.content.menu_p)
             switch(submenu){
                 case "play":
-                    this.load_resources()
                     ShowElement(this.content.submenus.play,true)
                     ShowTab("gamemode",this.menu_tabs["play"])
                     break
                 case "loadout":
-                    this.load_resources(["common"]).then(()=>{
+                    this.load_resources(["main"]).then(()=>{
                         ShowElement(this.content.submenus.loadout,true)
                         this.show_your_skins()
                     })
@@ -166,15 +169,18 @@ export class MenuManager{
         
     }
     loaded=false
-    async load_resources(textures:string[]=["normal","common"]){
-        if(this.loaded)return
+    loaded_textures:string[]=[]
+    async load_resources(textures:string[]=["main"]){
+        if(this.loaded||!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
+        this.loaded=false
+        this.resources.clear()
         for(const tt of textures){
             const spg=await(await fetch(`atlases/atlas-${tt}-data.json`)).json()
             for(const s of spg[this.save.get_variable("cv_graphics_resolution")]){
                 await this.resources.load_spritesheet("",s)
             }
         }
-        await this.resources.load_group("/sounds/game/common.json")
+        await this.resources.load_group("/sounds/game/main.json")
         await this.resources.load_audio("game_normal_music_1",{src:"sounds/musics/game/normal/game_normal_music_1.mp3",volume:1})
         await this.resources.load_audio("game_normal_music_2",{src:"sounds/musics/game/normal/game_normal_music_2.mp3",volume:1})
         await this.resources.load_audio("game_normal_music_3",{src:"sounds/musics/game/normal/game_normal_music_3.mp3",volume:1})
@@ -346,8 +352,10 @@ export class MenuManager{
             this.logged(aa.user.name)
         })*/
     }
-    game_start(){
-        //HideElement(this.content.settings_tabs)
+    async game_start(assets:string[]){
+        ShowElement(this.content.gameD)
+        HideElement(this.content.menuD)
+        await this.load_resources([...assets,"main"])
     }
     game_end(){
         ShowElement(this.content.menuD)

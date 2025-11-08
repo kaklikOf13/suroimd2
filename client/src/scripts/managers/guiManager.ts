@@ -213,8 +213,6 @@ export class GuiManager{
 
         this.update_ammos({})
         document.addEventListener("contextmenu", e => e.preventDefault());
-        HideElement(this.content.gameD)
-        ShowElement(this.content.menuD)
         HideElement(this.content.emote_wheel.main)
         HideElement(this.content.information_killbox)
 
@@ -449,8 +447,6 @@ export class GuiManager{
                 player:jp.kill_leader
             })
         }
-        ShowElement(this.content.gameD)
-        HideElement(this.content.menuD)
     }
     state:HelpGuiState={
         driving:false,

@@ -47,6 +47,7 @@ export interface BiomeFloor{
 export interface BiomeDef{
     biome_skin?:string
     floors:Partial<Record<FloorType,BiomeFloor>>
+    assets:string[]
 }
 export interface IslandDef{
     size:Vec2

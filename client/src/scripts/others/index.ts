@@ -71,7 +71,7 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
             this.game.onstop=this.closeGame.bind(this)
         }
         async playGame(join_config:JoinConfig){
-            if(this.game.happening||!menu_manager.loaded)return
+            if(this.game.happening)return
             let socket:BasicSocket
             if (join_config.offline) {
                 const worker = new Worker(new URL("./worker_server.ts", import.meta.url), {
@@ -102,9 +102,6 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
                 });
 
                 socket = new WorkerSocket(worker);
-
-                const c = new Client(socket, PacketManager);
-                c.onopen = this.game.connect.bind(this.game, c, GameSave.get_variable("cv_loadout_name"));
             }else{
                 this.game.offline=false
                 const reg=menu_manager.api_settings.regions[GameSave.get_variable("cv_game_region")]
@@ -115,10 +112,8 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
                 }
             }
             const c=new Client(socket!,PacketManager)
-            c.onopen=this.game.connect.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
-
+            c.onopen=this.game.connected.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
             this.game.running=true
-            menu_manager.game_start()
         }
         closeGame(){
             menu_manager.update_account()

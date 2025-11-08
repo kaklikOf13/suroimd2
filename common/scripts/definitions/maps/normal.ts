@@ -4,7 +4,10 @@ import { BiomeDef, type MapDef } from "./base.ts";
 export const NormalBiome:BiomeDef={
     floors:{
 
-    }
+    },
+    assets:[
+        "normal"
+    ]
 }
 export const NormalMap:MapDef={
     loot_tables:{
@@ -45,8 +48,8 @@ export const NormalMap:MapDef={
             {table:"legendary_guns",weight:0.01}
         ],
         "melees":[
-            {table:"axe",weight:10},
-            {table:"sledgehammer",weight:1},
+            {item:"axe",weight:10},
+            {item:"sledgehammer",weight:1},
         ],
         "special_guns":[
             {table:"uncommon_guns",weight:29},
@@ -326,9 +329,21 @@ export const SnowBiome:BiomeDef={
         }
     },
     biome_skin:"snow",
+    assets:["normal","christmas"]
 }
 export const SnowMap:MapDef={
-    loot_tables:NormalMap.loot_tables,
+    loot_tables:{...NormalMap.loot_tables,
+        christmas_tree:[
+            [{item:"kar98k",weight:10},{item:"awp",weight:1}],
+            [{item:"m870",weight:10},{item:"spas12",weight:1}],
+
+            [{table:"special_healings",count:3,weight:6}],
+            [{table:"ammos",count:6,weight:6}],
+            [{table:"special_equipments",count:3,weight:6}],
+            [{table:"airdrop_equipments",weight:6}],
+            [{table:"melees",count:1,weight:6}],
+        ]
+    },
     default_floor:FloorType.Ice,
     biome:SnowBiome,
     generation:{
@@ -337,14 +352,15 @@ export const SnowMap:MapDef={
             ground_loot:[{count:80,table:"ground_loot"}],
             spawn:[
                 [
-                    {id:"oak_tree",count:2900,},
+                    {id:"oak_tree",count:2900},
+                    {id:"christmas_tree",count:3},
                     {id:"stone",count:2000},
                     {id:"bush",count:1500},
                     {id:"wood_crate",count:650},
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
-                    {id:"barrel",count:700}
+                    {id:"barrel",count:700},
                 ]
             ],
             terrain:{

@@ -78,7 +78,6 @@ export class Client{
     protected signals:SignalManager
     onopen?:()=>void
     show_errors:boolean=true
-    private _rxStream = new NetStream(new ArrayBuffer(1024 * 40))
     constructor(websocket:BasicSocket,packet_manager:PacketsManager,ip:string=""){
         this.ws=websocket
         this.opened=false
@@ -129,6 +128,7 @@ export class Client{
                 this.opened=true
                 this.ID=packet.client_id
                 if(this.onopen)this.onopen()
+                this.emit(new ConnectPacket(this.ID))
             })
         }
     }
@@ -187,7 +187,9 @@ export class OfflineClientsManager{
         })
         this.clients.set(client.ID,client)
         client.opened=true
-        if(this.onconnection)this.onconnection(client,username)
+        client.on(DefaultSignals.CONNECT,()=>{
+            if(this.onconnection)this.onconnection(client,username)
+        })
         client.emit(new ConnectPacket(client.ID))
         return client.ID
     }

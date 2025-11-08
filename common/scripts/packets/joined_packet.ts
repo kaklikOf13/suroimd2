@@ -27,7 +27,7 @@ export class JoinedPacket extends Packet{
           kills:stream.readUint8()
         }
       }
-      this.players=stream.readArray((e)=>{
+      this.players=stream.readArray((_e)=>{
         const b=stream.readUint16()
         return {
           name:stream.readStringSized(28),

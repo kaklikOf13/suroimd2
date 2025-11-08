@@ -318,4 +318,27 @@ Obstacles.insert(
             offset:0
         }
     },
+
+    //Christmas
+    {
+        idString:"christmas_tree",
+        health:300,
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
+        scale:{
+            destroy:0.9,
+            max:1.2,
+            min:1
+        },
+        frame_transform:{
+            scale:2
+        },
+        lootTable:"christmas_tree",
+        rotationMode:RotationMode.full,
+        zIndex:zIndexes.Obstacles4,
+        material:"tree",
+        frame:{
+            particle:"oak_tree_particle"
+        },
+        spawnMode:Spawn.grass
+    },
 )

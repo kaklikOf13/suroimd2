@@ -140,7 +140,7 @@ export class Obstacle extends ServerGameObject{
     override encode(stream: NetStream, full: boolean): void {
         stream.writeBooleanGroup(this.dead,this.door!==undefined)
         .writeFloat(this.scale,0,3,3)
-        .writeFloat(this.health,0,1,1)
+        .writeFloat(this.health/this.def.health,0,1,1)
         if(this.door){
             stream.writeBooleanGroup(this.door.locked)
             .writeInt8(this.door.open)

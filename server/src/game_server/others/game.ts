@@ -238,7 +238,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     netUpdate(){
         for(const p of this.players){
-            if(p.connected){
+            if(p.connected&&p.activated){
                 p.update2()
             }
         }
@@ -349,8 +349,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
                 kills:this.modeManager.kill_leader.status.kills,
             }
         }
+
+        p.activated=true
         client.emit(jp)
-        client.sendStream(this.map.map_packet_stream)
 
         if(this.statistics){
             this.statistics.player.players++
@@ -442,6 +443,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
     }
     handleConnections(client:Client,username:string){
         let player:Player|undefined
+        client.sendStream(this.map.map_packet_stream)
         client.on("join",async(packet:JoinPacket)=>{
             if (this.modeManager.can_join()&&!this.fineshed&&!this.scene.objects.exist_all(client.ID,1)){
                 const p=await this.activate_player(username,packet,client)
