@@ -23,6 +23,8 @@ export class Bullet extends GameObject{
     initialPosition!:Vec2
     maxDistance:number=1
 
+    reflection_count:number=0
+
     old_position:Vec2=v2.new(0,0)
 
     sendDelete: boolean=true;
@@ -154,13 +156,16 @@ export class Bullet extends GameObject{
             this.hb=new CircleHitbox2D(this.position,stream.readFloat(0,2,2))
             this.speed=stream.readFloat32()
             this.container.rotation=stream.readRad()
+            this.reflection_count=stream.readUint8()
 
             this.velocity=v2.from_RadAngle(this.container.rotation)
             v2m.scale(this.velocity,this.velocity,this.speed)
 
             this.maxLength=stream.readFloat(0,100,3)
             this.sprite_trail.scale!.y=stream.readFloat(0,6,2)
-            this.sprite_trail.tint=ColorM.number(stream.readUint32())
+            const col=ColorM.number(stream.readUint32())
+            col.a/=this.reflection_count+1
+            this.sprite_trail.tint=col
 
             const proj=stream.readUint8()
             if(proj>0){

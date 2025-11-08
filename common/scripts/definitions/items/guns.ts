@@ -2,7 +2,7 @@ import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Definitions,Definition, DeepPartial } from "../../engine/mod.ts";
 import { mergeDeep } from "../../engine/utils.ts";
 import { FistRig,WeaponsArmRig,WeaponsRig, ItemQuality, tracers, WeaponRig } from "../../others/item.ts";
-import { type BulletDef, InventoryItemType } from "../utils.ts";
+import { type BulletDef, BulletReflection, InventoryItemType } from "../utils.ts";
 export enum FireMode{
     Auto,
     Single,
@@ -187,6 +187,51 @@ Guns.insert(
                 speed:31,
                 obstacleMult:1.2,
                 tracer:tracers.small
+            }
+        },
+        reload:{
+            delay:2.5,
+            capacity:15,
+        },
+        recoil:{
+            duration:0.34,
+            speed:0.8
+        },
+        speed_mod:0.98,
+        arms:WeaponsArmRig[3],
+        gasParticles:GasParticles.pistols,
+        muzzleFlash:MuzzleFlash.normal,
+        image:WeaponsRig[0],
+        dual:{
+            dual_offset:0.2,
+            fireDelay:0.15,
+            reload:{
+                capacity:30,
+                delay:4
+            }
+        }
+    },
+    {
+        idString:"yellow_laser_gun",
+        fireDelay:0.2,
+        spread:0.7,
+        lenght:0.8,
+        size:6,
+        ammoType:"9mm",
+        fireMode:FireMode.Single,
+        class:GunClasses.Pistol,
+        quality:ItemQuality.Common,
+        ammoSpawnAmount:25,
+        bullet:{
+            def:{
+                damage:11,
+                radius:0.02,
+                range:100,
+                falloff:0.8,
+                speed:31,
+                obstacleMult:1.2,
+                tracer:tracers.small,
+                reflection:BulletReflection.All
             }
         },
         reload:{

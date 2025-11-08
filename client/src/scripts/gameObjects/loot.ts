@@ -7,7 +7,7 @@ import { GameItem, GameItems } from "common/scripts/definitions/alldefs.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ease } from "common/scripts/engine/utils.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
-import { v2m } from "common/scripts/engine/geometry.ts";
+import { v2m, τ } from "common/scripts/engine/geometry.ts";
 export class Loot extends GameObject{
     stringType:string="loot"
     numberType: number=2
@@ -149,7 +149,7 @@ export class Loot extends GameObject{
                     this.sprite_main.frame=this.game.resources.get_sprite(ff)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2.new(0.5,.5)
-                    this.sprite_main.rotation=3.141592/2
+                    this.sprite_main.rotation=τ
                     this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2.new(0.9,0.9);

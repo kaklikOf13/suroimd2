@@ -1,9 +1,9 @@
 # Suroimd.io 2
 ## Programmers
-* @kaklik
+* @kazikni
 * @viktor_hg
 ## Designers
-* @kaklik
+* @kazikni
 * @namerio
 * @cheerfulbull_29688
 * @endermanking
@@ -20,7 +20,7 @@
 * @sentido_ss
 * @bien.star
 ## Creator
-* Kaklik
+* Kazikni
 ## Special Thanks To
 @hasanger 
 @1092384

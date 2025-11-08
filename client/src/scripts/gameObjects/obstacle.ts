@@ -97,15 +97,15 @@ export class Obstacle extends GameObject{
             },
             position,
             speed:random.float(1,2)*force,
-            angle:random.float(-3.1415,3.1415),
-            direction:random.float(-3.1415,3.1415),
+            angle:random.rad(),
+            direction:random.rad(),
             life_time:random.float(1,2),
             zIndex:zIndexes.Particles,
             scale:small?random.float(0.2,0.5):random.float(0.5,1),
             tint:this.particle_tint,
             to:{
                 speed:random.float(0.1,1),
-                angle:random.float(-3.1415,3.1415),
+                angle:random.rad(),
             }
         })
         this.game.particles.add_particle(p)
@@ -227,7 +227,7 @@ export class Obstacle extends GameObject{
                         tint:ColorM.hex("#fff5"),
                         to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#fff0")}
                     }),
-                    enabled:this.health<=0.45,
+                    enabled:this.health<=0.4,
                 })
             }
         }
