@@ -4,12 +4,11 @@ import { Player } from "../gameObjects/player.ts"
 import { Loot } from "../gameObjects/loot.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts"
 import { ActionPacket } from "common/scripts/packets/action_packet.ts"
-import { ObjectsE } from "common/scripts/others/objectsEncode.ts"
 import { Bullet } from "../gameObjects/bullet.ts"
 import { Obstacle } from "../gameObjects/obstacle.ts"
 import { GameMap } from "./map.ts"
 import { Explosion } from "../gameObjects/explosion.ts";
-import { DefaultGamemode, Gamemode } from "./gamemode.ts";
+import { Gamemode, Gamemodes } from "./gamemode.ts";
 import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts";
@@ -134,10 +133,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.Config=Config
         this.debug=Config.game.debug
         this.new_list=false
-        this.scene.objects.encoders=ObjectsE
 
         //Gamemode
-        this.gamemode=DefaultGamemode
+        this.gamemode=Gamemodes.snow
         this.map=new GameMap(this)
         this.modeManager=config.team_size>1?new TeamsGamemodeManager(config.team_size,this):new SoloGamemodeManager(this)
         this.modeManager.generate_map(false)
@@ -279,7 +277,7 @@ export class Game extends ServerGame2D<ServerGameObject>{
 
         const pos=this.map.getRandomPosition(p.hb,p.id,p.layer,{
             type:SpawnModeType.whitelist,
-            list:[FloorType.Grass],
+            list:[FloorType.Grass,FloorType.Snow,FloorType.Sand],
         },this.map.random)
         if(pos)p.position=pos
         p.manager.cells.updateObject(p)

@@ -1,4 +1,4 @@
-import {Angle, CircleHitbox2D, IntersectionRes, NetStream, Numeric, OverlapCollision2D, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
+import {CircleHitbox2D, IntersectionRes, NetStream, Numeric, OverlapCollision2D, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { BulletDef, BulletReflection, DamageReason } from "common/scripts/definitions/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 import { Player } from "./player.ts";

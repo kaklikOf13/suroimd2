@@ -1,7 +1,11 @@
 import { v2 } from "../../engine/geometry.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { type MapDef } from "./base.ts";
+import { BiomeDef, type MapDef } from "./base.ts";
+export const NormalBiome:BiomeDef={
+    floors:{
 
+    }
+}
 export const NormalMap:MapDef={
     loot_tables:{
         //Guns
@@ -198,6 +202,7 @@ export const NormalMap:MapDef={
             [{weight:10,count:1,table:""},{weight:1,count:1,table:"ammos"}],
         ]
     },
+    biome:NormalBiome,
     generation:{
         island:{
             size:v2.new(500,500),
@@ -254,7 +259,6 @@ export const NormalMap:MapDef={
         }
     },
 }
-
 export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
@@ -312,5 +316,75 @@ export const NormalLobby:MapDef={
                 ]
             }
         },
-    }
+    },
+    biome:NormalBiome,
+}
+export const SnowBiome:BiomeDef={
+    floors:{
+        [FloorType.Sand]:{
+            color:0x8a979e
+        }
+    },
+    biome_skin:"snow",
+}
+export const SnowMap:MapDef={
+    loot_tables:NormalMap.loot_tables,
+    default_floor:FloorType.Ice,
+    biome:SnowBiome,
+    generation:{
+        island:{
+            size:v2.new(500,500),
+            ground_loot:[{count:80,table:"ground_loot"}],
+            spawn:[
+                [
+                    {id:"oak_tree",count:2900,},
+                    {id:"stone",count:2000},
+                    {id:"bush",count:1500},
+                    {id:"wood_crate",count:650},
+                    {id:"copper_crate",count:20},
+                    {id:"iron_crate",count:1},
+                    {id:"gold_crate",count:1},
+                    {id:"barrel",count:700}
+                ]
+            ],
+            terrain:{
+                base:FloorType.Ice,
+                rivers:{
+                    divisions:100,
+                    spawn_floor:1,
+                    expansion:32,
+                    floor:FloorType.Ice,
+                    defs:[
+                        {
+                            rivers:[
+                                {sub_river_width:2,width:7,width_variation:1,sub_river_chance:0.5},
+                                {sub_river_width:1,width:8,width_variation:1,sub_river_chance:0.1},
+                            ],
+                            weight:10
+                        },
+                        {
+                            rivers:[
+                                {sub_river_width:3,width:15,width_variation:1,sub_river_chance:0.9},
+                            ],
+                            weight:1
+                        }
+                    ]
+                },
+                floors:[
+                    {
+                        padding:30,
+                        type:FloorType.Sand,
+                        spacing:3,
+                        variation:3,
+                    },
+                    {
+                        padding:14,
+                        type:FloorType.Snow,
+                        spacing:3,
+                        variation:3,
+                    }
+                ]
+            }
+        }
+    },
 }

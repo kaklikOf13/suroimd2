@@ -1,7 +1,6 @@
-import { CircleHitbox2D, Client, NetStream, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, Client, NetStream, NullVec2, Numeric, RectHitbox2D, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket, InputAction, InputActionType } from "common/scripts/packets/action_packet.ts"
-import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts"
-import { ActionsType, GameConstants } from "common/scripts/others/constants.ts"
+import { ActionsType, GameConstants, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
 import { GInventory,GunItem,LItem} from "../player/inventory.ts"
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts"
 import { DamageParams } from "../others/utils.ts"
@@ -35,6 +34,7 @@ export class Player extends ServerGameObject{
     numberType: number=1
     name:string=""
     rotation:number=0
+    velocity:Vec2=v2.new(0,0)
     recoil?:{speed:number,delay:number}
 
     skin:SkinDef=Skins.getFromString("default_skin")
@@ -92,8 +92,6 @@ export class Player extends ServerGameObject{
 
     group?:Group
     groupId?:number
-
-    push_vorce:Vec2=v2.new(0,0)
 
     current_floor:FloorType=0
 
@@ -277,12 +275,17 @@ export class Player extends ServerGameObject{
         if(this.dead)return
         //Movement
         const gamemode=this.game.gamemode
+        const current_floor=Floors[this.current_floor]
+        const acceleration=1/(1+dt*(
+            200
+            * (current_floor.acceleration??1)
+        ))
         let speed=1*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.using_healing_speed:1)
                   * (this.inventory.currentWeaponDef?.speed_mod??1)
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
-                  * (this.parachute?1:((Floors[this.current_floor].speed_mult??1)))
+                  * (this.parachute?1:((current_floor.speed_mult??1)))
                   * (this.projectile_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
@@ -334,7 +337,9 @@ export class Player extends ServerGameObject{
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt,this.alternative_vehicle_control)
         }else{
-            this.position=v2.add(this.position,v2.add(v2.scale(this.input.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
+            const move=v2.scale(this.input.movement,5*speed)
+            v2m.lerp(this.velocity,move,acceleration)
+            v2m.add(this.position,this.position,v2.scale(this.velocity,dt))
             this.rotation=this.input.rotation
             if(this.parachute){
                 speed*=1.7+(0.5+this.parachute.value)
@@ -348,9 +353,8 @@ export class Player extends ServerGameObject{
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
-            this.push_vorce=v2.scale(this.push_vorce,1/(1+dt*4))
             this.game.map.clamp_hitbox(this.hb)
-            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,FloorType.Water)
+            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
         }
 
         
@@ -766,8 +770,6 @@ export class Player extends ServerGameObject{
                 type:KillFeedMessageType.down,
             })
         }
-
-        this.push_vorce=v2.add(this.push_vorce,v2.scale(v2.from_RadAngle(v2.lookTo(params.position,this.position)),5))
     }
     revive(){
         if(!this.downed)return

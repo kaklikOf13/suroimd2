@@ -1,6 +1,5 @@
-import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
 import { CircleHitbox2D, KeyFrameSpriteDef, model2d, NetStream, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
-import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
+import { GameConstants, PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameItem, GameObjectDef, GameObjectsDefs, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";

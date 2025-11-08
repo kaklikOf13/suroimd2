@@ -1,4 +1,3 @@
-import { ColorM } from "../engine/renderer.ts";
 
 export interface Crosshair {
     color: string;

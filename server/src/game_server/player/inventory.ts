@@ -14,12 +14,12 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
-import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { InventoryGift } from "../others/gamemode.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { PlayerAnimationType } from "common/scripts/others/constants.ts";
 export abstract class LItem extends Item{
     abstract on_use(user:Player,slot?:LItem):void
     abstract update(user:Player):void

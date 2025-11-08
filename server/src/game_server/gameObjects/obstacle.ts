@@ -14,6 +14,7 @@ export class Obstacle extends ServerGameObject{
 
     def!:ObstacleDef
     spawnHitbox!:Hitbox2D
+    skin:number=0
 
     health:number=0
 
@@ -68,13 +69,18 @@ export class Obstacle extends ServerGameObject{
         
     }
     
-    create(args: {def:ObstacleDef,rotation?:number,variation?:number}): void {
+    create(args: {def:ObstacleDef,rotation?:number,variation?:number,skin?:number}): void {
         this.def=args.def
         
         if(args.variation){
             this.variation=args.variation
         }else if(this.def.variations){
             this.variation=Numeric.clamp(random.int(1,this.def.variations+1),1,this.def.variations)
+        }
+        if(args.skin){
+            this.skin=args.skin
+        }else if(this.def.biome_skins){
+            this.skin=this.def.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
         }
         if(args.rotation===undefined){
             if(this.def.rotationMode===RotationMode.limited){
@@ -144,6 +150,7 @@ export class Obstacle extends ServerGameObject{
             .writeUint8(this.side)
             .writeUint8(this.variation)
             .writePosition(this.m_position)
+            .writeUint8(this.skin)
             .writeUint16(this.def.idNumber!)
         }
     }

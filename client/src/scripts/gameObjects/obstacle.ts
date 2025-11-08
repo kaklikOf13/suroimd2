@@ -10,12 +10,15 @@ import { GameObject } from "../others/gameObject.ts";
 import { model2d } from "common/scripts/engine/models.ts";
 import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
 import { Color } from "../engine/renderer.ts";
-export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
-    const spr_id=(def.frame&&def.frame.base)?def.frame.base:def.idString
-    if(def.variations){
-        return spr_id+`_${variation}`
+export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
+    let spr=(def.frame&&def.frame.base)?def.frame.base:def.idString
+    if(skin>0&&def.biome_skins){
+        spr+=`_${def.biome_skins[skin-1]}`
     }
-    return spr_id
+    if(def.variations){
+        spr+=`_${variation}`
+    }
+    return spr
 }
 export class Obstacle extends GameObject{
     stringType:string="obstacle"
@@ -29,6 +32,7 @@ export class Obstacle extends GameObject{
     side:Orientation=0
     sprite=new Sprite2D
     variation=0
+    skin=0
     health=1
 
     dead:boolean=true
@@ -201,7 +205,7 @@ export class Obstacle extends GameObject{
                 this.game.resources.get_audio(mat.sounds+"_hit")
             }
         }
-        this.frame.base=GetObstacleBaseFrame(this.def,this.variation)
+        this.frame.base=GetObstacleBaseFrame(this.def,this.variation,this.skin)
         this.frame.particle=(this.def.frame?.particle)??this.def.idString+"_particle"
         this.frame.dead=(this.def.frame&&this.def.frame.dead)?this.def.frame.dead:this.def.idString+"_dead"
 
@@ -253,9 +257,11 @@ export class Obstacle extends GameObject{
         }
         if(full){
             this.rotation=stream.readRad()
+            this.container.rotation=this.rotation
             this.side=stream.readUint8() as Orientation
             this.variation=stream.readUint8()
             this.m_position=stream.readPosition()
+            this.skin=stream.readUint8()
             this.set_definition(Obstacles.getFromNumber(stream.readUint16()))
         }
         if(dead){

@@ -31,7 +31,7 @@ export const generation={
                     {name:"main",padding:0}
                 ])
                 for(const r of rivers){
-                    map.terrain.add_floor(FloorType.Water,r.collisions.main,Layers.Normal)
+                    map.terrain.add_floor(def.terrain.rivers.floor??FloorType.Water,r.collisions.main,Layers.Normal)
                 }
             }
             for(const spawn of def.spawn??[]){
@@ -43,7 +43,7 @@ export const generation={
                             const obj=map.game.add_creature(v2.new(0,0),def,item.layer)
                             const pos=map.getRandomPosition(obj.hb,obj.id,obj.layer,item.spawn??def.spawn??{
                                 type:SpawnModeType.whitelist,
-                                list:[FloorType.Grass]
+                                list:[FloorType.Grass,FloorType.Ice]
                             },random)
                             if(!pos){
                                 obj.destroy()
@@ -67,7 +67,7 @@ export const generation={
                     const loot=map.game.loot_tables.get_loot(l.table,{withammo:true})
                     const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2.new(0,0),0.6),-1,layer,{
                         type:SpawnModeType.blacklist,
-                        list:[FloorType.Water]
+                        list:[map.def.default_floor??FloorType.Water]
                     },random)
                     if(!pos)break
                     for(const ll of loot){
@@ -157,9 +157,11 @@ export class GameMap{
         o.manager.cells.updateObject(o)
         return o
     }
+    def!:MapDef
     generate(definition:MapDef,seed:number=random.float(0,231412)){
         const random=new SeededRandom(seed)
         this.random=random
+        this.def=definition
 
         this.game.loot_tables.clear()
         this.game.loot_tables.add_tables(definition.loot_tables)
@@ -200,7 +202,8 @@ export class GameMap{
             terrain:this.terrain.floors,
             size:this.size,
             seed:seed,
-            objects
+            objects,
+            biome:this.def.biome
         }
         return p
     }
