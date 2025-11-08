@@ -6,7 +6,7 @@ import { FloorType } from "../../others/terrain.ts";
 export enum  SpawnModeType{
     any,
     blacklist,
-    whitelist
+    whitelist,
 }
 export type SpawnMode={
     type:SpawnModeType.any
@@ -21,7 +21,7 @@ export const Spawn={
     },
     grass:{
         type:SpawnModeType.whitelist,
-        list:[FloorType.Grass]
+        list:[FloorType.Grass,FloorType.Snow]
     },
 }
 export interface ObstacleBehaviorDoor{
@@ -58,6 +58,7 @@ export interface ObstacleDef extends Definition{
         tint?:number
     }
     variations?:number
+    biome_skins?:string[]
     zIndex?:number
     rotationMode?:number
 
@@ -126,6 +127,9 @@ Obstacles.insert(
         frame:{
             particle:"stone_particle",
         },
+        biome_skins:[
+            "snow"
+        ],
         frame_transform:{
             scale:2
         },
@@ -173,6 +177,7 @@ Obstacles.insert(
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles4,
         material:"tree",
+        biome_skins:["snow"],
         frame:{
             particle:"oak_tree_particle"
         },
@@ -283,7 +288,7 @@ Obstacles.insert(
             destroy:0.8
         },
         frame_transform:{
-            scale:1
+            scale:2
         },
         rotationMode:RotationMode.full,
         zIndex:zIndexes.Obstacles3,
@@ -291,6 +296,7 @@ Obstacles.insert(
         frame:{
             particle:"leaf_01_particle_1"
         },
+        biome_skins:["snow"],
         spawnMode:Spawn.grass
     },
     {

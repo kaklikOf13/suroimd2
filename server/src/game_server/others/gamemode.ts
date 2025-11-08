@@ -5,6 +5,7 @@ import { type GunDef } from "common/scripts/definitions/items/guns.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameItem } from "common/scripts/definitions/alldefs.ts";
+import { mergeDeep } from "common/scripts/engine/utils.ts";
 
 export interface InventoryGiftItem{
     item:GameItem,
@@ -87,4 +88,15 @@ export const DefaultGamemode:Gamemode={
         map:"normal",
         lobby:"lobby"
     }
+}
+
+export const Gamemodes:Record<string,Gamemode>={
+    normal:DefaultGamemode,
+    snow:mergeDeep({},DefaultGamemode,{
+        game:{
+            map:"snow",
+            lobby:"lobby",
+            no_battle_plane:DefaultGamemode.game.no_battle_plane
+        }
+    } satisfies Partial<Gamemode>) as Gamemode
 }

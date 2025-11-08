@@ -585,6 +585,72 @@ export class NetStream {
         for (let i = 0; i < len; i++) arr[i] = elementReader(this)
         return arr
     }
+    readNumberDict<T>(elementReader: (stream: this) => T, bytes: 1 | 2 | 3 | 4): Record<number,T> {
+        let len = 0;
+        switch (bytes) {
+            case 1: len = this.readUint8(); break
+            case 2: len = this.readUint16(); break
+            case 3: len = this.readUint24(); break
+            case 4: len = this.readUint32(); break
+        }
+        const ret:Record<string,T>={}
+        for (let i = 0; i < len; i++) {
+            let key=0;
+            switch (bytes) {
+                case 1: key = this.readUint8(); break
+                case 2: key = this.readUint16(); break
+                case 3: key = this.readUint24(); break
+                case 4: key = this.readUint32(); break
+            }
+            ret[key]=elementReader(this)
+        }
+        return ret
+    }
+    writeNumberDict<T>(source: Record<number,T>, elementWriter: (item: T, stream: this) => void, bytes: 1 | 2 | 3 | 4 = 1):this{
+        const kk=Object.keys(source)
+        const length = Math.min(kk.length, 2 ** (8 * bytes) - 1);
+        switch (bytes) {
+            case 1: {
+                this.writeUint8(length);
+                break;
+            }
+            case 2: {
+                this.writeUint16(length);
+                break;
+            }
+            case 3: {
+                this.writeUint24(length);
+                break;
+            }
+            case 4: {
+                this.writeUint32(length);
+                break;
+            }
+        }
+        for(const k of kk){
+            const key=parseInt(k)
+            switch (bytes) {
+                case 1: {
+                    this.writeUint8(key);
+                    break;
+                }
+                case 2: {
+                    this.writeUint16(key);
+                    break;
+                }
+                case 3: {
+                    this.writeUint24(key);
+                    break;
+                }
+                case 4: {
+                    this.writeUint32(key);
+                    break;
+                }
+            }
+            elementWriter(source[key],this)
+        }
+        return this
+    }
 
     /**
      * Copies a section of a stream into this one. By default, the entire source stream is read and copied

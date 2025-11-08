@@ -1,7 +1,6 @@
-import { PlayerAnimation, PlayerAnimationType, PlayerData } from "common/scripts/others/objectsEncode.ts";
-import { CircleHitbox2D, KeyFrameSpriteDef, model2d, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
-import { GameConstants, zIndexes } from "common/scripts/others/constants.ts";
-import { GameItem, GameObjectDef, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
+import { CircleHitbox2D, KeyFrameSpriteDef, model2d, NetStream, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
+import { GameConstants, PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts";
+import { GameItem, GameObjectDef, GameObjectsDefs, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { AnimatedContainer2D, type Camera2D, Light2D, type Renderer, Sprite2D, type Tween } from "../engine/mod.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -167,6 +166,8 @@ export class Player extends GameObject{
                 zIndex:zIndexes.Particles
             }))
         }
+
+        this.container.destroy()
     }
 
     current_animation?:PlayerAnimation
@@ -176,7 +177,8 @@ export class Player extends GameObject{
             this.driving=driving
             return
         }
-        this.set_current_weapon(undefined)
+        this.current_weapon=undefined
+        this.update_weapon()
         this.driving=driving
         this.sprites.left_arm.visible=true
         this.sprites.right_arm.visible=true
@@ -187,22 +189,22 @@ export class Player extends GameObject{
         this.driving=true
     }
 
-    set_current_weapon(def?:WeaponDef,force:boolean=false,reset:boolean=true){
-        if((this.current_weapon===def||this.driving)&&!force)return
-        if(reset)this.reset_anim()
+    update_weapon(is_new:boolean=false){
+        if(this.driving||!this.current_weapon)return
+        this.reset_anim()
         this.sprites.weapon2.visible=false
-        if(!def||this.parachute){
+        if(this.parachute){
             this.current_weapon=undefined
             this.sprites.left_arm.visible=false
             this.sprites.right_arm.visible=false
             this.sprites.weapon.visible=false
             return
         }
-        this.current_weapon=def
-        if(def?.arms){
+        const def=this.current_weapon
+        if(def.arms){
             if(def.arms.left){
                 this.sprites.left_arm.visible=true
-                this.sprites.left_arm.position=v2.duplicate(def.arms.left.position)
+                this.sprites.left_arm.position=def.arms.left.position
                 this.sprites.left_arm.rotation=def.arms.left.rotation
                 if(this.left_handed){
                     this.sprites.left_arm.position.y*=-1
@@ -214,7 +216,7 @@ export class Player extends GameObject{
             }
             if(def.arms.right){
                 this.sprites.right_arm.visible=true
-                this.sprites.right_arm.position=v2.duplicate(def.arms.right.position)
+                this.sprites.right_arm.position=def.arms.right.position
                 this.sprites.right_arm.rotation=def.arms.right.rotation
                 if(this.left_handed){
                     this.sprites.right_arm.position.y*=-1
@@ -265,7 +267,7 @@ export class Player extends GameObject{
         }else{
             this.sprites.weapon.visible=false
         }
-        if(!force){
+        if(is_new){
             const sound=this.game.resources.get_audio(`${def.idString}_switch`)
             if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.stop()
             if(sound){
@@ -276,9 +278,10 @@ export class Player extends GameObject{
                     volume:0.4,
                     position:this.position,
                     delay:400,
-                    max_distance:5
+                    max_distance:10
                 },"players")
             }
+            this.attacking=false
         }
         this.container.updateZIndex()
     }
@@ -335,7 +338,7 @@ export class Player extends GameObject{
 
         this.container.updateZIndex()
 
-        if(this.current_weapon)this.set_current_weapon(this.current_weapon!,true)
+        this.update_weapon(false)
     }
 
     create(_args: Record<string, void>): void {
@@ -528,7 +531,7 @@ export class Player extends GameObject{
                         max_distance:10,
                         volume:0.7,
                         on_complete:()=>{
-                            this.set_current_weapon(this.current_weapon,true)
+                            this.update_weapon(false)
                         }
                     },"players")
                 }
@@ -543,7 +546,6 @@ export class Player extends GameObject{
                 if(def.animation){
                     this.container.play_animation(def.animation,()=>{
                         this.current_animation=undefined
-                        this.set_current_weapon.bind(this,this.current_weapon,true,!sound)
                     })
                 }
                 break
@@ -758,7 +760,100 @@ export class Player extends GameObject{
     }
     dest_pos?:Vec2
     dest_rot?:number
-    override updateData(data:PlayerData){
+    override decode(stream: NetStream, full: boolean): void {
+        const position=stream.readPosition()
+        const rotation=stream.readRad()
+        const [dead, shield, vehicle, parachute,emote,attacking,swicthed]=stream.readBooleanGroup()
+        this.shield=shield
+        if(this.game.save.get_variable("cv_game_interpolation")&&!full){
+            this.dest_pos=position
+            if(!(this.id===this.game.activePlayerId&&this.game.save.get_variable("cv_game_client_rot"))){
+                this.dest_rot=rotation
+            }
+        }else{
+            this.position=position
+            if(!(this.id===this.game.activePlayerId&&this.game.save.get_variable("cv_game_client_rot"))){
+                this.rotation=rotation
+            }
+        }
+        if(dead&&!this.dead){
+            this.dead=dead
+            this.on_die()
+        }
+        if(parachute){
+            const para=stream.readFloat(0,1,1)
+            this.current_weapon=undefined
+            this.update_weapon(false)
+            this.sprites.parachute.visible=true
+            const s=this.scale+(1*para)
+            this.container.scale=v2.new(s,s)
+            this.parachute=true
+            this.container.zIndex=zIndexes.ParachutePlayers+(0.9*para)
+        }else{
+            this.sprites.parachute.visible=false
+            this.parachute=false
+            this.container.zIndex=zIndexes.Players
+        }
+        if(emote){
+            this.add_emote(GameObjectsDefs.valueNumber[stream.readUint16()])
+        }
+        
+        if(attacking){
+            this.attack()
+        }
+        if(full){
+            const [has_animation]=stream.readBooleanGroup()
+            this.set_vest(stream.readUint8())
+            this.set_helmet(stream.readUint8())
+            this.set_backpack(stream.readUint8())
+            const skin=stream.readUint16()
+            this.set_skin(Skins.getFromNumber(skin))
+            const current_weapon=this.current_weapon
+            this.current_weapon=Weapons.valueNumber[stream.readInt16()]
+            if(current_weapon!==this.current_weapon)this.update_weapon(true)
+            else if(this.current_weapon&&swicthed)this.update_weapon(true)
+            if(has_animation){
+                const tp=stream.readUint8() as PlayerAnimationType
+                let animation:PlayerAnimation
+                switch(tp){
+                    case PlayerAnimationType.Reloading:
+                        animation={
+                            type:tp,
+                            alt_reload:!!stream.readUint8()
+                        }
+                        break
+                    case PlayerAnimationType.Consuming:
+                        animation={
+                            type:tp,
+                            item:stream.readUint16()
+                        }
+                        break
+                    default:{
+                        animation={
+                            type:tp
+                        }
+                        break
+                    }
+                }
+                this.play_animation(animation)
+            }
+        }else{
+            if(this.current_weapon!==undefined&&swicthed)this.update_weapon(swicthed)
+        }
+        this.set_driving(vehicle)
+            
+        if(this.id===this.game.activePlayerId){
+            this.game.update_camera()
+            this.game.sounds.listener_position=this.position
+            this.sprites.parachute.tint=ColorM.rgba(255,255,255,100)
+            if(full){
+                this.game.guiManager.update_equipaments()
+            }
+            this.game.guiManager.state.driving=this.driving
+            this.game.guiManager.state.gun=!this.driving&&this.current_weapon!==undefined&&Guns.exist(this.current_weapon.idString)
+        }
+    }
+    /*override updateData(data:PlayerData){
         if(data.emote){
             this.add_emote(data.emote)
         }
@@ -820,5 +915,5 @@ export class Player extends GameObject{
             this.game.guiManager.state.driving=this.driving
             this.game.guiManager.state.gun=!this.driving&&this.current_weapon!==undefined&&Guns.exist(this.current_weapon.idString)
         }
-    }
+    }*/
 }

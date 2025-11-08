@@ -14,12 +14,12 @@ import { Obstacle } from "../gameObjects/obstacle.ts";
 import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts";
 import { Ammos } from "common/scripts/definitions/items/ammo.ts";
 import { type Loot } from "../gameObjects/loot.ts";
-import { PlayerAnimationType } from "common/scripts/others/objectsEncode.ts";
 import { BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { InventoryGift } from "../others/gamemode.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { PlayerAnimationType } from "common/scripts/others/constants.ts";
 export abstract class LItem extends Item{
     abstract on_use(user:Player,slot?:LItem):void
     abstract update(user:Player):void
@@ -155,12 +155,12 @@ export class GunItem extends LItem{
         user.privateDirtys.current_weapon=true
     }
     update(user:Player){
+        if(this.use_delay>0)this.use_delay-=1/user.game.tps
         if(user.inventory.currentWeapon===this&&!user.actions.current_action){
             if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
                 this.reloading=true
                 this.reload(user)
             }
-            this.use_delay-=1/user.game.tps
             if(this.use_delay<=0){
                 this.firing=false
                 if(this.burst){
@@ -431,6 +431,8 @@ export class GInventory extends Inventory<LItem>{
         this.owner.privateDirtys.action=true
         this.owner.recoil=undefined
         this.owner.throw_using_projectile()
+
+        this.owner.input.swicthed=true
     }
     set_weapon(slot:keyof typeof this.weapons=0,wep:WeaponDef,drop:boolean=true){
         if(drop)this.drop_weapon(slot,false)

@@ -2,7 +2,6 @@ import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from ".
 import { LayersL, zIndexes } from "common/scripts/others/constants.ts";
 import { Angle, Client, DefaultSignals, KDate, Numeric, ParticlesEmitter2D, Vec2, model2d, random, v2 } from "common/scripts/engine/mod.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { ObjectsE } from "common/scripts/others/objectsEncode.ts";
 import { Player } from "../gameObjects/player.ts";
 import { Loot } from "../gameObjects/loot.ts";
 import { Bullet } from "../gameObjects/bullet.ts";
@@ -31,8 +30,7 @@ import {  Material2D, WebglRenderer } from "../engine/renderer.ts";
 import { Plane } from "./planes.ts";
 import { isMobile } from "../engine/game.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
-import { Tween } from "svelte/motion";
-import { ToggleElement } from "../engine/utils.ts";
+import { ToggleElement, Tween } from "../engine/utils.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { ActionPacket, InputActionType } from "common/scripts/packets/action_packet.ts";
 import { TabManager } from "../managers/tabManager.ts";
@@ -76,6 +74,11 @@ export class Game extends ClientGame2D<GameObject>{
   flying_position:number=0
   happening:boolean=false
 
+  cursors={
+    default:"url('/img/menu/icons/mouse.svg') 0 0, default",
+    pointer:"url('/img/menu/icons/pointer.svg') 21 21, pointer"
+  }
+
   light_map=new Lights2D()
 
   //minimap:MinimapManager=new MinimapManager(this)
@@ -90,6 +93,8 @@ export class Game extends ClientGame2D<GameObject>{
 
   fps:number=60
   frame_calc:number=0
+
+  offline:boolean=false
 
   date:KDate={
     second:0,
@@ -189,7 +194,7 @@ export class Game extends ClientGame2D<GameObject>{
           this.action.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.guiManager.currentWeaponIDX+1,-1,3)})
           break
         case "debug_menu":
-          if(!this.menuManager.api_settings.debug.debug_menu)break
+          if((!this.menuManager.api_settings.debug.debug_menu)&&!this.offline)break
           ToggleElement(this.guiManager.content.debug_menu)
           break
       }
@@ -247,13 +252,15 @@ export class Game extends ClientGame2D<GameObject>{
       this.scene.objects.add_layer(i)
     }
     this.language=translation
-    this.scene.objects.encoders=ObjectsE;
 
     this.renderer.background=ColorM.hex("#000");
 
     this.menuManager=menu
 
     this.cam3=new Camera3D(this.renderer)
+
+
+    document.body.style.cursor=this.cursors.default
 
     if(Debug.hitbox){
       const hc={color:ColorM.hex("#ee000099")}

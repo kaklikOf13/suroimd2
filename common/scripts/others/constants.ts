@@ -21,6 +21,21 @@ export const GameConstants={
         chunckSize:2
     }
 }
+export enum PlayerAnimationType{
+    Reloading,
+    Consuming,
+    Melee
+}
+export type PlayerAnimation={
+}&({
+    type:PlayerAnimationType.Reloading
+    alt_reload:boolean
+}|{
+    type:PlayerAnimationType.Consuming
+    item:number
+}|{
+    type:PlayerAnimationType.Melee
+})
 export enum Layers{
     Normal=10
 }

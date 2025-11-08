@@ -1,14 +1,13 @@
-import { CircleHitbox2D, Client, NullVec2, Numeric, RectHitbox2D, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { CircleHitbox2D, Client, NetStream, NullVec2, Numeric, RectHitbox2D, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
 import { ActionPacket, InputAction, InputActionType } from "common/scripts/packets/action_packet.ts"
-import { PlayerAnimation, PlayerData } from "common/scripts/others/objectsEncode.ts"
-import { ActionsType, GameConstants } from "common/scripts/others/constants.ts"
+import { ActionsType, GameConstants, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
 import { GInventory,GunItem,LItem} from "../player/inventory.ts"
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts"
 import { DamageParams } from "../others/utils.ts"
 import { type Obstacle } from "./obstacle.ts"
 import { ActionsManager } from "common/scripts/engine/inventory.ts"
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
-import { DamageSourceDef, DamageSources, GameItems, GameObjectDef, Weapons } from "common/scripts/definitions/alldefs.ts"
+import { DamageSourceDef, DamageSources, GameItems, GameObjectDef, GameObjectsDefs, Weapons } from "common/scripts/definitions/alldefs.ts"
 import { type PlayerModifiers } from "common/scripts/others/constants.ts"
 import { AccessoriesManager } from "../player/accesories.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -35,6 +34,7 @@ export class Player extends ServerGameObject{
     numberType: number=1
     name:string=""
     rotation:number=0
+    velocity:Vec2=v2.new(0,0)
     recoil?:{speed:number,delay:number}
 
     skin:SkinDef=Skins.getFromString("default_skin")
@@ -93,10 +93,6 @@ export class Player extends ServerGameObject{
     group?:Group
     groupId?:number
 
-    push_vorce:Vec2=v2.new(0,0)
-
-    left_handed:boolean
-
     current_floor:FloorType=0
 
     boost_t:number=0
@@ -113,6 +109,7 @@ export class Player extends ServerGameObject{
         reload:false,
         swamp_guns:false,
         attacking:false,
+        swicthed:false,
 
         aim_speed:0,
 
@@ -134,8 +131,6 @@ export class Player extends ServerGameObject{
         this.inventory=new GInventory(this)
 
         this.actions=new ActionsManager(this)
-
-        this.left_handed=false
 
         this.accessories=new AccessoriesManager(this,3)
     }
@@ -280,12 +275,17 @@ export class Player extends ServerGameObject{
         if(this.dead)return
         //Movement
         const gamemode=this.game.gamemode
+        const current_floor=Floors[this.current_floor]
+        const acceleration=1/(1+dt*(
+            200
+            * (current_floor.acceleration??1)
+        ))
         let speed=1*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.using_healing_speed:1)
                   * (this.inventory.currentWeaponDef?.speed_mod??1)
                   * this.modifiers.speed
                   * (this.downed?0.4:1)
-                  * (this.parachute?1:((Floors[this.current_floor].speed_mult??1)))
+                  * (this.parachute?1:((current_floor.speed_mult??1)))
                   * (this.projectile_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
@@ -337,7 +337,9 @@ export class Player extends ServerGameObject{
             if(this.seat.rotation!==undefined)this.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt,this.alternative_vehicle_control)
         }else{
-            this.position=v2.add(this.position,v2.add(v2.scale(this.input.movement,5*speed*dt),v2.scale(this.push_vorce,dt)))
+            const move=v2.scale(this.input.movement,5*speed)
+            v2m.lerp(this.velocity,move,acceleration)
+            v2m.add(this.position,this.position,v2.scale(this.velocity,dt))
             this.rotation=this.input.rotation
             if(this.parachute){
                 speed*=1.7+(0.5+this.parachute.value)
@@ -351,9 +353,8 @@ export class Player extends ServerGameObject{
         if(!v2.is(this.position,this.oldPosition)){
             this.oldPosition=v2.duplicate(this.position)
             this.manager.cells.updateObject(this)
-            this.push_vorce=v2.scale(this.push_vorce,1/(1+dt*4))
             this.game.map.clamp_hitbox(this.hb)
-            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,FloorType.Water)
+            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
         }
 
         
@@ -442,6 +443,7 @@ export class Player extends ServerGameObject{
         this.input.emote=undefined
     }
     update_input(){
+        this.input.swicthed=false
         if(this.input.reload&&this.inventory.currentWeapon&&this.inventory.currentWeapon.itemType===InventoryItemType.gun){
             (this.inventory.currentWeapon as GunItem).reloading=true
             this.input.reload=false
@@ -768,8 +770,6 @@ export class Player extends ServerGameObject{
                 type:KillFeedMessageType.down,
             })
         }
-
-        this.push_vorce=v2.add(this.push_vorce,v2.scale(v2.from_RadAngle(v2.lookTo(params.position,this.position)),5))
     }
     revive(){
         if(!this.downed)return
@@ -899,24 +899,44 @@ export class Player extends ServerGameObject{
             this.game.livingPlayers.splice(idx,1);
         }
     }
-    override getData(): PlayerData {
-        return {
-            position:this.position,
-            rotation:this.rotation,
-            dead:this.dead,
-            shield:this.boost_def===Boosts[BoostType.Shield]&&this.boost>0,
-            left_handed:this.left_handed,
-            parachute:this.parachute,
-            driving:this.seat!==undefined,
-            attacking:this.input.attacking,
-            emote:this.input.emote,
-            full:{
-                vest:this.vest?this.vest.idNumber!+1:0,
-                helmet:this.helmet?this.helmet.idNumber!+1:0,
-                current_weapon:Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1,
-                animation:this.current_animation,
-                backpack:this.inventory.backpack.idNumber!,
-                skin:this.skin.idNumber!
+    override encode(stream: NetStream, full: boolean): void {
+        stream.writePosition(this.position)
+        .writeRad(this.rotation)
+        .writeBooleanGroup(
+            this.dead,
+            this.boost_def===Boosts[BoostType.Shield]&&this.boost>0,
+            this.seat!==undefined,
+            this.parachute!==undefined,
+            this.input.emote!==undefined,
+            this.input.attacking,
+            this.input.swicthed
+        )
+        if(this.parachute){
+            stream.writeFloat(this.parachute.value,0,1,1)
+        }
+        if(this.input.emote){
+            stream.writeUint16(GameObjectsDefs.keysString[this.input.emote.idString])
+        }
+        if(full){
+            stream.writeBooleanGroup(this.current_animation!==undefined)
+            .writeUint8(this.vest?this.vest.idNumber!+1:0)
+            .writeUint8(this.helmet?this.helmet.idNumber!+1:0)
+            .writeUint8(this.inventory.backpack.idNumber!)
+            .writeUint16(this.skin.idNumber!)
+            .writeInt16(Weapons.keysString[this.inventory.currentWeapon?.def.idString??""]??-1)
+            
+            if(this.current_animation!==undefined){
+                stream.writeUint8(this.current_animation.type)
+                switch(this.current_animation.type){
+                    case PlayerAnimationType.Reloading:
+                        stream.writeUint8(this.current_animation.alt_reload?1:0)
+                        break
+                    case PlayerAnimationType.Consuming:
+                        stream.writeUint16(this.current_animation.item)
+                        break
+                    default:
+                        break
+                }
             }
         }
     }

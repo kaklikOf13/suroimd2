@@ -13,7 +13,7 @@ export enum HitboxType2D{
 }
 export type IntersectionRes = {
     readonly point: Vec2
-    readonly normal: Vec2
+    readonly dir: Vec2
 } | null|undefined;
 export interface Hitbox2DMapping {
     [HitboxType2D.null]:NullHitbox2D
@@ -196,9 +196,11 @@ export class CircleHitbox2D extends BaseHitbox2D{
 
         if (t <= len) {
             const point = v2.add(a_p, v2.scale(d, t))
+            const ov=v2.sub(point,this.position)
+            v2m.normalizeSafe(ov)
             return {
                 point,
-                normal: v2.normalize(v2.sub(point,this.position))
+                dir: ov
             };
         }
 
@@ -290,7 +292,6 @@ export class RectHitbox2D extends BaseHitbox2D{
                 case HitboxType2D.rect:{
                     const ss=v2.dscale(v2.add(v2.sub(this.min,this.max),v2.sub(other.min,other.max)),2)
                     const dist=v2.sub(this.min,other.min)
-                    
                     if(v2.less(v2.absolute(dist),ss)){
                         const ov=v2.normalizeSafe(v2.sub(ss,v2.absolute(dist)))
                         const ov2=v2.duplicate(ov)
@@ -400,7 +401,7 @@ export class RectHitbox2D extends BaseHitbox2D{
 
         return {
             point: p,
-            normal: v2.normalizeSafe(
+            dir: v2.normalizeSafe(
                 v2.new(Math.trunc(x), Math.trunc(y)),
                 v2.new(1, 0)
             )
@@ -426,29 +427,14 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
     override transform(
         position: Vec2 = v2.new(0, 0),
-        scale?: number,
+        scale: number=1,
         orientation: Orientation = 0
     ): RectHitbox2D {
-        const size = v2.sub(this.max, this.min)
-        const scaledSize = v2.scale(size, scale??1)
+        const min = v2.scale(this.min, scale)
+        const max = v2.scale(this.max, scale);
 
-        let finalSize: Vec2
-        switch (orientation) {
-            case 0:
-            case 2:
-                finalSize = scaledSize;
-                break;
-            case 1:
-            case 3:
-                finalSize = v2.new(scaledSize.y, scaledSize.x);
-                break;
-            default:
-                finalSize = scaledSize;
-                break;
-        }
-
-        const min = position
-        const max = v2.add(position, finalSize);
+        v2m.add(min,position,min)
+        v2m.add(max,position,max)
 
         return new RectHitbox2D(min, max);
     }

@@ -78,6 +78,7 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
                     type: "module",
                 });
 
+                this.game.offline=true
                 worker.postMessage({
                     type: "start",
                     config: {
@@ -105,6 +106,7 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
                 const c = new Client(socket, PacketManager);
                 c.onopen = this.game.connect.bind(this.game, c, GameSave.get_variable("cv_loadout_name"));
             }else{
+                this.game.offline=false
                 const reg=menu_manager.api_settings.regions[GameSave.get_variable("cv_game_region")]
                 const ser=new IPLocation(reg.host,reg.port)
                 const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).json())
