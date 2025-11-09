@@ -75,7 +75,7 @@ export class Player extends GameObject{
     }={weapon:{}}
 
     current_weapon?:WeaponDef
-    dead:boolean=false
+    dead:boolean=true
 
     left_handed=false
     
@@ -122,6 +122,8 @@ export class Player extends GameObject{
     }
 
     on_die(){
+        if(this.dead&&this.container.destroyed)return
+        this.dead=true
         for(let i=0;i<5;i++){
             this.game.particles.add_particle(new ABParticle2D({
                 scale:0.1,
@@ -776,9 +778,10 @@ export class Player extends GameObject{
                 this.rotation=rotation
             }
         }
-        if(dead&&!this.dead){
-            this.dead=dead
+        if(dead){
             this.on_die()
+        }else if(this.dead){
+            this.dead=false
         }
         if(parachute){
             const para=stream.readFloat(0,1,1)
