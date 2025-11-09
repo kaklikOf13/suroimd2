@@ -58,16 +58,16 @@ export const DefaultGamemode:Gamemode={
     player:{
         boosts:{
             adrenaline:{
-                decay:0.3,
-                speed:0.2,
+                decay:0.25,
+                speed:0.23,
                 regen:0.01
             },
             mana:{
                 regen:0.03
             },
             addiction:{
-                decay:0.25,
-                damage:0.8,
+                decay:0.15,
+                damage:0.7,
                 speed:0.5,
                 abstinence:0.009
             },

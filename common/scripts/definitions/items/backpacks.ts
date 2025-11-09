@@ -34,10 +34,11 @@ Backpacks.insert(
             "frag_grenade":9,
 
             "gauze":15,
-            "soda":10,
-            "small_blue_potion":10,
-            "small_purple_potion":10,
-            "small_red_crystal":10,
+            "yellow_soda":5,
+            "blue_soda":5,
+            "purple_soda":5,
+            "red_soda":5,
+            "small_red_crystal":5,
 
             "inhaler":4,
             "blue_potion":4,

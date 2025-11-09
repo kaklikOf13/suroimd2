@@ -2,7 +2,10 @@
 ## News
 __                                                                                                      __
 ### Mains
+* **SNOW MAP!!** Mary Christmas
+* Christmas Tree
 * A New Movimentation
+* Snow Storm
 * Ice
 * Ice Slide
 __                                                                                                      __
@@ -10,7 +13,11 @@ __                                                                              
 
 __                                                                                                      __
 ### Items
-
+* Yellow Laser Pistol: A Weapon Madded To Test Reflections
+* Red Soda: A Alternative For Small Red Crystal
+* Medikit Sfx
+* Bandage Sfx
+* Pills Sfx
 __                                                                                                      __
 ### Keys And Controls
 __                                                                                                      __
@@ -18,9 +25,14 @@ __                                                                              
 __                                                                                                      __
 ### Items
 * Quickswitch Improvement
+* Bandage Now Healing Come From 15 To 20
+* Soda Become Yellow Soda
+* Small Blue Potion Become Blue Soda
+* Small Purple Potion Become Purple Soda
+* Small Red Crystal Just Heal Until 50%
 __                                                                                                      __
 ### Others
-
+* Readd Rivers
 __                                                                                                      __
 ## Fixes
 * Rect Hitbox Damage

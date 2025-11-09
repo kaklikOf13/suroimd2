@@ -81,22 +81,23 @@ export const NormalMap:MapDef={
             {item:"medikit",count:1,weight:0.6},
         ],
         "adrenaline":[
-            {item:"soda",count:1,weight:100},
+            {item:"yellow_soda",count:1,weight:100},
             {item:"inhaler",count:1,weight:40},
             {item:"yellow_pills",count:1,weight:3},
         ],
         "shield":[
-            {item:"small_blue_potion",count:2,weight:100},
+            {item:"blue_soda",count:2,weight:100},
             {item:"blue_potion",count:1,weight:40},
             {item:"blue_pills",count:1,weight:3},
         ],
         "addiction":[
             {item:"small_red_crystal",count:4,weight:100},
+            {item:"red_soda",count:1,weight:70},
             {item:"red_crystal",count:2,weight:40},
             {item:"red_pills",count:1,weight:3},
         ],
         "mana":[
-            {item:"small_purple_potion",count:2,weight:100},
+            {item:"purple_soda",count:2,weight:100},
             {item:"purple_potion",count:1,weight:40},
             {item:"purple_pills",count:1,weight:3},
         ],
@@ -384,16 +385,16 @@ export const SnowMap:MapDef={
                     defs:[
                         {
                             rivers:[
-                                {sub_river_width:2,width:7,width_variation:1,sub_river_chance:0.5},
-                                {sub_river_width:1,width:8,width_variation:1,sub_river_chance:0.1},
+                                {sub_river_width:5,width:7,width_variation:1,sub_river_chance:0.5},
+                                {sub_river_width:5,width:8,width_variation:1,sub_river_chance:0.1},
                             ],
                             weight:10
                         },
                         {
                             rivers:[
-                                {sub_river_width:3,width:15,width_variation:1,sub_river_chance:0.9},
+                                {sub_river_width:10,width:15,width_variation:1,sub_river_chance:0.9},
                             ],
-                            weight:1
+                            weight:1000
                         }
                     ]
                 },
