@@ -6,6 +6,7 @@ import { type Player } from "./player.ts";
 import { ColorM, Renderer } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Creature } from "./creature.ts";
+import { Building } from "./building.ts";
 const images=[
     "bullet_normal",
     "bullet_rocket"
@@ -71,20 +72,27 @@ export class Bullet extends GameObject{
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).stringType){
                     case "player":
-                        if((obj as Player).hb&&!(obj as Player).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))&&!(obj as Player).parachute){
+                        if((obj as Player).hb&&!(obj as Player).dead&&(this.hb.collidingWith(obj.hb)/*||obj.hb.colliding_with_line(this.old_position,this.position)*/)&&!(obj as Player).parachute){
                             (obj as Player).on_hitted(this.position,this.critical)
                             this.dying=true
                         }
                         break
                     case "creature":
-                        if((obj as Creature).hb&&!(obj as Creature).dead&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
+                        if((obj as Creature).hb&&!(obj as Creature).dead&&(this.hb.collidingWith(obj.hb)/*||obj.hb.colliding_with_line(this.old_position,this.position)*/)){
                             this.dying=true
                         }
                         break
                     case "obstacle":
-                        if((obj as Obstacle).def.noBulletCollision||(obj as Obstacle).dead)break
+                        if((obj as Obstacle).def.no_bullet_collision||(obj as Obstacle).dead)break
                         if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
                             (obj as Obstacle).on_hitted(this.position)
+                            this.dying=true
+                        }
+                        break
+                    case "building":
+                        if((obj as Building).def.no_bullet_collision)break
+                        if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
+                            (obj as Building).on_hitted(this.position)
                             this.dying=true
                         }
                         break
@@ -143,9 +151,7 @@ export class Bullet extends GameObject{
         this.container.zIndex=zIndexes.Bullets
     }
     override render(_camera: Camera2D, _renderer: Renderer, _dt: number): void {
-      /*if(Debug.hitbox){
-            renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_bullet"),camera.visual_position)
-        }*/
+    
     }
     override decode(stream: NetStream, full: boolean): void {
         this.position=stream.readPosition()

@@ -121,6 +121,8 @@ export class CircleHitbox2D extends BaseHitbox2D{
                 return v2.distance(this.position,other.position)<this.radius+other.radius
             case HitboxType2D.rect:
                 return Collision.circle_with_rect(this.position,this.radius,other.min,other.max)
+            case HitboxType2D.group:
+                return other.hitboxes.some(hitbox => hitbox.collidingWith(this));
         }
         return false
     }
@@ -142,6 +144,12 @@ export class CircleHitbox2D extends BaseHitbox2D{
                         : undefined
                 }case HitboxType2D.rect: {
                     return Collision.circle_with_rect_ov(this.position, this.radius, other.min, other.max);
+                }case HitboxType2D.group:{
+                    for(const hb of other.hitboxes){
+                        const col=hb.overlapCollision(this)
+                        if(col)return col
+                    }
+                    return undefined
                 }
             }
         }
@@ -150,24 +158,24 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override pointInside(point: Vec2): boolean {
       return v2.distance(this.position,point)<this.radius
     }
-    override colliding_with_line(x:Vec2,y:Vec2):boolean{
-        let d = v2.sub(y, x)
-        const len = Numeric.max(v2.length(d), 0.000001)
-        d = v2.normalizeSafe(d)
+    override colliding_with_line(a:Vec2,b:Vec2):boolean{
+        let d = v2.sub(b, a);
+        const len = Numeric.max(v2.length(d), 0.000001);
+        d = v2.normalizeSafe(d);
 
-        const m = v2.sub(x, this.position)
-        const b = v2.dot(m, d)
-        const c = v2.dot(m, m) - (this.radius * this.radius)
+        const m = v2.sub(a, this.position);
+        const b2 = v2.dot(m, d);
+        const c = v2.dot(m, m) - this.radius * this.radius;
 
-        if (c > 0 && b > 0) return false
+        if (c > 0 && b2 > 0) return false;
 
-        const discSq = b * b - c
-        if (discSq < 0) return false
+        const discSq = b2 * b2 - c;
+        if (discSq < 0) return false;
 
         const disc = Math.sqrt(discSq);
-        const t = -b < disc
-            ? disc - b
-            : -b - disc;
+        const t = -b2 < disc
+            ? disc - b2
+            : -b2 - disc;
 
         if (t <= len) {
             return true
@@ -272,6 +280,27 @@ export class RectHitbox2D extends BaseHitbox2D{
         v2m.add(size,position,size)
         return new RectHitbox2D(position,size)
     }
+    static wall_enabled(min:Vec2,max:Vec2,walls:{
+        left:boolean
+        right:boolean
+        top:boolean
+        bottom:boolean
+    },walls_size:number):HitboxGroup2D{
+        const ret=new HitboxGroup2D()
+        if(walls.left){
+            ret.hitboxes.push(new RectHitbox2D(v2.new(min.x,min.y),v2.new(min.x+walls_size,max.y)))
+        }
+        if(walls.right){
+            ret.hitboxes.push(new RectHitbox2D(v2.new(max.x-walls_size,min.y),v2.new(max.x,max.y)))
+        }
+        if(walls.top){
+            ret.hitboxes.push(new RectHitbox2D(v2.new(min.x,min.y),v2.new(max.x,min.y+walls_size)))
+        }
+        if(walls.bottom){
+            ret.hitboxes.push(new RectHitbox2D(v2.new(min.x,max.y-walls_size),v2.new(max.x,max.y)))
+        }
+        return ret
+    }
     get position():Vec2{
         return this.min
     }
@@ -282,6 +311,8 @@ export class RectHitbox2D extends BaseHitbox2D{
                     return (this.max.x>other.min.x&&this.min.x<other.max.x) && (this.max.y>other.min.y&&this.min.y<other.max.y)
                 case HitboxType2D.circle:
                     return Collision.circle_with_rect(other.position,other.radius,this.min,this.max)
+                case HitboxType2D.group:
+                    return other.hitboxes.some(hitbox => hitbox.collidingWith(this));
             }
         }
         return false
@@ -305,6 +336,12 @@ export class RectHitbox2D extends BaseHitbox2D{
                     break
                 }case HitboxType2D.circle: {
                     return Collision.circle_with_rect_ov(other.position,other.radius,this.min,this.max)
+                }case HitboxType2D.group:{
+                    for(const hb of other.hitboxes){
+                        const col=hb.overlapCollision(this)
+                        if(col)return col
+                    }
+                    return undefined
                 }
             }
         }
@@ -314,38 +351,48 @@ export class RectHitbox2D extends BaseHitbox2D{
         return (point.x>=this.max.x&&point.x<=this.min.x)&&(point.y>=this.max.y&&point.y<=this.min.y)
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
-        let tmin = 0;
-        let tmax = Number.MAX_VALUE;
+        let tmin = 0
+        let tmax = Number.MAX_VALUE
 
-        const eps = 1e-8;
-        let d = v2.sub(b, a);
-        const dist = v2.length(d);
+        const eps = 1e-5
+        let d = v2.sub(b, a)
+        const dist = v2.length(d)
+        d = v2.normalizeSafe(d)
 
-        if (dist < eps) return this.pointInside(a);
+        let absDx = Math.abs(d.x)
+        let absDy = Math.abs(d.y)
 
-        d = v2.normalizeSafe(d);
-
-        if (Math.abs(d.x) < eps) {
-            if (a.x < this.min.x || a.x > this.max.x) return false;
-        } else {
-            const tx1 = (this.min.x - a.x) / d.x;
-            const tx2 = (this.max.x - a.x) / d.x;
-            tmin = Math.max(tmin, Math.min(tx1, tx2));
-            tmax = Math.min(tmax, Math.max(tx1, tx2));
-            if (tmin > tmax) return false;
+        if (absDx < eps) {
+            d.x = eps * 2
+            absDx = d.x
         }
 
-        if (Math.abs(d.y) < eps) {
-            if (a.y < this.min.y || a.y > this.max.y) return false;
-        } else {
-            const ty1 = (this.min.y - a.y) / d.y;
-            const ty2 = (this.max.y - a.y) / d.y;
-            tmin = Math.max(tmin, Math.min(ty1, ty2));
-            tmax = Math.min(tmax, Math.max(ty1, ty2));
-            if (tmin > tmax) return false;
+        if (absDy < eps) {
+            d.y = eps * 2
+            absDy = d.y
         }
 
-        return tmin <= dist && tmax >= 0;
+        if (absDx > eps) {
+            const tx1 = (this.min.x - a.x) / d.x
+            const tx2 = (this.max.x - a.x) / d.x
+
+            tmin = Numeric.max(tmin, Numeric.min(tx1, tx2))
+            tmax = Numeric.min(tmax, Numeric.max(tx1, tx2))
+
+            if (tmin > tmax) return false
+        }
+
+        if (absDy > eps) {
+            const ty1 = (this.min.y - a.y) / d.y
+            const ty2 = (this.max.y - a.y) / d.y
+
+            tmin = Numeric.max(tmin, Numeric.min(ty1, ty2))
+            tmax = Numeric.min(tmax, Numeric.max(ty1, ty2))
+
+            if (tmin > tmax) return false
+        }
+
+        return tmin <= dist
     }
     override overlapLine(a_point:Vec2,b_point:Vec2): IntersectionRes {
         let tmin = 0
@@ -478,8 +525,10 @@ export class RectHitbox2D extends BaseHitbox2D{
     }
 }
 export class HitboxGroup2D extends BaseHitbox2D{
-    position:Vec2=v2.new(0,0)
     hitboxes: Hitbox2D[];
+    get position(){
+        return this.center()
+    }
     constructor(...hitboxes: Hitbox2D[]) {
         super();
         this.hitboxes = hitboxes;
@@ -494,7 +543,11 @@ export class HitboxGroup2D extends BaseHitbox2D{
         }
         return false;
     }
-    override overlapCollision(_other: Hitbox2D): OverlapCollision2D {
+    override overlapCollision(other: Hitbox2D): OverlapCollision2D {
+        for(const hb of this.hitboxes){
+            const col=hb.overlapCollision(other)
+            if(col)return col
+        }
         return undefined
     }
     override colliding_with_line(a:Vec2,b:Vec2):boolean{
@@ -515,10 +568,10 @@ export class HitboxGroup2D extends BaseHitbox2D{
         const max = v2.new(0, 0)
         for (const hitbox of this.hitboxes) {
             const toRect = hitbox.to_rect()
-            min.x = Numeric.min(min.x, toRect.min.x)
-            min.y = Numeric.min(min.y, toRect.min.y)
-            max.x = Numeric.max(max.x, toRect.max.x)
-            max.y = Numeric.max(max.y, toRect.max.y)
+            min.x = Math.min(min.x, toRect.min.x)
+            min.y = Math.min(min.y, toRect.min.y)
+            max.x = Math.max(max.x, toRect.max.x)
+            max.y = Math.max(max.y, toRect.max.y)
         }
         return {
             min:min,
@@ -534,8 +587,6 @@ export class HitboxGroup2D extends BaseHitbox2D{
         return false
     }
     override transform(position:Vec2=v2.new(0,0),scale:number=1,orientation?:Orientation): HitboxGroup2D {
-        this.position = position;
-
         return new HitboxGroup2D(
             ...this.hitboxes.map(hitbox => hitbox.transform(position, scale,orientation))
         );
@@ -549,7 +600,9 @@ export class HitboxGroup2D extends BaseHitbox2D{
         return new HitboxGroup2D(...(deep?this.hitboxes.map(hitbox => hitbox.clone(true)):this.hitboxes));
     }
     override clamp(min:Vec2,max:Vec2){
-        this.position=v2.clamp2(this.position,min,max)
+        for(const hb of this.hitboxes){
+            hb.clamp(min,max)
+        }
     }
     override encode(stream:NetStream){
         stream.writePosition(this.position)

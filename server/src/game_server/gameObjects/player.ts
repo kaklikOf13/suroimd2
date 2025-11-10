@@ -27,6 +27,7 @@ import { ProjectileDef } from "common/scripts/definitions/objects/projectiles.ts
 import { Explosions } from "common/scripts/definitions/objects/explosions.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
+import { Building } from "./building.ts";
 
 export class Player extends ServerGameObject{
     oldPosition:Vec2
@@ -449,13 +450,22 @@ export class Player extends ServerGameObject{
                 if(obj.id===this.id)continue
                 switch(obj.stringType){
                     case "obstacle":
-                        if((obj as Obstacle).def.noCollision)break
+                        if((obj as Obstacle).def.no_collision)break
                         if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
                             if(can_interact&&this.input.interaction&&(obj as Obstacle).hb.collidingWith(this.hb)){
                                 (obj as Loot).interact(this)
                                 can_interact=false
                             }
                             const ov=this.hb.overlapCollision((obj as Obstacle).hb)
+                            if(ov){
+                                this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                            }
+                        }
+                        break
+                    case "building":
+                        if((obj as Building).def.no_collisions)break
+                        if(obj.hb){
+                            const ov=this.hb.overlapCollision(obj.hb)
                             if(ov){
                                 this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
                             }

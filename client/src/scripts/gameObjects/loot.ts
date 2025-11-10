@@ -50,9 +50,7 @@ export class Loot extends GameObject{
         this.container.destroy()
     }
     override render(_camera: Camera2D, _renderer: Renderer, _dt: number): void {
-        /*if(Debug.hitbox){
-            renderer.draw_hitbox2D(this.hb,this.game.resources.get_material2D("hitbox_loot"),camera.visual_position)
-        }*/
+        
     }
     dest_pos?:Vec2
     override decode(stream: NetStream, full: boolean): void {

@@ -1,5 +1,5 @@
-import { BaseGameObject2D, Game2D, ParticlesManager2D } from "common/scripts/engine/mod.ts";
-import { type Renderer } from "./renderer.ts";
+import { BaseGameObject2D, Game2D, HitboxType2D, model2d, ParticlesManager2D, v2 } from "common/scripts/engine/mod.ts";
+import { ColorM, Material2D, WebglRenderer, type Renderer } from "./renderer.ts";
 import { ResourcesManager } from "./resources.ts";
 import { InputManager } from "./keys.ts";
 import { SoundManager } from "./sounds.ts";
@@ -39,8 +39,12 @@ export class ClientGame2D<GObject extends ClientGameObject2D=ClientGameObject2D>
         this.renderer.canvas.addEventListener("click",(_e)=>{
             this.input_manager.focus=true
         })
+        const col=ColorM.number(0xee0000)
+        col.a=0.2
+        this.hbm=(this.renderer as WebglRenderer).factorys2D.simple.create({color:col})
     }
     readonly tweens = new Set<Tween<unknown>>();
+    hitbox_view:boolean=false
     addTween<T>(config: TweenOptions<T>): Tween<T> {
         const tween = new Tween<T>(this, config);
 
@@ -51,6 +55,7 @@ export class ClientGame2D<GObject extends ClientGameObject2D=ClientGameObject2D>
     removeTween(tween: Tween<unknown>): void {
         this.tweens.delete(tween);
     }
+    hbm:Material2D
     draw(renderer:Renderer,dt:number){
         renderer.clear()
         this.camera.update(dt,this.resources)
@@ -58,8 +63,20 @@ export class ClientGame2D<GObject extends ClientGameObject2D=ClientGameObject2D>
         this.on_render(dt)
         for(const c in this.scene.objects.objects){
             for(const o of this.scene.objects.objects[c].orden){
-                if(!this.scene.objects.objects[c].objects[o])continue
-                this.scene.objects.objects[c].objects[o].render(this.camera,renderer,dt)
+                const obj=this.scene.objects.objects[c].objects[o]
+                if(!obj)continue
+                obj.render(this.camera,renderer,dt)
+                if(this.hitbox_view){
+                    if(obj.hb.type===HitboxType2D.group){
+                        for(const hb of obj.hb.hitboxes){
+                            const model=model2d.hitbox(hb)
+                            this.renderer.draw(model,this.hbm,this.camera.projectionMatrix,v2.new(0,0),v2.new(1,1))
+                        }
+                    }else{
+                        const model=model2d.hitbox(obj.hb)
+                        this.renderer.draw(model,this.hbm,this.camera.projectionMatrix,v2.new(0,0),v2.new(1,1))
+                    }
+                }
             }
         }
     }

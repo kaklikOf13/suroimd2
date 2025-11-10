@@ -34,6 +34,7 @@ import { GeneralUpdatePacket, PlaneData } from "common/scripts/packets/general_u
 import {PacketManager} from "common/scripts/packets/packet_manager.ts"
 import { LootTablesManager } from "common/scripts/engine/inventory.ts";
 import { Aditional, loot_table_get_item } from "common/scripts/definitions/maps/base.ts";
+import { Building } from "../gameObjects/building.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -125,7 +126,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
             Projectile,
             PlayerBody,
             Vehicle,
-            Creature
+            Creature,
+            Building
         ])
         for(const i of LayersL){
             this.scene.objects.add_layer(i)

@@ -8,6 +8,7 @@ import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
 import { Creature } from "./creature.ts";
 import { Explosions } from "common/scripts/definitions/objects/explosions.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { Building } from "./building.ts";
 
 export class Bullet extends ServerGameObject{
     velocity:Vec2
@@ -96,7 +97,7 @@ export class Bullet extends ServerGameObject{
                     break
                 }
                 case "obstacle":
-                    if((obj as Obstacle).def.noBulletCollision)break
+                    if((obj as Obstacle).def.no_bullet_collision)break
                     if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
                         const col1=(obj as Obstacle).hb.overlapCollision(this.hb)
                         const col2 = undefined
@@ -107,7 +108,7 @@ export class Bullet extends ServerGameObject{
                         const od=(obj as Obstacle).health;
                         (obj as Obstacle).damage({amount:(this.damage*(this.defs.obstacleMult??1)),owner:this.owner,reason:DamageReason.Player,position:v2.duplicate(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
                         let reflected=false
-                        if(((obj as Obstacle).def.reflectBullets||BulletReflection.All===this.defs.reflection)&&this.defs.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.defs.on_hit_explosion){
+                        if(((obj as Obstacle).def.reflect_bullets||BulletReflection.All===this.defs.reflection)&&this.defs.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.defs.on_hit_explosion){
                             this.reflect(main_col.dir)
                             reflected=true
                         }
@@ -118,6 +119,21 @@ export class Bullet extends ServerGameObject{
                                 this.game.add_bullet(this.position,this.angle,this.defs,this.owner,this.ammo,this.source)
                             }
                         }
+                    }
+                    break
+                case "building":
+                    if((obj as Building).def.no_bullet_collision)break
+                    if(obj.hb){
+                        const col1=obj.hb.overlapCollision(this.hb)
+                        const col2 = undefined
+                        //const col2 = (obj as Obstacle).hb.overlapLine(this.old_position,this.position)!
+                        if(!col2&&!col1)continue
+                        let main_col:IntersectionRes|OverlapCollision2D=col1
+                        if(!main_col)main_col=col2!
+                        if(((obj as Building).def.reflect_bullets||BulletReflection.All===this.defs.reflection)&&this.defs.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.defs.on_hit_explosion){
+                            this.reflect(main_col.dir)
+                        }
+                        this.on_hit()
                     }
                     break
             }

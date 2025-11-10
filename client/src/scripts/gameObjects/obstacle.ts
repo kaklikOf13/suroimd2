@@ -128,10 +128,7 @@ export class Obstacle extends GameObject{
         }
     }
     override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        if(Debug.hitbox){
-            const model=model2d.hitbox(this.hb)
-            renderer.draw(model,this.game.resources.get_material2D("hitbox"),camera.projectionMatrix,v2.new(0,0),v2.new(1,1))
-        }
+        
     }
     update_door(door_status:ObstacleDoorStatus){
         this.door_status=door_status

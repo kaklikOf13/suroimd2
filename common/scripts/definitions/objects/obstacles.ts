@@ -39,8 +39,8 @@ export interface ObstacleDef extends Definition{
     health:number
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
-    noCollision?:boolean
-    noBulletCollision?:boolean
+    no_collision?:boolean
+    no_bullet_collision?:boolean
     invisibleOnMap?:boolean
     scale?:{
         min?:number
@@ -68,7 +68,7 @@ export interface ObstacleDef extends Definition{
     lootTable?:string
 
     interactDestroy?:boolean
-    reflectBullets?:boolean
+    reflect_bullets?:boolean
 
     spawnMode:SpawnMode
 
@@ -153,7 +153,7 @@ Obstacles.insert(
         zIndex:zIndexes.Obstacles1,
         onDestroyExplosion:"barrel_explosion",
         material:"metal",
-        reflectBullets:true,
+        reflect_bullets:true,
         frame:{
             particle:"metal_particle"
         },
@@ -222,7 +222,7 @@ Obstacles.insert(
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"iron", //TODO Copper Material
-        reflectBullets:true,
+        reflect_bullets:true,
         lootTable:"copper_crate",
         frame:{
             particle:"metal_particle"
@@ -246,7 +246,7 @@ Obstacles.insert(
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"iron",
-        reflectBullets:true,
+        reflect_bullets:true,
         lootTable:"iron_crate",
         frame:{
             particle:"metal_particle"
@@ -270,7 +270,7 @@ Obstacles.insert(
         rotationMode:RotationMode.null,
         zIndex:zIndexes.Obstacles3,
         material:"iron",
-        reflectBullets:true,
+        reflect_bullets:true,
         lootTable:"gold_crate",
         frame:{
             particle:"metal_particle"
@@ -284,7 +284,7 @@ Obstacles.insert(
         idString:"bush",
         health:70,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
-        noCollision:true,
+        no_collision:true,
         scale:{
             destroy:0.8
         },

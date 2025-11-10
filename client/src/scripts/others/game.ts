@@ -38,6 +38,7 @@ import { Camera3D } from "../engine/container_3d.ts";
 import { TranslationManager } from "common/scripts/engine/definitions.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
+import { Building } from "../gameObjects/building.ts";
 export const gridSize=5
 export class Game extends ClientGame2D<GameObject>{
   client?:Client
@@ -244,7 +245,7 @@ export class Game extends ClientGame2D<GameObject>{
     }
   }
   constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,translation:TranslationManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature])
+    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature,Building])
     for(const i of LayersL){
       this.scene.objects.add_layer(i)
     }
@@ -257,11 +258,6 @@ export class Game extends ClientGame2D<GameObject>{
     this.cam3=new Camera3D(this.renderer)
 
     document.body.style.cursor=this.cursors.default
-
-    if(Debug.hitbox){
-      const hc={color:ColorM.hex("#ee000099")}
-      this.resources.load_material2D("hitbox",(this.renderer as WebglRenderer).factorys2D.simple.create(hc))
-    }
     this.terrain_gfx.zIndex=zIndexes.Terrain
     this.camera.addObject(this.terrain_gfx)
     this.camera.addObject(this.grid_gfx)
@@ -288,6 +284,7 @@ export class Game extends ClientGame2D<GameObject>{
     },1000)
 
     this.ambient=new AmbientManager(this)
+    this.hitbox_view=Debug.hitbox
   }
   add_damageSplash(d:DamageSplash){
     this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)

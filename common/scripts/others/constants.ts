@@ -46,6 +46,7 @@ export const LayersL=[
 export enum zIndexes{
     Terrain,
     Grid,
+    BuildingsFloor,
     DeadObstacles,
     Decals,
     DeadCreatures,

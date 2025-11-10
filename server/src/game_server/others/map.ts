@@ -8,7 +8,8 @@ import { FloorType, generate_rivers, TerrainManager } from "common/scripts/other
 import { Layers } from "common/scripts/others/constants.ts"
 import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts"
 import { Creatures } from "common/scripts/definitions/objects/creatures.ts"
-import {BuildingDef} from "common/scripts/definitions/objects/buildings_base.ts"
+import {BuildingDef, Buildings} from "common/scripts/definitions/objects/buildings_base.ts"
+import { Building } from "../gameObjects/building.ts";
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export const generation={
     island:(def:IslandDef)=>{
@@ -169,6 +170,8 @@ export class GameMap{
         if(definition.generation.island)generation.island(definition.generation.island)(this,random)
 
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
+
+        //this.add_building(Buildings.getFromString("container_1"),v2.new(10,10),0)
     }
     generate_with_algorithm(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
         const random=new SeededRandom(seed)
@@ -176,12 +179,12 @@ export class GameMap{
         algorithm(this,random)
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
     }
-    add_building(def:BuildingDef,position:Vec2,side:0|1|2|3=0){
-        for(const o of def.obstacles){
-            const odef=Obstacles.getFromString(o.id)
-            const obj=this.add_obstacle(odef,o.rotation)
-            obj.set_position(v2.add_with_orientation(position,o.position,side))
-        }
+    add_building(def:BuildingDef,position:Vec2,side:0|1|2|3,layer:number=Layers.Normal){
+        const b=new Building()
+        this.game.scene.objects.add_object(b,layer,undefined,{
+            def:def
+        })
+        b.generate(position,side)
     }
     encode(seed:number):MapPacket{
         const p=new MapPacket()
