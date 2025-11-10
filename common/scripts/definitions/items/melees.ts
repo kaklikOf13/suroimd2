@@ -136,7 +136,7 @@ Melees.insert(
         quality:ItemQuality.Common,
         radius:0.5,
         size:0,
-        attack_delay:0.2,
+        attack_delay:0.4,
         switchDelay:0.5,
         damage_delays:[0.11],
         arms:{

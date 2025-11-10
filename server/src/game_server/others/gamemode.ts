@@ -39,6 +39,16 @@ export interface Gamemode{
                 abstinence:number
                 speed:number
             }
+            green_bless:{
+                regen:number
+                damage_reduction:number
+            }
+            death:{
+                life_time:number
+                damage:number
+                damage_reduction:number
+                speed:number
+            }
             default_boost:BoostType
         },
         respawn?:{
@@ -70,6 +80,16 @@ export const DefaultGamemode:Gamemode={
                 damage:0.7,
                 speed:0.5,
                 abstinence:0.009
+            },
+            green_bless:{
+                regen:0.01,
+                damage_reduction:0.2,
+            },
+            death:{
+                life_time:160,
+                damage:0.5,
+                damage_reduction:0.5,
+                speed:0.7
             },
             default_boost:BoostType.Adrenaline
         },

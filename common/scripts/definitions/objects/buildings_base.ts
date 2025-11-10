@@ -1,4 +1,5 @@
 import { v2, Vec2 } from "../../engine/geometry.ts";
+import { Hitbox2D } from "../../engine/hitbox.ts";
 import { Definitions,Definition } from "../../engine/mod.ts"
 
 export type BuildingObstacles={
@@ -14,6 +15,8 @@ export type BuildingSubBuilding={
 }
 export interface BuildingDef extends Definition{
     obstacles:BuildingObstacles[]
+    spawnHitbox?:Hitbox2D
+    hitbox?:Hitbox2D
 }
 export const Buildings=new Definitions<BuildingDef,null>((i)=>{
 })

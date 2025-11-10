@@ -1,4 +1,4 @@
-import { Angle, Hitbox2D, LootTableItemRet, NetStream, Numeric, Orientation, RotationMode, v2, Vec2 } from "common/scripts/engine/mod.ts"
+import { Angle, Hitbox2D, HitboxType2D, LootTableItemRet, NetStream, Numeric, Orientation, RotationMode, v2, Vec2 } from "common/scripts/engine/mod.ts"
 import { ObstacleDef, ObstacleDoorStatus } from "common/scripts/definitions/objects/obstacles.ts";
 import { DamageParams } from "../others/utils.ts";
 import { random } from "common/scripts/engine/random.ts";
@@ -123,13 +123,13 @@ export class Obstacle extends ServerGameObject{
     }
     set_position(position:Vec2){
         if(this.def.hitbox){
-            this.hb=this.def.hitbox.transform(position,undefined,this.side)
+            this.hb=this.def.hitbox.transform(position,undefined,0)
         }else{
             this.position=position
         }
 
         if(this.def.spawnHitbox){
-            this.spawnHitbox=this.def.spawnHitbox.transform(position,undefined,this.side)
+            this.spawnHitbox=this.def.spawnHitbox.transform(position,undefined,0)
         }else{
             this.spawnHitbox=this.hb.clone()
         }
@@ -158,7 +158,7 @@ export class Obstacle extends ServerGameObject{
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.maxScale;
             this.scale=Math.max(this.health / this.def.health*(this.maxScale - destroyScale) + destroyScale,0)
-            this.hb=this.def.hitbox.transform(this.m_position,this.scale,this.side)
+            this.hb=this.def.hitbox.transform(this.m_position,this.scale,0)
             this.dirty=true
         }
     }

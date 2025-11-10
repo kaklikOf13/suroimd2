@@ -166,6 +166,7 @@ Obstacles.insert(
         idString:"oak_tree",
         health:120,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
+        spawnHitbox:new CircleHitbox2D(v2.new(0,0),0.6),
         scale:{
             destroy:0.9,
             max:1.2,
@@ -324,6 +325,7 @@ Obstacles.insert(
         idString:"christmas_tree",
         health:300,
         hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
+        spawnHitbox:new CircleHitbox2D(v2.new(0,0),1),
         scale:{
             destroy:0.9,
             max:1.2,

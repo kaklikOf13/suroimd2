@@ -25,6 +25,7 @@ __                                                                              
 __                                                                                                      __
 ### Items
 * Quickswitch Improvement
+* Survival Knife Attack Delay Come From 0.2s To 0.4s
 * Bandage Now Healing Come From 15 To 20
 * Soda Become Yellow Soda
 * Small Blue Potion Become Blue Soda

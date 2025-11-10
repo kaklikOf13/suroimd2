@@ -38,6 +38,8 @@ Backpacks.insert(
             "blue_soda":5,
             "purple_soda":5,
             "red_soda":5,
+            "green_soda":5,
+            "black_soda":5,
             "small_red_crystal":5,
 
             "inhaler":4,
@@ -50,6 +52,7 @@ Backpacks.insert(
             "yellow_pills":2,
             "purple_pills":2,
             "red_pills":2,
+            "green_pills":2,
             "pocket_portal":3,
         },
         quality:ItemQuality.Common,

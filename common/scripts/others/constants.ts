@@ -85,4 +85,5 @@ export type PlayerModifiers={
     critical_mult:number
     luck:number
     mana_consume:number
+    damage_reduction:number
 }

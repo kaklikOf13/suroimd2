@@ -160,6 +160,7 @@ export class Player extends ServerGameObject{
         critical_mult:1,
         luck:1,
         mana_consume:1,
+        damage_reduction:1,
     }
 
     effects:Map<number,EffectInstance>=new Map()
@@ -182,10 +183,26 @@ export class Player extends ServerGameObject{
     }
 
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=1
+        this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
         const gamemode=this.game.gamemode
-        if(this.boost_def.type===BoostType.Addiction){
-            this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
+        switch(this.boost_def.type){
+            case BoostType.Null:
+            case BoostType.Shield:
+            case BoostType.Adrenaline:
+            case BoostType.Mana:
+                break
+            case BoostType.Addiction:
+                this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.addiction.damage
+                break
+            case BoostType.GreenBless:
+                this.modifiers.damage_reduction*=1-(gamemode.player.boosts.green_bless.damage_reduction*(this.boost/this.maxBoost))
+                break
+            case BoostType.Death:
+                this.modifiers.damage+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.death.damage
+                this.modifiers.speed+=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.death.speed
+                this.modifiers.damage_reduction*=0.8
+                this.modifiers.damage_reduction-=(1-(this.boost/this.maxBoost))*gamemode.player.boosts.death.damage_reduction
+                break
         }
 
         for(const acc of this.accessories.slots){
@@ -231,6 +248,18 @@ export class Player extends ServerGameObject{
                 })
                 break
             case SideEffectType.Heal:
+                if(this.boost_def.type===BoostType.Death){
+                    if(sf.boost){
+                        if(sf.boost.def.type===BoostType.Death){
+                            this.boost-=sf.boost.amount/4
+                            break
+                        }else if(sf.boost.def.type!==BoostType.GreenBless){
+                            break
+                        }
+                    }else{
+                        break
+                    }
+                }
                 if(sf.health){
                     this.health=Math.min(this.health+sf.health.amount,this.maxHealth*(sf.health.max??1))
                 }
@@ -294,12 +323,12 @@ export class Player extends ServerGameObject{
             if(this.recoil.delay<=0)this.recoil=undefined
         }
         switch(this.boost_def.type){
-            case BoostType.Shield:
-                break
             case BoostType.Adrenaline:
                 speed*=1+(gamemode.player.boosts.adrenaline.speed*(this.boost/this.maxBoost))
                 this.boost=Math.max(this.boost-gamemode.player.boosts.adrenaline.decay*dt,0)
                 this.health=Math.min(this.health+(this.boost*dt)*gamemode.player.boosts.adrenaline.regen,this.maxHealth)
+                break
+            case BoostType.Shield:
                 break
             case BoostType.Mana:
                 this.boost=Numeric.lerp(this.boost,this.maxBoost,gamemode.player.boosts.mana.regen*dt)
@@ -315,6 +344,27 @@ export class Player extends ServerGameObject{
                         position:this.position,
                         critical:false,
                     })
+                }else{
+                    this.boost_t-=dt
+                }
+                break
+            }
+            case BoostType.GreenBless:{
+                this.health=Math.min(this.health+(this.boost*dt)*gamemode.player.boosts.green_bless.regen,this.maxHealth)
+                break
+            }
+            case BoostType.Death:{
+                if(this.boost===0){
+                    this.kill({
+                        amount:this.health,
+                        critical:true,
+                        position:this.position,
+                        reason:DamageReason.Abstinence
+                    })
+                }
+                if(this.boost_t<=0){
+                    this.boost_t=1
+                    this.boost=Math.max(this.boost-((this.maxBoost/gamemode.player.boosts.death.life_time)),0)
                 }else{
                     this.boost_t-=dt
                 }
@@ -637,10 +687,9 @@ export class Player extends ServerGameObject{
         if(params.owner&&params.owner instanceof Player){
             const is_ally=this.game.modeManager.is_ally(this,params.owner)
             if(
-                params.owner.id!==this.id&&
-                (is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
+                (params.owner.id!==this.id&&is_ally&&!(this.friendly_fire&&params.owner.friendly_fire))
             )return
-            mod*=params.owner.modifiers.damage
+            if(params.owner.id!==this.id)mod*=params.owner.modifiers.damage
         }
         if(this.vest){
             mod-=this.vest.reduction
@@ -653,6 +702,7 @@ export class Player extends ServerGameObject{
         if(params.critical){
             mod+=this.modifiers.critical_mult-1
         }
+        damage*=this.modifiers.damage_reduction
         damage*=mod
         params.amount=damage
         this.piercingDamage(params)
@@ -751,6 +801,7 @@ export class Player extends ServerGameObject{
         this.downedBySource=params.source
         this.health=this.maxHealth
         this.boost=0
+        this.boost_def=Boosts[BoostType.Null]
 
         if(params.owner&&params.owner instanceof Player){
             this.game.send_killfeed_message({
