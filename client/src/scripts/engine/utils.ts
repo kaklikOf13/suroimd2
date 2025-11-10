@@ -96,9 +96,8 @@ export function HideElement(elem:HTMLElement,opacity=false){
 export function ShowElement(elem:HTMLElement,opacity=false){
     if(opacity){
         elem.style.opacity="1"
-    }else{
-        elem.style.display = ""
     }
+    elem.style.display = ""
     elem.style.pointerEvents = ""
 }
 export function ToggleElement(elem:HTMLElement){

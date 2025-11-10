@@ -6,7 +6,6 @@ import { accounts, api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { ShowTab } from "../engine/mod.ts";
 import { SoundManager } from "../engine/sounds.ts";
-import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 
 export class MenuManager{
     save:GameConsole
@@ -16,6 +15,8 @@ export class MenuManager{
         gameD:document.querySelector("#game") as HTMLDivElement,
         insert_name:document.body.querySelector("#insert-name") as HTMLInputElement,
         menu_p:document.body.querySelector("#menu-options") as HTMLDivElement,
+
+        loading_screen:document.body.querySelector("#loading-screen") as HTMLDivElement,
 
         select_region:document.body.querySelector("#select-region") as HTMLButtonElement,
 
@@ -130,6 +131,8 @@ export class MenuManager{
         
         HideElement(this.content.gameD)
         ShowElement(this.content.menuD)
+        HideElement(this.content.loading_screen)
+        this.content.loading_screen.style.opacity="0"
     }
     menu_tabs:Record<string,Record<string,HTMLElement>>={}
     load_menu(submenu:string|null){
@@ -166,12 +169,12 @@ export class MenuManager{
                     break
                 }
         }
-        
     }
     loaded=false
     loaded_textures:string[]=[]
     async load_resources(textures:string[]=["main"]){
         if(this.loaded||!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
+        ShowElement(this.content.loading_screen,true)
         this.loaded=false
         this.resources.clear()
         for(const tt of textures){
@@ -198,6 +201,7 @@ export class MenuManager{
         await this.resources.load_audio("thunder_2",{src:"sounds/ambience/thunder_2.mp3",volume:1})
         await this.resources.load_audio("thunder_3",{src:"sounds/ambience/thunder_3.mp3",volume:1})
         this.loaded=true
+        HideElement(this.content.loading_screen,true)
     }
     async update_api(){
         this.content.select_region.innerHTML=""

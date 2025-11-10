@@ -309,7 +309,8 @@ export class Game extends ClientGame2D<GameObject>{
     //this.minimap.draw()
   }
   override on_run(): void {
-    
+      this.camera.position.x=100000
+      this.camera.position.y=100000
   }
   override on_update(dt:number): void {
     super.on_update(dt)
