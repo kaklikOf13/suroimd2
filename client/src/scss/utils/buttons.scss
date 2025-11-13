@@ -24,10 +24,11 @@
         transform: translateY(1px);
     }
 
-    @media screen and (max-width: palette.$screen_large) {
+    @media screen and (max-width: palette.$screen_medium) {
         font-size: 15px;
         padding: 2px 10px;
         text-align: center;
+        border-radius: 6px;
     }
 }
 

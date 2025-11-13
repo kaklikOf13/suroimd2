@@ -239,9 +239,13 @@ export class Game extends ServerGame2D<ServerGameObject>{
         this.clients.emit(p)
     }
     netUpdate(){
+        const s=new NetStream(new ArrayBuffer(5*1024))
+        s.writeUint16(this.general_update.ID)
+        this.general_update.encode(s)
         for(const p of this.players){
             if(p.connected&&p.activated){
                 p.update2()
+                p.client!.sendStream(s)
             }
         }
         this.general_update.content.planes=this.planes
@@ -254,12 +258,8 @@ export class Game extends ServerGame2D<ServerGameObject>{
         if(this.deadzone.dirty){
             this.general_update.content.deadzone=this.deadzone.state
         }
-        const s=new NetStream(new ArrayBuffer(5*1024))
-        s.writeUint16(this.general_update.ID)
-        this.general_update.encode(s)
         this.scene.objects.update_to_net()
         this.scene.objects.apply_destroy_queue()
-        this.clients.sendStream(s)
     }
     add_player(id:number|undefined,username:string,packet:JoinPacket,layer:number=Layers.Normal,connected=true):Player{
         const p=this.scene.objects.add_object(new Player(),layer,id) as Player

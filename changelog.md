@@ -8,9 +8,14 @@ __                                                                              
 * Snow Storm
 * Ice
 * Ice Slide
+* Biome Musics
 __                                                                                                      __
 ### Menu
-
+* Menu Music
+* Loading Screen
+* A Sound For Buttons Click
+* Normal Mode Image Changed To A Gif
+* A New Gif For Snow Mode
 __                                                                                                      __
 ### Items
 * Yellow Laser Pistol: A Weapon Madded To Test Reflections
@@ -20,6 +25,9 @@ __                                                                              
 * Medikit Sfx
 * Bandage Sfx
 * Pills Sfx
+__                                                                                                      __
+### Others
+* New Snow Musics
 __                                                                                                      __
 ### Keys And Controls
 __                                                                                                      __
@@ -36,6 +44,7 @@ __                                                                              
 __                                                                                                      __
 ### Others
 * Readd Rivers
+* Some Musics Change The Biome
 __                                                                                                      __
 ## Fixes
 * Rect Hitbox Damage

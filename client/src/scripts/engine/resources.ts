@@ -129,8 +129,9 @@ export class ResourcesManager{
         }
         return undefined
     }
-    clear(){
+    clear(blacklist:string[]=[]){
         for(const r of Object.keys(this.sources)){
+            if(blacklist.includes(r))continue
             this.unload(r)
         }
     }

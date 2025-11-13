@@ -32,6 +32,8 @@
     @media screen and (max-width: palette.$screen_medium) {
         font-size: 15px;
     }
+    pointer-events: none;
+    user-select: none;
 }
 .text{
     color: #eee;

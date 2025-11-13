@@ -1,4 +1,4 @@
-import { ResourcesManager, WebglRenderer} from "../engine/mod.ts"
+import { ResourcesManager, ShowElement, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
 import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
@@ -26,12 +26,17 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
         "loot":1,
         "obstacles":1,
         "explosions":1,
-        "ambience":1
+        "ambience":1,
+        "ui":1
     }
 
     const renderer=new WebglRenderer(canvas)
 
     const resources=new ResourcesManager(renderer.gl,sounds)
+    await resources.load_audio("menu_music",{src:"/sounds/musics/menu_music.mp3",volume:1})
+    await resources.load_audio("button_click",{src:"/sounds/ui/button_click.mp3",volume:1})
+
+    sounds.init_html_sound_bindings("ui",resources)
 
     const GameSave=new GameConsole()
     GameSave.input_manager=inputs
@@ -111,6 +116,7 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
                     socket=new WebSocket(`ws${ghost.address}/api/ws`) as unknown as BasicSocket
                 }
             }
+            ShowElement(menu_manager.content.loading_screen,true)
             const c=new Client(socket!,PacketManager)
             c.onopen=this.game.connected.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
             this.game.running=true

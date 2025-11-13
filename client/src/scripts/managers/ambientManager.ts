@@ -108,11 +108,12 @@ export class AmbientManager{
             enabled:false
         })
 
-        this.music=game.sounds.add_manipulative_si("music")
+        this.music=this.game.sounds.get_manipulative_si("music")??game.sounds.add_manipulative_si("music")
         this.ambience=game.sounds.add_manipulative_si("ambience")
     }
     reset(){
         this.end_game=false
+        this.music.set(null)
         this.reload()
     }
     reload(){
@@ -147,12 +148,16 @@ export class AmbientManager{
             this.game.renderer.canvas.style.filter="none"
         }
     }
-    musics:string[]=[
+    /*musics:string[]=[
         "game_normal_music_1",
         "game_normal_music_2",
         "game_normal_music_3",
         "game_normal_music_4",
         "game_normal_music_5",
+    ]*/
+   musics:string[]=[
+        "game_snow_music_1",
+        "game_snow_music_2",
     ]
     ending_music:string[]=[
         "game_campaing_ending_1",
@@ -174,7 +179,8 @@ export class AmbientManager{
     }
     update(){
         if(!this.music.running){
-            if(Math.random()<=0.0002){  
+            //if(Math.random()<=1){  
+            if(Math.random()<=0.0002){
                 this.music.set(this.game.resources.get_audio(random.choose(this.musics)))
             }
         }

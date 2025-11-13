@@ -177,7 +177,7 @@ Guns.insert(
         fireMode:FireMode.Single,
         class:GunClasses.Pistol,
         quality:ItemQuality.Common,
-        ammoSpawnAmount:25,
+        ammoSpawnAmount:45,
         bullet:{
             def:{
                 damage:11,

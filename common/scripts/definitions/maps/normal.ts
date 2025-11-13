@@ -365,7 +365,7 @@ export const SnowMap:MapDef={
             spawn:[
                 [
                     {id:"oak_tree",count:2900},
-                    {id:"christmas_tree",count:3},
+                    {id:"christmas_tree",count:20},
                     {id:"stone",count:2000},
                     {id:"bush",count:1500},
                     {id:"wood_crate",count:650},

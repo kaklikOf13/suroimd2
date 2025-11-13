@@ -84,14 +84,14 @@ export class Bullet extends GameObject{
                         break
                     case "obstacle":
                         if((obj as Obstacle).def.no_bullet_collision||(obj as Obstacle).dead)break
-                        if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
+                        if(obj.hb&&(this.hb.collidingWith(obj.hb)/*||obj.hb.colliding_with_line(this.old_position,this.position)*/)){
                             (obj as Obstacle).on_hitted(this.position)
                             this.dying=true
                         }
                         break
                     case "building":
                         if((obj as Building).def.no_bullet_collision)break
-                        if(obj.hb&&(this.hb.collidingWith(obj.hb)||obj.hb.colliding_with_line(this.old_position,this.position))){
+                        if(obj.hb&&(this.hb.collidingWith(obj.hb)/*||obj.hb.colliding_with_line(this.old_position,this.position)*/)){
                             (obj as Building).on_hitted(this.position)
                             this.dying=true
                         }

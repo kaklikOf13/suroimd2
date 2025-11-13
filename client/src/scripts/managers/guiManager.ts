@@ -323,7 +323,8 @@ export class GuiManager{
         HideElement(this.content.post_proccess.vignetting)
         if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
             ShowElement(this.content.post_proccess.tiltshift)
-        }else if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Normal){
+        }
+        if(this.game.save.get_variable("cv_graphics_post_proccess")>=GraphicsDConfig.Normal){
             ShowElement(this.content.post_proccess.vignetting)
             ShowElement(this.content.post_proccess.recolor)
         }

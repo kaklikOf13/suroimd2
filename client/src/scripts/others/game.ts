@@ -309,8 +309,6 @@ export class Game extends ClientGame2D<GameObject>{
     //this.minimap.draw()
   }
   override on_run(): void {
-      this.camera.position.x=100000
-      this.camera.position.y=100000
   }
   override on_update(dt:number): void {
     super.on_update(dt)
@@ -336,7 +334,7 @@ export class Game extends ClientGame2D<GameObject>{
       p.update(dt)
     }
     this.renderer.fullCanvas()
-    this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))*(this.renderer.canvas.width/1920)
+    this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))
 
     this.ambient.update()
 
@@ -379,6 +377,10 @@ export class Game extends ClientGame2D<GameObject>{
       await this.menuManager.game_start(assets)
       this.happening=true
       this.mainloop(true)
+      this.sounds.listener_position.x=100000
+      this.sounds.listener_position.y=100000
+      this.camera.position.x=100000
+      this.camera.position.y=100000
   }
   connect(playerName:string){
     if(!this.client)return
@@ -430,10 +432,6 @@ export class Game extends ClientGame2D<GameObject>{
     this.fake_crosshair.visible=false
 
     this.guiManager.players_name={}
-    const zoom=this.scope_zoom*(this.renderer.canvas.width/300)
-    if(this.scope_zoom!==this.camera.zoom){
-      this.camera.zoom=zoom
-    }
     this.renderer.fullCanvas()
   }
   init_gui(gui:GuiManager){
