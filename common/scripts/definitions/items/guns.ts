@@ -190,7 +190,7 @@ Guns.insert(
             }
         },
         reload:{
-            delay:2.5,
+            delay:2,
             capacity:15,
         },
         recoil:{
@@ -207,7 +207,7 @@ Guns.insert(
             fireDelay:0.15,
             reload:{
                 capacity:30,
-                delay:4
+                delay:3
             }
         }
     },

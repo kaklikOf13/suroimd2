@@ -117,7 +117,7 @@ export class Player extends GameObject{
             `player_hit_${random.int(1,2)}`
         ),{
             position:this.position,
-            max_distance:6,
+            max_distance:10,
         },"player")
     }
 

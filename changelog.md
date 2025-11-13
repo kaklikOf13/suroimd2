@@ -21,6 +21,8 @@ __                                                                              
 ### Items
 * Yellow Laser Pistol: A Weapon Madded To Test Reflections
 * Red Soda: A Alternative For Small Red Crystal
+* M9 Sounds
+* M9 Placeholder Graphics
 * Green Soda And Green Bless
 * Black Soda And Death
 * Medikit Sfx

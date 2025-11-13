@@ -166,7 +166,7 @@ export class AmbientManager{
     end_game=false
     grand_finale(){
         if(this.end_game)return
-        this.end_game=true
+        /*this.end_game=true
         this.music.set(null)
         this.game.addTimeout(()=>{
             if(this.game.living_count[0]>2){
@@ -175,11 +175,10 @@ export class AmbientManager{
             }
             this.music.set(this.game.resources.get_audio(random.choose(this.ending_music)))
             this.game.guiManager.information_killbox_messages.push(`Grand Finale`)
-        },3)
+        },3)*/
     }
     update(){
         if(!this.music.running){
-            //if(Math.random()<=1){  
             if(Math.random()<=0.0002){
                 this.music.set(this.game.resources.get_audio(random.choose(this.musics)))
             }

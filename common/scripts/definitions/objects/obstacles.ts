@@ -262,7 +262,7 @@ Obstacles.insert(
     {
         idString:"bush",
         health:70,
-        hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
+        hitbox:new CircleHitbox2D(v2.new(0,0),0.7),
         no_collision:true,
         scale:{
             destroy:0.8
