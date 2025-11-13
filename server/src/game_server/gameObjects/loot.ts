@@ -11,6 +11,7 @@ import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { Building } from "./building.ts";
 
 export class Loot extends ServerGameObject{
     velocity:Vec2
@@ -123,17 +124,26 @@ export class Loot extends ServerGameObject{
                 case "loot":{
                     if(other.id===this.id)continue
                     const col=this.hb.overlapCollision(other.hb)
-                    if(col){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.027))
+                    if(col.length>0){
+                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,0.027))
                     }
                     break
                 }
                 case "obstacle":{
-                    if((other as Obstacle).dead||(other as Obstacle).def.noCollision||!(other.hb))break
+                    if((other as Obstacle).dead||(other as Obstacle).def.no_collision||!(other.hb))break
                     const col=this.hb.overlapCollision(other.hb)
-                    if(col){
-                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
+                    for(const c of col){
+                        this.position=v2.sub(this.position,v2.scale(c.dir,c.pen))
+                        this.velocity=v2.sub(this.velocity,v2.scale((c.dir.x===1&&c.dir.y===0)?v2.random(-1,1):c.dir,0.03))
+                    }
+                    break
+                }
+                case "building":{
+                    if((other as Building).def.no_collisions||!(other.hb))break
+                    const col=this.hb.overlapCollision(other.hb)
+                    for(const c of col){
+                        this.position=v2.sub(this.position,v2.scale(c.dir,c.pen))
+                        this.velocity=v2.sub(this.velocity,v2.scale((c.dir.x===1&&c.dir.y===0)?v2.random(-1,1):c.dir,0.03))
                     }
                     break
                 }

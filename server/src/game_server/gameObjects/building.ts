@@ -27,19 +27,30 @@ export class Building extends ServerGameObject{
     }
     override interact(_user: Player): void {
     }
-    create(args: {def:BuildingDef}): void {
-        this.def=args.def
+    create(args: {}): void {
         this.updatable=false
     }
-    generate(position:Vec2,side:number){
+    set_definition(def:BuildingDef){
+        if(this.def)return
+        this.def=def
+    }
+    set_position(position:Vec2,side:number){
         this.m_position=v2.duplicate(position)
         this.side=side as Orientation
-
         if(this.def.hitbox){
-            this.hb=this.def.hitbox.transform(this.m_position)
+            this.hb=this.def.hitbox.transform(this.m_position,undefined,this.side)
         }else{
             this.hb.translate(this.m_position)
         }
+        if(this.def.spawnHitbox){
+            this.spawnHitbox=this.def.spawnHitbox.transform(this.m_position,undefined,this.side)
+        }else{
+            this.spawnHitbox=this.hb.clone()
+        }
+    }
+    generate(position:Vec2,side:number){
+        this.set_position(position,side)
+
         for(const l of this.def.loots??[]){
             const items=this.game.loot_tables.get_loot(l.table,{withammo:true})
             const p=v2.add_with_orientation(this.m_position,l.position,this.side)

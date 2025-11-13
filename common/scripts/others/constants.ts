@@ -1,3 +1,5 @@
+import { FloorType } from "./terrain.ts";
+
 export const GameConstants={
     player:{
         defaultName:"Player",
@@ -87,4 +89,25 @@ export type PlayerModifiers={
     luck:number
     mana_consume:number
     damage_reduction:number
+}
+export enum  SpawnModeType{
+    any,
+    blacklist,
+    whitelist,
+}
+export type SpawnMode={
+    type:SpawnModeType.any
+}|{
+    type:SpawnModeType.blacklist|SpawnModeType.whitelist
+    list:FloorType[]
+}
+
+export const Spawn={
+    any:{
+        type:SpawnModeType.any,
+    },
+    grass:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Grass,FloorType.Snow]
+    },
 }

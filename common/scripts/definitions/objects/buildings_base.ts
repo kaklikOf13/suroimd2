@@ -2,7 +2,7 @@ import { v2, Vec2 } from "../../engine/geometry.ts";
 import { Hitbox2D, RectHitbox2D } from "../../engine/hitbox.ts";
 import { Definitions,Definition } from "../../engine/mod.ts"
 import { mergeDeep } from "../../engine/utils.ts";
-import { zIndexes } from "../../others/constants.ts";
+import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 
 export type BuildingObstacles={
     id:string
@@ -36,6 +36,7 @@ export interface BuildingDef extends Definition{
     obstacles:BuildingObstacles[]
     loots?:BuildingLoot[]
     spawnHitbox?:Hitbox2D
+    spawnMode:SpawnMode
     hitbox?:Hitbox2D
     floor_image?:BuildingImageDefinition[]
     material?:string
@@ -58,6 +59,7 @@ const Templates={
         obstacles:[
             
         ],
+        spawnMode:Spawn.grass,
         reflect_bullets:false,
         loots:[
             {position:v2.new(-1,0),table:"ground_loot"},
@@ -84,7 +86,40 @@ const Templates={
             }
         ]
     } satisfies BuildingDef,
+    container_2:{
+        idString:"container_2",
+        obstacles:[
+            
+        ],
+        spawnMode:Spawn.grass,
+        reflect_bullets:false,
+        loots:[
+            {position:v2.new(-1,0),table:"ground_loot"},
+            {position:v2.new(1,0),table:"ground_loot"}
+        ],
+        hitbox:RectHitbox2D.wall_enabled(v2.new(-2.85,-1.42),v2.new(2.85,1.42),{
+            left:false,
+            bottom:true,
+            right:false,
+            top:true
+        },0.5),
+        material:"iron",
+        assets:{
+            particles:"metal_particle",
+            particles_tint:0x00359f
+        },
+        floor_image:[
+            {
+                image:"container_floor_2",
+                position:v2.new(0,0),
+                hotspot:v2.new(.5,.5),
+                scale:2,
+                tint:0x00359f
+            }
+        ]
+    } satisfies BuildingDef,
 }
 Buildings.insert(
-    mergeDeep({},Templates.container_1) as BuildingDef
+    mergeDeep({},Templates.container_1) as BuildingDef,
+    mergeDeep({},Templates.container_2) as BuildingDef
 )

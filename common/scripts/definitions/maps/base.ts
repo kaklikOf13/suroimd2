@@ -5,8 +5,7 @@ import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { Random1 } from "../../engine/random.ts";
 import { Vec2 } from "../../engine/geometry.ts";
-import { type Layers } from "../../others/constants.ts";
-import { SpawnMode } from "../objects/obstacles.ts";
+import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap, SnowMap } from "./normal.ts";
 
 export interface Aditional{

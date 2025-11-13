@@ -972,7 +972,7 @@ export function SmoothShape2D(polygon: Vec2[], subdivisions: number = 8): Vec2[]
 export type OverlapCollision2D={
     dir:Vec2
     pen:number
-}|undefined|null
+}
 export const Collision=Object.freeze({
     circle_with_circle(circle_1_radius:number,circle_2_radius:number,circle_1_position:Vec2,circle_2_position:Vec2){
         return v2.distance(circle_1_position,circle_2_position)<circle_1_radius+circle_2_radius

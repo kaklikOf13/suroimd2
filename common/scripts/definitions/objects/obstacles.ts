@@ -1,29 +1,8 @@
 import { v2 } from "../../engine/geometry.ts";
 import { CircleHitbox2D,Hitbox2D,Definitions,Definition, RotationMode, FrameTransform } from "../../engine/mod.ts";
-import { zIndexes } from "../../others/constants.ts";
+import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { RectHitbox2D } from "../../engine/hitbox.ts";
-import { FloorType } from "../../others/terrain.ts";
-export enum  SpawnModeType{
-    any,
-    blacklist,
-    whitelist,
-}
-export type SpawnMode={
-    type:SpawnModeType.any
-}|{
-    type:SpawnModeType.blacklist|SpawnModeType.whitelist
-    list:FloorType[]
-}
 
-export const Spawn={
-    any:{
-        type:SpawnModeType.any,
-    },
-    grass:{
-        type:SpawnModeType.whitelist,
-        list:[FloorType.Grass,FloorType.Snow]
-    },
-}
 export interface ObstacleBehaviorDoor{
     type:0,
     open_delay?:number

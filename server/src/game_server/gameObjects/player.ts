@@ -457,8 +457,8 @@ export class Player extends ServerGameObject{
                                 can_interact=false
                             }
                             const ov=this.hb.overlapCollision((obj as Obstacle).hb)
-                            if(ov){
-                                this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                            for(const c of ov){
+                                this.position=v2.sub(this.position,v2.scale(c.dir,c.pen))
                             }
                         }
                         break
@@ -466,8 +466,8 @@ export class Player extends ServerGameObject{
                         if((obj as Building).def.no_collisions)break
                         if(obj.hb){
                             const ov=this.hb.overlapCollision(obj.hb)
-                            if(ov){
-                                this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                            for(const c of ov){
+                                this.position=v2.sub(this.position,v2.scale(c.dir,c.pen))
                             }
                         }
                         break

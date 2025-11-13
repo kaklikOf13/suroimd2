@@ -96,7 +96,7 @@ export class Building extends GameObject{
             this.objects.push(sprite)
         }
         if(def.hitbox){
-            this.hb=def.hitbox.transform(this.m_position)
+            this.hb=def.hitbox.transform(this.m_position,undefined,this.side)
         }else{
             this.hb.translate(this.m_position)
         }

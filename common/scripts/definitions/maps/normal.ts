@@ -218,14 +218,16 @@ export const NormalMap:MapDef={
             ground_loot:[{count:80,table:"ground_loot"}],
             spawn:[
                 [
-                    {id:"oak_tree",count:2900},
-                    {id:"stone",count:2000},
-                    {id:"bush",count:1500},
-                    {id:"wood_crate",count:650},
+                    {id:"container_1",count:25},
+                    {id:"container_2",count:25},
+                    {id:"oak_tree",count:2700}, //90% of 3000
+                    {id:"stone",count:1800}, //90% of 2000
+                    {id:"bush",count:1350}, //90% of 1500
+                    {id:"wood_crate",count:630},//90% of 700
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
-                    {id:"barrel",count:700}
+                    {id:"barrel",count:630}, //90% of 700
                 ]
             ],
             terrain:{
@@ -364,15 +366,17 @@ export const SnowMap:MapDef={
             ground_loot:[{count:80,table:"ground_loot"}],
             spawn:[
                 [
-                    {id:"oak_tree",count:2900},
-                    {id:"christmas_tree",count:20},
-                    {id:"stone",count:2000},
-                    {id:"bush",count:1500},
-                    {id:"wood_crate",count:650},
+                    {id:"christmas_tree",count:3},
+                    {id:"container_1",count:25},
+                    {id:"container_2",count:25},
+                    {id:"oak_tree",count:2700}, //90% of 3000
+                    {id:"stone",count:1800}, //90% of 2000
+                    {id:"bush",count:1350}, //90% of 1500
+                    {id:"wood_crate",count:630},//90% of 700
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
-                    {id:"barrel",count:700},
+                    {id:"barrel",count:630}, //90% of 700
                 ]
             ],
             terrain:{
